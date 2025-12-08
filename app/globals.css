@@ -1,0 +1,267 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme variables - outside @layer for proper specificity */
+:root,
+.dark {
+  --background: 0 0% 3%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 4%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 4%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 0 0% 10%;
+  --secondary: 0 0% 15%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 65%;
+  --accent: 0 0% 15%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 18%;
+  --input: 0 0% 18%;
+  --ring: 0 0% 83.9%;
+  --radius: 0.5rem;
+}
+
+.light {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+}
+
+.blue {
+  --background: 217 32% 8%;
+  --foreground: 210 40% 98%;
+  --card: 217 32% 10%;
+  --card-foreground: 210 40% 98%;
+  --popover: 217 32% 10%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 217 91% 60%;
+  --primary-foreground: 217 32% 8%;
+  --secondary: 217 32% 15%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217 32% 15%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217 32% 15%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217 32% 20%;
+  --input: 217 32% 20%;
+  --ring: 217 91% 60%;
+}
+
+.green {
+  --background: 142 76% 6%;
+  --foreground: 210 40% 98%;
+  --card: 142 76% 8%;
+  --card-foreground: 210 40% 98%;
+  --popover: 142 76% 8%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 142 76% 45%;
+  --primary-foreground: 142 76% 6%;
+  --secondary: 142 32% 17%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 142 32% 17%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 142 32% 17%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 142 32% 22%;
+  --input: 142 32% 22%;
+  --ring: 142 76% 45%;
+}
+
+.purple {
+  --background: 262 52% 8%;
+  --foreground: 210 40% 98%;
+  --card: 262 52% 10%;
+  --card-foreground: 210 40% 98%;
+  --popover: 262 52% 10%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 262 83% 58%;
+  --primary-foreground: 262 52% 8%;
+  --secondary: 262 32% 17%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 262 32% 17%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 262 32% 17%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 262 32% 22%;
+  --input: 262 32% 22%;
+  --ring: 262 83% 58%;
+}
+
+.glass {
+  --background: 220 20% 10%;
+  --foreground: 210 40% 98%;
+  --card: 220 15% 12%;
+  --card-foreground: 210 40% 98%;
+  --popover: 220 15% 12%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 217 91% 60%;
+  --primary-foreground: 220 20% 10%;
+  --secondary: 217 20% 18%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217 20% 18%;
+  --muted-foreground: 215 20.2% 75%;
+  --accent: 217 20% 18%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 50%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217 25% 25%;
+  --input: 217 25% 25%;
+  --ring: 217 91% 60%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-size: 14px;
+  }
+  html {
+    font-size: 14px;
+  }
+  /* Ensure minimum font size */
+  p, span, div, a, button, input, textarea, select, label, li, td, th {
+    font-size: min(14px, 100%);
+  }
+}
+
+/* Dynamic background gradient based on theme */
+html.dark body {
+  background: radial-gradient(ellipse at top, hsl(var(--background)) 0%, hsl(0 0% 1%) 100%);
+}
+
+html.light body {
+  background: radial-gradient(ellipse at top, hsl(var(--background)) 0%, hsl(0 0% 98%) 100%);
+}
+
+html.blue body {
+  background: radial-gradient(ellipse at top, hsl(var(--background)) 0%, hsl(217 32% 4%) 100%);
+}
+
+html.green body {
+  background: radial-gradient(ellipse at top, hsl(var(--background)) 0%, hsl(142 76% 3%) 100%);
+}
+
+html.purple body {
+  background: radial-gradient(ellipse at top, hsl(var(--background)) 0%, hsl(262 52% 4%) 100%);
+}
+
+html.glass {
+  --glass-bg-image: url('/photos/plant.png');
+}
+
+html.glass body {
+  background-color: transparent !important;
+  background-image: 
+    var(--glass-bg-image, url('/photos/plant.png')),
+    radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
+    radial-gradient(ellipse at 80% 80%, rgba(147, 51, 234, 0.1) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 50%, rgba(34, 197, 94, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 0% 100%, rgba(251, 146, 60, 0.08) 0%, transparent 40%);
+  background-size: cover, auto, auto, auto, auto;
+  background-position: center, center, center, center, center;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+  background-blend-mode: normal, overlay, overlay, overlay, overlay;
+  background-attachment: fixed;
+  position: relative;
+  transition: background-image 0.3s ease;
+  min-height: 100vh;
+}
+
+html.glass body[data-bg="gradient"] {
+  background-image: 
+    radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.2) 0%, transparent 40%),
+    radial-gradient(ellipse at 80% 80%, rgba(147, 51, 234, 0.2) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 50%, rgba(34, 197, 94, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 0% 100%, rgba(251, 146, 60, 0.15) 0%, transparent 40%),
+    linear-gradient(135deg, hsl(220 20% 8%) 0%, hsl(220 15% 12%) 50%, hsl(220 20% 10%) 100%);
+}
+
+html.glass {
+  background-color: transparent !important;
+  min-height: 100vh;
+}
+
+html.glass body[data-bg="none"] {
+  background-image: 
+    radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.2) 0%, transparent 40%),
+    radial-gradient(ellipse at 80% 80%, rgba(147, 51, 234, 0.2) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 50%, rgba(34, 197, 94, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 0% 100%, rgba(251, 146, 60, 0.15) 0%, transparent 40%),
+    linear-gradient(135deg, hsl(220 20% 8%) 0%, hsl(220 15% 12%) 50%, hsl(220 20% 10%) 100%);
+}
+
+html.glass body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: 
+    linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.02) 50%, transparent 70%),
+    radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.5;
+}
+
+/* Glass theme specific styling */
+html.glass .rounded-2xl {
+  background: rgba(255, 255, 255, 0.03) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.glass .bg-card\/60,
+html.glass .bg-card\/50,
+html.glass .bg-card\/40,
+html.glass .bg-card\/30 {
+  background: rgba(255, 255, 255, 0.03) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+@layer utilities {
+  .bg-gradient-grid {
+    background-image: 
+      linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px);
+    background-size: 24px 24px;
+    opacity: 0.05;
+  }
+  
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
