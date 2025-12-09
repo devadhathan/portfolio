@@ -38,16 +38,16 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
   };
 
   const getPriorityStyles = (priority: SectionPriority) => {
-    // More corner radius, more visible borders, no shadows in light mode
+    // Enhanced interactive animations with smoother transitions
     switch (priority) {
       case 'high':
-        return 'rounded-2xl border-2 border-border/70 bg-card/60 backdrop-blur-md hover:bg-card/70 hover:border-border/90 cursor-pointer dark:shadow-md';
+        return 'rounded-2xl border-2 border-border/70 bg-card/60 backdrop-blur-md hover:bg-card/70 hover:border-border/90 hover:border-primary/30 cursor-pointer dark:shadow-md hover:shadow-xl transition-all duration-500 ease-out hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98]';
       case 'medium':
-        return 'rounded-2xl border-2 border-border/70 bg-card/50 backdrop-blur-md hover:bg-card/60 hover:border-border/90 cursor-pointer dark:shadow-md';
+        return 'rounded-2xl border-2 border-border/70 bg-card/50 backdrop-blur-md hover:bg-card/60 hover:border-border/90 hover:border-primary/20 cursor-pointer dark:shadow-md hover:shadow-lg transition-all duration-500 ease-out hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]';
       case 'low':
-        return 'rounded-2xl border-2 border-border/70 opacity-80 bg-card/40 backdrop-blur-sm hover:bg-card/50 hover:border-border/80 cursor-pointer dark:shadow-sm';
+        return 'rounded-2xl border-2 border-border/70 opacity-80 bg-card/40 backdrop-blur-sm hover:bg-card/50 hover:border-border/80 hover:opacity-100 cursor-pointer dark:shadow-sm hover:shadow-md transition-all duration-500 ease-out hover:scale-[1.01] active:scale-[0.99]';
       default:
-        return 'rounded-2xl border-2 border-border/70 bg-card/30 backdrop-blur-sm hover:bg-card/40 hover:border-border/80 cursor-pointer dark:shadow-sm';
+        return 'rounded-2xl border-2 border-border/70 bg-card/30 backdrop-blur-sm hover:bg-card/40 hover:border-border/80 cursor-pointer dark:shadow-sm hover:shadow-md transition-all duration-500 ease-out hover:scale-[1.01] active:scale-[0.99]';
     }
   };
 
@@ -84,13 +84,18 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 group flex flex-col h-full cursor-pointer`}
+            className={`${baseStyles} ${bentoSize} group flex flex-col h-full cursor-pointer relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
           >
+            {/* Animated gradient background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-out pointer-events-none" />
+            
             <CardHeader className="flex flex-col justify-center flex-shrink-0">
               <div className="flex items-center gap-3 mb-3">
-                <div className="p-2.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300 flex items-center justify-center animate-pulse">
+                <div className="p-2.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 ease-out flex items-center justify-center relative">
+                  <div className="absolute inset-0 bg-primary/20 rounded-lg blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-500" />
                   <div
+                    className="relative z-10"
                     style={{
                       width: '24px',
                       height: '27px',
@@ -117,15 +122,15 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
               </div>
             </CardHeader>
             <CardContent className="p-4 pt-2 flex-1 flex flex-col gap-3">
-              <p className="text-[14px] text-muted-foreground leading-relaxed group-hover:text-foreground/90 transition-colors">
+              <p className="text-[14px] text-muted-foreground leading-relaxed group-hover:text-foreground/90 transition-all duration-500 group-hover:translate-x-1">
                 Building meaningful digital experiences through thoughtful design and user-centric solutions.
               </p>
-              <div className="flex items-center gap-2 text-[14px] text-muted-foreground group-hover:text-foreground/80 transition-colors">
-                <Globe className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
+              <div className="flex items-center gap-2 text-[14px] text-muted-foreground group-hover:text-foreground/80 transition-all duration-500 group-hover:translate-x-1">
+                <Globe className="h-4 w-4 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 ease-out" />
                 <span>Based in India</span>
               </div>
-              <div className="flex items-center gap-2 text-[14px] text-muted-foreground group-hover:text-foreground/80 transition-colors">
-                <Zap className="h-4 w-4 group-hover:scale-125 group-hover:text-primary transition-all duration-300" />
+              <div className="flex items-center gap-2 text-[14px] text-muted-foreground group-hover:text-foreground/80 transition-all duration-500 group-hover:translate-x-1">
+                <Zap className="h-4 w-4 group-hover:scale-125 group-hover:text-primary group-hover:animate-pulse transition-all duration-500 ease-out" />
                 <span>Available for opportunities</span>
               </div>
             </CardContent>
@@ -147,7 +152,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer`}
+            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
           >
             <CardHeader className="pb-2 flex-shrink-0">
@@ -165,27 +170,33 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
               <div>
                 <h4 className="text-[14px] font-medium mb-2">Core Skills</h4>
                 <div className="flex flex-wrap gap-1.5">
-                  {['Product Design', 'UI/UX', 'Prototyping', 'Figma', 'Design Systems', 'User Research', 'Interaction Design'].map((skill) => (
-                    <span
-                      key={skill}
-                      className="px-2 py-1 bg-secondary/50 rounded-md text-[14px] hover:bg-primary/20 hover:scale-105 transition-all duration-200 cursor-default"
-                    >
-                      {skill}
-                    </span>
-                  ))}
+                  {['Product Design', 'UI/UX', 'Prototyping', 'Figma', 'Design Systems', 'User Research', 'Interaction Design'].map((skill, idx) => {
+                    const colors = ['bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300', 'bg-purple-500/15 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300', 'bg-pink-500/15 dark:bg-pink-500/15 text-pink-700 dark:text-pink-300', 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300', 'bg-green-500/15 dark:bg-green-500/15 text-green-700 dark:text-green-300', 'bg-orange-500/15 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300', 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'];
+                    return (
+                      <span
+                        key={skill}
+                        className={`px-2 py-1 ${colors[idx % colors.length]} rounded-md text-[14px] hover:scale-105 transition-all duration-200 cursor-default`}
+                      >
+                        {skill}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
               <div>
                 <h4 className="text-[14px] font-medium mb-2">Tools</h4>
                 <div className="flex flex-wrap gap-1.5">
-                  {['Figma', 'Sketch', 'Principle', 'After Effects', 'Webflow'].map((tool) => (
-                    <span
-                      key={tool}
-                      className="px-2 py-1 bg-secondary/30 rounded-md text-[14px] text-muted-foreground hover:bg-primary/10 hover:scale-105 hover:text-foreground transition-all duration-200 cursor-default"
-                    >
-                      {tool}
-                    </span>
-                  ))}
+                  {['Figma', 'Sketch', 'Principle', 'After Effects', 'Webflow'].map((tool, idx) => {
+                    const colors = ['bg-emerald-500/15 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300', 'bg-teal-500/15 dark:bg-teal-500/15 text-teal-700 dark:text-teal-300', 'bg-violet-500/15 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300', 'bg-rose-500/15 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300', 'bg-amber-500/15 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300'];
+                    return (
+                      <span
+                        key={tool}
+                        className={`px-2 py-1 ${colors[idx % colors.length]} rounded-md text-[14px] hover:scale-105 transition-all duration-200 cursor-default`}
+                      >
+                        {tool}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             </CardContent>
@@ -196,7 +207,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer`}
+            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
           >
             <CardHeader className="pb-2 flex-shrink-0">
@@ -254,7 +265,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
           return (
             <Card 
               key={section.id} 
-              className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer`}
+              className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer relative overflow-hidden`}
               onClick={() => handleCardClick(section.id)}
             >
               <CardHeader className="pb-2 flex-shrink-0">
@@ -284,7 +295,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {['Prototyping', 'Design Systems', 'UX Research'].map((tag) => (
-                        <span key={tag} className="px-2 py-0.5 bg-primary/10 rounded text-[14px]">
+                        <span key={tag} className={`px-2 py-0.5 rounded text-[14px] ${tag.includes('Design') ? 'bg-purple-500/15 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : tag.includes('UX') ? 'bg-pink-500/15 dark:bg-pink-500/15 text-pink-700 dark:text-pink-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>
                           {tag}
                         </span>
                       ))}
@@ -368,7 +379,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer`}
+            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
           >
             <CardHeader className="pb-2 flex-shrink-0">
@@ -435,7 +446,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer`}
+            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
           >
             <CardHeader className="pb-2 flex-shrink-0">
@@ -504,7 +515,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer`}
+            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
           >
             <CardHeader className="pb-2 flex-shrink-0">
@@ -548,7 +559,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer`}
+            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
           >
             <CardHeader className="pb-2 flex-shrink-0">
@@ -801,7 +812,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 auto-rows-fr">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-fr">
         {visibleSections.map(section => renderSection(section))}
       </div>
       

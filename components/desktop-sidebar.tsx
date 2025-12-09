@@ -2,11 +2,17 @@
 
 import { WeatherWidget } from './widgets/weather-widget';
 import { NotesWidget } from './widgets/notes-widget';
-import { Card, CardContent } from '@/components/ui/card';
-import { Clock, Calendar } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Clock, Calendar, FolderKanban, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { resumeData } from '@/lib/resume-data';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
-export function DesktopSidebar() {
+interface DesktopSidebarProps {
+  onProjectSelect?: (projectSlug: string) => void;
+}
+
+export function DesktopSidebar({ onProjectSelect }: DesktopSidebarProps) {
   const [time, setTime] = useState<Date | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -67,8 +73,53 @@ export function DesktopSidebar() {
         <WeatherWidget />
       </div>
 
-      {/* Notes Widget - Takes remaining space and fills it */}
+      {/* Projects List - Notion Style */}
       <div className="px-4 pb-4 flex-1 min-h-0 flex flex-col overflow-hidden">
+        <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md dark:shadow-md h-full flex flex-col">
+          <CardHeader className="pb-3 flex-shrink-0">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <FolderKanban className="h-4 w-4 text-primary" />
+              Projects
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 flex-1 min-h-0 overflow-hidden p-0">
+            <ScrollArea className="h-full px-4 pb-4">
+              <div className="space-y-0.5">
+                {resumeData.projects
+                  .filter(project => project.title !== 'Sustainable Kiosk')
+                  .map((project, index) => {
+                    const projectSlug = project.title.toLowerCase().replace(/\s+/g, '-');
+                    return (
+                      <div
+                        key={index}
+                        className="group relative"
+                      >
+                        <div 
+                          className="flex items-center gap-2 px-2.5 py-2 rounded hover:bg-accent/50 transition-colors cursor-pointer"
+                          onClick={() => onProjectSelect?.(projectSlug)}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <div className="w-1 h-1 rounded-full bg-muted-foreground/60 group-hover:bg-primary transition-colors flex-shrink-0 mt-0.5" />
+                              <p className="text-sm font-medium truncate">{project.title}</p>
+                            </div>
+                            <p className="text-xs text-muted-foreground ml-3 truncate">
+                              {project.company || project.institution} • {project.period}
+                            </p>
+                          </div>
+                          <ChevronRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Notes Widget - At bottom */}
+      <div className="px-4 pb-4 flex-shrink-0">
         <NotesWidget />
       </div>
     </div>

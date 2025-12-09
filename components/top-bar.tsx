@@ -11,8 +11,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Logo } from './logo';
+import { MobileSidebar } from './mobile-sidebar';
 
-export function TopBar() {
+interface TopBarProps {
+  onProjectSelect?: (projectSlug: string) => void;
+}
+
+export function TopBar({ onProjectSelect }: TopBarProps) {
   const { theme, setTheme } = useTheme();
   const { backgroundImage, setBackgroundImage, availableBackgrounds } = useBackground();
   const currentTheme = availableThemes.find(t => t.id === theme) || availableThemes[0];
@@ -23,6 +28,7 @@ export function TopBar() {
       <div className="w-full px-3 md:px-5 lg:px-6">
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center gap-2">
+            <MobileSidebar onProjectSelect={onProjectSelect} />
             <Logo />
             <div className="flex flex-col">
               <span className="font-medium text-sm leading-none">Devadhathan</span>

@@ -1,0 +1,59 @@
+'use client';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { resumeData } from '@/lib/resume-data';
+import { Award } from 'lucide-react';
+
+export function AboutSection() {
+  return (
+    <div className="mt-10 space-y-8 animate-in fade-in duration-300">
+      {/* Awards & Certifications */}
+      {(resumeData.awards.length > 0 || resumeData.certifications.length > 0) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {resumeData.awards.length > 0 && (
+            <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Award className="h-4 w-4" />
+                  Awards
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <ul className="space-y-3">
+                  {resumeData.awards.map((award, index) => (
+                    <li key={index} className="flex items-start gap-3 text-sm">
+                      <span className="text-primary mt-1">🏆</span>
+                      <span>{award}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {resumeData.certifications.length > 0 && (
+            <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Award className="h-4 w-4" />
+                  Certifications
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <ul className="space-y-3">
+                  {resumeData.certifications.map((cert, index) => (
+                    <li key={index} className="flex items-start gap-3 text-sm">
+                      <span className="text-primary mt-1">✓</span>
+                      <span>{cert}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+

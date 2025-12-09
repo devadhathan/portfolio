@@ -27,7 +27,7 @@ export function NotesWidget() {
   };
 
   return (
-    <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md dark:shadow-md h-full flex flex-col">
+    <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md dark:shadow-md flex flex-col max-h-[300px]">
       <CardHeader className="pb-3 flex-shrink-0">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <FileText className="h-4 w-4 text-primary" />
@@ -35,8 +35,8 @@ export function NotesWidget() {
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0 space-y-3 flex-1 min-h-0 flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-y-auto min-h-0 pr-1">
-          <div className="space-y-2">
+        <ScrollArea className="flex-1 min-h-0">
+          <div className="space-y-2 pr-2">
             {notes.map((note, index) => (
               <div
                 key={index}
@@ -54,7 +54,7 @@ export function NotesWidget() {
               </div>
             ))}
           </div>
-        </div>
+        </ScrollArea>
         <div className="flex gap-2 flex-shrink-0 pt-2 border-t border-border/20">
           <Input
             value={newNote}

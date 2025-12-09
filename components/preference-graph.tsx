@@ -10,7 +10,7 @@ export function PreferenceGraph() {
   const graphHeight = 120;
   const padding = 20;
 
-  // Actual preference data - moved inside useMemo to avoid dependency issues
+  // Smooth line chart with sensible curve
   const chartData = useMemo(() => {
     const preferences = [
       { name: 'Prototyping', value: 90 },
@@ -19,36 +19,87 @@ export function PreferenceGraph() {
       { name: 'User Research', value: 40 },
     ];
 
+    // Generate smooth curve points
+    const numPoints = 60; // More points for smoother curve
     const points: Array<{ x: number; y: number; value: number; name: string }> = [];
-    const dataPoints = preferences.length;
-    const spacing = (graphWidth - padding * 2) / (dataPoints - 1);
+    const labelPoints: Array<{ x: number; y: number; value: number; name: string }> = [];
     
+    const startX = padding;
+    const endX = graphWidth - padding;
+    const width = endX - startX;
+    const n = preferences.length - 1;
+    
+    // Generate smooth curve points using Catmull-Rom spline approach
+    for (let i = 0; i <= numPoints; i++) {
+      const t = i / numPoints;
+      const x = startX + (t * width);
+      
+      // Find the segment and interpolate
+      const pos = t * n;
+      let index = Math.floor(pos);
+      const fraction = pos - index;
+      
+      // Clamp index
+      index = Math.max(0, Math.min(index, preferences.length - 2));
+      
+      // Get values with edge handling
+      const v0 = index > 0 ? preferences[index - 1].value : preferences[index].value;
+      const v1 = preferences[index].value;
+      const v2 = preferences[index + 1].value;
+      const v3 = index < preferences.length - 2 ? preferences[index + 2].value : preferences[index + 1].value;
+      
+      // Catmull-Rom spline interpolation for smooth curve
+      const t2 = fraction * fraction;
+      const t3 = t2 * fraction;
+      
+      const value = 0.5 * (
+        (2 * v1) +
+        (-v0 + v2) * fraction +
+        (2 * v0 - 5 * v1 + 4 * v2 - v3) * t2 +
+        (-v0 + 3 * v1 - 3 * v2 + v3) * t3
+      );
+      
+      const y = graphHeight - padding - ((value / maxValue) * (graphHeight - padding * 2));
+      points.push({ x, y, value, name: '' });
+    }
+    
+    // Label points for the original preferences
     preferences.forEach((pref, index) => {
-      const x = padding + (index * spacing);
+      const t = index / n;
+      const x = startX + (t * width);
       const y = graphHeight - padding - ((pref.value / maxValue) * (graphHeight - padding * 2));
-      points.push({ x, y, value: pref.value, name: pref.name });
+      labelPoints.push({ x, y, value: pref.value, name: pref.name });
     });
 
-    return { points, preferences };
+    return { points, labelPoints };
   }, []);
 
-  // Create smooth curve path using quadratic bezier curves
+  // Create smooth binomial curve path
   const pathString = useMemo(() => {
     if (chartData.points.length === 0) return '';
     
+    // Use cubic bezier for smoother binomial curve
     let path = `M ${chartData.points[0].x} ${chartData.points[0].y}`;
     
     for (let i = 0; i < chartData.points.length - 1; i++) {
       const current = chartData.points[i];
       const next = chartData.points[i + 1];
       
-      // Control point for smooth curve
-      const cpX = (current.x + next.x) / 2;
-      const cpY1 = current.y;
-      const cpY2 = next.y;
-      
-      path += ` Q ${cpX} ${cpY1}, ${cpX} ${(cpY1 + cpY2) / 2}`;
-      path += ` T ${next.x} ${next.y}`;
+      if (i < chartData.points.length - 2) {
+        const afterNext = chartData.points[i + 2];
+        
+        // Control points for smooth cubic bezier
+        const cp1X = current.x + (next.x - current.x) / 3;
+        const cp1Y = current.y;
+        const cp2X = next.x - (afterNext.x - next.x) / 3;
+        const cp2Y = next.y;
+        
+        path += ` C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${next.x} ${next.y}`;
+      } else {
+        // Last segment
+        const cpX = (current.x + next.x) / 2;
+        path += ` Q ${cpX} ${current.y}, ${next.x} ${next.y}`;
+      }
     }
     
     return path;
@@ -126,8 +177,8 @@ export function PreferenceGraph() {
                 }}
               />
               
-              {/* Data points */}
-              {chartData.points.map((point, index) => (
+              {/* Data points for labels only */}
+              {chartData.labelPoints.map((point, index) => (
                 <g key={index}>
                   {/* Hover circle */}
                   <circle
@@ -160,7 +211,7 @@ export function PreferenceGraph() {
                     fontWeight="600"
                     className="opacity-0 hover:opacity-100 transition-opacity"
                   >
-                    {point.value}%
+                    {Math.round(point.value)}%
                   </text>
                   
                   {/* X-axis labels */}
