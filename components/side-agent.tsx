@@ -108,6 +108,13 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange }: S
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
+  // Initialize state on mount to ensure UI renders immediately
+  useEffect(() => {
+    const initialState = agent.getState();
+    onStateChange(initialState);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleCommand = async (command: string) => {
     if (!command.trim()) return;
 

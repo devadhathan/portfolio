@@ -4,15 +4,18 @@ import { useTheme as useNextTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { Moon, Sun, Sparkles } from 'lucide-react';
 
-export type Theme = 'dark' | 'light' | 'blue' | 'green' | 'purple' | 'glass';
+export type Theme = 'dark' | 'light' | 'blue' | 'green' | 'red' | 'purple' | 'glass';
 
 export const availableThemes = [
   { id: 'dark' as Theme, name: 'Dark', icon: Moon, color: null },
   { id: 'light' as Theme, name: 'Light', icon: Sun, color: null },
-  { id: 'blue' as Theme, name: 'Blue', icon: null, color: '#3b82f6' },
-  { id: 'green' as Theme, name: 'Green', icon: null, color: '#22c55e' },
-  { id: 'purple' as Theme, name: 'Purple', icon: null, color: '#a855f7' },
   { id: 'glass' as Theme, name: 'Glass', icon: Sparkles, color: null },
+];
+
+export const rgbThemes = [
+  { id: 'red' as Theme, name: 'Red', icon: null, color: '#ef4444' },
+  { id: 'green' as Theme, name: 'Green', icon: null, color: '#22c55e' },
+  { id: 'blue' as Theme, name: 'Blue', icon: null, color: '#3b82f6' },
 ];
 
 export function useTheme() {

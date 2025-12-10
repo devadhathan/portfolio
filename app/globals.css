@@ -7,7 +7,7 @@
 .dark {
   --background: 0 0% 3%;
   --foreground: 0 0% 98%;
-  --card: 0 0% 4%;
+  --card: 0 0% 7%;
   --card-foreground: 0 0% 98%;
   --popover: 0 0% 4%;
   --popover-foreground: 0 0% 98%;
@@ -93,6 +93,28 @@
   --ring: 142 76% 45%;
 }
 
+.red {
+  --background: 0 72% 8%;
+  --foreground: 210 40% 98%;
+  --card: 0 72% 10%;
+  --card-foreground: 210 40% 98%;
+  --popover: 0 72% 10%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 0 84% 60%;
+  --primary-foreground: 0 72% 8%;
+  --secondary: 0 32% 17%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 0 32% 17%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 0 32% 17%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 50%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 0 32% 22%;
+  --input: 0 32% 22%;
+  --ring: 0 84% 60%;
+}
+
 .purple {
   --background: 262 52% 8%;
   --foreground: 210 40% 98%;
@@ -169,6 +191,10 @@ html.blue body {
 
 html.green body {
   background: radial-gradient(ellipse at top, hsl(var(--background)) 0%, hsl(142 76% 3%) 100%);
+}
+
+html.red body {
+  background: radial-gradient(ellipse at top, hsl(var(--background)) 0%, hsl(0 72% 4%) 100%);
 }
 
 html.purple body {

@@ -23,9 +23,10 @@ export function MobileSidebar({ onProjectSelect }: MobileSidebarProps) {
     setMounted(true);
     setTime(new Date());
     
+    // Update every 50ms for smooth second hand movement
     const timer = setInterval(() => {
       setTime(new Date());
-    }, 1000);
+    }, 50);
 
     return () => {
       clearInterval(timer);
@@ -124,15 +125,16 @@ export function MobileSidebar({ onProjectSelect }: MobileSidebarProps) {
                         strokeWidth="3"
                         strokeLinecap="round"
                       />
-                      {/* Second hand */}
+                      {/* Second hand - smooth automatic movement */}
                       <line
                         x1="100"
                         y1="100"
-                        x2={String(100 + 75 * Math.cos((time.getSeconds() * 6 - 90) * (Math.PI / 180)))}
-                        y2={String(100 + 75 * Math.sin((time.getSeconds() * 6 - 90) * (Math.PI / 180)))}
+                        x2={String(100 + 75 * Math.cos((time.getSeconds() * 6 + time.getMilliseconds() * 0.006 - 90) * (Math.PI / 180)))}
+                        y2={String(100 + 75 * Math.sin((time.getSeconds() * 6 + time.getMilliseconds() * 0.006 - 90) * (Math.PI / 180)))}
                         stroke="hsl(var(--primary))"
                         strokeWidth="1.5"
                         strokeLinecap="round"
+                        style={{ transition: 'none' }}
                       />
                       {/* Center dot */}
                       <circle

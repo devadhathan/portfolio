@@ -21,6 +21,8 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
   const [selectedSection, setSelectedSection] = useState<any>(null);
   // Track mouse position for cursor-following spotlight effect
   const [mousePositions, setMousePositions] = React.useState<{ [key: string]: { x: number; y: number } | null }>({});
+  // Track video elements for hover play/pause
+  const videoRefs = React.useRef<{ [key: string]: HTMLVideoElement | null }>({});
 
   // Mouse tracking handlers - must be defined before early returns
   // Track mouse position with larger detection radius for nearby cards
@@ -104,15 +106,18 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
     // Create varied card sizes based on type, priority, and position
     // This creates a more dynamic bento grid layout
     const sizeMap: { [key: string]: string } = {
-      'hero': 'col-span-1 sm:col-span-2 lg:col-span-2',
-      'preferences': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2',
-      'photos': 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-2',
-      'about': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
-      'philosophy': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2',
+      'hero': 'col-span-1 sm:col-span-1 lg:col-span-1',
+      'preferences': 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-2',
+      'photos': 'col-span-2 sm:col-span-1 lg:col-span-2 row-span-2',
+      'video': 'col-span-1 sm:col-span-2 lg:col-span-1 row-span-2',
+      'about': 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1',
+      'contact': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2',
+      'philosophy': 'col-span-1 sm:col-span-1 lg:col-span-2 row-span-2',
+      'experience': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2',
     };
 
     // Use predefined size if available
-    if (sectionType && sizeMap[sectionId]) {
+    if (sizeMap[sectionId]) {
       return sizeMap[sectionId];
     }
 
@@ -134,17 +139,17 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
 
   const getPriorityStyles = (priority: SectionPriority, sectionType?: SectionType) => {
     // Gradient backgrounds that change to borders on hover
-    const baseStyles = 'rounded-2xl border cursor-pointer transition-all duration-500 ease-out relative overflow-hidden group';
+    const baseStyles = 'rounded-2xl border-2 border-border/70 cursor-pointer transition-all duration-500 ease-out relative overflow-hidden group';
     
     // Card background color - theme responsive
     // Dark mode: #121212 (dark grey), Light mode: hsl(0, 0%, 96%) (light grey)
-    const bgStyles = 'bg-[hsl(0,0%,96%)] dark:bg-[#121212]';
+    const bgStyles = 'bg-card/60 backdrop-blur-md';
 
-    // Border effects - no hover, only cursor-following border reveal
+    // Border effects - match weather and clock cards: border-2 border-border/70
     const borderStyles: Record<Exclude<SectionPriority, 'hidden'>, string> = {
-      high: 'border-border/30',
-      medium: 'border-border/25',
-      low: 'border-border/20',
+      high: '',
+      medium: '',
+      low: '',
     };
 
     // No transform effects on hover
@@ -154,19 +159,16 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
       low: '',
     };
 
-    // Shadow effects
+    // Shadow effects - match weather and clock cards
     const shadowStyles: Record<Exclude<SectionPriority, 'hidden'>, string> = {
-      high: 'dark:shadow-md hover:shadow-xl hover:shadow-primary/10',
-      medium: 'dark:shadow-sm hover:shadow-lg hover:shadow-primary/5',
-      low: 'dark:shadow-sm hover:shadow-md',
+      high: 'dark:shadow-md',
+      medium: 'dark:shadow-md',
+      low: 'dark:shadow-md',
     };
-
-    // Backdrop blur
-    const backdropStyles = 'backdrop-blur-md';
 
     // Combine all styles - handle 'hidden' priority by defaulting to 'low'
     const priorityKey: Exclude<SectionPriority, 'hidden'> = (priority === 'hidden' ? 'low' : priority) || 'low';
-    return `${baseStyles} ${bgStyles} ${borderStyles[priorityKey]} ${transformStyles} ${shadowStyles[priorityKey]} ${backdropStyles}`;
+    return `${baseStyles} ${bgStyles} ${borderStyles[priorityKey]} ${transformStyles[priorityKey]} ${shadowStyles[priorityKey]}`;
   };
 
   const handleCardClick = (sectionId: string) => {
@@ -219,21 +221,21 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
           <Card 
             key={section.id} 
             data-card-id={section.id}
-            className={`${baseStyles} col-span-1 sm:col-span-2 lg:col-span-2 group flex flex-col relative overflow-hidden`}
+            className={`${baseStyles} ${bentoSize} group flex flex-col relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
           >
             {borderReveal}
             
-            <CardHeader className="flex flex-col justify-center flex-shrink-0 relative z-10 pb-3">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition-all duration-500 ease-out flex items-center justify-center relative">
+            <CardHeader className="flex flex-col justify-center flex-shrink-0 relative z-10 pb-2 px-4 pt-4">
+              <div className="flex items-center gap-2.5 mb-1.5">
+                <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition-all duration-500 ease-out flex items-center justify-center relative">
                   <div
                     className="relative z-10"
                     style={{
-                      width: '24px',
-                      height: '27px',
+                      width: '20px',
+                      height: '23px',
                       display: 'block',
                       overflow: 'visible',
                       aspectRatio: '0.91 / 1',
@@ -247,25 +249,25 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                   />
                 </div>
                 <div>
-                  <CardTitle className="text-3xl md:text-4xl font-semibold mb-1">
+                  <CardTitle className="text-2xl md:text-3xl font-semibold mb-0.5">
                     Dev
                   </CardTitle>
-                  <CardDescription className="text-[14px] md:text-[14px] text-foreground/80">
+                  <CardDescription className="text-[12px] md:text-[13px] text-foreground/80">
                     Product Designer
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-4 pt-0 flex flex-col gap-2 relative z-10">
-              <p className="text-[14px] text-muted-foreground leading-relaxed">
+            <CardContent className="px-4 pb-4 pt-0 flex flex-col gap-1.5 relative z-10">
+              <p className="text-[13px] text-muted-foreground leading-relaxed">
                 Building meaningful digital experiences through thoughtful design and user-centric solutions.
               </p>
-              <div className="flex items-center gap-2 text-[14px] text-muted-foreground">
-                <Globe className="h-4 w-4" />
+              <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
+                <Globe className="h-3.5 w-3.5" />
                 <span>Based in India</span>
               </div>
-              <div className="flex items-center gap-2 text-[14px] text-muted-foreground">
-                <Zap className="h-4 w-4" />
+              <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
+                <Zap className="h-3.5 w-3.5" />
                 <span>Available for opportunities</span>
               </div>
             </CardContent>
@@ -936,6 +938,77 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                 </CardContent>
               </div>
             )}
+          </Card>
+        );
+
+      case 'video':
+        const videoSrc = section.content || '/videos/2tUv4Phgglg0Cvb9dLfZYDnN1k.mp4';
+        const videoLink = section.links?.[0]?.url || 'https://medium.com/@devadhathanmd18/why-ai-needs-a-face-building-dew-my-duolingo-inspired-ai-character-2d4e56f94772';
+        const videoTitle = section.title || 'Video';
+        
+        return (
+          <Card 
+            key={section.id} 
+            data-card-id={section.id}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-full overflow-hidden group relative`}
+            onClick={() => handleCardClick(section.id)}
+            onMouseMove={(e) => handleMouseMove(section.id, e)}
+            onMouseLeave={() => {
+              handleMouseLeave(section.id);
+              // Pause video on mouse leave
+              const video = videoRefs.current[section.id];
+              if (video) {
+                video.pause();
+              }
+            }}
+            onMouseEnter={() => {
+              // Play video on mouse enter
+              const video = videoRefs.current[section.id];
+              if (video) {
+                video.play().catch(err => console.error('Video play error:', err));
+              }
+            }}
+          >
+            {borderReveal}
+            <div className="relative w-full h-full flex items-center justify-center p-6 z-10">
+              {/* Phone Frame */}
+              <div className="relative w-full max-w-[280px] aspect-[9/19.5] bg-black rounded-[2.5rem] p-2 shadow-2xl">
+                {/* Phone Notch */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-20"></div>
+                {/* Screen */}
+                <div className="relative w-full h-full bg-black rounded-[2rem] overflow-hidden">
+                  <video
+                    ref={(el) => {
+                      if (el) videoRefs.current[section.id] = el;
+                    }}
+                    src={videoSrc}
+                    className="w-full h-full object-cover"
+                    loop
+                    muted
+                    playsInline
+                  />
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
+                  
+                  {/* Title and Link */}
+                  <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+                    <h3 className="text-white text-[14px] font-semibold mb-2">
+                      {videoTitle}
+                    </h3>
+                    <a
+                      href={videoLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg text-white text-[12px] font-medium transition-all duration-200 group/link"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <span>Read on Medium</span>
+                      <ExternalLink className="h-3 w-3 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
           </Card>
         );
 

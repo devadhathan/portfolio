@@ -41,12 +41,6 @@ export default function Home() {
         
         {/* Main Content */}
         <div className={`flex-1 container mx-auto p-4 md:p-6 lg:p-8 relative z-10 lg:ml-80 transition-all duration-300 ${isChatCollapsed ? 'lg:pr-4' : 'lg:pr-[440px]'} pb-20 lg:pb-8`}>
-          <div className="mb-8">
-            <h1 className="text-2xl md:text-3xl font-semibold mb-2">Devadhathan</h1>
-            <p className="text-muted-foreground text-sm">
-              Product Designer
-            </p>
-          </div>
           {isAgentWorking ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <div className="flex gap-2 mb-4">
