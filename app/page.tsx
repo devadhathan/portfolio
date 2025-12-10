@@ -14,6 +14,10 @@ export default function Home() {
   const [isAgentWorking, setIsAgentWorking] = useState(false);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [isChatCollapsed, setIsChatCollapsed] = useState(false);
+  const [explanation, setExplanation] = useState<string | null>(null);
+  const [displayedExplanation, setDisplayedExplanation] = useState<string>('');
+  const [isExplanationComplete, setIsExplanationComplete] = useState(false);
+  const [shouldShowCards, setShouldShowCards] = useState(false);
 
   const handleStateChange = (state: AgentState) => {
     setAgentState(state);
@@ -21,10 +25,87 @@ export default function Home() {
 
   const handleAgentWorking = (working: boolean) => {
     setIsAgentWorking(working);
+    // Don't reset explanation state immediately when agent stops
+    // Let explanation stay visible until new command starts
+  };
+
+  const handleExplanationComplete = (complete: boolean) => {
+    // Set explanation as complete and trigger card display
+    setIsExplanationComplete(complete);
+    if (complete) {
+      // Delay showing cards to match when cards are actually set in state (800ms after explanation completes)
+      setTimeout(() => {
+        setShouldShowCards(true);
+      }, 900); // Slightly after cards are set in state
+    } else {
+      setShouldShowCards(false);
+    }
   };
 
   const handleCollapseChange = (collapsed: boolean) => {
     setIsChatCollapsed(collapsed);
+  };
+
+  const handleExplanation = (text: string | null) => {
+    if (text === null) {
+      setExplanation(null);
+      setDisplayedExplanation('');
+      setIsExplanationComplete(false);
+      setShouldShowCards(false);
+      // Clear any pending animation
+      if ((window as any).explanationTimeout) {
+        clearTimeout((window as any).explanationTimeout);
+        delete (window as any).explanationTimeout;
+      }
+      return;
+    }
+    
+    // Allow processing explanation even if agent just finished working
+    // The explanation should always update when new text comes in
+    
+    setExplanation(text);
+    
+    // Show text immediately as it streams, with subtle word-by-word reveal
+    const targetWords = text.split(' ');
+    const currentWords = displayedExplanation.split(' ').filter(w => w.length > 0);
+    
+    if (targetWords.length > currentWords.length) {
+      // Clear any existing timeout
+      if ((window as any).explanationTimeout) {
+        clearTimeout((window as any).explanationTimeout);
+      }
+      
+      // Animate new words with very short delay for smooth streaming
+      let wordIndex = currentWords.length;
+      const animateNextWord = () => {
+        if (wordIndex < targetWords.length) {
+          const newText = targetWords.slice(0, wordIndex + 1).join(' ');
+          setDisplayedExplanation(newText);
+          wordIndex++;
+          
+          if (wordIndex < targetWords.length) {
+            // Very short delay (30ms) for smooth streaming effect
+            (window as any).explanationTimeout = setTimeout(animateNextWord, 30);
+          } else {
+            // All words displayed
+            setIsExplanationComplete(true);
+            delete (window as any).explanationTimeout;
+          }
+        } else {
+          setIsExplanationComplete(true);
+          delete (window as any).explanationTimeout;
+        }
+      };
+      
+      // Start animation immediately
+      animateNextWord();
+    } else if (text.trim().length > 0) {
+      // Text is complete - ensure it's displayed and marked complete
+      if (displayedExplanation !== text) {
+        setDisplayedExplanation(text);
+      }
+      setIsExplanationComplete(true);
+    }
   };
 
   return (
@@ -60,8 +141,35 @@ export default function Home() {
             </div>
           ) : agentState ? (
             <>
-              <PortfolioSections agentState={agentState} />
-              <AboutSection />
+              {/* Always show explanation if it exists, even while streaming */}
+              {(explanation || displayedExplanation) && (
+                <div className="mb-6 p-4 rounded-lg bg-card/60 backdrop-blur-md border-2 border-border/70">
+                  {(displayedExplanation || explanation || '').trim().split(' ').length > 3 && (
+                    <h2 className="text-lg font-semibold mb-2 text-foreground">Overview</h2>
+                  )}
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {displayedExplanation || explanation || ''}
+                    {!isExplanationComplete && explanation && displayedExplanation.length < explanation.length && (
+                      <span className="inline-block w-1.5 h-4 ml-1 bg-foreground/50 animate-pulse" />
+                    )}
+                  </p>
+                </div>
+              )}
+              {/* Show cards based on state:
+                  1. Default state: show if no explanation and not generating (isAgentWorking false)
+                  2. Generated cards: show only after explanation is complete (shouldShowCards true) */}
+              {agentState && (
+                // Show default cards only when not working and no explanation
+                ((!explanation && !displayedExplanation && !isAgentWorking) ||
+                // Show generated cards only after explanation is complete
+                (shouldShowCards && isExplanationComplete)) && (
+                  <div className={`transition-all duration-600 animate-fade-in-blur`}>
+                    <PortfolioSections agentState={agentState} />
+                    {/* Only show AboutSection (awards/certifications) for default state, not generated cards */}
+                    {!agentState.isCustomLayout && <AboutSection />}
+                  </div>
+                )
+              )}
             </>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
@@ -71,7 +179,7 @@ export default function Home() {
         </div>
       </div>
       
-      <SideAgent onStateChange={handleStateChange} onAgentWorking={handleAgentWorking} onCollapseChange={handleCollapseChange} />
+      <SideAgent onStateChange={handleStateChange} onAgentWorking={handleAgentWorking} onCollapseChange={handleCollapseChange} onExplanation={handleExplanation} onExplanationComplete={handleExplanationComplete} />
     </div>
   );
 }

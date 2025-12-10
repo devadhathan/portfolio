@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Bot, User, RotateCcw, ChevronRight, ChevronLeft, Sparkles, MessageCircle } from 'lucide-react';
+import { Send, Bot, User, RotateCcw, ChevronRight, ChevronLeft, ChevronDown, Sparkles, MessageCircle } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { PortfolioAgent, AgentCommand, AgentState, PortfolioSection } from '@/lib/agent';
 import { resumeData } from '@/lib/resume-data';
@@ -18,6 +18,8 @@ interface SideAgentProps {
   onStateChange: (state: AgentState) => void;
   onAgentWorking?: (working: boolean) => void;
   onCollapseChange?: (collapsed: boolean) => void;
+  onExplanation?: (explanation: string | null) => void;
+  onExplanationComplete?: (complete: boolean) => void;
 }
 
 // --- 1. RICH CONTENT DATABASE (Source of Truth) ---
@@ -76,12 +78,14 @@ const CONTENT_DATABASE: Record<string, Partial<PortfolioSection> & { link?: stri
   }
 };
 
-export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange }: SideAgentProps) {
+export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onExplanation, onExplanationComplete }: SideAgentProps) {
   const [agent] = useState(() => new PortfolioAgent());
   const [state, setState] = useState<AgentState>(agent.getState());
+  const pendingSectionsRef = React.useRef<PortfolioSection[]>([]);
   const [input, setInput] = useState('');
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [promptCount, setPromptCount] = useState(10); // Start with 10 prompts
 
   useEffect(() => {
     const checkMobile = () => {
@@ -117,12 +121,36 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange }: S
 
   const handleCommand = async (command: string) => {
     if (!command.trim()) return;
+    
+    // Check prompt limit
+    if (promptCount <= 0) {
+      setMessages(prev => [...prev, { 
+        role: 'agent', 
+        content: 'You have reached the prompt limit. Please refresh the page to continue.' 
+      }]);
+      return;
+    }
+
+    // Decrement prompt count
+    setPromptCount(prev => Math.max(0, prev - 1));
 
     // Add user message
     const userMessage = { role: 'user' as const, content: command };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
+    onAgentWorking?.(true);
+    
+    // Reset explanation and pending sections if in agent mode - do this BEFORE setting loading
+    if (mode === 'agent') {
+      if (onExplanation) {
+        onExplanation(null);
+      }
+      if (onExplanationComplete) {
+        onExplanationComplete(false);
+      }
+      pendingSectionsRef.current = [];
+    }
 
      try {
          // Prepare context for OpenAI
@@ -133,7 +161,25 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange }: S
          // HYBRID PROMPT: Allows both Text AND JSON
          openAIMessages.unshift({
            role: 'system',
-           content: `You are a helpful Portfolio Assistant.
+           content: `You are a helpful Portfolio Assistant for Devadhathan M D, a Product Designer.
+
+ABOUT DEVADHATHAN:
+Devadhathan M D is a Product Designer with extensive experience in UX/UI design, design systems, and user-centered design. He holds a Master's in User Experience Design from Edinburgh Napier University (2023-2024) and a Bachelor's in Computer Science Engineering.
+
+CURRENT EXPERIENCE:
+- Product Designer at Nesoi.ai (July 2025 - November 2025): Designed adviser/client-facing dashboards for 15+ enterprise clients, improving engagement by 92% and reducing course-creation time by 37%. Led accessibility integration (WCAG 2.1 AA) and strengthened design system foundations.
+
+PREVIOUS EXPERIENCE:
+- Product Designer at Ditto Insurance (2021-2022): Created the Falcon Design System, redesigned booking portal (17% conversion increase), redesigned internal CRM (20% efficiency improvement). Applied Double Diamond process and user research methodologies.
+- UI/UX Designer at Finshots (2019-2021): Designed award-winning mobile app, contributed to Google Play "Best App of 2020" award, helped achieve 100k+ downloads and 500k+ subscribers.
+
+DESIGN PHILOSOPHY & APPROACH:
+Devadhathan emphasizes user-centered design, iterative improvement, and collaboration. He balances creativity with practicality, focuses on accessibility, creates scalable design systems, and uses data-driven insights. His work demonstrates a strong commitment to solving real problems while maintaining design consistency and brand integrity.
+
+KEY SKILLS & EXPERTISE:
+Design: UX/UI, Interaction Design, Prototyping, Visual Design, Wireframing, Mockups
+Research: User Interviews, User Testing, Information Architecture, A/B Testing, Journey Mapping, Persona Creation
+Software: Figma, Sketch, Principle, Adobe XD, Illustrator, Photoshop, After Effects, HTML, CSS, JavaScript
 
 AVAILABLE CONTENT IDs:
 - 'falcon' (Design System)
@@ -146,12 +192,30 @@ AVAILABLE CONTENT IDs:
 - 'skills' (List)
 
 INSTRUCTIONS:
-1. Answer the user's request conversationally first.
-2. If they want to SEE projects/content, append a JSON array of IDs at the very end.
+1. Answer the user's request conversationally with COMPREHENSIVE, DETAILED explanations (5-8 sentences). Base your response on:
+   - The user's specific prompt/question
+   - Devadhathan's profile, experience, and achievements above
+   - The specific projects/items they're asking about
+   - Relevant design philosophy, methodologies, and impact
+   - Connections between different aspects of his work
+   - Industry context and best practices
+   
+   Be informative, engaging, and thorough. Provide rich context including design philosophy, methodology, challenges overcome, impact on users and business, technical considerations, and insights. Connect the user's request to Devadhathan's broader experience and expertise.
+
+2. If they want to SEE projects/content, append a JSON array of IDs at the very end. CRITICAL: 
+   - If user asks for "projects" or mentions specific project names, ONLY include project IDs: 'falcon', 'finshots', 'onboarding', 'kiosk', 'crm', 'booking'
+   - NEVER include 'experience' or 'skills' when user asks for projects
+   - If user asks for "experience", ONLY include 'experience'
+   - If user asks for "skills", ONLY include 'skills'
+   - Be extremely selective - only match exactly what was requested
+
 3. Use "priority": "high" for the most important item.
 
+4. PROJECT IDs ONLY: 'falcon', 'finshots', 'onboarding', 'kiosk', 'crm', 'booking'
+   NON-PROJECT IDs: 'experience', 'skills' - These are separate and should NEVER be mixed with projects.
+
 EXAMPLE RESPONSE:
-"Sure! Here are the projects Devadhathan has worked on. The Finshots app is particularly notable."
+"Based on your request, I've curated a selection of Devadhathan's most notable projects that demonstrate his expertise in product design and user experience. The Finshots app stands out as an award-winning fintech application that revolutionized how users consume financial news, achieving over 100k downloads and a 4.9-star rating on Google Play. The app's success stems from its intuitive interface design that simplifies complex financial information, making it accessible to everyday users. Additionally, the Falcon Design System showcases Devadhathan's ability to create scalable, systematic design solutions that enhance team efficiency and maintain brand consistency across multiple platforms. This comprehensive design system includes standardized components, typography, color palettes, and interaction patterns that accelerated development cycles while improving accessibility standards. These projects collectively highlight Devadhathan's strength in balancing user-centered design principles with technical constraints, creating meaningful digital experiences that drive both user satisfaction and business value."
 [{"id": "finshots", "priority": "high"}, {"id": "falcon", "priority": "medium"}]
 `,
         });
@@ -174,6 +238,7 @@ EXAMPLE RESPONSE:
         
         let fullResponse = '';
         let visibleText = ''; // What shows in chat
+        let explanationText = ''; // What shows in center section (agent mode)
         let jsonBuffer = '';  // What we collect for logic
         let isCollectingJson = false;
 
@@ -206,24 +271,72 @@ EXAMPLE RESPONSE:
                             onAgentWorking?.(true); // Spin the gear icon
                             
                             // Split the chunk: Text part vs JSON part
-                            visibleText += contentFragment.substring(0, bracketIndex);
+                            const textPart = contentFragment.substring(0, bracketIndex);
+                            visibleText += textPart;
+                            explanationText += textPart;
                             jsonBuffer += contentFragment.substring(bracketIndex);
+                            
+                            // Final update of explanation before cards are generated
+                            // Only if we're actually streaming
+                            if (mode === 'agent' && isLoading && onExplanation && explanationText.trim().length > 0) {
+                                onExplanation(explanationText);
+                            }
+                            
+                            // Update message to "Generating..." when JSON starts
+                            if (mode === 'agent') {
+                                setMessages(prev => {
+                                    const newM = [...prev];
+                                    if (newM[placeholderIndex]) {
+                                        newM[placeholderIndex] = { 
+                                            role: 'agent', 
+                                            content: 'Generating...', 
+                                            isStreaming: true 
+                                        };
+                                    }
+                                    return newM;
+                                });
+                            }
                         } else {
                             // It's all text
                             visibleText += contentFragment;
+                            
+                            // In agent mode, stream explanation to center section immediately
+                            // Always accumulate explanation text when in agent mode
+                            if (mode === 'agent') {
+                                explanationText += contentFragment;
+                                // Pass explanation immediately as it streams (no delay)
+                                if (onExplanation && isLoading && explanationText.trim().length > 0) {
+                                    onExplanation(explanationText);
+                                }
+                            }
                         }
                     } else {
                         // We are in JSON mode - hide everything from chat
                         jsonBuffer += contentFragment;
                     }
 
-                    // Update Chat UI with just the text part
+                    // Update Chat UI - in agent mode, show brief status, not explanation text
                     setMessages(prev => {
                         const newM = [...prev];
                         if (newM[placeholderIndex]) {
+                            let chatContent = '...';
+                            if (mode === 'agent') {
+                                // In agent mode, don't show explanation in chat
+                                if (isCollectingJson) {
+                                    chatContent = 'Generating...';
+                                } else if (explanationText.trim().length > 0) {
+                                    chatContent = 'Generating...';
+                                } else {
+                                    chatContent = 'Thinking...';
+                                }
+                            } else {
+                                // In ask mode, show the text
+                                chatContent = visibleText || '...';
+                            }
+                            
                             newM[placeholderIndex] = { 
                                 role: 'agent', 
-                                content: visibleText || '...', // Show dots if text is empty but working
+                                content: chatContent,
                                 isStreaming: true 
                             };
                         }
@@ -238,6 +351,8 @@ EXAMPLE RESPONSE:
         
         // --- FINALIZATION ---
         
+        let generatedSections: PortfolioSection[] = [];
+        
         // 1. Process JSON if we found any
         if (isCollectingJson || jsonBuffer.trim().startsWith('[')) {
             // Fallback: if isCollectingJson wasn't triggered but fullResponse starts with [
@@ -248,11 +363,31 @@ EXAMPLE RESPONSE:
                 const cleanJson = jsonBuffer.replace(/```json/g, '').replace(/```/g, '').trim();
                 const aiResponseItems = JSON.parse(cleanJson);
                 
-                // Map IDs to Rich Content
-                const generatedSections: PortfolioSection[] = aiResponseItems
+                // Map IDs to Rich Content and filter appropriately
+                const userCommandLower = command.toLowerCase();
+                const isProjectRequest = userCommandLower.includes('project') || 
+                                        userCommandLower.includes('falcon') || 
+                                        userCommandLower.includes('finshots') || 
+                                        userCommandLower.includes('onboarding') || 
+                                        userCommandLower.includes('kiosk') || 
+                                        userCommandLower.includes('crm') || 
+                                        userCommandLower.includes('booking');
+                
+                generatedSections = aiResponseItems
                     .map((item: any) => {
                         const dbItem = CONTENT_DATABASE[item.id];
                         if (!dbItem) return null;
+                        
+                        // Filter: if asking for projects, exclude skills and experience
+                        if (isProjectRequest && (item.id === 'skills' || item.id === 'experience')) {
+                            return null;
+                        }
+                        
+                        // Filter: if asking for specific types, only include matching types
+                        const dbItemType = dbItem.type;
+                        if (isProjectRequest && dbItemType !== 'projects') {
+                            return null;
+                        }
                         
                         // Create proper link object if link exists
                         const links = dbItem.link ? [{ label: 'View Project', url: dbItem.link }] : [];
@@ -266,20 +401,52 @@ EXAMPLE RESPONSE:
                             links: links // Inject link here
                         };
                     })
-                    .filter(Boolean);
+                    .filter(Boolean) as PortfolioSection[];
 
                 if (generatedSections.length > 0) {
-                    const generateCommand: AgentCommand = {
-                        type: 'generate',
-                        sections: generatedSections,
-                    };
-                    
-                    const newState = agent.executeCommand(generateCommand);
-                    setState(newState);
-                    onStateChange(newState);
-                    
-                    // Add a tiny success indicator to the text
-                    visibleText += `\n\n*(Loaded ${generatedSections.length} cards)*`;
+                    // Store sections but don't update state yet - wait for explanation to complete
+                    if (mode === 'agent') {
+                        pendingSectionsRef.current = generatedSections;
+                        
+                        // Ensure explanation is finalized and passed - this is critical
+                        if (onExplanation && explanationText.trim().length > 0) {
+                            onExplanation(explanationText.trim());
+                        } else if (onExplanation && explanationText.trim().length === 0) {
+                            // If no explanation was generated, pass a brief one
+                            onExplanation(`Generated ${generatedSections.length} ${generatedSections.length === 1 ? 'card' : 'cards'} based on your request.`);
+                        }
+                        
+                        // First, wait for explanation animation to complete
+                        setTimeout(() => {
+                            // Mark explanation as complete first
+                            if (onExplanationComplete) {
+                                onExplanationComplete(true);
+                            }
+                            
+                            // Then after a delay, show the cards
+                            setTimeout(() => {
+                                const generateCommand: AgentCommand = {
+                                    type: 'generate',
+                                    sections: pendingSectionsRef.current,
+                                };
+                                
+                                const newState = agent.executeCommand(generateCommand);
+                                setState(newState);
+                                onStateChange(newState);
+                                pendingSectionsRef.current = [];
+                            }, 800); // Delay before showing cards after explanation completes
+                        }, 500); // Wait for explanation animation
+                    } else {
+                        // In ask mode, show cards immediately
+                        const generateCommand: AgentCommand = {
+                            type: 'generate',
+                            sections: generatedSections,
+                        };
+                        
+                        const newState = agent.executeCommand(generateCommand);
+                        setState(newState);
+                        onStateChange(newState);
+                    }
                 }
             } catch (e) {
                 console.error("Layout Error:", e);
@@ -291,14 +458,50 @@ EXAMPLE RESPONSE:
         setMessages(prev => {
             const newM = [...prev];
             if (newM[placeholderIndex]) {
+                let finalContent = visibleText || fullResponse;
+                
+                // In agent mode, chat should only show brief status messages, NOT the explanation
+                if (mode === 'agent') {
+                    if (isCollectingJson && generatedSections.length > 0) {
+                        // Brief summary in agent mode when cards are generated
+                        const cardCount = generatedSections.length;
+                        finalContent = `Generated ${cardCount} ${cardCount === 1 ? 'card' : 'cards'}.`;
+                    } else if (explanationText.trim().length > 0) {
+                        // Brief status when explanation is being generated
+                        finalContent = 'Generating...';
+                    } else {
+                        // Default brief message
+                        finalContent = 'Processing your request...';
+                    }
+                }
+                
                 newM[placeholderIndex] = {
                     role: 'agent',
-                    content: visibleText || fullResponse, // Fallback to full response if something went weird
+                    content: finalContent,
                     isStreaming: false
                 };
             }
             return newM;
         });
+        
+        // Finalize explanation - ensure it's always passed if we have it
+        if (mode === 'agent' && explanationText.trim().length > 0) {
+            // Always pass the explanation, whether JSON was found or not
+            if (onExplanation) {
+                onExplanation(explanationText.trim());
+            }
+            // Mark as complete after animation
+            setTimeout(() => {
+                if (onExplanationComplete) {
+                    onExplanationComplete(true);
+                }
+            }, 500);
+        } else if (mode === 'agent' && explanationText.trim().length === 0 && generatedSections.length === 0) {
+            // No explanation and no sections - mark as complete
+            if (onExplanationComplete) {
+                onExplanationComplete(true);
+            }
+        }
 
     } catch (error) {
         console.error('Error:', error);
@@ -323,6 +526,7 @@ EXAMPLE RESPONSE:
       onStateChange(newState);
       setIsLoading(false);
       onAgentWorking?.(false);
+      if (onExplanation) onExplanation(null);
     }, 300);
   };
 
@@ -364,14 +568,27 @@ EXAMPLE RESPONSE:
                         {(message.role === 'agent' || message.role === 'assistant') && <Avatar className="h-8 w-8"><AvatarFallback className="bg-primary text-primary-foreground"><Bot className="h-4 w-4" /></AvatarFallback></Avatar>}
                         <div className={`rounded-lg px-4 py-2 max-w-[85%] relative overflow-hidden ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                            <div className="text-sm prose dark:prose-invert max-w-none break-words">
-                                <ReactMarkdown components={{
-                                    p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
-                                    ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-2" {...props} />,
-                                    a: ({node, ...props}) => <a className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
-                                    strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
-                                }}>{message.content}</ReactMarkdown>
+                                {(() => {
+                                  const isThinking = message.content === 'Thinking...' || message.content.startsWith('Thinking...');
+                                  const isGenerating = message.content === 'Generating...' || message.content.startsWith('Generating...');
+                                  const shimmerClass = (isThinking || isGenerating) ? 'bg-gradient-to-r from-foreground/80 via-foreground/40 to-foreground/80 bg-[length:200%_100%] animate-[text-shimmer_2s_infinite] bg-clip-text text-transparent' : '';
+                                  
+                                  if (isThinking || isGenerating) {
+                                    return <p className={`mb-2 last:mb-0 ${shimmerClass}`}>{message.content}</p>;
+                                  }
+                                  
+                                  return (
+                                    <ReactMarkdown components={{
+                                        p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                                        ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-2" {...props} />,
+                                        a: ({node, ...props}) => <a className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
+                                        strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
+                                    }}>{message.content}</ReactMarkdown>
+                                  );
+                                })()}
                             </div>
-                           {message.isStreaming && message.role !== 'user' && (
+                           {/* Don't show cursor for Thinking/Generating messages */}
+                           {message.isStreaming && message.role !== 'user' && message.content !== 'Thinking...' && message.content !== 'Generating...' && !message.content.startsWith('Thinking...') && !message.content.startsWith('Generating...') && (
                              <span className="inline-block w-1.5 h-4 ml-1 bg-foreground/50 animate-pulse" />
                            )}
                         </div>
@@ -392,8 +609,8 @@ EXAMPLE RESPONSE:
                     value={input}
                     onChange={handleTextareaChange}
                     onKeyDown={handleKeyPress}
-                    placeholder={isLoading ? "Thinking..." : "Type a command..."}
-                    disabled={isLoading}
+                    placeholder={isLoading ? "Thinking..." : promptCount > 0 ? `Type a command... (${promptCount} prompts left)` : "Prompt limit reached"}
+                    disabled={isLoading || promptCount <= 0}
                     rows={1}
                     className="w-full resize-none bg-transparent border-none outline-none text-sm placeholder:text-muted-foreground/60 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 font-mono min-h-[24px] max-h-[200px] overflow-y-auto"
                     style={{
@@ -401,12 +618,19 @@ EXAMPLE RESPONSE:
                       scrollbarColor: 'rgba(255,255,255,0.1) transparent'
                     }}
                   />
-                  {/* Cursor indicator when focused */}
-                  {input.length > 0 && (
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground/40 font-mono">
-                      {input.split('\n').length}L
-                    </span>
-                  )}
+                  {/* Cursor indicator and prompt count */}
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                    {input.length > 0 && (
+                      <span className="text-xs text-muted-foreground/40 font-mono">
+                        {input.split('\n').length}L
+                      </span>
+                    )}
+                    {promptCount > 0 && (
+                      <span className="text-xs text-muted-foreground/60 font-mono">
+                        {promptCount}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 {/* Controls at bottom */}
                 <div className="flex items-center   justify-between gap-2 pt-2 border-t border-border/30">
@@ -417,7 +641,7 @@ EXAMPLE RESPONSE:
                         onChange={(e) => setMode(e.target.value as any)} 
                         className="pl-7 pr-6 py-1.5 text-xs bg-background/60 border border-border/80 rounded focus:outline-none focus:ring-1 focus:ring-primary/50 min-w-[90px] appearance-none font-medium"
                         style={{
-                          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+                          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='hsl(var(--foreground))' stroke-width='2' stroke-opacity='0.6'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
                           backgroundRepeat: 'no-repeat',
                           backgroundPosition: 'right 0.4rem center',
                           backgroundSize: '12px',
@@ -439,6 +663,7 @@ EXAMPLE RESPONSE:
                     <span className="text-xs text-muted-foreground/60 rounded-lg font-mono">
                       {mode === 'agent' ? 'Layout' : 'Chat'}
                     </span>
+                    <ChevronDown className="h-3 w-3 text-foreground/70 dark:text-foreground/80" />
                   </div>
                   <Button 
                     onClick={() => handleCommand(input)} 
@@ -491,14 +716,27 @@ EXAMPLE RESPONSE:
                             {(message.role === 'agent' || message.role === 'assistant') && <Avatar className="h-8 w-8"><AvatarFallback className="bg-primary text-primary-foreground"><Bot className="h-4 w-4" /></AvatarFallback></Avatar>}
                             <div className={`rounded-lg px-4 py-2 max-w-[85%] relative overflow-hidden ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                               <div className="text-sm prose dark:prose-invert max-w-none break-words">
-                                <ReactMarkdown components={{
-                                  p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
-                                  ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-2" {...props} />,
-                                  a: ({node, ...props}) => <a className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
-                                  strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
-                                }}>{message.content}</ReactMarkdown>
+                                {(() => {
+                                  const isThinking = message.content === 'Thinking...' || message.content.startsWith('Thinking...');
+                                  const isGenerating = message.content === 'Generating...' || message.content.startsWith('Generating...');
+                                  const shimmerClass = (isThinking || isGenerating) ? 'bg-gradient-to-r from-foreground/80 via-foreground/40 to-foreground/80 bg-[length:200%_100%] animate-[text-shimmer_2s_infinite] bg-clip-text text-transparent' : '';
+                                  
+                                  if (isThinking || isGenerating) {
+                                    return <p className={`mb-2 last:mb-0 ${shimmerClass}`}>{message.content}</p>;
+                                  }
+                                  
+                                  return (
+                                    <ReactMarkdown components={{
+                                        p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                                        ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-2" {...props} />,
+                                        a: ({node, ...props}) => <a className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
+                                        strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
+                                    }}>{message.content}</ReactMarkdown>
+                                  );
+                                })()}
                               </div>
-                              {message.isStreaming && message.role !== 'user' && (
+                              {/* Don't show cursor for Thinking/Generating messages */}
+                              {message.isStreaming && message.role !== 'user' && message.content !== 'Thinking...' && message.content !== 'Generating...' && !message.content.startsWith('Thinking...') && !message.content.startsWith('Generating...') && (
                                 <span className="inline-block w-1.5 h-4 ml-1 bg-foreground/50 animate-pulse" />
                               )}
                             </div>
@@ -517,8 +755,8 @@ EXAMPLE RESPONSE:
                         value={input}
                         onChange={handleTextareaChange}
                         onKeyDown={handleKeyPress}
-                        placeholder={isLoading ? "Thinking..." : "Type a command..."}
-                        disabled={isLoading}
+                        placeholder={isLoading ? "Thinking..." : promptCount > 0 ? `Type a command... (${promptCount} prompts left)` : "Prompt limit reached"}
+                        disabled={isLoading || promptCount <= 0}
                         rows={1}
                         className="w-full resize-none bg-transparent border-none outline-none text-sm placeholder:text-muted-foreground/60 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 font-mono min-h-[24px] max-h-[200px] overflow-y-auto"
                         style={{
@@ -526,11 +764,18 @@ EXAMPLE RESPONSE:
                           scrollbarColor: 'rgba(255,255,255,0.1) transparent'
                         }}
                       />
-                      {input.length > 0 && (
-                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground/40 font-mono">
-                          {input.split('\n').length}L
-                        </span>
-                      )}
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        {input.length > 0 && (
+                          <span className="text-xs text-muted-foreground/40 font-mono">
+                            {input.split('\n').length}L
+                          </span>
+                        )}
+                        {promptCount > 0 && (
+                          <span className="text-xs text-muted-foreground/60 font-mono">
+                            {promptCount}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/30">
                       <div className="relative flex items-center gap-2">
