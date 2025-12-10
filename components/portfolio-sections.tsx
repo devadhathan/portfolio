@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { AgentState, SectionPriority } from '@/lib/agent';
-import { User, Briefcase, Mail, Linkedin, FileText, Sparkles, Heart, Lightbulb, Target, Rocket, Code2, Calendar, Award, Globe, Github, Zap, FolderKanban, Image as ImageIcon, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
+import { AgentState, SectionPriority, SectionType } from '@/lib/agent';
+import { User, Briefcase, Mail, Linkedin, FileText, Sparkles, Heart, Lightbulb, Target, Rocket, Code2, Calendar, Award, Globe, Github, Zap, FolderKanban, Image as ImageIcon, ChevronLeft, ChevronRight, ExternalLink, TrendingUp } from 'lucide-react';
 import Image from 'next/image';
 import { PreferenceGraph } from './preference-graph';
 
@@ -13,16 +13,85 @@ interface PortfolioSectionsProps {
 }
 
 export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
-  // Sort by order first, then filter visible sections
-  const sortedSections = [...agentState.sections].sort((a, b) => a.order - b.order);
-  const visibleSections = sortedSections.filter(s => s.visible);
-  
   // Track image errors for photo sections
   const [imageErrors, setImageErrors] = React.useState<Set<string>>(new Set());
   // Track carousel state for photo sections
   const [carouselIndex, setCarouselIndex] = React.useState<{ [key: string]: number }>({});
   // Track dialog state for section details
-  const [selectedSection, setSelectedSection] = useState<typeof visibleSections[0] | null>(null);
+  const [selectedSection, setSelectedSection] = useState<any>(null);
+  // Track mouse position for cursor-following spotlight effect
+  const [mousePositions, setMousePositions] = React.useState<{ [key: string]: { x: number; y: number } | null }>({});
+
+  // Mouse tracking handlers - must be defined before early returns
+  // Track mouse position with larger detection radius for nearby cards
+  const handleMouseMove = React.useCallback((sectionId: string, e: React.MouseEvent<HTMLDivElement>) => {
+    if (!e.currentTarget) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Update current card
+    if (typeof x === 'number' && typeof y === 'number' && !isNaN(x) && !isNaN(y)) {
+      setMousePositions(prev => ({ ...prev, [sectionId]: { x, y } }));
+    }
+    
+    // Check nearby cards (within 250px radius) - using requestAnimationFrame for performance
+    requestAnimationFrame(() => {
+      const allCards = document.querySelectorAll('[data-card-id]');
+      allCards.forEach((card) => {
+        if (card instanceof HTMLElement) {
+          const cardRect = card.getBoundingClientRect();
+          const cardId = card.getAttribute('data-card-id');
+          if (!cardId || cardId === sectionId) return; // Skip current card (already updated)
+          
+          // Calculate distance from mouse to card center
+          const cardCenterX = cardRect.left + cardRect.width / 2;
+          const cardCenterY = cardRect.top + cardRect.height / 2;
+          const distanceX = e.clientX - cardCenterX;
+          const distanceY = e.clientY - cardCenterY;
+          const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+          
+          // If cursor is within 250px of card, activate border effect
+          if (distance < 250) {
+            const relativeX = e.clientX - cardRect.left;
+            const relativeY = e.clientY - cardRect.top;
+            if (typeof relativeX === 'number' && typeof relativeY === 'number' && !isNaN(relativeX) && !isNaN(relativeY)) {
+              setMousePositions(prev => ({ ...prev, [cardId]: { x: relativeX, y: relativeY } }));
+            }
+          } else {
+            // Clear if too far away
+            setMousePositions(prev => {
+              const current = prev[cardId];
+              if (current) {
+                return { ...prev, [cardId]: null };
+              }
+              return prev;
+            });
+          }
+        }
+      });
+    });
+  }, []);
+
+  const handleMouseLeave = React.useCallback((sectionId: string) => {
+    // Clear after a short delay to allow smooth transitions
+    setTimeout(() => {
+      setMousePositions(prev => ({ ...prev, [sectionId]: null }));
+    }, 150);
+  }, []);
+
+  // Safety check for agentState - after all hooks
+  if (!agentState || !agentState.sections) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <p>No portfolio sections available</p>
+      </div>
+    );
+  }
+
+  // Sort by order first, then filter visible sections
+  const sortedSections = [...agentState.sections].sort((a, b) => a.order - b.order);
+  const visibleSections = sortedSections.filter(s => s.visible);
   
   // Debug: log what sections are being rendered
   console.log('PortfolioSections render:', {
@@ -31,24 +100,73 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
     sections: visibleSections.map(s => ({ id: s.id, title: s.title, type: s.type }))
   });
 
-  const getBentoSize = (priority: SectionPriority, sectionId: string) => {
-    // All boxes are responsive and take 1 column
-    // Grid layout will handle rows automatically based on order
-    return 'col-span-1 sm:col-span-1 lg:col-span-1';
+  const getBentoSize = (priority: SectionPriority, sectionId: string, sectionType?: SectionType, order: number = 0) => {
+    // Create varied card sizes based on type, priority, and position
+    // This creates a more dynamic bento grid layout
+    const sizeMap: { [key: string]: string } = {
+      'hero': 'col-span-1 sm:col-span-2 lg:col-span-2',
+      'preferences': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2',
+      'photos': 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-2',
+      'about': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
+      'philosophy': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2',
+    };
+
+    // Use predefined size if available
+    if (sectionType && sizeMap[sectionId]) {
+      return sizeMap[sectionId];
+    }
+
+    // Otherwise, create varied sizes based on priority and order
+    if (priority === 'high') {
+      // High priority cards can be larger
+      if (order % 4 === 0) return 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1';
+      if (order % 4 === 1) return 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2';
+      return 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1';
+    } else if (priority === 'medium') {
+      // Medium priority - mix of sizes
+      if (order % 3 === 0) return 'col-span-1 sm:col-span-2 lg:col-span-1 row-span-1';
+      return 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1';
+    } else {
+      // Low priority - standard size
+      return 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1';
+    }
   };
 
-  const getPriorityStyles = (priority: SectionPriority) => {
-    // Enhanced interactive animations with smoother transitions
-    switch (priority) {
-      case 'high':
-        return 'rounded-2xl border-2 border-border/70 bg-card/60 backdrop-blur-md hover:bg-card/70 hover:border-border/90 hover:border-primary/30 cursor-pointer dark:shadow-md hover:shadow-xl transition-all duration-500 ease-out hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98]';
-      case 'medium':
-        return 'rounded-2xl border-2 border-border/70 bg-card/50 backdrop-blur-md hover:bg-card/60 hover:border-border/90 hover:border-primary/20 cursor-pointer dark:shadow-md hover:shadow-lg transition-all duration-500 ease-out hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]';
-      case 'low':
-        return 'rounded-2xl border-2 border-border/70 opacity-80 bg-card/40 backdrop-blur-sm hover:bg-card/50 hover:border-border/80 hover:opacity-100 cursor-pointer dark:shadow-sm hover:shadow-md transition-all duration-500 ease-out hover:scale-[1.01] active:scale-[0.99]';
-      default:
-        return 'rounded-2xl border-2 border-border/70 bg-card/30 backdrop-blur-sm hover:bg-card/40 hover:border-border/80 cursor-pointer dark:shadow-sm hover:shadow-md transition-all duration-500 ease-out hover:scale-[1.01] active:scale-[0.99]';
-    }
+  const getPriorityStyles = (priority: SectionPriority, sectionType?: SectionType) => {
+    // Gradient backgrounds that change to borders on hover
+    const baseStyles = 'rounded-2xl border cursor-pointer transition-all duration-500 ease-out relative overflow-hidden group';
+    
+    // Card background color - theme responsive
+    // Dark mode: #121212 (dark grey), Light mode: hsl(0, 0%, 96%) (light grey)
+    const bgStyles = 'bg-[hsl(0,0%,96%)] dark:bg-[#121212]';
+
+    // Border effects - no hover, only cursor-following border reveal
+    const borderStyles: Record<Exclude<SectionPriority, 'hidden'>, string> = {
+      high: 'border-border/30',
+      medium: 'border-border/25',
+      low: 'border-border/20',
+    };
+
+    // No transform effects on hover
+    const transformStyles: Record<Exclude<SectionPriority, 'hidden'>, string> = {
+      high: '',
+      medium: '',
+      low: '',
+    };
+
+    // Shadow effects
+    const shadowStyles: Record<Exclude<SectionPriority, 'hidden'>, string> = {
+      high: 'dark:shadow-md hover:shadow-xl hover:shadow-primary/10',
+      medium: 'dark:shadow-sm hover:shadow-lg hover:shadow-primary/5',
+      low: 'dark:shadow-sm hover:shadow-md',
+    };
+
+    // Backdrop blur
+    const backdropStyles = 'backdrop-blur-md';
+
+    // Combine all styles - handle 'hidden' priority by defaulting to 'low'
+    const priorityKey: Exclude<SectionPriority, 'hidden'> = (priority === 'hidden' ? 'low' : priority) || 'low';
+    return `${baseStyles} ${bgStyles} ${borderStyles[priorityKey]} ${transformStyles} ${shadowStyles[priorityKey]} ${backdropStyles}`;
   };
 
   const handleCardClick = (sectionId: string) => {
@@ -76,24 +194,41 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
   };
 
   const renderSection = (section: typeof visibleSections[0]) => {
-    const baseStyles = getPriorityStyles(section.priority);
-    const bentoSize = getBentoSize(section.priority, section.id);
+    const baseStyles = getPriorityStyles(section.priority, section.type);
+    const bentoSize = getBentoSize(section.priority, section.id, section.type, section.order);
+    const mousePos = mousePositions[section.id];
+    const isHovered = mousePos !== null && mousePos !== undefined && typeof mousePos.x === 'number' && typeof mousePos.y === 'number';
+    
+    // Border reveal that follows cursor - only visible in the spotlight area where cursor is
+    // Increased radius to 200px for larger effect area
+    const borderReveal = isHovered && mousePos ? (
+      <div 
+        className="absolute inset-0 pointer-events-none rounded-2xl z-[1]"
+        style={{
+          border: '1px solid hsl(var(--primary) / 0.5)',
+          WebkitMaskImage: `radial-gradient(circle 200px at ${mousePos.x}px ${mousePos.y}px, black 30%, transparent 75%)`,
+          maskImage: `radial-gradient(circle 200px at ${mousePos.x}px ${mousePos.y}px, black 30%, transparent 75%)`,
+          transition: 'none',
+        }}
+      />
+    ) : null;
     
     switch (section.id) {
       case 'hero':
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} group flex flex-col h-full cursor-pointer relative overflow-hidden`}
+            data-card-id={section.id}
+            className={`${baseStyles} col-span-1 sm:col-span-2 lg:col-span-2 group flex flex-col relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
+            onMouseMove={(e) => handleMouseMove(section.id, e)}
+            onMouseLeave={() => handleMouseLeave(section.id)}
           >
-            {/* Animated gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-out pointer-events-none" />
+            {borderReveal}
             
-            <CardHeader className="flex flex-col justify-center flex-shrink-0">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 ease-out flex items-center justify-center relative">
-                  <div className="absolute inset-0 bg-primary/20 rounded-lg blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-500" />
+            <CardHeader className="flex flex-col justify-center flex-shrink-0 relative z-10 pb-3">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition-all duration-500 ease-out flex items-center justify-center relative">
                   <div
                     className="relative z-10"
                     style={{
@@ -112,7 +247,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                   />
                 </div>
                 <div>
-                  <CardTitle className="text-3xl md:text-4xl font-semibold mb-1 group-hover:text-primary transition-colors">
+                  <CardTitle className="text-3xl md:text-4xl font-semibold mb-1">
                     Dev
                   </CardTitle>
                   <CardDescription className="text-[14px] md:text-[14px] text-foreground/80">
@@ -121,16 +256,16 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-4 pt-2 flex-1 flex flex-col gap-3">
-              <p className="text-[14px] text-muted-foreground leading-relaxed group-hover:text-foreground/90 transition-all duration-500 group-hover:translate-x-1">
+            <CardContent className="p-4 pt-0 flex flex-col gap-2 relative z-10">
+              <p className="text-[14px] text-muted-foreground leading-relaxed">
                 Building meaningful digital experiences through thoughtful design and user-centric solutions.
               </p>
-              <div className="flex items-center gap-2 text-[14px] text-muted-foreground group-hover:text-foreground/80 transition-all duration-500 group-hover:translate-x-1">
-                <Globe className="h-4 w-4 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 ease-out" />
+              <div className="flex items-center gap-2 text-[14px] text-muted-foreground">
+                <Globe className="h-4 w-4" />
                 <span>Based in India</span>
               </div>
-              <div className="flex items-center gap-2 text-[14px] text-muted-foreground group-hover:text-foreground/80 transition-all duration-500 group-hover:translate-x-1">
-                <Zap className="h-4 w-4 group-hover:scale-125 group-hover:text-primary group-hover:animate-pulse transition-all duration-500 ease-out" />
+              <div className="flex items-center gap-2 text-[14px] text-muted-foreground">
+                <Zap className="h-4 w-4" />
                 <span>Available for opportunities</span>
               </div>
             </CardContent>
@@ -141,10 +276,16 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} hover:scale-[1.01] transition-all duration-200 flex flex-col h-full`}
+            data-card-id={section.id}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-auto`}
             onClick={() => handleCardClick(section.id)}
+            onMouseMove={(e) => handleMouseMove(section.id, e)}
+            onMouseLeave={() => handleMouseLeave(section.id)}
           >
-            <PreferenceGraph />
+            {borderReveal}
+            <div className="relative z-10 h-full">
+              <PreferenceGraph />
+            </div>
           </Card>
         );
 
@@ -152,10 +293,14 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer relative overflow-hidden`}
+            data-card-id={section.id}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
+            onMouseMove={(e) => handleMouseMove(section.id, e)}
+            onMouseLeave={() => handleMouseLeave(section.id)}
           >
-            <CardHeader className="pb-2 flex-shrink-0">
+            {borderReveal}
+            <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="flex items-center gap-2 text-[16px]">
                 <div className="p-1.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
                   <User className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
@@ -163,7 +308,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                 About Me
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-3">
+            <CardContent className="flex flex-col gap-3 relative z-10">
               <p className="text-[14px] text-muted-foreground leading-relaxed">
                 I design with care, always keeping the user at the center. Good design begins with understanding people and their needs.
               </p>
@@ -207,10 +352,14 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer relative overflow-hidden`}
+            data-card-id={section.id}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
+            onMouseMove={(e) => handleMouseMove(section.id, e)}
+            onMouseLeave={() => handleMouseLeave(section.id)}
           >
-            <CardHeader className="pb-2 flex-shrink-0">
+            {borderReveal}
+            <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="flex items-center gap-2 text-[16px] mb-2">
                 <div className="p-1.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
                   <Sparkles className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
@@ -218,7 +367,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                 Design Philosophy
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-2 relative z-10">
               <div className="flex items-start gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
                 <Heart className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:animate-pulse transition-all duration-300" />
                 <div>
@@ -265,10 +414,13 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
           return (
             <Card 
               key={section.id} 
-              className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer relative overflow-hidden`}
+              className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
               onClick={() => handleCardClick(section.id)}
+              onMouseMove={(e) => handleMouseMove(section.id, e)}
+              onMouseLeave={() => handleMouseLeave(section.id)}
             >
-              <CardHeader className="pb-2 flex-shrink-0">
+              {borderReveal}
+              <CardHeader className="pb-2 flex-shrink-0 relative z-10">
                 <CardTitle className="flex items-center gap-2 text-[16px]">
                   <div className="p-1.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-105 transition-all duration-300">
                     <Briefcase className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
@@ -277,7 +429,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                 </CardTitle>
                 <CardDescription className="text-[14px]">Current Role</CardDescription>
               </CardHeader>
-              <CardContent className="flex flex-col gap-3">
+              <CardContent className="flex flex-col gap-3 relative z-10">
                 <div className="space-y-3">
                   <div className="p-3 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/40 transition-colors">
                     <div className="flex items-start justify-between mb-2">
@@ -328,10 +480,14 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer`}
+            data-card-id={section.id}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
+            onMouseMove={(e) => handleMouseMove(section.id, e)}
+            onMouseLeave={() => handleMouseLeave(section.id)}
           >
-            <CardHeader className="pb-2 flex-shrink-0">
+            {borderReveal}
+            <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="flex items-center gap-2 text-[16px]">
                 <div className="p-1.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-105 transition-all duration-300">
                   <Briefcase className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
@@ -342,7 +498,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                 <CardDescription className="text-[14px]">{section.description.split('|')[0].trim()}</CardDescription>
               )}
             </CardHeader>
-            <CardContent className="flex flex-col gap-3">
+            <CardContent className="flex flex-col gap-3 relative z-10">
               {section.placeholder ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <p className="text-[14px] mb-2">Experience section ready</p>
@@ -379,10 +535,14 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer relative overflow-hidden`}
+            data-card-id={section.id}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
+            onMouseMove={(e) => handleMouseMove(section.id, e)}
+            onMouseLeave={() => handleMouseLeave(section.id)}
           >
-            <CardHeader className="pb-2 flex-shrink-0">
+            {borderReveal}
+            <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="flex items-center gap-2 text-[16px]">
                 <div className="p-1.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
                   <Mail className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
@@ -391,7 +551,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
               </CardTitle>
               <CardDescription className="text-[14px]">Get in touch</CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col gap-2">
+            <CardContent className="flex flex-col gap-2 relative z-10">
               <div className="space-y-2">
                 <a 
                   href="https://www.linkedin.com/in/devadhathan" 
@@ -446,10 +606,14 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer relative overflow-hidden`}
+            data-card-id={section.id}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
+            onMouseMove={(e) => handleMouseMove(section.id, e)}
+            onMouseLeave={() => handleMouseLeave(section.id)}
           >
-            <CardHeader className="pb-2 flex-shrink-0">
+            {borderReveal}
+            <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="flex items-center gap-2 text-[16px]">
                 <div className="p-1.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
                   <Code2 className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
@@ -457,7 +621,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                 {section.title || 'Projects'}
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-3">
+            <CardContent className="flex flex-col gap-3 relative z-10">
               {section.placeholder ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <p className="text-[14px] mb-2">Projects section ready</p>
@@ -515,10 +679,14 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer relative overflow-hidden`}
+            data-card-id={section.id}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
+            onMouseMove={(e) => handleMouseMove(section.id, e)}
+            onMouseLeave={() => handleMouseLeave(section.id)}
           >
-            <CardHeader className="pb-2 flex-shrink-0">
+            {borderReveal}
+            <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="flex items-center gap-2 text-[16px]">
                 <div className="p-1.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
                   <Zap className="h-4 w-4 group-hover:scale-125 group-hover:brightness-125 transition-all duration-300" />
@@ -526,7 +694,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                 {section.title || 'Skills'}
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-3">
+            <CardContent className="flex flex-col gap-3 relative z-10">
               {section.placeholder ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <p className="text-[14px] mb-2">Skills section ready</p>
@@ -559,10 +727,14 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] hover:shadow-lg transition-all duration-300 flex flex-col h-full group cursor-pointer relative overflow-hidden`}
+            data-card-id={section.id}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
+            onMouseMove={(e) => handleMouseMove(section.id, e)}
+            onMouseLeave={() => handleMouseLeave(section.id)}
           >
-            <CardHeader className="pb-2 flex-shrink-0">
+            {borderReveal}
+            <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="flex items-center gap-2 text-[16px]">
                 <div className="p-1.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
                   <Award className="h-4 w-4 group-hover:scale-110 transition-all duration-300" />
@@ -570,7 +742,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                 {section.title || 'Education'}
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-3">
+            <CardContent className="flex flex-col gap-3 relative z-10">
               {section.placeholder ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <p className="text-[14px] mb-2">Education section ready</p>
@@ -607,7 +779,16 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         );
 
       case 'photos':
-        const photos = section.images || (section.image ? [section.image] : []);
+        // Default photos for camera roll - use available photos from public/photos
+        const defaultPhotos = [
+          '/photos/O6bInc2LhAgXBkQ6yLobk41OLss.jpg',
+          '/photos/ZZXFdA0RZyD5h20wZdhoCxLhy0.jpg',
+          '/photos/Le5RRVetScFh9EG3aEJYsrCsM.jpg.avif'
+        ];
+        // Always use default photos if section doesn't have images
+        const photos = (section.images && section.images.length > 0) 
+          ? section.images 
+          : (section.image ? [section.image] : defaultPhotos);
         const currentIndex = carouselIndex[section.id] || 0;
         const hasImageError = imageErrors.has(section.id);
         const shouldShowPlaceholder = photos.length === 0 || hasImageError;
@@ -625,11 +806,15 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} hover:scale-[1.02] transition-all duration-300 flex flex-col h-full overflow-hidden group`}
+            data-card-id={section.id}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-full overflow-hidden group`}
             onClick={() => handleCardClick(section.id)}
+            onMouseMove={(e) => handleMouseMove(section.id, e)}
+            onMouseLeave={() => handleMouseLeave(section.id)}
           >
+            {borderReveal}
             {!shouldShowPlaceholder && photos.length > 0 ? (
-              <div className="relative w-full h-full min-h-[300px] group">
+              <div className="relative w-full h-full min-h-[300px] group z-10">
                 {/* Carousel Container */}
                 <div className="relative w-full h-full overflow-hidden">
                   {photos.map((photo, idx) => (
@@ -759,10 +944,14 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
-            className={`${baseStyles} ${bentoSize} hover:scale-[1.01] transition-all duration-200 flex flex-col h-full`}
+            data-card-id={section.id}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
+            onMouseMove={(e) => handleMouseMove(section.id, e)}
+            onMouseLeave={() => handleMouseLeave(section.id)}
           >
-            <CardHeader className="pb-2 flex-shrink-0">
+            {borderReveal}
+            <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="flex items-center gap-2 text-[16px]">
                 <div className="p-1.5 bg-primary/20 rounded-lg">
                   <FileText className="h-4 w-4" />
@@ -770,7 +959,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                 {section.title || 'Custom Section'}
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-3">
+            <CardContent className="flex flex-col gap-3 relative z-10">
               {section.placeholder ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <p className="text-[14px] mb-2">{section.title} section ready</p>
@@ -812,7 +1001,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-fr">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-[minmax(200px,auto)]">
         {visibleSections.map(section => renderSection(section))}
       </div>
       
@@ -822,35 +1011,333 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
           {selectedSection && (
             <>
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  {selectedSection.title}
+                <DialogTitle className="flex items-center gap-2 text-xl">
+                  {selectedSection.id === 'hero' && (
+                    <div className="p-2 bg-primary/20 rounded-lg">
+                      <User className="h-5 w-5 text-primary" />
+                    </div>
+                  )}
+                  {selectedSection.id === 'preferences' && (
+                    <div className="p-2 bg-primary/20 rounded-full">
+                      <TrendingUp className="h-5 w-5 text-primary" />
+                    </div>
+                  )}
+                  {selectedSection.id === 'about' && (
+                    <div className="p-2 bg-primary/20 rounded-lg">
+                      <User className="h-5 w-5 text-primary" />
+                    </div>
+                  )}
+                  {selectedSection.id === 'philosophy' && (
+                    <div className="p-2 bg-primary/20 rounded-lg">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                    </div>
+                  )}
+                  {selectedSection.id === 'experience' && (
+                    <div className="p-2 bg-primary/20 rounded-lg">
+                      <Briefcase className="h-5 w-5 text-primary" />
+                    </div>
+                  )}
+                  {selectedSection.id === 'contact' && (
+                    <div className="p-2 bg-primary/20 rounded-lg">
+                      <Mail className="h-5 w-5 text-primary" />
+                    </div>
+                  )}
+                  {selectedSection.title || selectedSection.id}
                 </DialogTitle>
                 {selectedSection.description && (
-                  <DialogDescription>
+                  <DialogDescription className="text-sm mt-2">
                     {selectedSection.description}
                   </DialogDescription>
                 )}
               </DialogHeader>
               <div className="space-y-4 mt-4">
-                {selectedSection.content && (
+                {/* Hero Section Details */}
+                {selectedSection.id === 'hero' && (
+                  <>
+                    <div>
+                      <h4 className="font-medium mb-2 text-base">About</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        Building meaningful digital experiences through thoughtful design and user-centric solutions.
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Globe className="h-4 w-4 text-primary" />
+                        <span>Based in India</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Zap className="h-4 w-4 text-primary" />
+                        <span>Available for opportunities</span>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Preferences Section Details */}
+                {selectedSection.id === 'preferences' && (
+                  <>
+                    <div>
+                      <h4 className="font-medium mb-3 text-base">Design Preferences</h4>
+                      <div className="space-y-3">
+                        <div className="p-3 rounded-lg bg-secondary/30 border border-border/30">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium">Prototyping</span>
+                            <span className="text-sm text-muted-foreground">90%</span>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-lg bg-secondary/30 border border-border/30">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium">Visual Design</span>
+                            <span className="text-sm text-muted-foreground">80%</span>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-lg bg-secondary/30 border border-border/30">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium">Interaction Design</span>
+                            <span className="text-sm text-muted-foreground">75%</span>
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-lg bg-secondary/30 border border-border/30">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium">User Research</span>
+                            <span className="text-sm text-muted-foreground">40%</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="pt-2 border-t border-border/30">
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        I prefer prototyping and bringing ideas to life quickly, with less emphasis on extensive user research.
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                {/* About Section Details */}
+                {selectedSection.id === 'about' && (
+                  <>
+                    <div>
+                      <h4 className="font-medium mb-2 text-base">About Me</h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                        I design with care, always keeping the user at the center. Good design begins with understanding people and their needs.
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-medium mb-2 text-base">Core Skills</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {['Product Design', 'UI/UX', 'Prototyping', 'Figma', 'Design Systems', 'User Research', 'Interaction Design'].map((skill, idx) => {
+                          const colors = ['bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300', 'bg-purple-500/15 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300', 'bg-pink-500/15 dark:bg-pink-500/15 text-pink-700 dark:text-pink-300', 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300', 'bg-green-500/15 dark:bg-green-500/15 text-green-700 dark:text-green-300', 'bg-orange-500/15 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300', 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'];
+                          return (
+                            <span
+                              key={skill}
+                              className={`px-2.5 py-1.5 ${colors[idx % colors.length]} rounded-md text-sm`}
+                            >
+                              {skill}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="pt-4">
+                      <h4 className="font-medium mb-2 text-base">Tools</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {['Figma', 'Sketch', 'Principle', 'After Effects', 'Webflow'].map((tool, idx) => {
+                          const colors = ['bg-emerald-500/15 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300', 'bg-teal-500/15 dark:bg-teal-500/15 text-teal-700 dark:text-teal-300', 'bg-violet-500/15 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300', 'bg-rose-500/15 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300', 'bg-amber-500/15 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300'];
+                          return (
+                            <span
+                              key={tool}
+                              className={`px-2.5 py-1.5 ${colors[idx % colors.length]} rounded-md text-sm`}
+                            >
+                              {tool}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Philosophy Section Details */}
+                {selectedSection.id === 'philosophy' && (
+                  <>
+                    <div>
+                      <h4 className="font-medium mb-3 text-base">Design Philosophy</h4>
+                      <div className="space-y-3">
+                        <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
+                          <div className="flex items-start gap-3">
+                            <Heart className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="text-sm font-medium mb-1">User-Centered Design</p>
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                I design with care, always keeping the user at the center of every decision.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
+                          <div className="flex items-start gap-3">
+                            <User className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="text-sm font-medium mb-1">Empathy First</p>
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                Good design begins with understanding people and their needs deeply.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
+                          <div className="flex items-start gap-3">
+                            <Lightbulb className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="text-sm font-medium mb-1">Human Technology</p>
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                Technology should feel natural and intuitive, built for humans.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
+                          <div className="flex items-start gap-3">
+                            <Target className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="text-sm font-medium mb-1">Purposeful Solutions</p>
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                Every solution is thoughtful, purposeful, and made to last.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Experience Section Details */}
+                {selectedSection.id === 'experience' && (
+                  <>
+                    {selectedSection.content ? (
+                      <div>
+                        <h4 className="font-medium mb-2 text-base">Experience Details</h4>
+                        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                          {selectedSection.content}
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <h4 className="font-medium text-sm mb-1">Product Designer</h4>
+                              <p className="text-sm text-primary mb-2">Nesoi.ai</p>
+                            </div>
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Calendar className="h-3.5 w-3.5" />
+                              <span>Present</span>
+                            </div>
+                          </div>
+                          <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+                            Designing innovative solutions and user-centered experiences for AI-powered products.
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {['Prototyping', 'Design Systems', 'UX Research'].map((tag) => (
+                              <span key={tag} className={`px-2 py-0.5 rounded text-xs ${tag.includes('Design') ? 'bg-purple-500/15 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="p-4 rounded-lg bg-secondary/20 border border-border/20">
+                          <h4 className="font-medium text-sm mb-3">Previous Experience</h4>
+                          <div className="space-y-3">
+                            <div>
+                              <p className="text-sm font-medium">Senior UI/UX Designer</p>
+                              <p className="text-sm text-muted-foreground">Freelance • 2022 - 2023</p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">Product Design Intern</p>
+                              <p className="text-sm text-muted-foreground">Startup • 2021 - 2022</p>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
+
+                {/* Contact Section Details */}
+                {selectedSection.id === 'contact' && (
+                  <>
+                    <div>
+                      <h4 className="font-medium mb-3 text-base">Get in Touch</h4>
+                      <div className="space-y-2">
+                        <a 
+                          href="https://www.linkedin.com/in/devadhathan" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors border border-border/20"
+                        >
+                          <Linkedin className="h-5 w-5 text-primary flex-shrink-0" />
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">LinkedIn</span>
+                            <span className="text-xs text-muted-foreground">Connect with me</span>
+                          </div>
+                        </a>
+                        <a 
+                          href="#" 
+                          className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors border border-border/20"
+                        >
+                          <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">Resume</span>
+                            <span className="text-xs text-muted-foreground">Download PDF</span>
+                          </div>
+                        </a>
+                        <a 
+                          href="https://github.com/devadhathan" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors border border-border/20"
+                        >
+                          <Github className="h-5 w-5 text-primary flex-shrink-0" />
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">GitHub</span>
+                            <span className="text-xs text-muted-foreground">View my work</span>
+                          </div>
+                        </a>
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/20 border border-border/20">
+                          <Mail className="h-5 w-5 text-primary flex-shrink-0" />
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">Email</span>
+                            <span className="text-xs text-muted-foreground">Available for opportunities</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Generic content for other sections */}
+                {!['hero', 'preferences', 'about', 'philosophy', 'experience', 'contact'].includes(selectedSection.id) && selectedSection.content && (
                   <div>
-                    <h4 className="font-medium mb-2">Details</h4>
+                    <h4 className="font-medium mb-2 text-base">Details</h4>
                     <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
                       {selectedSection.content}
                     </p>
                   </div>
                 )}
+
+                {/* Links section for all cards */}
                 {selectedSection.links && selectedSection.links.length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-2">Links</h4>
+                  <div className="pt-4 border-t border-border/30">
+                    <h4 className="font-medium mb-2 text-base">Links</h4>
                     <div className="space-y-2">
-                      {selectedSection.links.map((link, index) => (
+                      {selectedSection.links.map((link: { label: string; url: string }, index: number) => (
                         <a
                           key={index}
                           href={link.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2 p-2 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
+                          className="flex items-center gap-2 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors border border-border/20"
                         >
                           <ExternalLink className="h-4 w-4 text-primary" />
                           <span className="text-sm">{link.label}</span>

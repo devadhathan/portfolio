@@ -24,7 +24,9 @@ export function DesktopSidebar({ onProjectSelect }: DesktopSidebarProps) {
       setTime(new Date());
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+    };
   }, []);
 
   const formatTime = (date: Date) => {
@@ -48,24 +50,115 @@ export function DesktopSidebar({ onProjectSelect }: DesktopSidebarProps) {
   return (
     <div className="h-full overflow-hidden flex flex-col bg-background/50 border-r border-border/30">
       <div className="p-4 space-y-4 flex-shrink-0">
-        {/* Clock Widget */}
+        {/* Clock Widget - Analog */}
         <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md dark:shadow-md">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
               <Clock className="h-4 w-4 text-primary" />
               <span className="text-xs font-medium">Time</span>
             </div>
-            <div className="space-y-1">
-              <p className="text-2xl font-semibold">
-                {mounted && time instanceof Date ? formatTime(time) : '--:--:--'}
-              </p>
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Calendar className="h-3 w-3" />
-                <span>
-                  {mounted && time instanceof Date ? formatDate(time) : 'Loading...'}
-                </span>
+            {mounted && time instanceof Date ? (
+              <div className="space-y-3">
+                {/* Analog Clock */}
+                <div className="relative w-full aspect-square max-w-[180px] mx-auto">
+                  <svg className="w-full h-full" viewBox="0 0 200 200">
+                    {/* Clock face circle */}
+                    <circle
+                      cx="100"
+                      cy="100"
+                      r="95"
+                      fill="none"
+                      stroke="hsl(var(--border))"
+                      strokeWidth="2"
+                      className="opacity-30"
+                    />
+                      {/* Hour markers */}
+                      {Array.from({ length: 12 }).map((_, i) => {
+                        const angle = (i * 30 - 90) * (Math.PI / 180);
+                        const x1 = String(100 + 85 * Math.cos(angle));
+                        const y1 = String(100 + 85 * Math.sin(angle));
+                        const x2 = String(100 + 95 * Math.cos(angle));
+                        const y2 = String(100 + 95 * Math.sin(angle));
+                        return (
+                          <line
+                            key={i}
+                            x1={x1}
+                            y1={y1}
+                            x2={x2}
+                            y2={y2}
+                            stroke="hsl(var(--foreground))"
+                            strokeWidth={i % 3 === 0 ? 2 : 1}
+                            strokeOpacity={0.4}
+                          />
+                        );
+                      })}
+                    {/* Hour hand */}
+                    <line
+                      x1="100"
+                      y1="100"
+                      x2={String(100 + 50 * Math.cos(((time.getHours() % 12) * 30 + time.getMinutes() * 0.5 - 90) * (Math.PI / 180)))}
+                      y2={String(100 + 50 * Math.sin(((time.getHours() % 12) * 30 + time.getMinutes() * 0.5 - 90) * (Math.PI / 180)))}
+                      stroke="hsl(var(--foreground))"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                    />
+                    {/* Minute hand */}
+                    <line
+                      x1="100"
+                      y1="100"
+                      x2={String(100 + 70 * Math.cos((time.getMinutes() * 6 - 90) * (Math.PI / 180)))}
+                      y2={String(100 + 70 * Math.sin((time.getMinutes() * 6 - 90) * (Math.PI / 180)))}
+                      stroke="hsl(var(--foreground))"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                    />
+                    {/* Second hand */}
+                    <line
+                      x1="100"
+                      y1="100"
+                      x2={String(100 + 75 * Math.cos((time.getSeconds() * 6 - 90) * (Math.PI / 180)))}
+                      y2={String(100 + 75 * Math.sin((time.getSeconds() * 6 - 90) * (Math.PI / 180)))}
+                      stroke="hsl(var(--primary))"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                    {/* Center dot */}
+                    <circle
+                      cx="100"
+                      cy="100"
+                      r="6"
+                      fill="hsl(var(--foreground))"
+                    />
+                    <circle
+                      cx="100"
+                      cy="100"
+                      r="3"
+                      fill="hsl(var(--background))"
+                    />
+                  </svg>
+                </div>
+                {/* Digital time below */}
+                <div className="text-center space-y-1">
+                  <p className="text-lg font-semibold">
+                    {formatTime(time)}
+                  </p>
+                  <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                    <Calendar className="h-3 w-3" />
+                    <span>
+                      {formatDate(time)}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-1">
+                <p className="text-2xl font-semibold">--:--:--</p>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Calendar className="h-3 w-3" />
+                  <span>Loading...</span>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 

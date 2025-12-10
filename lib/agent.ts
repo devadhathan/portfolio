@@ -44,8 +44,9 @@ const defaultSections: PortfolioSection[] = [
   { id: 'about', title: 'About Me', priority: 'high', order: 2, visible: true },
   { id: 'preferences', title: 'Design Preferences', priority: 'high', order: 3, visible: true },
   { id: 'experience', title: 'Experience', priority: 'high', order: 4, visible: true },
-  { id: 'contact', title: 'Contact & Links', priority: 'medium', order: 5, visible: true },
-  { id: 'philosophy', title: 'Design Philosophy', priority: 'medium', order: 6, visible: true },
+  { id: 'photos', title: 'Camera Roll', priority: 'medium', order: 5, visible: true, type: 'photos' },
+  { id: 'contact', title: 'Contact & Links', priority: 'medium', order: 6, visible: true },
+  { id: 'philosophy', title: 'Design Philosophy', priority: 'medium', order: 7, visible: true },
 ];
 
 export class PortfolioAgent {

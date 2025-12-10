@@ -6,11 +6,11 @@ import { Cloud, Sun, Droplets, Wind } from 'lucide-react';
 export function WeatherWidget() {
   // Mock weather data - in real app, you'd fetch this from an API
   const weather = {
-    location: 'San Francisco',
-    temp: 72,
+    location: 'Edinburgh',
+    temp: 52,
     condition: 'Partly Cloudy',
-    humidity: 65,
-    wind: 8,
+    humidity: 75,
+    wind: 12,
     icon: Cloud,
   };
 

@@ -339,7 +339,7 @@ EXAMPLE RESPONSE:
       <div className={`fixed right-0 top-14 bottom-0 z-40 hidden lg:block transition-all duration-300 ease-in-out flex flex-col ${isCollapsed ? 'translate-x-full' : 'translate-x-0'}`}>
       <ResizableChat minWidth={350} maxWidth={800} defaultWidth={420}>
         <div className="h-full p-4 flex flex-col" style={{ height: '100%' }}>
-          <Card className="h-full flex flex-col bg-card/80 backdrop-blur-xl border-border/50 shadow-2xl rounded-2xl">
+          <Card className="h-full flex flex-col bg-card/80 backdrop-blur-xl border-2 border-border/70 shadow-2xl rounded-2xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 flex-shrink-0">
               <CardTitle className="flex items-center gap-2"><Bot className="h-5 w-5" /> Portfolio Agent</CardTitle>
               <div className="flex items-center gap-1">
@@ -467,7 +467,7 @@ EXAMPLE RESPONSE:
             <Sheet open={true} onOpenChange={(open) => !open && handleCollapseToggle()}>
               <SheetContent side="bottom" className="h-[85vh] p-0 flex flex-col">
             <div className="h-full p-4 flex flex-col">
-              <Card className="h-full flex flex-col bg-card/80 backdrop-blur-xl border-border/50 shadow-2xl">
+              <Card className="h-full flex flex-col bg-card/80 backdrop-blur-xl border-2 border-border/70 shadow-2xl">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 flex-shrink-0">
                   <CardTitle className="flex items-center gap-2"><Bot className="h-5 w-5" /> Portfolio Agent</CardTitle>
                   <div className="flex items-center gap-1">
