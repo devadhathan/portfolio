@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { AgentState, SectionPriority, SectionType } from '@/lib/agent';
 import { User, Briefcase, Mail, Linkedin, FileText, Sparkles, Heart, Lightbulb, Target, Rocket, Code2, Calendar, Award, Globe, Github, Zap, FolderKanban, Image as ImageIcon, ChevronLeft, ChevronRight, ExternalLink, TrendingUp } from 'lucide-react';
 import Image from 'next/image';
@@ -230,27 +231,9 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
             
             <CardHeader className="flex flex-col justify-center flex-shrink-0 relative z-10 pb-2 px-4 pt-4">
               <div className="flex items-center gap-2.5 mb-1.5">
-                <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition-all duration-500 ease-out flex items-center justify-center relative">
-                  <div
-                    className="relative z-10"
-                    style={{
-                      width: '20px',
-                      height: '23px',
-                      display: 'block',
-                      overflow: 'visible',
-                      aspectRatio: '0.91 / 1',
-                      backgroundImage: 'url(/photos/plant.png)',
-                      backgroundSize: 'cover',
-                      backgroundRepeat: 'no-repeat',
-                      backgroundPosition: 'center',
-                      position: 'relative',
-                      borderRadius: '0px',
-                    }}
-                  />
-                </div>
                 <div>
                   <CardTitle className="text-2xl md:text-3xl font-semibold mb-0.5">
-                    Dev
+                    deva-dha-than
                   </CardTitle>
                   <CardDescription className="text-[12px] md:text-[13px] text-foreground/80">
                     Product Designer
@@ -264,11 +247,11 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
               </p>
               <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
                 <Globe className="h-3.5 w-3.5" />
-                <span>Based in India</span>
+                <span>Not based in India, currently in Edinburgh</span>
               </div>
-              <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
-                <Zap className="h-3.5 w-3.5" />
-                <span>Available for opportunities</span>
+              <div className="flex items-center gap-2 text-[13px]">
+                <Zap className="h-3.5 w-3.5 text-green-500" />
+                <span className="text-green-500">Available for work</span>
               </div>
             </CardContent>
           </Card>
@@ -304,7 +287,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="flex items-center gap-2 text-[16px]">
-                <div className="p-1.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
+                <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
                   <User className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 About Me
@@ -317,7 +300,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
               <div>
                 <h4 className="text-[14px] font-medium mb-2">Core Skills</h4>
                 <div className="flex flex-wrap gap-1.5">
-                  {['Product Design', 'UI/UX', 'Prototyping', 'Figma', 'Design Systems', 'User Research', 'Interaction Design'].map((skill, idx) => {
+                  {['Product Design', 'UI/UX', 'Prototyping', 'Design Systems', 'User Research', 'Interaction Design'].map((skill, idx) => {
                     const colors = ['bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300', 'bg-purple-500/15 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300', 'bg-pink-500/15 dark:bg-pink-500/15 text-pink-700 dark:text-pink-300', 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300', 'bg-green-500/15 dark:bg-green-500/15 text-green-700 dark:text-green-300', 'bg-orange-500/15 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300', 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'];
                     return (
                       <span
@@ -333,7 +316,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
               <div>
                 <h4 className="text-[14px] font-medium mb-2">Tools</h4>
                 <div className="flex flex-wrap gap-1.5">
-                  {['Figma', 'Sketch', 'Principle', 'After Effects', 'Webflow'].map((tool, idx) => {
+                  {['Sketch', 'Principle', 'After Effects', 'Webflow'].map((tool, idx) => {
                     const colors = ['bg-emerald-500/15 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300', 'bg-teal-500/15 dark:bg-teal-500/15 text-teal-700 dark:text-teal-300', 'bg-violet-500/15 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300', 'bg-rose-500/15 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300', 'bg-amber-500/15 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300'];
                     return (
                       <span
@@ -363,7 +346,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="flex items-center gap-2 text-[16px] mb-2">
-                <div className="p-1.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
+                <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
                   <Sparkles className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 Design Philosophy
@@ -424,7 +407,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
               {borderReveal}
               <CardHeader className="pb-2 flex-shrink-0 relative z-10">
                 <CardTitle className="flex items-center gap-2 text-[16px]">
-                  <div className="p-1.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-105 transition-all duration-300">
+                  <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-105 transition-all duration-300">
                     <Briefcase className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
                   </div>
                   Experience
@@ -432,44 +415,72 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                 <CardDescription className="text-[14px]">Current Role</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-3 relative z-10">
-                <div className="space-y-3">
-                  <div className="p-3 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/40 transition-colors">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
+                <ScrollArea className="w-full max-h-[400px]">
+                  <div className="space-y-4 pr-2">
+                    <div className="p-4 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/40 transition-colors">
+                      <div className="mb-3">
                         <h4 className="font-medium text-[14px] mb-1">Product Designer</h4>
                         <p className="text-[14px] text-primary mb-2">Nesoi.ai</p>
+                        <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span>2023 - Present</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1 text-[14px] text-muted-foreground">
-                        <Calendar className="h-3.5 w-3.5" />
-                        <span>Present</span>
+                      <p className="text-[14px] text-muted-foreground leading-relaxed mb-3">
+                        Designing innovative solutions and user-centered experiences for AI-powered products.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {['Prototyping', 'Design Systems', 'UX Research'].map((tag) => (
+                          <span key={tag} className={`px-2 py-0.5 rounded text-[14px] ${tag.includes('Design') ? 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>
+                            {tag}
+                          </span>
+                        ))}
                       </div>
                     </div>
-                    <p className="text-[14px] text-muted-foreground leading-relaxed mb-2">
-                      Designing innovative solutions and user-centered experiences for AI-powered products.
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {['Prototyping', 'Design Systems', 'UX Research'].map((tag) => (
-                        <span key={tag} className={`px-2 py-0.5 rounded text-[14px] ${tag.includes('Design') ? 'bg-purple-500/15 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : tag.includes('UX') ? 'bg-pink-500/15 dark:bg-pink-500/15 text-pink-700 dark:text-pink-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>
-                          {tag}
-                        </span>
-                      ))}
+                    
+                    <div className="p-4 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/40 transition-colors">
+                      <div className="mb-3">
+                        <h4 className="font-medium text-[14px] mb-1">Product Designer</h4>
+                        <p className="text-[14px] text-primary mb-2">Ditto Insurance</p>
+                        <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span>November 2021 - December 2022</span>
+                        </div>
+                      </div>
+                      <p className="text-[14px] text-muted-foreground leading-relaxed mb-3">
+                        Led redesign of booking portal achieving 17% conversion increase. Created Falcon Design System and redesigned internal CRM improving team efficiency by 20%.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {['Design Systems', 'UX Research', 'Prototyping'].map((tag) => (
+                          <span key={tag} className={`px-2 py-0.5 rounded text-[14px] ${tag.includes('Design') ? 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="p-4 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/40 transition-colors">
+                      <div className="mb-3">
+                        <h4 className="font-medium text-[14px] mb-1">UI/UX Designer</h4>
+                        <p className="text-[14px] text-primary mb-2">Finshots</p>
+                        <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span>August 2019 - October 2021</span>
+                        </div>
+                      </div>
+                      <p className="text-[14px] text-muted-foreground leading-relaxed mb-3">
+                        Designed award-winning mobile app, contributed to Google Play "Best App of 2020" award, helped achieve 100k+ downloads and 500k+ subscribers.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {['Mobile Design', 'UX Research', 'Prototyping'].map((tag) => (
+                          <span key={tag} className={`px-2 py-0.5 rounded text-[14px] ${tag.includes('Design') ? 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="p-3 rounded-lg bg-secondary/20 border border-border/20">
-                    <h4 className="font-medium text-[14px] mb-2">Previous Experience</h4>
-                    <div className="space-y-2">
-                      <div>
-                        <p className="text-[14px] font-medium">Senior UI/UX Designer</p>
-                        <p className="text-[14px] text-muted-foreground">Freelance • 2022 - 2023</p>
-                      </div>
-                      <div>
-                        <p className="text-[14px] font-medium">Product Design Intern</p>
-                        <p className="text-[14px] text-muted-foreground">Startup • 2021 - 2022</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                </ScrollArea>
               </CardContent>
             </Card>
           );
@@ -491,7 +502,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="flex items-center gap-2 text-[16px]">
-                <div className="p-1.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-105 transition-all duration-300">
+                <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-105 transition-all duration-300">
                   <Briefcase className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 {expTitle}
@@ -546,7 +557,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="flex items-center gap-2 text-[16px]">
-                <div className="p-1.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
+                <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
                   <Mail className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 Connect
@@ -617,7 +628,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="flex items-center gap-2 text-[16px]">
-                <div className="p-1.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
+                <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
                   <Code2 className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 {section.title || 'Projects'}
@@ -690,7 +701,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="flex items-center gap-2 text-[16px]">
-                <div className="p-1.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
+                <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
                   <Zap className="h-4 w-4 group-hover:scale-125 group-hover:brightness-125 transition-all duration-300" />
                 </div>
                 {section.title || 'Skills'}
@@ -738,7 +749,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="flex items-center gap-2 text-[16px]">
-                <div className="p-1.5 bg-primary/20 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
+                <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
                   <Award className="h-4 w-4 group-hover:scale-110 transition-all duration-300" />
                 </div>
                 {section.title || 'Education'}
@@ -908,8 +919,8 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                 </div>
 
                 {/* Image Icon Badge */}
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 animate-pulse">
-                  <div className="p-2 bg-black/50 rounded-lg backdrop-blur-sm hover:bg-black/70 transition-colors">
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 pointer-events-none">
+                  <div className="p-2 bg-black/50 rounded-lg backdrop-blur-sm">
                     <ImageIcon className="h-4 w-4 text-white" />
                   </div>
                 </div>
@@ -1026,7 +1037,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="flex items-center gap-2 text-[16px]">
-                <div className="p-1.5 bg-primary/20 rounded-lg">
+                <div className="p-1.5 bg-primary/20 rounded-full">
                   <FileText className="h-4 w-4" />
                 </div>
                 {section.title || 'Custom Section'}
@@ -1086,7 +1097,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 text-xl">
                   {selectedSection.id === 'hero' && (
-                    <div className="p-2 bg-primary/20 rounded-lg">
+                    <div className="p-2 bg-primary/20 rounded-full">
                       <User className="h-5 w-5 text-primary" />
                     </div>
                   )}
@@ -1096,22 +1107,22 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                     </div>
                   )}
                   {selectedSection.id === 'about' && (
-                    <div className="p-2 bg-primary/20 rounded-lg">
+                    <div className="p-2 bg-primary/20 rounded-full">
                       <User className="h-5 w-5 text-primary" />
                     </div>
                   )}
                   {selectedSection.id === 'philosophy' && (
-                    <div className="p-2 bg-primary/20 rounded-lg">
+                    <div className="p-2 bg-primary/20 rounded-full">
                       <Sparkles className="h-5 w-5 text-primary" />
                     </div>
                   )}
                   {selectedSection.id === 'experience' && (
-                    <div className="p-2 bg-primary/20 rounded-lg">
+                    <div className="p-2 bg-primary/20 rounded-full">
                       <Briefcase className="h-5 w-5 text-primary" />
                     </div>
                   )}
                   {selectedSection.id === 'contact' && (
-                    <div className="p-2 bg-primary/20 rounded-lg">
+                    <div className="p-2 bg-primary/20 rounded-full">
                       <Mail className="h-5 w-5 text-primary" />
                     </div>
                   )}
@@ -1198,7 +1209,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                     <div>
                       <h4 className="font-medium mb-2 text-base">Core Skills</h4>
                       <div className="flex flex-wrap gap-2">
-                        {['Product Design', 'UI/UX', 'Prototyping', 'Figma', 'Design Systems', 'User Research', 'Interaction Design'].map((skill, idx) => {
+                        {['Product Design', 'UI/UX', 'Prototyping', 'Design Systems', 'User Research', 'Interaction Design'].map((skill, idx) => {
                           const colors = ['bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300', 'bg-purple-500/15 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300', 'bg-pink-500/15 dark:bg-pink-500/15 text-pink-700 dark:text-pink-300', 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300', 'bg-green-500/15 dark:bg-green-500/15 text-green-700 dark:text-green-300', 'bg-orange-500/15 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300', 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'];
                           return (
                             <span
@@ -1214,7 +1225,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                     <div className="pt-4">
                       <h4 className="font-medium mb-2 text-base">Tools</h4>
                       <div className="flex flex-wrap gap-2">
-                        {['Figma', 'Sketch', 'Principle', 'After Effects', 'Webflow'].map((tool, idx) => {
+                        {['Sketch', 'Principle', 'After Effects', 'Webflow'].map((tool, idx) => {
                           const colors = ['bg-emerald-500/15 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300', 'bg-teal-500/15 dark:bg-teal-500/15 text-teal-700 dark:text-teal-300', 'bg-violet-500/15 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300', 'bg-rose-500/15 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300', 'bg-amber-500/15 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300'];
                           return (
                             <span
@@ -1297,41 +1308,72 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                       </div>
                     ) : (
                       <>
-                        <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h4 className="font-medium text-sm mb-1">Product Designer</h4>
-                              <p className="text-sm text-primary mb-2">Nesoi.ai</p>
+                        <ScrollArea className="w-full max-h-[400px]">
+                          <div className="space-y-4 pr-2">
+                            <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
+                              <div className="mb-3">
+                                <h4 className="font-medium text-sm mb-1">Product Designer</h4>
+                                <p className="text-sm text-primary mb-2">Nesoi.ai</p>
+                                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                  <Calendar className="h-3.5 w-3.5" />
+                                  <span>2023 - Present</span>
+                                </div>
+                              </div>
+                              <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                                Designing innovative solutions and user-centered experiences for AI-powered products.
+                              </p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {['Prototyping', 'Design Systems', 'UX Research'].map((tag) => (
+                                  <span key={tag} className={`px-2 py-0.5 rounded text-xs ${tag.includes('Design') ? 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
                             </div>
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                              <Calendar className="h-3.5 w-3.5" />
-                              <span>Present</span>
+                            
+                            <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
+                              <div className="mb-3">
+                                <h4 className="font-medium text-sm mb-1">Product Designer</h4>
+                                <p className="text-sm text-primary mb-2">Ditto Insurance</p>
+                                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                  <Calendar className="h-3.5 w-3.5" />
+                                  <span>November 2021 - December 2022</span>
+                                </div>
+                              </div>
+                              <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                                Led redesign of booking portal achieving 17% conversion increase. Created Falcon Design System and redesigned internal CRM improving team efficiency by 20%.
+                              </p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {['Design Systems', 'UX Research', 'Prototyping'].map((tag) => (
+                                  <span key={tag} className={`px-2 py-0.5 rounded text-xs ${tag.includes('Design') ? 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
+                              <div className="mb-3">
+                                <h4 className="font-medium text-sm mb-1">UI/UX Designer</h4>
+                                <p className="text-sm text-primary mb-2">Finshots</p>
+                                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                  <Calendar className="h-3.5 w-3.5" />
+                                  <span>August 2019 - October 2021</span>
+                                </div>
+                              </div>
+                              <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                                Designed award-winning mobile app, contributed to Google Play "Best App of 2020" award, helped achieve 100k+ downloads and 500k+ subscribers.
+                              </p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {['Mobile Design', 'UX Research', 'Prototyping'].map((tag) => (
+                                  <span key={tag} className={`px-2 py-0.5 rounded text-xs ${tag.includes('Design') ? 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
                             </div>
                           </div>
-                          <p className="text-sm text-muted-foreground leading-relaxed mb-2">
-                            Designing innovative solutions and user-centered experiences for AI-powered products.
-                          </p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {['Prototyping', 'Design Systems', 'UX Research'].map((tag) => (
-                              <span key={tag} className={`px-2 py-0.5 rounded text-xs ${tag.includes('Design') ? 'bg-purple-500/15 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="p-4 rounded-lg bg-secondary/20 border border-border/20">
-                          <h4 className="font-medium text-sm mb-3">Previous Experience</h4>
-                          <div className="space-y-3">
-                            <div>
-                              <p className="text-sm font-medium">Senior UI/UX Designer</p>
-                              <p className="text-sm text-muted-foreground">Freelance • 2022 - 2023</p>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium">Product Design Intern</p>
-                              <p className="text-sm text-muted-foreground">Startup • 2021 - 2022</p>
-                            </div>
-                          </div>
-                        </div>
+                        </ScrollArea>
                       </>
                     )}
                   </>

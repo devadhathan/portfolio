@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Bot, User, RotateCcw, ChevronRight, ChevronLeft, ChevronDown, Sparkles, MessageCircle } from 'lucide-react';
+import { Send, Bot, User, RotateCcw, ChevronRight, ChevronLeft, Sparkles, MessageCircle, Smile } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { PortfolioAgent, AgentCommand, AgentState, PortfolioSection } from '@/lib/agent';
 import { resumeData } from '@/lib/resume-data';
@@ -595,7 +595,7 @@ EXAMPLE RESPONSE:
         <div className="h-full p-4 flex flex-col" style={{ height: '100%' }}>
           <Card className="h-full flex flex-col bg-card/80 backdrop-blur-xl border-2 border-border/70 shadow-2xl rounded-2xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 flex-shrink-0">
-              <CardTitle className="flex items-center gap-2"><Bot className="h-5 w-5" /> Portfolio Agent</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Smile className="h-5 w-5" /> Portfolio Agent</CardTitle>
               <div className="flex items-center gap-1">
                 <Button variant="ghost" size="icon" onClick={handleReset} className="h-8 w-8" title="Reset Layout"><RotateCcw className="h-4 w-4" /></Button>
                 <Button variant="ghost" size="icon" onClick={handleCollapseToggle} className="h-8 w-8"><ChevronRight className="h-4 w-4" /></Button>
@@ -608,7 +608,7 @@ EXAMPLE RESPONSE:
                   <div className="space-y-4 py-4">
                     {messages.map((message, index) => (
                       <div key={index} className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        {(message.role === 'agent' || message.role === 'assistant') && <Avatar className="h-8 w-8"><AvatarFallback className="bg-primary text-primary-foreground"><Bot className="h-4 w-4" /></AvatarFallback></Avatar>}
+                        {(message.role === 'agent' || message.role === 'assistant') && <Avatar className="h-8 w-8"><AvatarFallback className="bg-primary text-primary-foreground"><Smile className="h-4 w-4" /></AvatarFallback></Avatar>}
                         <div className={`rounded-lg px-4 py-2 max-w-[85%] relative overflow-hidden ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                            <div className="text-sm prose dark:prose-invert max-w-none break-words">
                                 {(() => {
@@ -706,13 +706,12 @@ EXAMPLE RESPONSE:
                     <span className="text-xs text-muted-foreground/60 rounded-lg font-mono">
                       {mode === 'agent' ? 'Layout' : 'Chat'}
                     </span>
-                    <ChevronDown className="h-3 w-3 text-foreground/70 dark:text-foreground/80" />
                   </div>
                   <Button 
                     onClick={() => handleCommand(input)} 
                     size="sm"
                     disabled={isLoading || !input.trim()}
-                    className="h-7 px-3 text-xs font-medium"
+                    className="h-7 px-3 text-xs font-medium rounded-full"
                   >
                     <Send className="h-3 w-3 mr-1" />
                     Send
@@ -736,7 +735,7 @@ EXAMPLE RESPONSE:
               className="fixed bottom-4 right-4 rounded-full h-14 w-14 shadow-lg z-50"
               onClick={handleCollapseToggle}
             >
-              <Bot className="h-5 w-5" />
+              <Smile className="h-5 w-5" />
             </Button>
           ) : (
             <Sheet open={true} onOpenChange={(open) => !open && handleCollapseToggle()}>
@@ -744,7 +743,7 @@ EXAMPLE RESPONSE:
             <div className="h-full p-4 flex flex-col">
               <Card className="h-full flex flex-col bg-card/80 backdrop-blur-xl border-2 border-border/70 shadow-2xl">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 flex-shrink-0">
-                  <CardTitle className="flex items-center gap-2"><Bot className="h-5 w-5" /> Portfolio Agent</CardTitle>
+                  <CardTitle className="flex items-center gap-2"><Smile className="h-5 w-5" /> Portfolio Agent</CardTitle>
                   <div className="flex items-center gap-1">
                     <Button variant="ghost" size="icon" onClick={handleReset} className="h-8 w-8" title="Reset Layout"><RotateCcw className="h-4 w-4" /></Button>
                   </div>
@@ -756,7 +755,7 @@ EXAMPLE RESPONSE:
                       <div className="space-y-4 py-4">
                         {messages.map((message, index) => (
                           <div key={index} className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                            {(message.role === 'agent' || message.role === 'assistant') && <Avatar className="h-8 w-8"><AvatarFallback className="bg-primary text-primary-foreground"><Bot className="h-4 w-4" /></AvatarFallback></Avatar>}
+                            {(message.role === 'agent' || message.role === 'assistant') && <Avatar className="h-8 w-8"><AvatarFallback className="bg-primary text-primary-foreground"><Smile className="h-4 w-4" /></AvatarFallback></Avatar>}
                             <div className={`rounded-lg px-4 py-2 max-w-[85%] relative overflow-hidden ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                               <div className="text-sm prose dark:prose-invert max-w-none break-words">
                                 {(() => {
@@ -855,7 +854,7 @@ EXAMPLE RESPONSE:
                         onClick={() => handleCommand(input)} 
                         size="sm"
                         disabled={isLoading || !input.trim()}
-                        className="h-7 px-3 text-xs font-medium"
+                        className="h-7 px-3 text-xs font-medium rounded-full"
                       >
                         <Send className="h-3 w-3 mr-1" />
                         Send

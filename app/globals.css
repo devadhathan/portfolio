@@ -50,68 +50,68 @@
 }
 
 .blue {
-  --background: 217 32% 8%;
+  --background: 217 32% 4%;
   --foreground: 210 40% 98%;
-  --card: 217 32% 10%;
+  --card: 217 32% 6%;
   --card-foreground: 210 40% 98%;
-  --popover: 217 32% 10%;
+  --popover: 217 32% 6%;
   --popover-foreground: 210 40% 98%;
   --primary: 217 91% 60%;
-  --primary-foreground: 217 32% 8%;
-  --secondary: 217 32% 15%;
+  --primary-foreground: 217 32% 4%;
+  --secondary: 217 32% 12%;
   --secondary-foreground: 210 40% 98%;
-  --muted: 217 32% 15%;
+  --muted: 217 32% 12%;
   --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217 32% 15%;
+  --accent: 217 32% 12%;
   --accent-foreground: 210 40% 98%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 210 40% 98%;
-  --border: 217 32% 20%;
-  --input: 217 32% 20%;
+  --border: 217 32% 18%;
+  --input: 217 32% 18%;
   --ring: 217 91% 60%;
 }
 
 .green {
-  --background: 142 76% 6%;
+  --background: 142 76% 3%;
   --foreground: 210 40% 98%;
-  --card: 142 76% 8%;
+  --card: 142 76% 5%;
   --card-foreground: 210 40% 98%;
-  --popover: 142 76% 8%;
+  --popover: 142 76% 5%;
   --popover-foreground: 210 40% 98%;
   --primary: 142 76% 45%;
-  --primary-foreground: 142 76% 6%;
-  --secondary: 142 32% 17%;
+  --primary-foreground: 142 76% 3%;
+  --secondary: 142 32% 12%;
   --secondary-foreground: 210 40% 98%;
-  --muted: 142 32% 17%;
+  --muted: 142 32% 12%;
   --muted-foreground: 215 20.2% 65.1%;
-  --accent: 142 32% 17%;
+  --accent: 142 32% 12%;
   --accent-foreground: 210 40% 98%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 210 40% 98%;
-  --border: 142 32% 22%;
-  --input: 142 32% 22%;
+  --border: 142 32% 18%;
+  --input: 142 32% 18%;
   --ring: 142 76% 45%;
 }
 
 .red {
-  --background: 0 72% 8%;
+  --background: 0 72% 4%;
   --foreground: 210 40% 98%;
-  --card: 0 72% 10%;
+  --card: 0 72% 6%;
   --card-foreground: 210 40% 98%;
-  --popover: 0 72% 10%;
+  --popover: 0 72% 6%;
   --popover-foreground: 210 40% 98%;
   --primary: 0 84% 60%;
-  --primary-foreground: 0 72% 8%;
-  --secondary: 0 32% 17%;
+  --primary-foreground: 0 72% 4%;
+  --secondary: 0 32% 12%;
   --secondary-foreground: 210 40% 98%;
-  --muted: 0 32% 17%;
+  --muted: 0 32% 12%;
   --muted-foreground: 215 20.2% 65.1%;
-  --accent: 0 32% 17%;
+  --accent: 0 32% 12%;
   --accent-foreground: 210 40% 98%;
   --destructive: 0 62.8% 50%;
   --destructive-foreground: 210 40% 98%;
-  --border: 0 32% 22%;
-  --input: 0 32% 22%;
+  --border: 0 32% 18%;
+  --input: 0 32% 18%;
   --ring: 0 84% 60%;
 }
 
@@ -186,15 +186,15 @@ html.light body {
 }
 
 html.blue body {
-  background: radial-gradient(ellipse at top, hsl(var(--background)) 0%, hsl(217 32% 4%) 100%);
+  background: radial-gradient(ellipse at top, hsl(var(--background)) 0%, hsl(217 32% 2%) 100%);
 }
 
 html.green body {
-  background: radial-gradient(ellipse at top, hsl(var(--background)) 0%, hsl(142 76% 3%) 100%);
+  background: radial-gradient(ellipse at top, hsl(var(--background)) 0%, hsl(142 76% 1%) 100%);
 }
 
 html.red body {
-  background: radial-gradient(ellipse at top, hsl(var(--background)) 0%, hsl(0 72% 4%) 100%);
+  background: radial-gradient(ellipse at top, hsl(var(--background)) 0%, hsl(0 72% 2%) 100%);
 }
 
 html.purple body {
@@ -280,7 +280,7 @@ html.glass .bg-card\/30 {
     background-image: 
       linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
       linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px);
-    background-size: 24px 24px;
+    background-size: 48px 48px;
     opacity: 0.05;
   }
   
