@@ -119,20 +119,63 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Fetch initial prompt count from API on mount
+  useEffect(() => {
+    const fetchPromptCount = async () => {
+      try {
+        const response = await fetch('/api/check-prompt-limit');
+        const data = await response.json();
+        if (data.remaining !== undefined) {
+          setPromptCount(data.remaining);
+        }
+      } catch (error) {
+        console.error('Error fetching prompt count:', error);
+        // Keep default value if API fails
+      }
+    };
+    fetchPromptCount();
+  }, []);
+
   const handleCommand = async (command: string) => {
     if (!command.trim()) return;
     
-    // Check prompt limit
-    if (promptCount <= 0) {
-      setMessages(prev => [...prev, { 
-        role: 'agent', 
-        content: 'You have reached the prompt limit. Please refresh the page to continue.' 
-      }]);
-      return;
+    // Check IP-based prompt limit via API
+    try {
+      const limitCheck = await fetch('/api/check-prompt-limit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      const limitData = await limitCheck.json();
+      
+      if (!limitData.allowed) {
+        setMessages(prev => [...prev, { 
+          role: 'agent', 
+          content: `You've reached the prompt limit (${limitData.count}/${limitData.limit}). Please contact me at **${resumeData.email}** or connect on [LinkedIn](https://linkedin.com/${resumeData.linkedin}) to continue using the portfolio agent.` 
+        }]);
+        setPromptCount(0); // Update UI to show 0 remaining
+        return;
+      }
+      
+      // Update prompt count from API response
+      if (limitData.remaining !== undefined) {
+        setPromptCount(limitData.remaining);
+      } else {
+        // Fallback: decrement local count
+        setPromptCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error('Error checking prompt limit:', error);
+      // Continue with local count check as fallback
+      if (promptCount <= 0) {
+        setMessages(prev => [...prev, { 
+          role: 'agent', 
+          content: 'You have reached the prompt limit. Please contact me to continue.' 
+        }]);
+        return;
+      }
+      setPromptCount(prev => Math.max(0, prev - 1));
     }
-
-    // Decrement prompt count
-    setPromptCount(prev => Math.max(0, prev - 1));
 
     // Add user message
     const userMessage = { role: 'user' as const, content: command };
