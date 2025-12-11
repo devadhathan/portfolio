@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -15,11 +15,25 @@ interface Note {
 
 export function NotesWidget() {
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [formattedDate, setFormattedDate] = useState<string>('');
 
   // Get current date/time for last updated
   const websiteLastUpdated = new Date();
 
-  const notes: Note[] = [
+  // Format date only on client side after hydration
+  useEffect(() => {
+    const formatted = websiteLastUpdated.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+    setFormattedDate(formatted);
+  }, []);
+
+  const notes: Note[] = useMemo(() => [
     {
       id: '1',
       content: `Hey there! 👋
@@ -36,14 +50,7 @@ Hope you enjoy exploring! 🚀`,
     },
     {
       id: '2',
-      content: `Last updated: ${websiteLastUpdated.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      })}`,
+      content: formattedDate ? `Last updated: ${formattedDate}` : 'Last updated: ...',
       lastUpdated: websiteLastUpdated,
     },
     {
@@ -51,7 +58,7 @@ Hope you enjoy exploring! 🚀`,
       content: 'Currently working from Edinburgh',
       lastUpdated: new Date('2024-12-19T08:00:00'),
     },
-  ];
+  ], [formattedDate]);
 
   const formatDateTime = (date: Date) => {
     return date.toLocaleString('en-US', {
