@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { WeatherWidget } from './widgets/weather-widget';
 import { NotesWidget } from './widgets/notes-widget';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock, Calendar, FolderKanban, ChevronRight, X } from 'lucide-react';
-import { useEffect } from 'react';
 import { resumeData } from '@/lib/resume-data';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -51,10 +50,16 @@ export function MobileSidebar({ onProjectSelect }: MobileSidebarProps) {
     });
   };
 
+  const [open, setOpen] = useState(false);
+
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" size="icon" className="lg:hidden">
+        <Button 
+          variant="outline" 
+          size="icon" 
+          className="lg:hidden h-10 w-10 rounded-full shadow-lg bg-background/90 backdrop-blur-xl border-2 border-border/50 hover:bg-background hover:border-primary/50 transition-all"
+        >
           <FolderKanban className="h-5 w-5" />
         </Button>
       </SheetTrigger>

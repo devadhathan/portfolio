@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SideAgent } from '@/components/side-agent';
 import { PortfolioSections } from '@/components/portfolio-sections';
 import { TopBar } from '@/components/top-bar';
@@ -18,6 +18,16 @@ export default function Home() {
   const [displayedExplanation, setDisplayedExplanation] = useState<string>('');
   const [isExplanationComplete, setIsExplanationComplete] = useState(false);
   const [shouldShowCards, setShouldShowCards] = useState(false);
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+  const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null);
+
+  // Dynamic loading messages that change over time
+  const loadingMessages = [
+    'Arranging your portfolio sections',
+    'Curating the best projects',
+    'Organizing content for you',
+    'Almost there...'
+  ];
 
   const handleStateChange = (state: AgentState) => {
     setAgentState(state);
@@ -25,9 +35,35 @@ export default function Home() {
 
   const handleAgentWorking = (working: boolean) => {
     setIsAgentWorking(working);
+    if (working) {
+      setLoadingStartTime(Date.now());
+      setLoadingMessageIndex(0);
+    } else {
+      setLoadingStartTime(null);
+      setLoadingMessageIndex(0);
+    }
     // Don't reset explanation state immediately when agent stops
     // Let explanation stay visible until new command starts
   };
+
+  // Update loading message based on duration
+  useEffect(() => {
+    if (!isAgentWorking || loadingStartTime === null) return;
+
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - loadingStartTime;
+      // Change message every 2 seconds
+      const newIndex = Math.min(
+        Math.floor(elapsed / 2000),
+        loadingMessages.length - 1
+      );
+      if (newIndex !== loadingMessageIndex) {
+        setLoadingMessageIndex(newIndex);
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [isAgentWorking, loadingStartTime, loadingMessageIndex, loadingMessages.length]);
 
   const handleExplanationComplete = (complete: boolean) => {
     // Set explanation as complete and trigger card display
@@ -121,16 +157,16 @@ export default function Home() {
         </div>
         
         {/* Main Content */}
-        <div className={`flex-1 container mx-auto p-4 md:p-6 lg:p-8 relative z-10 lg:ml-80 transition-all duration-300 ${isChatCollapsed ? 'lg:pr-4' : 'lg:pr-[440px]'} pb-20 lg:pb-8`}>
+        <div className={`flex-1 container mx-auto p-4 md:p-6 lg:p-8 relative z-10 lg:ml-80 transition-all duration-300 ${isChatCollapsed ? 'lg:pr-4' : 'lg:pr-[440px]'} pb-20 md:pb-24 lg:pb-8`}>
           {isAgentWorking ? (
-            <div className="flex flex-col items-center justify-center py-24 text-center">
-              <div className="flex gap-2 mb-4">
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+              <div className="flex gap-2 mb-6">
                 <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
                 <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
                 <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
               </div>
-              <p className="text-[16px] text-muted-foreground font-medium">Agent is working...</p>
-              <p className="text-[14px] text-muted-foreground mt-2">Arranging your portfolio sections</p>
+              <p className="text-lg text-foreground font-semibold mb-2">Agent is working...</p>
+              <p className="text-sm text-muted-foreground/70">{loadingMessages[loadingMessageIndex]}</p>
             </div>
           ) : selectedProject ? (
             <div className="w-full">
@@ -143,16 +179,41 @@ export default function Home() {
             <>
               {/* Always show explanation if it exists, even while streaming */}
               {(explanation || displayedExplanation) && (
-                <div className="mb-6 p-4 rounded-lg bg-card/60 backdrop-blur-md border-2 border-border/70">
+                <div className="mb-6 p-5 md:p-6 rounded-lg bg-card/60 backdrop-blur-md border-2 border-border/70">
                   {(displayedExplanation || explanation || '').trim().split(' ').length > 3 && (
-                    <h2 className="text-lg font-semibold mb-2 text-foreground">Overview</h2>
+                    <h2 className="text-xl font-semibold mb-4 text-foreground">Overview</h2>
                   )}
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {displayedExplanation || explanation || ''}
-                    {!isExplanationComplete && explanation && displayedExplanation.length < explanation.length && (
-                      <span className="inline-block w-1.5 h-4 ml-1 bg-foreground/50 animate-pulse" />
-                    )}
-                  </p>
+                  <div className="text-base text-muted-foreground leading-relaxed space-y-3">
+                    {(() => {
+                      const text = displayedExplanation || explanation || '';
+                      // Split text into paragraphs by double newlines first
+                      let paragraphs = text
+                        .split(/\n\n+/)
+                        .filter(p => p.trim().length > 0)
+                        .map(p => p.trim());
+                      
+                      // If no double newlines and text is long, split by sentences
+                      if (paragraphs.length === 1 && text.length > 150) {
+                        const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+                        // Group 2-3 sentences per paragraph
+                        const grouped: string[] = [];
+                        for (let i = 0; i < sentences.length; i += 2) {
+                          const group = sentences.slice(i, Math.min(i + 2, sentences.length)).join(' ').trim();
+                          if (group) grouped.push(group);
+                        }
+                        paragraphs = grouped.length > 0 ? grouped : paragraphs;
+                      }
+                      
+                      return paragraphs.length > 0 ? paragraphs : [text];
+                    })().map((paragraph, index, array) => (
+                      <p key={index} className="mb-0">
+                        {paragraph}
+                        {index === array.length - 1 && !isExplanationComplete && explanation && displayedExplanation.length < explanation.length && (
+                          <span className="inline-block w-1.5 h-4 ml-1 bg-foreground/50 animate-pulse" />
+                        )}
+                      </p>
+                    ))}
+                  </div>
                 </div>
               )}
               {/* Show cards based on state:

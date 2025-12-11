@@ -29,7 +29,9 @@ export function TopBar({ onProjectSelect }: TopBarProps) {
       <div className="w-full px-3 md:px-5 lg:px-6">
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center gap-2">
-            <MobileSidebar onProjectSelect={onProjectSelect} />
+            <div className="lg:hidden">
+              <MobileSidebar onProjectSelect={onProjectSelect} />
+            </div>
             <button
               onClick={() => router.push('/')}
               className="flex items-center hover:opacity-80 transition-opacity"
@@ -46,10 +48,11 @@ export function TopBar({ onProjectSelect }: TopBarProps) {
           </div>
           
           <div className="flex items-center gap-2">
-            <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/40 border border-border/30 text-xs hover:bg-secondary/50 transition-colors">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/40 border border-border/30 text-xs hover:bg-secondary/50 transition-colors cursor-pointer">
               <Sparkles className="h-3 w-3 text-primary" />
-              <span>Message me</span>
-            </div>
+              <span className="hidden sm:inline">Message me</span>
+              <span className="sm:hidden">Message</span>
+            </button>
             
             {/* Dark, Light, Glass tabs - First */}
             <div className="flex items-center gap-0.5 px-1 py-1 rounded-full bg-secondary/40 border border-border/30">

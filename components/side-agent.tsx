@@ -83,7 +83,6 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
   const [state, setState] = useState<AgentState>(agent.getState());
   const pendingSectionsRef = React.useRef<PortfolioSection[]>([]);
   const [input, setInput] = useState('');
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [promptCount, setPromptCount] = useState(10); // Start with 10 prompts
 
@@ -95,6 +94,30 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Initialize collapsed state based on screen size - desktop starts open, mobile starts collapsed
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 1024; // Start collapsed on mobile/tablet, open on desktop
+    }
+    return false; // Default to open (desktop-first)
+  });
+
+  // Update collapsed state when screen size changes
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 1024;
+      if (mobile && !isCollapsed) {
+        // If switching to mobile and chat is open, collapse it
+        setIsCollapsed(true);
+      } else if (!mobile && isCollapsed) {
+        // If switching to desktop and chat is collapsed, open it
+        setIsCollapsed(false);
+      }
+    };
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [isCollapsed]);
   
   const handleCollapseToggle = () => {
     const newState = !isCollapsed;
@@ -732,13 +755,17 @@ EXAMPLE RESPONSE:
             <Button 
               variant="default" 
               size="lg" 
-              className="fixed bottom-4 right-4 rounded-full h-14 w-14 shadow-lg z-50"
+              className="fixed bottom-4 right-4 rounded-full h-14 w-14 shadow-2xl z-50 bg-primary hover:bg-primary/90 border-2 border-primary/20 backdrop-blur-sm"
               onClick={handleCollapseToggle}
             >
-              <Smile className="h-5 w-5" />
+              <MessageCircle className="h-6 w-6" />
             </Button>
           ) : (
-            <Sheet open={true} onOpenChange={(open) => !open && handleCollapseToggle()}>
+            <Sheet open={!isCollapsed} onOpenChange={(open) => {
+              if (!open) {
+                handleCollapseToggle();
+              }
+            }}>
               <SheetContent side="bottom" className="h-[85vh] p-0 flex flex-col">
             <div className="h-full p-4 flex flex-col">
               <Card className="h-full flex flex-col bg-card/80 backdrop-blur-xl border-2 border-border/70 shadow-2xl">
