@@ -469,7 +469,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                         </div>
                       </div>
                       <p className="text-[14px] text-muted-foreground leading-relaxed mb-3">
-                        Designed award-winning mobile app, contributed to Google Play "Best App of 2020" award, helped achieve 100k+ downloads and 500k+ subscribers.
+                        Designed award-winning mobile app, contributed to Google Play &quot;Best App of 2020&quot; award, helped achieve 100k+ downloads and 500k+ subscribers.
                       </p>
                       <div className="flex flex-wrap gap-1.5">
                         {['Mobile Design', 'UX Research', 'Prototyping'].map((tag) => (
@@ -1362,7 +1362,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                                 </div>
                               </div>
                               <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-                                Designed award-winning mobile app, contributed to Google Play "Best App of 2020" award, helped achieve 100k+ downloads and 500k+ subscribers.
+                                Designed award-winning mobile app, contributed to Google Play &quot;Best App of 2020&quot; award, helped achieve 100k+ downloads and 500k+ subscribers.
                               </p>
                               <div className="flex flex-wrap gap-1.5">
                                 {['Mobile Design', 'UX Research', 'Prototyping'].map((tag) => (
