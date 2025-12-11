@@ -145,7 +145,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden [html.glass_&]:bg-transparent [html.glass_&]:bg-none">
+    <div className="min-h-screen bg-background relative overflow-x-hidden [html.glass_&]:bg-transparent [html.glass_&]:bg-none">
       <TopBar onProjectSelect={setSelectedProject} />
       <div className="absolute inset-0 bg-gradient-grid pointer-events-none opacity-30 z-0 [html.glass_&]:hidden"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none z-0 [html.glass_&]:hidden"></div>
@@ -157,7 +157,7 @@ export default function Home() {
         </div>
         
         {/* Main Content */}
-        <div className={`flex-1 container mx-auto p-4 md:p-6 lg:p-8 relative z-10 lg:ml-80 transition-all duration-300 ${isChatCollapsed ? 'lg:pr-4' : 'lg:pr-[440px]'} pb-20 md:pb-24 lg:pb-8`}>
+        <div className={`flex-1 w-full mx-auto px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8 relative z-10 lg:ml-80 transition-all duration-300 ${isChatCollapsed ? 'lg:pr-4' : 'lg:pr-[440px]'} pb-20 md:pb-24 lg:pb-8 overflow-x-hidden`}>
           {isAgentWorking ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
               <div className="flex gap-2 mb-6">

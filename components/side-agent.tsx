@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Bot, User, RotateCcw, ChevronRight, ChevronLeft, Sparkles, MessageCircle, Smile } from 'lucide-react';
+import { Send, Bot, User, RotateCcw, ChevronRight, ChevronLeft, Sparkles, MessageCircle, Smile, MessageSquare } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { PortfolioAgent, AgentCommand, AgentState, PortfolioSection } from '@/lib/agent';
 import { resumeData } from '@/lib/resume-data';
@@ -750,17 +750,18 @@ EXAMPLE RESPONSE:
       
       {/* Mobile Chat - Bottom Sheet */}
       {isMobile && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40">
-          {isCollapsed ? (
+        <>
+          {isCollapsed && (
             <Button 
-              variant="default" 
+              variant="outline" 
               size="lg" 
-              className="fixed bottom-4 right-4 rounded-full h-14 w-14 shadow-2xl z-50 bg-primary hover:bg-primary/90 border-2 border-primary/20 backdrop-blur-sm"
+              className="lg:hidden fixed bottom-4 right-4 rounded-full h-14 w-14 shadow-2xl z-[100] bg-background hover:bg-background/90 border-2 border-border backdrop-blur-sm flex items-center justify-center"
               onClick={handleCollapseToggle}
             >
-              <MessageCircle className="h-6 w-6" />
+              <MessageSquare className="h-6 w-6 text-foreground" />
             </Button>
-          ) : (
+          )}
+          {!isCollapsed && (
             <Sheet open={!isCollapsed} onOpenChange={(open) => {
               if (!open) {
                 handleCollapseToggle();
@@ -891,10 +892,10 @@ EXAMPLE RESPONSE:
                 </CardContent>
               </Card>
             </div>
-          </SheetContent>
-          </Sheet>
+              </SheetContent>
+            </Sheet>
           )}
-        </div>
+        </>
       )}
     </>
   );

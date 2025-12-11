@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { WeatherWidget } from './widgets/weather-widget';
 import { NotesWidget } from './widgets/notes-widget';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, Calendar, FolderKanban, ChevronRight, X } from 'lucide-react';
+import { Clock, Calendar, Menu, ChevronRight, X, FolderKanban } from 'lucide-react';
 import { resumeData } from '@/lib/resume-data';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -60,7 +60,7 @@ export function MobileSidebar({ onProjectSelect }: MobileSidebarProps) {
           size="icon" 
           className="lg:hidden h-10 w-10 rounded-full shadow-lg bg-background/90 backdrop-blur-xl border-2 border-border/50 hover:bg-background hover:border-primary/50 transition-all"
         >
-          <FolderKanban className="h-5 w-5" />
+          <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0 overflow-y-auto">

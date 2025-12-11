@@ -9,6 +9,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { MobileSidebar } from './mobile-sidebar';
 import Image from 'next/image';
@@ -54,31 +55,8 @@ export function TopBar({ onProjectSelect }: TopBarProps) {
               <span className="sm:hidden">Message</span>
             </button>
             
-            {/* Dark, Light, Glass tabs - First */}
-            <div className="flex items-center gap-0.5 px-1 py-1 rounded-full bg-secondary/40 border border-border/30">
-              {availableThemes.map((t) => {
-                const IconComponent = t.icon;
-                const isActive = theme === t.id;
-                return (
-                  <Button
-                    key={t.id}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setTheme(t.id)}
-                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs transition-colors h-auto ${
-                      isActive
-                        ? 'bg-background text-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
-                    }`}
-                  >
-                    {IconComponent && <IconComponent className="h-3 w-3 flex-shrink-0" />}
-                    <span>{t.name}</span>
-                  </Button>
-                );
-              })}
-            </div>
-
-            {isGlassTheme && (
+            {/* Mobile: Single dropdown for all themes */}
+            <div className="lg:hidden">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -86,43 +64,144 @@ export function TopBar({ onProjectSelect }: TopBarProps) {
                     size="sm"
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/40 border border-border/30 text-xs hover:bg-secondary/50 transition-colors h-auto"
                   >
-                    <ImageIcon className="h-3 w-3 text-primary" aria-hidden="true" />
-                    <span>{availableBackgrounds.find(bg => bg.id === backgroundImage)?.name || 'Background'}</span>
+                    {(() => {
+                      const currentTheme = [...availableThemes, ...rgbThemes].find(t => t.id === theme);
+                      if (currentTheme?.icon) {
+                        const IconComponent = currentTheme.icon;
+                        return <IconComponent className="h-3 w-3 text-primary" />;
+                      }
+                      if (currentTheme?.color) {
+                        return <div className="w-3 h-3 rounded-full" style={{ backgroundColor: currentTheme.color }} />;
+                      }
+                      return <Sun className="h-3 w-3 text-primary" />;
+                    })()}
+                    <span className="hidden sm:inline">Theme</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-32">
-                  {availableBackgrounds.map((bg) => (
+                <DropdownMenuContent align="end" className="w-40">
+                  {availableThemes.map((t) => {
+                    const IconComponent = t.icon;
+                    return (
+                      <DropdownMenuItem
+                        key={t.id}
+                        onClick={() => setTheme(t.id)}
+                        className={theme === t.id ? 'bg-secondary' : ''}
+                      >
+                        <div className="flex items-center gap-2">
+                          {IconComponent && <IconComponent className="h-3 w-3" />}
+                          <span>{t.name}</span>
+                        </div>
+                      </DropdownMenuItem>
+                    );
+                  })}
+                  {rgbThemes.map((rgbTheme) => (
                     <DropdownMenuItem
-                      key={bg.id}
-                      onClick={() => setBackgroundImage(bg.id)}
-                      className={backgroundImage === bg.id ? 'bg-secondary' : ''}
+                      key={rgbTheme.id}
+                      onClick={() => setTheme(rgbTheme.id)}
+                      className={theme === rgbTheme.id ? 'bg-secondary' : ''}
                     >
-                      {bg.name}
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: rgbTheme.color }}
+                        />
+                        <span>{rgbTheme.name}</span>
+                      </div>
                     </DropdownMenuItem>
                   ))}
+                  {isGlassTheme && (
+                    <>
+                      <DropdownMenuSeparator />
+                      {availableBackgrounds.map((bg) => (
+                        <DropdownMenuItem
+                          key={bg.id}
+                          onClick={() => setBackgroundImage(bg.id)}
+                          className={backgroundImage === bg.id ? 'bg-secondary' : ''}
+                        >
+                          <div className="flex items-center gap-2">
+                            <ImageIcon className="h-3 w-3" />
+                            <span>{bg.name}</span>
+                          </div>
+                        </DropdownMenuItem>
+                      ))}
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
-            )}
+            </div>
 
-            {/* Red, Green, Blue buttons - At the end (only colored dots) */}
-            <div className="flex items-center gap-1 px-1 py-1 rounded-full bg-secondary/40 border border-border/30">
-              {rgbThemes.map((rgbTheme) => (
-                <Button
-                  key={rgbTheme.id}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setTheme(rgbTheme.id)}
-                  className={`flex items-center justify-center px-2 py-1.5 rounded-full hover:bg-secondary/50 transition-colors h-auto ${
-                    theme === rgbTheme.id ? 'ring-2 ring-primary' : ''
-                  }`}
-                  title={rgbTheme.name}
-                >
-                  <div 
-                    className="w-3 h-3 rounded-full flex-shrink-0" 
-                    style={{ backgroundColor: rgbTheme.color }}
-                  />
-                </Button>
-              ))}
+            {/* Desktop: Separate theme controls */}
+            <div className="hidden lg:flex items-center gap-2">
+              {/* Dark, Light, Glass tabs */}
+              <div className="flex items-center gap-0.5 px-1 py-1 rounded-full bg-secondary/40 border border-border/30">
+                {availableThemes.map((t) => {
+                  const IconComponent = t.icon;
+                  const isActive = theme === t.id;
+                  return (
+                    <Button
+                      key={t.id}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setTheme(t.id)}
+                      className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs transition-colors h-auto ${
+                        isActive
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                      }`}
+                    >
+                      {IconComponent && <IconComponent className="h-3 w-3 flex-shrink-0" />}
+                      <span>{t.name}</span>
+                    </Button>
+                  );
+                })}
+              </div>
+
+              {isGlassTheme && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/40 border border-border/30 text-xs hover:bg-secondary/50 transition-colors h-auto"
+                    >
+                      <ImageIcon className="h-3 w-3 text-primary" aria-hidden="true" />
+                      <span>{availableBackgrounds.find(bg => bg.id === backgroundImage)?.name || 'Background'}</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-32">
+                    {availableBackgrounds.map((bg) => (
+                      <DropdownMenuItem
+                        key={bg.id}
+                        onClick={() => setBackgroundImage(bg.id)}
+                        className={backgroundImage === bg.id ? 'bg-secondary' : ''}
+                      >
+                        {bg.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+
+              {/* Red, Green, Blue buttons */}
+              <div className="flex items-center gap-1 px-1 py-1 rounded-full bg-secondary/40 border border-border/30">
+                {rgbThemes.map((rgbTheme) => (
+                  <Button
+                    key={rgbTheme.id}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setTheme(rgbTheme.id)}
+                    className={`flex items-center justify-center px-2 py-1.5 rounded-full hover:bg-secondary/50 transition-colors h-auto ${
+                      theme === rgbTheme.id ? 'ring-2 ring-primary' : ''
+                    }`}
+                    title={rgbTheme.name}
+                  >
+                    <div 
+                      className="w-3 h-3 rounded-full flex-shrink-0" 
+                      style={{ backgroundColor: rgbTheme.color }}
+                    />
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

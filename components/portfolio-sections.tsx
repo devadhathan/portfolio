@@ -106,10 +106,11 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
   const getBentoSize = (priority: SectionPriority, sectionId: string, sectionType?: SectionType, order: number = 0) => {
     // Create varied card sizes based on type, priority, and position
     // This creates a more dynamic bento grid layout
+    // On mobile, all cards should be single column (col-span-1)
     const sizeMap: { [key: string]: string } = {
       'hero': 'col-span-1 sm:col-span-1 lg:col-span-1',
       'preferences': 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-2',
-      'photos': 'col-span-2 sm:col-span-1 lg:col-span-2 row-span-2',
+      'photos': 'col-span-1 sm:col-span-1 lg:col-span-2 row-span-2',
       'video': 'col-span-1 sm:col-span-2 lg:col-span-1 row-span-2',
       'about': 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1',
       'contact': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2',
@@ -1085,7 +1086,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-[minmax(200px,auto)]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-4 lg:gap-4 auto-rows-[minmax(200px,auto)] pb-4 md:pb-0 w-full">
         {visibleSections.map(section => renderSection(section))}
       </div>
       
