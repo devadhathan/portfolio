@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { ClientThemeProvider } from "@/components/client-theme-provider";
 import { BackgroundProvider } from "@/contexts/background-context";
 import { FaviconHandler } from "@/components/favicon-handler";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -34,6 +35,7 @@ export default function RootLayout({
             </ClientThemeProvider>
           </BackgroundProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
