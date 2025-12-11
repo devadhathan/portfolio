@@ -20,6 +20,7 @@ interface SideAgentProps {
   onCollapseChange?: (collapsed: boolean) => void;
   onExplanation?: (explanation: string | null) => void;
   onExplanationComplete?: (complete: boolean) => void;
+  resetRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 // --- 1. RICH CONTENT DATABASE (Source of Truth) ---
@@ -78,7 +79,7 @@ const CONTENT_DATABASE: Record<string, Partial<PortfolioSection> & { link?: stri
   }
 };
 
-export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onExplanation, onExplanationComplete }: SideAgentProps) {
+export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onExplanation, onExplanationComplete, resetRef }: SideAgentProps) {
   const [agent] = useState(() => new PortfolioAgent());
   const [state, setState] = useState<AgentState>(agent.getState());
   const pendingSectionsRef = React.useRef<PortfolioSection[]>([]);
@@ -268,12 +269,16 @@ INSTRUCTIONS:
    
    Be informative, engaging, and thorough. Provide rich context including design philosophy, methodology, challenges overcome, impact on users and business, technical considerations, and insights. Connect the user's request to Devadhathan's broader experience and expertise.
 
-2. If they want to SEE projects/content, append a JSON array of IDs at the very end. CRITICAL: 
+2. ONLY append a JSON array of IDs if the user EXPLICITLY requests to see projects, cards, or content. CRITICAL RULES:
+   - If user asks questions, makes comments, or sends nonsense (like "blah"), respond conversationally WITHOUT any JSON
+   - Only include JSON when the user's intent is clearly to view/see/display specific content from the portfolio
    - If user asks for "projects" or mentions specific project names, ONLY include project IDs: 'falcon', 'finshots', 'onboarding', 'kiosk', 'crm', 'booking'
    - NEVER include 'experience' or 'skills' when user asks for projects
    - If user asks for "experience", ONLY include 'experience'
    - If user asks for "skills", ONLY include 'skills'
    - Be extremely selective - only match exactly what was requested
+   - If unsure whether user wants cards, err on the side of NOT including JSON
+   - Only include valid IDs from the AVAILABLE CONTENT IDs list above
 
 3. Use "priority": "high" for the most important item.
 
@@ -419,7 +424,7 @@ EXAMPLE RESPONSE:
         
         let generatedSections: PortfolioSection[] = [];
         
-        // 1. Process JSON if we found any
+        // 1. Process JSON ONLY if valid JSON with valid IDs exists
         if (isCollectingJson || jsonBuffer.trim().startsWith('[')) {
             // Fallback: if isCollectingJson wasn't triggered but fullResponse starts with [
             if (!isCollectingJson) jsonBuffer = fullResponse;
@@ -429,45 +434,60 @@ EXAMPLE RESPONSE:
                 const cleanJson = jsonBuffer.replace(/```json/g, '').replace(/```/g, '').trim();
                 const aiResponseItems = JSON.parse(cleanJson);
                 
-                // Map IDs to Rich Content and filter appropriately
-                const userCommandLower = command.toLowerCase();
-                const isProjectRequest = userCommandLower.includes('project') || 
-                                        userCommandLower.includes('falcon') || 
-                                        userCommandLower.includes('finshots') || 
-                                        userCommandLower.includes('onboarding') || 
-                                        userCommandLower.includes('kiosk') || 
-                                        userCommandLower.includes('crm') || 
-                                        userCommandLower.includes('booking');
+                // Validate: Only process if we have an array with valid IDs from CONTENT_DATABASE
+                if (!Array.isArray(aiResponseItems)) {
+                    throw new Error('JSON is not an array');
+                }
                 
-                generatedSections = aiResponseItems
-                    .map((item: any) => {
-                        const dbItem = CONTENT_DATABASE[item.id];
-                        if (!dbItem) return null;
-                        
-                        // Filter: if asking for projects, exclude skills and experience
-                        if (isProjectRequest && (item.id === 'skills' || item.id === 'experience')) {
-                            return null;
-                        }
-                        
-                        // Filter: if asking for specific types, only include matching types
-                        const dbItemType = dbItem.type;
-                        if (isProjectRequest && dbItemType !== 'projects') {
-                            return null;
-                        }
-                        
-                        // Create proper link object if link exists
-                        const links = dbItem.link ? [{ label: 'View Project', url: dbItem.link }] : [];
+                // Check if all IDs are valid - if any invalid ID exists, don't create cards
+                const allIdsValid = aiResponseItems.every((item: any) => {
+                    return item && item.id && CONTENT_DATABASE[item.id];
+                });
+                
+                if (!allIdsValid) {
+                    // Invalid IDs detected - don't create cards, just show text response
+                    console.log("Invalid IDs in JSON - ignoring card generation");
+                } else {
+                    // All IDs are valid - proceed with card generation
+                    const userCommandLower = command.toLowerCase();
+                    const isProjectRequest = userCommandLower.includes('project') || 
+                                            userCommandLower.includes('falcon') || 
+                                            userCommandLower.includes('finshots') || 
+                                            userCommandLower.includes('onboarding') || 
+                                            userCommandLower.includes('kiosk') || 
+                                            userCommandLower.includes('crm') || 
+                                            userCommandLower.includes('booking');
+                    
+                    generatedSections = aiResponseItems
+                        .map((item: any) => {
+                            const dbItem = CONTENT_DATABASE[item.id];
+                            if (!dbItem) return null;
+                            
+                            // Filter: if asking for projects, exclude skills and experience
+                            if (isProjectRequest && (item.id === 'skills' || item.id === 'experience')) {
+                                return null;
+                            }
+                            
+                            // Filter: if asking for specific types, only include matching types
+                            const dbItemType = dbItem.type;
+                            if (isProjectRequest && dbItemType !== 'projects') {
+                                return null;
+                            }
+                            
+                            // Create proper link object if link exists
+                            const links = dbItem.link ? [{ label: 'View Project', url: dbItem.link }] : [];
 
-                        return {
-                            id: item.id,
-                            priority: item.priority || 'medium',
-                            visible: true,
-                            order: 0,
-                            ...dbItem,
-                            links: links // Inject link here
-                        };
-                    })
-                    .filter(Boolean) as PortfolioSection[];
+                            return {
+                                id: item.id,
+                                priority: item.priority || 'medium',
+                                visible: true,
+                                order: 0,
+                                ...dbItem,
+                                links: links // Inject link here
+                            };
+                        })
+                        .filter(Boolean) as PortfolioSection[];
+                }
 
                 if (generatedSections.length > 0) {
                     // Store sections but don't update state yet - wait for explanation to complete
@@ -519,6 +539,20 @@ EXAMPLE RESPONSE:
                 // Don't show error to user if they just asked a question that happened to contain brackets
             }
         }
+        
+        // If JSON was detected but not processed (invalid IDs), ensure visibleText contains text part
+        if ((isCollectingJson || jsonBuffer.trim().startsWith('[')) && generatedSections.length === 0) {
+            // Ensure visibleText contains the text part (before JSON started)
+            // If visibleText is empty but we have fullResponse, extract text before JSON
+            if (!visibleText.trim() && fullResponse.trim()) {
+                const jsonStartIndex = fullResponse.indexOf('[');
+                if (jsonStartIndex > 0) {
+                    visibleText = fullResponse.substring(0, jsonStartIndex).trim();
+                } else {
+                    visibleText = fullResponse.trim();
+                }
+            }
+        }
 
         // 2. Finalize Chat Message
         setMessages(prev => {
@@ -529,12 +563,11 @@ EXAMPLE RESPONSE:
                 // In agent mode, chat should only show brief status messages, NOT the explanation
                 if (mode === 'agent') {
                     if (isCollectingJson && generatedSections.length > 0) {
-                        // Brief summary in agent mode when cards are generated
-                        const cardCount = generatedSections.length;
-                        finalContent = `Generated ${cardCount} ${cardCount === 1 ? 'card' : 'cards'}.`;
+                        // Simple "Generated" message after cards are created
+                        finalContent = 'Generated';
                     } else if (explanationText.trim().length > 0) {
-                        // Brief status when explanation is being generated
-                        finalContent = 'Generating...';
+                        // Show "Generated" when only overview/explanation is shown (no cards)
+                        finalContent = 'Generated';
                     } else {
                         // Default brief message
                         finalContent = 'Processing your request...';
@@ -556,6 +589,22 @@ EXAMPLE RESPONSE:
             if (onExplanation) {
                 onExplanation(explanationText.trim());
             }
+            
+            // If only overview is shown (no cards), hide default cards
+            if (generatedSections.length === 0) {
+                // Hide all default sections when only showing overview by calling generate with empty array
+                setTimeout(() => {
+                    const generateCommand: AgentCommand = {
+                        type: 'generate',
+                        sections: [], // Empty array will hide all default sections
+                    };
+                    
+                    const newState = agent.executeCommand(generateCommand);
+                    setState(newState);
+                    onStateChange(newState);
+                }, 500); // Wait for explanation animation
+            }
+            
             // Mark as complete after animation
             setTimeout(() => {
                 if (onExplanationComplete) {
@@ -595,6 +644,14 @@ EXAMPLE RESPONSE:
       if (onExplanation) onExplanation(null);
     }, 300);
   };
+
+  // Expose reset function via ref
+  React.useEffect(() => {
+    if (resetRef) {
+      resetRef.current = handleReset;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetRef]);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -755,10 +812,10 @@ EXAMPLE RESPONSE:
             <Button 
               variant="outline" 
               size="lg" 
-              className="lg:hidden fixed bottom-4 right-4 rounded-full h-14 w-14 shadow-2xl z-[100] bg-background hover:bg-background/90 border-2 border-border backdrop-blur-sm flex items-center justify-center"
+              className="lg:hidden fixed bottom-4 right-4 rounded-full h-14 w-14 shadow-2xl z-[100] bg-background hover:bg-background/90 border-2 border-border backdrop-blur-sm flex items-center justify-center p-0"
               onClick={handleCollapseToggle}
             >
-              <MessageSquare className="h-6 w-6 text-foreground" />
+              <MessageSquare className="h-6 w-6 text-foreground flex-shrink-0" />
             </Button>
           )}
           {!isCollapsed && (
@@ -768,130 +825,130 @@ EXAMPLE RESPONSE:
               }
             }}>
               <SheetContent side="bottom" className="h-[85vh] p-0 flex flex-col">
-            <div className="h-full p-4 flex flex-col">
-              <Card className="h-full flex flex-col bg-card/80 backdrop-blur-xl border-2 border-border/70 shadow-2xl">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 flex-shrink-0">
-                  <CardTitle className="flex items-center gap-2"><Smile className="h-5 w-5" /> Portfolio Agent</CardTitle>
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" onClick={handleReset} className="h-8 w-8" title="Reset Layout"><RotateCcw className="h-4 w-4" /></Button>
-                  </div>
-                </CardHeader>
-                <Separator className="flex-shrink-0" />
-                <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-                  <ScrollArea className="flex-1 w-full min-h-0">
-                    <div className="px-4">
-                      <div className="space-y-4 py-4">
-                        {messages.map((message, index) => (
-                          <div key={index} className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                            {(message.role === 'agent' || message.role === 'assistant') && <Avatar className="h-8 w-8"><AvatarFallback className="bg-primary text-primary-foreground"><Smile className="h-4 w-4" /></AvatarFallback></Avatar>}
-                            <div className={`rounded-lg px-4 py-2 max-w-[85%] relative overflow-hidden ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                              <div className="text-sm prose dark:prose-invert max-w-none break-words">
-                                {(() => {
-                                  const isThinking = message.content === 'Thinking...' || message.content.startsWith('Thinking...');
-                                  const isGenerating = message.content === 'Generating...' || message.content.startsWith('Generating...');
-                                  const shimmerClass = (isThinking || isGenerating) ? 'bg-gradient-to-r from-foreground/80 via-foreground/40 to-foreground/80 bg-[length:200%_100%] animate-[text-shimmer_2s_infinite] bg-clip-text text-transparent' : '';
-                                  
-                                  if (isThinking || isGenerating) {
-                                    return <p className={`mb-2 last:mb-0 ${shimmerClass}`}>{message.content}</p>;
-                                  }
-                                  
-                                  return (
-                                    <ReactMarkdown components={{
-                                        p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
-                                        ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-2" {...props} />,
-                                        a: ({node, ...props}) => <a className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
-                                        strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
-                                    }}>{message.content}</ReactMarkdown>
-                                  );
-                                })()}
+                <div className="h-full p-4 flex flex-col">
+                  <Card className="h-full flex flex-col bg-card/80 backdrop-blur-xl border-2 border-border/70 shadow-2xl">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 flex-shrink-0">
+                      <CardTitle className="flex items-center gap-2"><Smile className="h-5 w-5" /> Portfolio Agent</CardTitle>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" onClick={handleReset} className="h-8 w-8" title="Reset Layout"><RotateCcw className="h-4 w-4" /></Button>
+                      </div>
+                    </CardHeader>
+                    <Separator className="flex-shrink-0" />
+                    <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+                      <ScrollArea className="flex-1 w-full min-h-0">
+                        <div className="px-4">
+                          <div className="space-y-4 py-4">
+                            {messages.map((message, index) => (
+                              <div key={index} className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                {(message.role === 'agent' || message.role === 'assistant') && <Avatar className="h-8 w-8"><AvatarFallback className="bg-primary text-primary-foreground"><Smile className="h-4 w-4" /></AvatarFallback></Avatar>}
+                                <div className={`rounded-lg px-4 py-2 max-w-[85%] relative overflow-hidden ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                                  <div className="text-sm prose dark:prose-invert max-w-none break-words">
+                                    {(() => {
+                                      const isThinking = message.content === 'Thinking...' || message.content.startsWith('Thinking...');
+                                      const isGenerating = message.content === 'Generating...' || message.content.startsWith('Generating...');
+                                      const shimmerClass = (isThinking || isGenerating) ? 'bg-gradient-to-r from-foreground/80 via-foreground/40 to-foreground/80 bg-[length:200%_100%] animate-[text-shimmer_2s_infinite] bg-clip-text text-transparent' : '';
+                                      
+                                      if (isThinking || isGenerating) {
+                                        return <p className={`mb-2 last:mb-0 ${shimmerClass}`}>{message.content}</p>;
+                                      }
+                                      
+                                      return (
+                                        <ReactMarkdown components={{
+                                            p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                                            ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-2" {...props} />,
+                                            a: ({node, ...props}) => <a className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
+                                            strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
+                                        }}>{message.content}</ReactMarkdown>
+                                      );
+                                    })()}
+                                  </div>
+                                  {/* Don't show cursor for Thinking/Generating messages */}
+                                  {message.isStreaming && message.role !== 'user' && message.content !== 'Thinking...' && message.content !== 'Generating...' && !message.content.startsWith('Thinking...') && !message.content.startsWith('Generating...') && (
+                                    <span className="inline-block w-1.5 h-4 ml-1 bg-foreground/50 animate-pulse" />
+                                  )}
+                                </div>
+                                {message.role === 'user' && <Avatar className="h-8 w-8"><AvatarFallback className="bg-secondary"><User className="h-4 w-4" /></AvatarFallback></Avatar>}
                               </div>
-                              {/* Don't show cursor for Thinking/Generating messages */}
-                              {message.isStreaming && message.role !== 'user' && message.content !== 'Thinking...' && message.content !== 'Generating...' && !message.content.startsWith('Thinking...') && !message.content.startsWith('Generating...') && (
-                                <span className="inline-block w-1.5 h-4 ml-1 bg-foreground/50 animate-pulse" />
-                              )}
-                            </div>
-                            {message.role === 'user' && <Avatar className="h-8 w-8"><AvatarFallback className="bg-secondary"><User className="h-4 w-4" /></AvatarFallback></Avatar>}
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      </ScrollArea>
                     </div>
-                  </ScrollArea>
-                </div>
-                <Separator className="flex-shrink-0" />
-                <CardContent className="pt-4 pb-4 flex-none mt-auto">
-                  <div className="flex flex-col gap-3 border border-border/50 rounded-lg bg-background/80 backdrop-blur-sm p-3">
-                    <div className="relative">
-                      <textarea
-                        value={input}
-                        onChange={handleTextareaChange}
-                        onKeyDown={handleKeyPress}
-                        placeholder={isLoading ? "Thinking..." : promptCount > 0 ? `Type a command... (${promptCount} prompts left)` : "Prompt limit reached"}
-                        disabled={isLoading || promptCount <= 0}
-                        rows={1}
-                        className="w-full resize-none bg-transparent border-none outline-none text-sm placeholder:text-muted-foreground/60 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 font-mono min-h-[24px] max-h-[200px] overflow-y-auto"
-                        style={{
-                          scrollbarWidth: 'thin',
-                          scrollbarColor: 'rgba(255,255,255,0.1) transparent'
-                        }}
-                      />
-                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                        {input.length > 0 && (
-                          <span className="text-xs text-muted-foreground/40 font-mono">
-                            {input.split('\n').length}L
-                          </span>
-                        )}
-                        {promptCount > 0 && (
-                          <span className="text-xs text-muted-foreground/60 font-mono">
-                            {promptCount}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/30">
-                      <div className="relative flex items-center gap-2">
+                    <Separator className="flex-shrink-0" />
+                    <CardContent className="pt-4 pb-4 flex-none mt-auto">
+                      <div className="flex flex-col gap-3 border border-border/50 rounded-lg bg-background/80 backdrop-blur-sm p-3">
                         <div className="relative">
-                          <select 
-                            value={mode} 
-                            onChange={(e) => setMode(e.target.value as any)} 
-                            className="pl-7 pr-6 py-1.5 text-xs bg-background/60 border border-border/80 rounded focus:outline-none focus:ring-1 focus:ring-primary/50 min-w-[90px] appearance-none font-medium"
+                          <textarea
+                            value={input}
+                            onChange={handleTextareaChange}
+                            onKeyDown={handleKeyPress}
+                            placeholder={isLoading ? "Thinking..." : promptCount > 0 ? `Type a command... (${promptCount} prompts left)` : "Prompt limit reached"}
+                            disabled={isLoading || promptCount <= 0}
+                            rows={1}
+                            className="w-full resize-none bg-transparent border-none outline-none text-sm placeholder:text-muted-foreground/60 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 font-mono min-h-[24px] max-h-[200px] overflow-y-auto"
                             style={{
-                              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
-                              backgroundRepeat: 'no-repeat',
-                              backgroundPosition: 'right 0.4rem center',
-                              backgroundSize: '12px',
-                              borderRadius: '24px',
+                              scrollbarWidth: 'thin',
+                              scrollbarColor: 'rgba(255,255,255,0.1) transparent'
                             }}
-                            disabled={isLoading}
-                          >
-                            <option value="agent">Agent</option>
-                            <option value="ask">Ask</option>
-                          </select>
-                          <div className="absolute left-2 rounded-xl top-1/2 -translate-y-1/2 pointer-events-none">
-                            {mode === 'agent' ? (
-                              <Sparkles className="h-3 w-3 text-primary" />
-                            ) : (
-                              <MessageCircle className="h-3 w-3 text-primary" />
+                          />
+                          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                            {input.length > 0 && (
+                              <span className="text-xs text-muted-foreground/40 font-mono">
+                                {input.split('\n').length}L
+                              </span>
+                            )}
+                            {promptCount > 0 && (
+                              <span className="text-xs text-muted-foreground/60 font-mono">
+                                {promptCount}
+                              </span>
                             )}
                           </div>
                         </div>
-                        <span className="text-xs text-muted-foreground/60 rounded-lg font-mono">
-                          {mode === 'agent' ? 'Layout' : 'Chat'}
-                        </span>
+                        <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/30">
+                          <div className="relative flex items-center gap-2">
+                            <div className="relative">
+                              <select 
+                                value={mode} 
+                                onChange={(e) => setMode(e.target.value as any)} 
+                                className="pl-7 pr-6 py-1.5 text-xs bg-background/60 border border-border/80 rounded focus:outline-none focus:ring-1 focus:ring-primary/50 min-w-[90px] appearance-none font-medium"
+                                style={{
+                                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+                                  backgroundRepeat: 'no-repeat',
+                                  backgroundPosition: 'right 0.4rem center',
+                                  backgroundSize: '12px',
+                                  borderRadius: '24px',
+                                }}
+                                disabled={isLoading}
+                              >
+                                <option value="agent">Agent</option>
+                                <option value="ask">Ask</option>
+                              </select>
+                              <div className="absolute left-2 rounded-xl top-1/2 -translate-y-1/2 pointer-events-none">
+                                {mode === 'agent' ? (
+                                  <Sparkles className="h-3 w-3 text-primary" />
+                                ) : (
+                                  <MessageCircle className="h-3 w-3 text-primary" />
+                                )}
+                              </div>
+                            </div>
+                            <span className="text-xs text-muted-foreground/60 rounded-lg font-mono">
+                              {mode === 'agent' ? 'Layout' : 'Chat'}
+                            </span>
+                          </div>
+                          <Button 
+                            onClick={() => handleCommand(input)} 
+                            size="sm"
+                            disabled={isLoading || !input.trim()}
+                            className="h-7 px-3 text-xs font-medium rounded-full"
+                          >
+                            <Send className="h-3 w-3 mr-1" />
+                            Send
+                          </Button>
+                        </div>
                       </div>
-                      <Button 
-                        onClick={() => handleCommand(input)} 
-                        size="sm"
-                        disabled={isLoading || !input.trim()}
-                        className="h-7 px-3 text-xs font-medium rounded-full"
-                      >
-                        <Send className="h-3 w-3 mr-1" />
-                        Send
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </SheetContent>
             </Sheet>
           )}

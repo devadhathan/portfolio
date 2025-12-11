@@ -17,13 +17,23 @@ import { useRouter } from 'next/navigation';
 
 interface TopBarProps {
   onProjectSelect?: (projectSlug: string) => void;
+  onHomeClick?: () => void;
 }
 
-export function TopBar({ onProjectSelect }: TopBarProps) {
+export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
   const { theme, setTheme } = useTheme();
   const { backgroundImage, setBackgroundImage, availableBackgrounds } = useBackground();
   const isGlassTheme = theme === 'glass';
   const router = useRouter();
+
+  const handleLogoClick = () => {
+    // Reset portfolio state if handler provided
+    if (onHomeClick) {
+      onHomeClick();
+    }
+    // Navigate to home
+    router.push('/');
+  };
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-background/60 backdrop-blur-2xl border-b border-border/30 shadow-lg shadow-black/20">
@@ -34,7 +44,7 @@ export function TopBar({ onProjectSelect }: TopBarProps) {
               <MobileSidebar onProjectSelect={onProjectSelect} />
             </div>
             <button
-              onClick={() => router.push('/')}
+              onClick={handleLogoClick}
               className="flex items-center hover:opacity-80 transition-opacity"
             >
               <Image

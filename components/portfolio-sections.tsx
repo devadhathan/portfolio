@@ -248,7 +248,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
               </p>
               <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
                 <Globe className="h-3.5 w-3.5" />
-                <span>Not based in India, currently in Edinburgh</span>
+                <span>Currently in Edinburgh</span>
               </div>
               <div className="flex items-center gap-2 text-[13px]">
                 <Zap className="h-3.5 w-3.5 text-green-500" />
@@ -1148,7 +1148,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm">
                         <Globe className="h-4 w-4 text-primary" />
-                        <span>Based in India</span>
+                        <span>Currently in Edinburgh</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <Zap className="h-4 w-4 text-primary" />

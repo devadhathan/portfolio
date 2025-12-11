@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { SideAgent } from '@/components/side-agent';
 import { PortfolioSections } from '@/components/portfolio-sections';
 import { TopBar } from '@/components/top-bar';
@@ -20,6 +20,7 @@ export default function Home() {
   const [shouldShowCards, setShouldShowCards] = useState(false);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null);
+  const resetAgentRef = useRef<(() => void) | null>(null);
 
   // Dynamic loading messages that change over time
   const loadingMessages = [
@@ -144,9 +145,22 @@ export default function Home() {
     }
   };
 
+  const handleHomeClick = () => {
+    // Reset portfolio state when logo is clicked
+    if (resetAgentRef.current) {
+      resetAgentRef.current();
+    }
+    // Clear explanation state
+    setExplanation(null);
+    setDisplayedExplanation('');
+    setIsExplanationComplete(false);
+    setShouldShowCards(false);
+    setSelectedProject(null);
+  };
+
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden [html.glass_&]:bg-transparent [html.glass_&]:bg-none">
-      <TopBar onProjectSelect={setSelectedProject} />
+      <TopBar onProjectSelect={setSelectedProject} onHomeClick={handleHomeClick} />
       <div className="absolute inset-0 bg-gradient-grid pointer-events-none opacity-30 z-0 [html.glass_&]:hidden"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none z-0 [html.glass_&]:hidden"></div>
       
@@ -240,7 +254,7 @@ export default function Home() {
         </div>
       </div>
       
-      <SideAgent onStateChange={handleStateChange} onAgentWorking={handleAgentWorking} onCollapseChange={handleCollapseChange} onExplanation={handleExplanation} onExplanationComplete={handleExplanationComplete} />
+      <SideAgent onStateChange={handleStateChange} onAgentWorking={handleAgentWorking} onCollapseChange={handleCollapseChange} onExplanation={handleExplanation} onExplanationComplete={handleExplanationComplete} resetRef={resetAgentRef} />
     </div>
   );
 }

@@ -167,7 +167,8 @@ export class PortfolioAgent {
 
       case 'generate':
         // Generate NEW sections based on prompt (ADD to existing, don't replace)
-        if (command.sections && command.sections.length > 0) {
+        // Also handles empty array case to hide default sections (for overview-only display)
+        if (command.sections !== undefined) {
           console.log('Executing generate command with', command.sections.length, 'sections');
           
           // Store original sections if not already stored
@@ -178,20 +179,26 @@ export class PortfolioAgent {
           // Hide existing sections (but keep them for reset)
           const existingSections = newState.sections.map(s => ({ ...s, visible: false }));
           
-          // Add new sections with unique IDs and proper ordering
-          const maxOrder = Math.max(...existingSections.map(s => s.order), 0);
-          const newSections = command.sections.map((section, index) => ({
-            ...section,
-            id: section.id || `${section.type || 'custom'}-${Date.now()}-${index}`,
-            order: maxOrder + index + 1,
-            visible: true,
-            placeholder: section.placeholder !== undefined ? section.placeholder : false,
-          }));
+          if (command.sections.length > 0) {
+            // Add new sections with unique IDs and proper ordering
+            const maxOrder = Math.max(...existingSections.map(s => s.order), 0);
+            const newSections = command.sections.map((section, index) => ({
+              ...section,
+              id: section.id || `${section.type || 'custom'}-${Date.now()}-${index}`,
+              order: maxOrder + index + 1,
+              visible: true,
+              placeholder: section.placeholder !== undefined ? section.placeholder : false,
+            }));
+            
+            console.log('New sections to add:', newSections);
+            
+            // Combine: hidden original sections + new visible sections
+            newState.sections = [...existingSections, ...newSections];
+          } else {
+            // Empty array: just hide existing sections (for overview-only display)
+            newState.sections = existingSections;
+          }
           
-          console.log('New sections to add:', newSections);
-          
-          // Combine: hidden original sections + new visible sections
-          newState.sections = [...existingSections, ...newSections];
           newState.isCustomLayout = true;
           
           console.log('Total sections after generate:', newState.sections.length, 'Visible:', newState.sections.filter(s => s.visible).length);
