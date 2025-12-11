@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Sparkles, Image as ImageIcon } from 'lucide-react';
+import { Sparkles, Image as ImageIcon, Sun } from 'lucide-react';
 import { useTheme, availableThemes, rgbThemes } from '@/contexts/theme-context';
 import { useBackground } from '@/contexts/background-context';
 import {
