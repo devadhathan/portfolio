@@ -2,18 +2,61 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Users, Wrench, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, Wrench, ExternalLink, Smartphone } from 'lucide-react';
 import { resumeData } from '@/lib/resume-data';
+import { FinshotsDetail } from './finshots-detail';
+
+// #region agent log
+fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'project-detail-view.tsx:8',message:'Import check',data:{finshotsDetailType:typeof FinshotsDetail,finshotsDetailIsUndefined:FinshotsDetail===undefined},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+// #endregion
 
 interface ProjectDetailViewProps {
   projectId: string;
   onBack: () => void;
+  hideBackButton?: boolean;
 }
 
-export function ProjectDetailView({ projectId, onBack }: ProjectDetailViewProps) {
+export function ProjectDetailView({ projectId, onBack, hideBackButton = false }: ProjectDetailViewProps) {
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'project-detail-view.tsx:18',message:'ProjectDetailView entry',data:{projectId,hideBackButton},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
+
   const project = resumeData.projects.find(
     p => p.title.toLowerCase().replace(/\s+/g, '-') === projectId.toLowerCase().replace(/\s+/g, '-')
   );
+
+  // Use custom Finshots detail page
+  const normalizedProjectId = projectId.toLowerCase().replace(/\s+/g, '-');
+  const normalizedTitle = project?.title.toLowerCase().replace(/\s+/g, '-') || '';
+  
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'project-detail-view.tsx:25',message:'Before Finshots check',data:{normalizedProjectId,normalizedTitle,isFinshots:normalizedProjectId.includes('finshots')||normalizedTitle.includes('finshots'),finshotsDetailAvailable:typeof FinshotsDetail!=='undefined'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
+  
+  if (normalizedProjectId.includes('finshots') || normalizedTitle.includes('finshots') || 
+      projectId.toLowerCase() === 'finshots-news-app' || normalizedTitle === 'finshots-news-app') {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'project-detail-view.tsx:28',message:'Rendering FinshotsDetail',data:{finshotsDetailType:typeof FinshotsDetail,finshotsDetailIsFunction:typeof FinshotsDetail==='function',finshotsDetailIsUndefined:FinshotsDetail===undefined,finshotsDetailIsNull:FinshotsDetail===null},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
+    try {
+      if (!FinshotsDetail) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'project-detail-view.tsx:32',message:'FinshotsDetail is falsy before render',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+        // #endregion
+        throw new Error('FinshotsDetail is undefined');
+      }
+      const element = <FinshotsDetail projectId={projectId} onBack={onBack} hideBackButton={hideBackButton} />;
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'project-detail-view.tsx:37',message:'FinshotsDetail element created',data:{elementType:typeof element,elementIsUndefined:element===undefined},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
+      return element;
+    } catch (error) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'project-detail-view.tsx:41',message:'Error rendering FinshotsDetail',data:{errorMessage:error instanceof Error?error.message:String(error),errorStack:error instanceof Error?error.stack:undefined},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
+      throw error;
+    }
+  }
 
   if (!project) {
     return (
@@ -34,15 +77,19 @@ export function ProjectDetailView({ projectId, onBack }: ProjectDetailViewProps)
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300 w-full text-foreground pb-20 lg:pb-0">
+    <div className="animate-in fade-in duration-300 w-full text-foreground pb-20 lg:pb-0 max-w-6xl mx-auto mt-24">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
         <div>
-          <Button onClick={onBack} variant="ghost" size="sm" className="mb-5">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Portfolio
-          </Button>
-          <h1 className="text-3xl font-bold mb-3 text-foreground">{project.title}</h1>
+          {!hideBackButton && (
+            <Button onClick={onBack} variant="ghost" size="sm" className="mb-5">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Portfolio
+            </Button>
+          )}
+          <div className="flex items-center gap-3 mb-3">
+            <h1 className="text-3xl font-bold text-foreground">{project.title}</h1>
+          </div>
           <div className="flex items-center gap-5 text-sm text-muted-foreground">
             {(project.company || project.institution) && (
               <span className="flex items-center gap-1.5">
@@ -57,226 +104,228 @@ export function ProjectDetailView({ projectId, onBack }: ProjectDetailViewProps)
               </span>
             )}
             {project.type && (
-              <span className="px-2 py-1 bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 rounded-md text-xs font-medium">
+              <span className="px-2 py-1 bg-primary/20 text-primary rounded-md text-xs font-medium">
                 {project.type}
               </span>
             )}
           </div>
         </div>
-        {project.url && (
-          <Button asChild variant="outline" size="sm">
-            <a href={project.url} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="h-4 w-4 mr-2" />
-              View Project
-            </a>
-          </Button>
-        )}
       </div>
 
-      {/* Description or Details */}
-      {(project.description || project.details) && (
-        <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
-          <CardContent className="p-8">
-            {project.description ? (
-              <p className="text-base leading-relaxed text-foreground">{project.description}</p>
-            ) : project.details ? (
-              Array.isArray(project.details) ? (
-                <ul className="space-y-4">
-                  {project.details.map((detail, index) => (
-                    <li key={index} className="flex items-start gap-3 text-base leading-relaxed text-foreground">
-                      <span className="text-primary mt-1.5">•</span>
-                      <span>{detail}</span>
-                    </li>
-                  ))}
-                </ul>
+      {/* Main Content Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-12">
+        {/* Left Content - Description */}
+        <div className="lg:col-span-2 space-y-6">
+          {project.description && (
+            <>
+              {project.description.split('\n\n').map((paragraph, idx) => (
+                <p key={idx} className="text-lg leading-relaxed text-muted-foreground">
+                  {paragraph}
+                </p>
+              ))}
+            </>
+          )}
+          {!project.description && project.details && (
+            <>
+              {Array.isArray(project.details) ? (
+                project.details.map((detail, idx) => (
+                  <p key={idx} className="text-lg leading-relaxed text-muted-foreground">
+                    {detail}
+                  </p>
+                ))
               ) : (
-                <p className="text-base leading-relaxed text-foreground">{project.details}</p>
-              )
-            ) : null}
-          </CardContent>
-        </Card>
-      )}
+                <p className="text-lg leading-relaxed text-muted-foreground">{project.details}</p>
+              )}
+            </>
+          )}
+          {project.url && (
+            <div className="flex flex-wrap gap-4 pt-2">
+              <a
+                href={project.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
+              >
+                <span className="text-base font-medium">VIEW PROJECT</span>
+                <Smartphone className="h-4 w-4" />
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            </div>
+          )}
+        </div>
+        
+        {/* Right Content - Structured Project Details */}
+        <div className="lg:col-span-1 space-y-0 border-l border-border/50 pl-8">
+          {project.type && (
+            <div className="pb-6 border-b border-border/50">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Product</h3>
+              <p className="text-base text-foreground">{project.type}</p>
+            </div>
+          )}
+          
+          {project.tools && project.tools.length > 0 && (
+            <div className="py-6 border-b border-border/50">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Skills</h3>
+              <div className="space-y-2">
+                {project.tools.map((tool, idx) => (
+                  <p key={idx} className="text-base text-foreground">{tool}</p>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {project.role && (
+            <div className="py-6 border-b border-border/50">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">My role</h3>
+              <p className="text-base text-foreground">{project.role}</p>
+            </div>
+          )}
+          
+          {project.period && (
+            <div className="py-6 border-b border-border/50">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Timeline</h3>
+              <p className="text-base text-foreground">{project.period}</p>
+            </div>
+          )}
+          
+          {project.team && (
+            <div className="pt-6">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Team</h3>
+              <p className="text-base text-foreground">{project.team}</p>
+            </div>
+          )}
+        </div>
+      </div>
 
-      {/* Problem */}
+      {/* Problem Section */}
       {project.problem && (
-        <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Problem</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <p className="text-sm leading-relaxed">{project.problem}</p>
-          </CardContent>
-        </Card>
+        <div id={`${projectId}-problem`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Problem</h2>
+          <div className="lg:col-span-3">
+            <p className="text-lg leading-relaxed text-muted-foreground">
+              {project.problem}
+            </p>
+          </div>
+        </div>
       )}
 
-      {/* Research / Approach */}
-      {(project.research || project.approach) && (
-        <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">{project.research ? 'Research' : 'Approach'}</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <p className="text-sm leading-relaxed">{project.research || project.approach}</p>
-          </CardContent>
-        </Card>
+      {/* Research Section */}
+      {project.research && (
+        <div id={`${projectId}-research`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Research</h2>
+          <div className="lg:col-span-3">
+            <p className="text-lg leading-relaxed text-muted-foreground">
+              {project.research}
+            </p>
+          </div>
+        </div>
       )}
 
-      {/* HMW */}
+      {/* Approach Section */}
+      {project.approach && (
+        <div id={`${projectId}-approach`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Approach</h2>
+          <div className="lg:col-span-3">
+            <p className="text-lg leading-relaxed text-muted-foreground">
+              {project.approach}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* HMW Section */}
       {project.hmw && (
-        <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">How Might We</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <p className="text-sm leading-relaxed font-medium">{project.hmw}</p>
-          </CardContent>
-        </Card>
+        <div id={`${projectId}-hmw`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">How Might We</h2>
+          <div className="lg:col-span-3">
+            <p className="text-lg leading-relaxed text-muted-foreground font-medium">
+              {project.hmw}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Stats Section */}
+      {project.results && project.results.length > 0 && (
+        <div id={`${projectId}-stats`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Some stats</h2>
+          <div className="lg:col-span-3">
+            <div className="space-y-3">
+              {project.results.map((result, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <span className="text-primary mt-1">→</span>
+                  <p className="text-lg text-muted-foreground">{result}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Key Features */}
       {project.keyFeatures && project.keyFeatures.length > 0 && (
-        <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Key Features</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <ul className="space-y-3">
-              {project.keyFeatures.map((feature, index) => (
-                <li key={index} className="flex items-start gap-3 text-sm">
-                  <span className="text-primary mt-1.5">•</span>
-                  <span>{feature}</span>
-                </li>
+        <div id={`${projectId}-key-features`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Key Features</h2>
+          <div className="lg:col-span-3">
+            <div className="space-y-4">
+              {project.keyFeatures.map((feature, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <span className="text-primary mt-1">•</span>
+                  <p className="text-lg text-muted-foreground">{feature}</p>
+                </div>
               ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Results */}
-      {project.results && project.results.length > 0 && (
-        <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Results</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <ul className="space-y-3">
-              {project.results.map((result, index) => (
-                <li key={index} className="flex items-start gap-3 text-sm">
-                  <span className="text-primary mt-1.5">✓</span>
-                  <span className="font-medium">{result}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Impact */}
       {project.impact && project.impact.length > 0 && (
-        <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Impact</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <ul className="space-y-4">
-              {project.impact.map((impact, index) => (
-                <li key={index} className="flex items-start gap-3 text-sm">
+        <div id={`${projectId}-impact`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Impact</h2>
+          <div className="lg:col-span-3">
+            <div className="space-y-4">
+              {project.impact.map((impact, idx) => (
+                <div key={idx} className="flex items-start gap-3">
                   <span className="text-primary mt-1">→</span>
-                  <span>{impact}</span>
-                </li>
+                  <p className="text-lg text-muted-foreground">{impact}</p>
+                </div>
               ))}
-            </ul>
-          </CardContent>
-        </Card>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Learnings */}
       {project.learnings && (
-        <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Learnings</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
+        <div id={`${projectId}-learnings`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Learnings</h2>
+          <div className="lg:col-span-3">
             {Array.isArray(project.learnings) ? (
-              <ul className="space-y-3">
-                {project.learnings.map((learning, index) => (
-                  <li key={index} className="flex items-start gap-3 text-sm">
-                    <span className="text-primary mt-1.5">•</span>
-                    <span>{learning}</span>
-                  </li>
+              <div className="space-y-4">
+                {project.learnings.map((learning, idx) => (
+                  <div key={idx} className="flex items-start gap-3">
+                    <span className="text-primary mt-1">•</span>
+                    <p className="text-lg text-muted-foreground">{learning}</p>
+                  </div>
                 ))}
-              </ul>
+              </div>
             ) : (
-              <p className="text-sm leading-relaxed">{project.learnings}</p>
+              <p className="text-lg leading-relaxed text-muted-foreground">{project.learnings}</p>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
-      {/* Meta Information */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {project.role && (
-          <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base">Role</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-sm">{project.role}</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {project.tools && project.tools.length > 0 && (
-          <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Wrench className="h-4 w-4" />
-                Tools
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex flex-wrap gap-2.5">
-                {project.tools.map((tool, index) => {
-                  const colors = ['bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300', 'bg-purple-500/15 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300', 'bg-pink-500/15 dark:bg-pink-500/15 text-pink-700 dark:text-pink-300', 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300', 'bg-emerald-500/15 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300', 'bg-orange-500/15 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300', 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'];
-                  return (
-                    <span
-                      key={index}
-                      className={`px-2 py-1 ${colors[index % colors.length]} rounded-md text-xs`}
-                    >
-                      {tool}
-                    </span>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {project.team && (
-          <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Team
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-sm">{project.team}</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {project.targetAudience && (
-          <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base">Target Audience</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-sm">{project.targetAudience}</p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      {/* Target Audience */}
+      {project.targetAudience && (
+        <div id={`${projectId}-target-audience`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Target Audience</h2>
+          <div className="lg:col-span-3">
+            <p className="text-lg leading-relaxed text-muted-foreground">{project.targetAudience}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

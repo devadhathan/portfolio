@@ -35,7 +35,7 @@ export function PreferenceGraph() {
       </div>
       <div className="flex-1 flex flex-col justify-between gap-4 relative z-10">
         {/* Line Chart Graph */}
-        <div className="flex-1 flex items-center justify-center" style={{ minHeight: '140px' }}>
+        <div className="flex-1 flex items-center justify-center" style={{ minHeight: '100px' }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>
               <CartesianGrid strokeDasharray="2 2" stroke="hsl(var(--border))" strokeOpacity={0.2} />

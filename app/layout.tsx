@@ -25,7 +25,7 @@ export default function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
-          themes={['dark', 'light', 'blue', 'green', 'red', 'purple', 'glass']}
+          themes={['dark', 'light', 'blue', 'green', 'red', 'glass']}
           enableSystem={false}
         >
           <BackgroundProvider>

@@ -41,13 +41,12 @@ export interface AgentState {
 
 const defaultSections: PortfolioSection[] = [
   { id: 'hero', title: 'Hero Section', priority: 'high', order: 1, visible: true },
-  { id: 'about', title: 'About Me', priority: 'high', order: 2, visible: true },
-  { id: 'preferences', title: 'Design Preferences', priority: 'high', order: 3, visible: true },
-  { id: 'experience', title: 'Experience', priority: 'high', order: 4, visible: true },
-  { id: 'photos', title: 'Camera Roll', priority: 'medium', order: 5, visible: true, type: 'photos' },
+  { id: 'preferences', title: 'Design Preferences', priority: 'high', order: 2, visible: true },
+  { id: 'photos', title: 'Camera Roll', priority: 'medium', order: 4, visible: true, type: 'photos' },
+  { id: 'experience', title: 'Experience', priority: 'high', order: 5, visible: true },
   { id: 'video', title: 'Dew - AI Character', priority: 'medium', order: 6, visible: true, type: 'video', content: '/videos/2tUv4Phgglg0Cvb9dLfZYDnN1k.mp4', links: [{ label: 'Read on Medium', url: 'https://medium.com/@devadhathanmd18/why-ai-needs-a-face-building-dew-my-duolingo-inspired-ai-character-2d4e56f94772' }] },
   { id: 'philosophy', title: 'Design Philosophy', priority: 'medium', order: 7, visible: true },
-  { id: 'contact', title: 'Contact & Links', priority: 'medium', order: 8, visible: true },
+  { id: 'connect', title: 'Connect', priority: 'medium', order: 8, visible: true, type: 'contact' },
 ];
 
 export class PortfolioAgent {

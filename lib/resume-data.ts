@@ -60,7 +60,7 @@ export const resumeData = {
   skills: {
     design: ["User Experience", "Interaction Design", "User Interface", "Prototyping", "Visual Design", "Wireframing", "Mockups"],
     research: ["User Interviews", "User Testing", "Information Architecture", "Quantitative Analysis", "A/B Testing", "Competitor Analysis", "Design Strategy", "Journey Mapping", "Persona Creation"],
-    software: ["Figma", "Sketch", "Principle", "Origami Studio", "InVision", "Adobe XD", "Illustrator", "Photoshop", "After Effects", "HTML", "CSS", "JavaScript"],
+    software: ["Figma", "Cursor", "v0", "Framer", "Sketch", "Principle", "Origami Studio", "InVision", "Adobe XD", "Illustrator", "Photoshop", "After Effects", "HTML", "CSS", "JavaScript"],
     visualDesign: ["Poster Design", "Branding", "Typography", "Iconography", "Book Design", "Web Design"]
   },
 
@@ -95,22 +95,22 @@ export const resumeData = {
       tools: ["Adobe XD", "After Effects", "Illustrator", "Sketch", "Principle"],
       team: "Arif, Manoranjan, Lokesh",
       description: "Redesigned the Finshots mobile app to provide a centralized platform for accessing financial news and insights. The app addresses the challenge of fragmented content delivery across emails, social posts, and other channels.",
-      problem: "Frequent readers struggle to revisit old stories due to inefficient navigation. Endless scrolling and scattered content make it difficult to locate previously engaged stories, leading to frustration and decreased engagement.",
-      research: "Users loved the content but felt overwhelmed by its fragmented delivery. Revisiting valuable financial news was cumbersome due to lack of centralized access.",
+      problem: "Frequent readers of our financial content struggle to revisit old stories due to inefficient navigation on our website and in our emails. Endless scrolling and scattered content make it difficult for users to locate previously engaged stories, leading to frustration and decreased engagement. Feedback from social media and surveys indicates a strong demand for a more accessible, centralized platform that simplifies content discovery",
+      research: "The journey began with a simple yet crucial question: Why are users struggling to stay engaged with Finshots' content, despite its growing popularity? We conducted a thorough analysis using: Google Play Store reviews, Social media feedback, Direct user queries. A clear theme emerged: Users loved the content but felt overwhelmed by its fragmented delivery across emails, social posts, and other channels. Revisiting or following up on valuable financial news was cumbersome due to a lack of centralized access. The issue wasn't about the quality of the content—it was about making it more accessible and intuitive to navigate.",
       hmw: "How might we design a centralized platform that provides an intuitive and seamless navigation experience, enabling users to easily explore and revisit financial stories?",
       keyFeatures: [
-        "Navigation: Intuitive interface with categories, filters, and search options for effortless browsing of recent and archived stories",
-        "Infographics: Interactive infographics and tappable charts to simplify complex financial data",
-        "Accessibility: Adjustable font sizes and dark mode for inclusive experience",
-        "Custom Notifications: Personalized alerts for key updates and deadlines"
+        "Navigation: A sleek, intuitive interface with categories, filters, and search options. Benefit - Users could effortlessly browse both recent and archived stories, saving time and making the content more accessible.",
+        "Infographics: We introduced interactive infographics and tappable charts to simplify complex financial data, making it more accessible and engaging. Users could explore detailed breakdowns and key trends with a simple tap, enhancing their understanding. This subtle yet impactful feature improved user interactions and made data exploration seamless.",
+        "Accessibility: We implemented accessibility features like adjustable font sizes and a dark mode to ensure a more inclusive experience. These options allowed users to tailor the interface to their preferences, making it comfortable for diverse needs. By prioritizing accessibility, we enhanced usability for everyone.",
+        "Custom Notifications: We added a custom notification system that allowed users to set personalized alerts for key updates and deadlines. This feature ensured users received relevant information at the right time, improving engagement and helping them stay on top of important tasks effortlessly."
       ],
       results: [
-        "100k downloads in one year",
-        "4.9 ratings on Play Store",
+        "The app gained overall 100k downloads in one year",
+        "4.9 ratings on the Play Store",
         "Google Play's Best App of 2020 award",
         "500k+ subscribers achieved"
       ],
-      learnings: "This pivotal project introduced me to product design. Learned that great design is about crafting seamless, user-centric experiences that solve real problems. Embraced iterative design and the importance of balancing creativity with practicality."
+      learnings: "Working on Finshots was the pivotal project that pulled me into product design. Back in 2019, when UI/UX was still emerging, I had my first hands-on experience with Adobe XD. I dived into every aspect of the design process—from creating animations and onboarding illustrations to crafting icons and building complete UX flows. This early exposure revealed the transformative power of design and ignited my passion to further explore this field. Through Finshots, I learned that great design is more than just aesthetics; it's about crafting seamless, user-centric experiences that solve real problems. I embraced iterative design, continuously refining each element until it not only looked polished but also functioned flawlessly. This process underscored the importance of balancing creativity with practicality and taught me to always put the user's needs at the forefront. Finshots solidified my commitment to product design and set me on a path of continuous learning and innovation. It provided invaluable insights into the interplay between visual appeal and usability—insights that continue to shape my approach to creating products that truly resonate with users."
     },
     {
       title: "Onboarding Redesign",

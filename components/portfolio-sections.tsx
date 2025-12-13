@@ -7,13 +7,20 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { AgentState, SectionPriority, SectionType } from '@/lib/agent';
 import { User, Briefcase, Mail, Linkedin, FileText, Sparkles, Heart, Lightbulb, Target, Rocket, Code2, Calendar, Award, Globe, Github, Zap, FolderKanban, Image as ImageIcon, ChevronLeft, ChevronRight, ExternalLink, TrendingUp } from 'lucide-react';
 import Image from 'next/image';
+import ReactMarkdown from 'react-markdown';
 import { PreferenceGraph } from './preference-graph';
+import { resumeData } from '@/lib/resume-data';
+import { useTheme } from '@/contexts/theme-context';
 
 interface PortfolioSectionsProps {
   agentState: AgentState;
+  hideHeaderText?: boolean;
+  onProjectSelect?: (projectId: string) => void;
+  onShowProjectsList?: () => void;
 }
 
-export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
+export function PortfolioSections({ agentState, hideHeaderText = false, onProjectSelect, onShowProjectsList }: PortfolioSectionsProps) {
+  const { theme } = useTheme();
   // Track image errors for photo sections
   const [imageErrors, setImageErrors] = React.useState<Set<string>>(new Set());
   // Track carousel state for photo sections
@@ -24,6 +31,18 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
   const [mousePositions, setMousePositions] = React.useState<{ [key: string]: { x: number; y: number } | null }>({});
   // Track video elements for hover play/pause
   const videoRefs = React.useRef<{ [key: string]: HTMLVideoElement | null }>({});
+  // Track if this is the first load for animations
+  const [isFirstLoad, setIsFirstLoad] = React.useState(true);
+  
+  // Reset first load flag after animations complete
+  React.useEffect(() => {
+    if (isFirstLoad) {
+      const timer = setTimeout(() => {
+        setIsFirstLoad(false);
+      }, 3000); // After all animations complete
+      return () => clearTimeout(timer);
+    }
+  }, [isFirstLoad]);
 
   // Mouse tracking handlers - must be defined before early returns
   // Track mouse position with larger detection radius for nearby cards
@@ -109,12 +128,12 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
     // On mobile, all cards should be single column (col-span-1)
     const sizeMap: { [key: string]: string } = {
       'hero': 'col-span-1 sm:col-span-1 lg:col-span-1',
-      'preferences': 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-2',
+      'preferences': 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1',
       'photos': 'col-span-1 sm:col-span-1 lg:col-span-2 row-span-2',
-      'video': 'col-span-1 sm:col-span-2 lg:col-span-1 row-span-2',
-      'about': 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1',
-      'contact': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2',
-      'philosophy': 'col-span-1 sm:col-span-1 lg:col-span-2 row-span-2',
+      'video': 'col-span-1 sm:col-span-2 lg:col-span-1 row-span-1',
+      'connect': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
+      'contact': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
+      'philosophy': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
       'experience': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2',
     };
 
@@ -197,11 +216,18 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
     }));
   };
 
-  const renderSection = (section: typeof visibleSections[0]) => {
+  const renderSection = (section: typeof visibleSections[0], index: number) => {
     const baseStyles = getPriorityStyles(section.priority, section.type);
     const bentoSize = getBentoSize(section.priority, section.id, section.type, section.order);
     const mousePos = mousePositions[section.id];
     const isHovered = mousePos !== null && mousePos !== undefined && typeof mousePos.x === 'number' && typeof mousePos.y === 'number';
+    
+    // Calculate animation delay for cards
+    // Hero card appears at 0.6s, other cards follow with staggered delays
+    const heroIndex = visibleSections.findIndex(s => s.id === 'hero');
+    const cardDelay = section.id === 'hero' 
+      ? 0.6 
+      : 0.8 + ((heroIndex >= 0 && index > heroIndex ? index - 1 : index) * 0.1);
     
     // Border reveal that follows cursor - only visible in the spotlight area where cursor is
     // Increased radius to 200px for larger effect area
@@ -223,7 +249,8 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
           <Card 
             key={section.id} 
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} group flex flex-col relative overflow-hidden`}
+            className={`${baseStyles} ${bentoSize} group flex flex-col relative overflow-hidden ${isFirstLoad ? 'animate-card-reveal' : ''}`}
+            style={isFirstLoad ? { animationDelay: '0.6s' } : undefined}
             onClick={() => handleCardClick(section.id)}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
@@ -231,28 +258,45 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
             {borderReveal}
             
             <CardHeader className="flex flex-col justify-center flex-shrink-0 relative z-10 pb-2 px-4 pt-4">
-              <div className="flex items-center gap-2.5 mb-1.5">
-                <div>
-                  <CardTitle className="text-2xl md:text-3xl font-semibold mb-0.5">
-                    deva-dha-than
-                  </CardTitle>
-                  <CardDescription className="text-[12px] md:text-[13px] text-foreground/80">
-                    Product Designer
-                  </CardDescription>
-                </div>
+              <div className="mb-3">
+                <CardTitle 
+                  className={`text-2xl md:text-3xl font-semibold mb-0.5 ${isFirstLoad ? 'animate-line-reveal' : ''}`}
+                  style={isFirstLoad ? { animationDelay: '0s' } : undefined}
+                >
+                  Dev
+                </CardTitle>
+                <CardDescription 
+                  className={`text-[12px] md:text-[13px] text-foreground/80 ${isFirstLoad ? 'animate-line-reveal' : ''}`}
+                  style={isFirstLoad ? { animationDelay: '0.3s' } : undefined}
+                >
+                  Product Designer
+                </CardDescription>
               </div>
             </CardHeader>
-            <CardContent className="px-4 pb-4 pt-0 flex flex-col gap-1.5 relative z-10">
-              <p className="text-[13px] text-muted-foreground leading-relaxed">
+            <CardContent className="px-4 pb-4 pt-0 flex flex-col gap-3 relative z-10">
+              <p 
+                className={`text-[13px] text-muted-foreground leading-relaxed ${isFirstLoad ? 'animate-line-reveal' : ''}`}
+                style={isFirstLoad ? { animationDelay: '0.4s' } : undefined}
+              >
                 Building meaningful digital experiences through thoughtful design and user-centric solutions.
               </p>
+              
+              {/* SVG Illustration */}
+              <div className="relative w-full rounded-lg overflow-hidden border border-border/30 bg-background/50 flex items-center justify-center p-4">
+                <img
+                  src="/svg/white.svg"
+                  alt="Dev"
+                  className={`w-full h-auto max-h-[300px] object-contain svg-hero-${theme}`}
+                />
+              </div>
+              
               <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
                 <Globe className="h-3.5 w-3.5" />
                 <span>Currently in Edinburgh</span>
               </div>
               <div className="flex items-center gap-2 text-[13px]">
-                <Zap className="h-3.5 w-3.5 text-green-500" />
-                <span className="text-green-500">Available for work</span>
+                <Zap className="h-3.5 w-3.5 text-primary" />
+                <span className="text-primary">Available for work</span>
               </div>
             </CardContent>
           </Card>
@@ -262,8 +306,11 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
         return (
           <Card 
             key={section.id} 
+            id="playground"
+            data-section="playground"
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-auto`}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-auto ${isFirstLoad ? 'animate-card-reveal' : ''}`}
+            style={isFirstLoad ? { animationDelay: `${cardDelay}s` } : undefined}
             onClick={() => handleCardClick(section.id)}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
@@ -275,71 +322,13 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
           </Card>
         );
 
-      case 'about':
-        return (
-          <Card 
-            key={section.id} 
-            data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
-            onClick={() => handleCardClick(section.id)}
-            onMouseMove={(e) => handleMouseMove(section.id, e)}
-            onMouseLeave={() => handleMouseLeave(section.id)}
-          >
-            {borderReveal}
-            <CardHeader className="pb-2 flex-shrink-0 relative z-10">
-              <CardTitle className="flex items-center gap-2 text-[16px]">
-                <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
-                  <User className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                </div>
-                About Me
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3 relative z-10">
-              <p className="text-[14px] text-muted-foreground leading-relaxed">
-                I design with care, always keeping the user at the center. Good design begins with understanding people and their needs.
-              </p>
-              <div>
-                <h4 className="text-[14px] font-medium mb-2">Core Skills</h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {['Product Design', 'UI/UX', 'Prototyping', 'Design Systems', 'User Research', 'Interaction Design'].map((skill, idx) => {
-                    const colors = ['bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300', 'bg-purple-500/15 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300', 'bg-pink-500/15 dark:bg-pink-500/15 text-pink-700 dark:text-pink-300', 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300', 'bg-green-500/15 dark:bg-green-500/15 text-green-700 dark:text-green-300', 'bg-orange-500/15 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300', 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'];
-                    return (
-                      <span
-                        key={skill}
-                        className={`px-2 py-1 ${colors[idx % colors.length]} rounded-md text-[14px] hover:scale-105 transition-all duration-200 cursor-default`}
-                      >
-                        {skill}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-              <div>
-                <h4 className="text-[14px] font-medium mb-2">Tools</h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {['Sketch', 'Principle', 'After Effects', 'Webflow'].map((tool, idx) => {
-                    const colors = ['bg-emerald-500/15 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300', 'bg-teal-500/15 dark:bg-teal-500/15 text-teal-700 dark:text-teal-300', 'bg-violet-500/15 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300', 'bg-rose-500/15 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300', 'bg-amber-500/15 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300'];
-                    return (
-                      <span
-                        key={tool}
-                        className={`px-2 py-1 ${colors[idx % colors.length]} rounded-md text-[14px] hover:scale-105 transition-all duration-200 cursor-default`}
-                      >
-                        {tool}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        );
-
       case 'philosophy':
         return (
           <Card 
             key={section.id} 
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-full group relative overflow-hidden ${isFirstLoad ? 'animate-card-reveal' : ''}`}
+            style={isFirstLoad ? { animationDelay: `${cardDelay}s` } : undefined}
             onClick={() => handleCardClick(section.id)}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
@@ -353,40 +342,49 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                 Design Philosophy
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 relative z-10">
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
+            <CardContent className="space-y-1.5 relative z-10">
+              <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
                 <Heart className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:animate-pulse transition-all duration-300" />
                 <div>
-                  <p className="text-[14px] font-medium mb-1">User-Centered Design</p>
-                  <p className="text-[14px] text-muted-foreground leading-relaxed">
+                  <p className="text-[14px] font-medium mb-0.5">User-Centered Design</p>
+                  <p className="text-[13px] text-muted-foreground leading-relaxed">
                     I design with care, always keeping the user at the center of every decision.
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
-                <User className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-110 transition-all duration-300" />
-                <div>
-                  <p className="text-[14px] font-medium mb-1">Empathy First</p>
-                  <p className="text-[14px] text-muted-foreground leading-relaxed">
-                    Good design begins with understanding people and their needs deeply.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
+              <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
                 <Lightbulb className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:brightness-125 transition-all duration-300" />
                 <div>
-                  <p className="text-[14px] font-medium mb-1">Human Technology</p>
-                  <p className="text-[14px] text-muted-foreground leading-relaxed">
+                  <p className="text-[14px] font-medium mb-0.5">Human Technology</p>
+                  <p className="text-[13px] text-muted-foreground leading-relaxed">
                     Technology should feel natural and intuitive, built for humans.
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
-                <Target className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-110 transition-all duration-300" />
+              <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
+                <Target className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:rotate-12 transition-all duration-300" />
                 <div>
-                  <p className="text-[14px] font-medium mb-1">Purposeful Solutions</p>
-                  <p className="text-[14px] text-muted-foreground leading-relaxed">
-                    Every solution is thoughtful, purposeful, and made to last.
+                  <p className="text-[14px] font-medium mb-0.5">Iterative Improvement</p>
+                  <p className="text-[13px] text-muted-foreground leading-relaxed">
+                    Great design is born from continuous refinement and learning from feedback.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
+                <Rocket className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:translate-y-[-2px] transition-all duration-300" />
+                <div>
+                  <p className="text-[14px] font-medium mb-0.5">Accessibility First</p>
+                  <p className="text-[13px] text-muted-foreground leading-relaxed">
+                    Designing inclusively ensures everyone can access and enjoy digital experiences.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
+                <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:rotate-180 transition-all duration-300" />
+                <div>
+                  <p className="text-[14px] font-medium mb-0.5">Data-Driven Insights</p>
+                  <p className="text-[13px] text-muted-foreground leading-relaxed">
+                    Balancing creativity with metrics to create solutions that resonate and perform.
                   </p>
                 </div>
               </div>
@@ -400,7 +398,11 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
           return (
             <Card 
               key={section.id} 
-              className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
+              id="work"
+              data-section="work"
+              data-card-id={section.id}
+              className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden ${isFirstLoad ? 'animate-card-reveal' : ''}`}
+              style={isFirstLoad ? { animationDelay: `${cardDelay}s` } : undefined}
               onClick={() => handleCardClick(section.id)}
               onMouseMove={(e) => handleMouseMove(section.id, e)}
               onMouseLeave={() => handleMouseLeave(section.id)}
@@ -424,7 +426,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                         <p className="text-[14px] text-primary mb-2">Nesoi.ai</p>
                         <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
                           <Calendar className="h-3.5 w-3.5" />
-                          <span>2023 - Present</span>
+                          <span>July 2025 - November 2025</span>
                         </div>
                       </div>
                       <p className="text-[14px] text-muted-foreground leading-relaxed mb-3">
@@ -545,84 +547,23 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
           </Card>
         );
 
-      case 'contact':
-        return (
-          <Card 
-            key={section.id} 
-            data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
-            onClick={() => handleCardClick(section.id)}
-            onMouseMove={(e) => handleMouseMove(section.id, e)}
-            onMouseLeave={() => handleMouseLeave(section.id)}
-          >
-            {borderReveal}
-            <CardHeader className="pb-2 flex-shrink-0 relative z-10">
-              <CardTitle className="flex items-center gap-2 text-[16px]">
-                <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
-                  <Mail className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                </div>
-                Connect
-              </CardTitle>
-              <CardDescription className="text-[14px]">Get in touch</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-2 relative z-10">
-              <div className="space-y-2">
-                <a 
-                  href="https://www.linkedin.com/in/devadhathan" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 hover:scale-[1.02] transition-all duration-200 group/link border border-border/20"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Linkedin className="h-4 w-4 text-primary group-hover/link:scale-110 transition-all duration-300 flex-shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="text-[14px] font-medium">LinkedIn</span>
-                    <span className="text-[14px] text-muted-foreground">Connect with me</span>
-                  </div>
-                </a>
-                <a 
-                  href="#" 
-                  className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 hover:scale-[1.02] transition-all duration-200 group/link border border-border/20"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <FileText className="h-4 w-4 text-primary group-hover/link:scale-110 transition-all duration-300 flex-shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="text-[14px] font-medium">Resume</span>
-                    <span className="text-[14px] text-muted-foreground">Download PDF</span>
-                  </div>
-                </a>
-                <a 
-                  href="https://github.com/devadhathan" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 hover:scale-[1.02] transition-all duration-200 group/link border border-border/20"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Github className="h-4 w-4 text-primary group-hover/link:scale-110 transition-all duration-300 flex-shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="text-[14px] font-medium">GitHub</span>
-                    <span className="text-[14px] text-muted-foreground">View my work</span>
-                  </div>
-                </a>
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/20 border border-border/20">
-                  <Mail className="h-4 w-4 text-primary flex-shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="text-[14px] font-medium">Email</span>
-                    <span className="text-[14px] text-muted-foreground">Available for opportunities</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        );
-
       case 'projects':
         return (
           <Card 
             key={section.id} 
+            id="work"
+            data-section="work"
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
-            onClick={() => handleCardClick(section.id)}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden ${isFirstLoad ? 'animate-card-reveal' : ''}`}
+            style={isFirstLoad ? { animationDelay: `${cardDelay}s` } : undefined}
+            onClick={() => {
+              // Navigate to projects list instead of showing dialog
+              if (onShowProjectsList) {
+                onShowProjectsList();
+              } else {
+                handleCardClick(section.id);
+              }
+            }}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
           >
@@ -659,23 +600,54 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                   )}
                   {section.links && section.links.length > 0 && (
                     <div className="space-y-2">
-                      {section.links.map((link, index) => (
-                        <a
-                          key={index}
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 hover:scale-[1.02] transition-all duration-200 group/link border border-border/20"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Rocket className="h-4 w-4 text-primary group-hover/link:scale-125 group-hover/link:-translate-y-1 transition-all duration-300 flex-shrink-0" />
-                          <div className="flex flex-col flex-1">
-                            <span className="text-[14px] font-medium">{link.label}</span>
-                            <span className="text-[14px] text-muted-foreground text-xs">{link.url}</span>
-                          </div>
-                          <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover/link:opacity-100 group-hover/link:translate-x-1 transition-all duration-300" />
-                        </a>
-                      ))}
+                      {section.links.map((link, index) => {
+                        // Extract project ID from label - try to match with actual project titles
+                        const getProjectId = (label: string): string => {
+                          const normalizedLabel = label.toLowerCase().trim();
+                          
+                          // Try to find matching project from resume data
+                          const project = resumeData.projects.find(p => {
+                            const normalizedTitle = p.title.toLowerCase().trim();
+                            return normalizedLabel === normalizedTitle || 
+                                   normalizedLabel.includes(normalizedTitle) ||
+                                   normalizedTitle.includes(normalizedLabel);
+                          });
+                          
+                          if (project) {
+                            // Return slugified version of the project title
+                            return project.title.toLowerCase().replace(/\s+/g, '-');
+                          }
+                          
+                          // Fallback: convert label to slug format
+                          return normalizedLabel.replace(/\s+/g, '-');
+                        };
+                        
+                        const projectId = getProjectId(link.label);
+                        
+                        return (
+                          <button
+                            key={index}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (onProjectSelect) {
+                                onProjectSelect(projectId);
+                              } else {
+                                // Fallback to opening in new tab if no handler
+                                window.open(link.url, '_blank', 'noopener,noreferrer');
+                              }
+                            }}
+                            className="w-full flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 hover:scale-[1.02] transition-all duration-200 group/link border border-border/20 text-left"
+                          >
+                            <Rocket className="h-4 w-4 text-primary group-hover/link:scale-125 group-hover/link:-translate-y-1 transition-all duration-300 flex-shrink-0" />
+                            <div className="flex flex-col flex-1">
+                              <span className="text-[14px] font-medium">{link.label}</span>
+                              <span className="text-[14px] text-muted-foreground text-xs">{link.url}</span>
+                            </div>
+                            <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover/link:opacity-100 group-hover/link:translate-x-1 transition-all duration-300" />
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                   {!section.description && !section.content && (!section.links || section.links.length === 0) && (
@@ -821,7 +793,8 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
           <Card 
             key={section.id} 
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-full overflow-hidden group`}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-full overflow-hidden group ${isFirstLoad ? 'animate-card-reveal' : ''}`}
+            style={isFirstLoad ? { animationDelay: `${cardDelay}s` } : undefined}
             onClick={() => handleCardClick(section.id)}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
@@ -962,7 +935,8 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
           <Card 
             key={section.id} 
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-full overflow-hidden group relative`}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-full overflow-hidden group relative ${isFirstLoad ? 'animate-card-reveal' : ''}`}
+            style={isFirstLoad ? { animationDelay: `${cardDelay}s` } : undefined}
             onClick={() => handleCardClick(section.id)}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => {
@@ -1030,7 +1004,8 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
           <Card 
             key={section.id} 
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden ${isFirstLoad ? 'animate-card-reveal' : ''}`}
+            style={isFirstLoad ? { animationDelay: `${cardDelay}s` } : undefined}
             onClick={() => handleCardClick(section.id)}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
@@ -1081,19 +1056,93 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
             </CardContent>
           </Card>
         );
+
+      case 'connect':
+        return (
+          <Card 
+            key={section.id} 
+            data-card-id={section.id}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-full group relative overflow-hidden ${isFirstLoad ? 'animate-card-reveal' : ''}`}
+            style={isFirstLoad ? { animationDelay: `${cardDelay}s` } : undefined}
+            onClick={() => handleCardClick(section.id)}
+            onMouseMove={(e) => handleMouseMove(section.id, e)}
+            onMouseLeave={() => handleMouseLeave(section.id)}
+          >
+            {borderReveal}
+            <CardHeader className="pb-2 flex-shrink-0 relative z-10">
+              <CardTitle className="flex items-center gap-2 text-[16px] mb-2">
+                <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
+                  <Mail className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
+                </div>
+                Connect
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3 relative z-10 flex-1">
+              <div className="flex flex-col gap-3">
+                <a
+                  href={`mailto:${resumeData.email}`}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group/item border border-border/20"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Mail className="h-4 w-4 text-primary group-hover/item:scale-110 transition-transform flex-shrink-0" />
+                  <div className="flex flex-col">
+                    <span className="text-[14px] font-medium">Email</span>
+                    <span className="text-[12px] text-muted-foreground">{resumeData.email}</span>
+                  </div>
+                </a>
+                <a
+                  href={`https://linkedin.com/${resumeData.linkedin}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group/item border border-border/20"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Linkedin className="h-4 w-4 text-primary group-hover/item:scale-110 transition-transform flex-shrink-0" />
+                  <div className="flex flex-col">
+                    <span className="text-[14px] font-medium">LinkedIn</span>
+                    <span className="text-[12px] text-muted-foreground">Connect with me</span>
+                  </div>
+                </a>
+                <a
+                  href={`https://${resumeData.website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group/item border border-border/20"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Globe className="h-4 w-4 text-primary group-hover/item:scale-110 transition-transform flex-shrink-0" />
+                  <div className="flex flex-col">
+                    <span className="text-[14px] font-medium">Website</span>
+                    <span className="text-[12px] text-muted-foreground">{resumeData.website}</span>
+                  </div>
+                </a>
+              </div>
+            </CardContent>
+          </Card>
+        );
     }
   };
 
   return (
     <>
+      {!hideHeaderText && (
+        <div className="mb-8 text-left pt-8 md:pt-12">
+          <p className="text-sm md:text-base text-muted-foreground mb-6 font-medium animate-fade-in-blur">
+            Dev&apos;s digital home
+          </p>
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-light mb-4 text-foreground leading-relaxed animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>
+            I&apos;m a product designer curious about how people think, how systems behave, and how interfaces come alive. I enjoy prototyping ideas, exploring interaction and motion, and shaping complex problems into simple, meaningful experiences. With roots in engineering and hands-on startup work, I&apos;m most excited by products where design and technology meet.
+          </h1>
+        </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-4 lg:gap-4 auto-rows-[minmax(200px,auto)] pb-4 md:pb-0 w-full">
-        {visibleSections.map(section => renderSection(section))}
+        {visibleSections.map((section, index) => renderSection(section, index))}
       </div>
       
-      {/* Detail Dialog */}
-      <Dialog open={!!selectedSection} onOpenChange={(open) => !open && setSelectedSection(null)}>
+      {/* Detail Dialog - Exclude projects section */}
+      <Dialog open={!!selectedSection && selectedSection.id !== 'projects'} onOpenChange={(open) => !open && setSelectedSection(null)}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          {selectedSection && (
+          {selectedSection && selectedSection.id !== 'projects' && (
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 text-xl">
@@ -1303,9 +1352,9 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                     {selectedSection.content ? (
                       <div>
                         <h4 className="font-medium mb-2 text-base">Experience Details</h4>
-                        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-                          {selectedSection.content}
-                        </p>
+                        <div className="text-sm text-muted-foreground leading-relaxed prose dark:prose-invert prose-sm max-w-none">
+                          <ReactMarkdown>{selectedSection.content}</ReactMarkdown>
+                        </div>
                       </div>
                     ) : (
                       <>
@@ -1317,7 +1366,7 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                                 <p className="text-sm text-primary mb-2">Nesoi.ai</p>
                                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                                   <Calendar className="h-3.5 w-3.5" />
-                                  <span>2023 - Present</span>
+                                  <span>July 2025 - November 2025</span>
                                 </div>
                               </div>
                               <p className="text-sm text-muted-foreground leading-relaxed mb-3">
@@ -1436,9 +1485,9 @@ export function PortfolioSections({ agentState }: PortfolioSectionsProps) {
                 {!['hero', 'preferences', 'about', 'philosophy', 'experience', 'contact'].includes(selectedSection.id) && selectedSection.content && (
                   <div>
                     <h4 className="font-medium mb-2 text-base">Details</h4>
-                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-                      {selectedSection.content}
-                    </p>
+                    <div className="text-sm text-muted-foreground leading-relaxed prose dark:prose-invert prose-sm max-w-none">
+                      <ReactMarkdown>{selectedSection.content}</ReactMarkdown>
+                    </div>
                   </div>
                 )}
 

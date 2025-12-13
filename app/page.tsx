@@ -7,20 +7,28 @@ import { TopBar } from '@/components/top-bar';
 import { DesktopSidebar } from '@/components/desktop-sidebar';
 import { AboutSection } from '@/components/about-section';
 import { ProjectDetailView } from '@/components/project-detail-view';
+import { ProjectsListView } from '@/components/projects-list-view';
+import { BottomNav } from '@/components/bottom-nav';
+import { FloatingChatButton } from '@/components/floating-chat-button';
 import { AgentState } from '@/lib/agent';
 
 export default function Home() {
   const [agentState, setAgentState] = useState<AgentState | null>(null);
   const [isAgentWorking, setIsAgentWorking] = useState(false);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
-  const [isChatCollapsed, setIsChatCollapsed] = useState(false);
+  const [isChatCollapsed, setIsChatCollapsed] = useState(true);
   const [explanation, setExplanation] = useState<string | null>(null);
   const [displayedExplanation, setDisplayedExplanation] = useState<string>('');
   const [isExplanationComplete, setIsExplanationComplete] = useState(false);
   const [shouldShowCards, setShouldShowCards] = useState(false);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
+  const [chatMode, setChatMode] = useState<'ask' | 'agent'>('agent');
+  const [showProjectsList, setShowProjectsList] = useState(false);
   const resetAgentRef = useRef<(() => void) | null>(null);
+  const [showInitialLoading, setShowInitialLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // Dynamic loading messages that change over time
   const loadingMessages = [
@@ -158,21 +166,68 @@ export default function Home() {
     setSelectedProject(null);
   };
 
+  // Show loading screen every time page loads
+  useEffect(() => {
+    setMounted(true);
+    const hasSeenLoading = localStorage.getItem('portfolio-has-loaded');
+    const isFirstLoad = !hasSeenLoading;
+    
+    setShowInitialLoading(true);
+    
+    // First load: 3 seconds, subsequent visits: 0.8 seconds
+    const duration = isFirstLoad ? 3000 : 800;
+    
+    const timer = setTimeout(() => {
+      setShowInitialLoading(false);
+      if (isFirstLoad) {
+        localStorage.setItem('portfolio-has-loaded', 'true');
+      }
+    }, duration);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden [html.glass_&]:bg-transparent [html.glass_&]:bg-none">
-      <TopBar onProjectSelect={setSelectedProject} onHomeClick={handleHomeClick} />
-      <div className="absolute inset-0 bg-gradient-grid pointer-events-none opacity-30 z-0 [html.glass_&]:hidden"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none z-0 [html.glass_&]:hidden"></div>
-      
-      <div className="flex pt-14 relative z-10">
+      {/* Initial Loading Screen - Only shows first time */}
+      {mounted && showInitialLoading && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background">
+          <div className="flex flex-col items-center gap-4">
+            <video
+              autoPlay
+              muted
+              loop={false}
+              playsInline
+              className="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 object-contain"
+            >
+              <source src="/videos/Subtle_Typing_Video_Generation.mp4" type="video/mp4" />
+            </video>
+            <p className="text-base md:text-lg text-muted-foreground font-normal font-mono animate-pulse">
+              Loading Dev&apos;s Portfolio
+            </p>
+          </div>
+        </div>
+      )}
+      {!showInitialLoading && (
+        <>
+          <TopBar onProjectSelect={setSelectedProject} onHomeClick={handleHomeClick} />
+          <div className="absolute inset-0 bg-gradient-grid pointer-events-none opacity-30 z-0 [html.glass_&]:hidden"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none z-0 [html.glass_&]:hidden"></div>
+          
+          <div className="flex pt-14 relative z-10">
         {/* Desktop Sidebar - Fixed */}
-        <div className="hidden lg:block fixed left-0 top-14 w-80 h-[calc(100vh-3.5rem)] z-20">
-          <DesktopSidebar onProjectSelect={setSelectedProject} />
+        <div className={`hidden lg:block fixed left-0 top-14 h-[calc(100vh-3.5rem)] z-20 transition-all duration-300 ${isSidebarCollapsed ? 'w-16' : 'w-80'}`}>
+          <DesktopSidebar 
+            onProjectSelect={setSelectedProject} 
+            isCollapsed={isSidebarCollapsed}
+            onCollapseChange={setIsSidebarCollapsed}
+          />
         </div>
         
         {/* Main Content */}
-        <div className={`flex-1 w-full mx-auto px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8 relative z-10 lg:ml-80 transition-all duration-300 ${isChatCollapsed ? 'lg:pr-4' : 'lg:pr-[440px]'} pb-20 md:pb-24 lg:pb-8 overflow-x-hidden`}>
-          {isAgentWorking ? (
+        <div className={`flex-1 w-full px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8 relative z-10 transition-[margin-left,margin-right,padding-right] duration-500 ease-in-out ${isSidebarCollapsed && isChatCollapsed ? 'lg:ml-0 lg:mr-0' : isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-80'} ${isChatCollapsed ? 'lg:pr-32' : 'lg:pr-[440px]'} pb-24 md:pb-28 lg:pb-8 overflow-x-hidden`}>
+          <div className={`transition-[max-width,margin-left,margin-right] duration-500 ease-in-out ${isSidebarCollapsed && isChatCollapsed ? 'max-w-6xl mx-auto' : isChatCollapsed ? 'max-w-6xl mx-auto' : 'max-w-none mx-0'}`}>
+            {isAgentWorking ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
               <div className="flex gap-2 mb-6">
                 <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
@@ -186,7 +241,23 @@ export default function Home() {
             <div className="w-full">
               <ProjectDetailView 
                 projectId={selectedProject} 
-                onBack={() => setSelectedProject(null)} 
+                onBack={() => {
+                  setSelectedProject(null);
+                  setShowProjectsList(false);
+                }} 
+              />
+            </div>
+          ) : showProjectsList ? (
+            <div className="w-full h-full">
+              <ProjectsListView
+                onBack={() => {
+                  setShowProjectsList(false);
+                  setSelectedProject(null);
+                }}
+                onProjectSelect={(projectId) => {
+                  setSelectedProject(projectId);
+                }}
+                selectedProjectId={selectedProject}
               />
             </div>
           ) : agentState ? (
@@ -239,22 +310,45 @@ export default function Home() {
                 // Show generated cards only after explanation is complete
                 (shouldShowCards && isExplanationComplete)) && (
                   <div className={`transition-all duration-600 animate-fade-in-blur`}>
-                    <PortfolioSections agentState={agentState} />
+                    <PortfolioSections 
+                      agentState={agentState} 
+                      hideHeaderText={isAgentWorking || shouldShowCards}
+                      onProjectSelect={setSelectedProject}
+                      onShowProjectsList={() => setShowProjectsList(true)}
+                    />
                     {/* Only show AboutSection (awards/certifications) for default state, not generated cards */}
                     {!agentState.isCustomLayout && <AboutSection />}
                   </div>
                 )
               )}
             </>
-          ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              <p>Loading portfolio agent...</p>
-            </div>
-          )}
+          ) : null}
+          </div>
         </div>
       </div>
-      
-      <SideAgent onStateChange={handleStateChange} onAgentWorking={handleAgentWorking} onCollapseChange={handleCollapseChange} onExplanation={handleExplanation} onExplanationComplete={handleExplanationComplete} resetRef={resetAgentRef} />
+          
+          <SideAgent 
+            onStateChange={handleStateChange} 
+            onAgentWorking={handleAgentWorking} 
+            onCollapseChange={handleCollapseChange} 
+            onExplanation={handleExplanation} 
+            onExplanationComplete={handleExplanationComplete} 
+            resetRef={resetAgentRef}
+            externalCollapsed={isChatCollapsed}
+            onExpandRequest={() => setIsChatCollapsed(false)}
+            initialMode={chatMode}
+          />
+          <BottomNav />
+          <FloatingChatButton 
+            onClick={() => {
+              setIsChatCollapsed(false);
+            }} 
+            isCollapsed={isChatCollapsed}
+            mode={chatMode}
+            onModeChange={setChatMode}
+          />
+        </>
+      )}
     </div>
   );
 }

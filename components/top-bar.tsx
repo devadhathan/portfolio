@@ -14,6 +14,8 @@ import {
 import { MobileSidebar } from './mobile-sidebar';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { ContactChat } from './contact-chat';
 
 interface TopBarProps {
   onProjectSelect?: (projectSlug: string) => void;
@@ -25,6 +27,7 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
   const { backgroundImage, setBackgroundImage, availableBackgrounds } = useBackground();
   const isGlassTheme = theme === 'glass';
   const router = useRouter();
+  const [chatOpen, setChatOpen] = useState(false);
 
   const handleLogoClick = () => {
     // Reset portfolio state if handler provided
@@ -33,6 +36,10 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
     }
     // Navigate to home
     router.push('/');
+  };
+
+  const handleMessageClick = () => {
+    setChatOpen(true);
   };
 
   return (
@@ -59,7 +66,10 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
           </div>
           
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/40 border border-border/30 text-xs hover:bg-secondary/50 transition-colors cursor-pointer">
+            <button 
+              onClick={handleMessageClick}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/40 border border-border/30 text-xs hover:bg-secondary/50 transition-colors cursor-pointer"
+            >
               <Sparkles className="h-3 w-3 text-primary" />
               <span className="hidden sm:inline">Message me</span>
               <span className="sm:hidden">Message</span>
@@ -216,6 +226,7 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
           </div>
         </div>
       </div>
+      <ContactChat open={chatOpen} onOpenChange={setChatOpen} />
     </div>
   );
 }
