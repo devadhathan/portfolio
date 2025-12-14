@@ -58,7 +58,7 @@ export function MobileSidebar({ onProjectSelect }: MobileSidebarProps) {
         <Button 
           variant="outline" 
           size="icon" 
-          className="lg:hidden h-10 w-10 rounded-full shadow-lg bg-background/90 backdrop-blur-xl border-2 border-border/50 hover:bg-background hover:border-primary/50 transition-all"
+          className="lg:hidden h-10 w-10 rounded-full shadow-lg bg-card backdrop-blur-xl border-2 border-border/50 hover:bg-card hover:border-primary/50 transition-all"
         >
           <Menu className="h-5 w-5" />
         </Button>

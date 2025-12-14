@@ -11,7 +11,7 @@ export default function ContactPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-card">
       <TopBar onHomeClick={() => router.push('/')} />
       <div className="pt-14 pb-24 px-4 md:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">

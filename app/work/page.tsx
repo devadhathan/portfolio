@@ -26,7 +26,7 @@ export default function WorkPage() {
   };
 
   return (
-    <div className={`min-h-screen ${selectedProject ? 'bg-card' : 'bg-background'}`}>
+    <div className="min-h-screen bg-card">
       <TopBar onHomeClick={() => router.push('/')} />
       <div className="pt-14 pb-24 px-24 md:px-6 lg:px-8 overflow-visible">
         {selectedProject ? (

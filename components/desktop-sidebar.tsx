@@ -53,7 +53,7 @@ export function DesktopSidebar({ onProjectSelect, isCollapsed = false, onCollaps
   };
 
   return (
-    <div className={`h-full overflow-hidden flex flex-col bg-background/50 border-r border-border/30 relative transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-80'}`}>
+    <div className={`h-full overflow-hidden flex flex-col bg-card border-r border-border/30 relative transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-80'}`}>
       {/* Header with Collapse Button */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2 flex-shrink-0 border-b border-border/30">
         {!isCollapsed && (

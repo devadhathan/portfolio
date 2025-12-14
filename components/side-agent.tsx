@@ -903,7 +903,7 @@ EXAMPLE RESPONSE:
             <Separator className="flex-shrink-0" />
             <CardContent className="pt-4 pb-4 flex-none mt-auto">
               {/* Terminal-style input area */}
-              <div className="flex flex-col gap-3 border border-border/50 rounded-lg bg-background/80 backdrop-blur-sm p-3">
+              <div className="flex flex-col gap-3 border border-border/50 rounded-lg bg-card backdrop-blur-sm p-3">
                 {/* Textarea at top - expands with content */}
                 <div className="relative">
                   <textarea
@@ -997,7 +997,7 @@ EXAMPLE RESPONSE:
             <Button 
               variant="outline" 
               size="lg" 
-              className="lg:hidden fixed bottom-4 right-4 rounded-full h-14 w-14 shadow-2xl z-[100] bg-background hover:bg-background/90 border-2 border-border backdrop-blur-sm flex items-center justify-center p-0"
+              className="lg:hidden fixed bottom-4 right-4 rounded-full h-14 w-14 shadow-2xl z-[100] bg-card hover:bg-card/90 border-2 border-border backdrop-blur-sm flex items-center justify-center p-0"
               onClick={handleCollapseToggle}
             >
               <MessageSquare className="h-6 w-6 text-foreground flex-shrink-0" />
@@ -1061,7 +1061,7 @@ EXAMPLE RESPONSE:
                     </div>
                     <Separator className="flex-shrink-0" />
                     <CardContent className="pt-4 pb-4 flex-none mt-auto">
-                      <div className="flex flex-col gap-3 border border-border/50 rounded-lg bg-background/80 backdrop-blur-sm p-3">
+                      <div className="flex flex-col gap-3 border border-border/50 rounded-lg bg-card backdrop-blur-sm p-3">
                         <div className="relative">
                           <textarea
                             value={input}

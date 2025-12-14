@@ -33,7 +33,7 @@ export function BottomNav() {
 
   return (
     <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
-      <div className="flex items-center gap-2 px-2 py-2 bg-background/80 backdrop-blur-xl border-2 border-border/70 rounded-full shadow-lg">
+      <div className="flex items-center gap-2 px-2 py-2 bg-card backdrop-blur-xl border-2 border-border/70 rounded-full shadow-lg">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
