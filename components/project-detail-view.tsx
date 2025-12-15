@@ -2,16 +2,12 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Users, Wrench, ExternalLink, Smartphone, X, ZoomIn } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, ExternalLink, Smartphone, X, ZoomIn } from 'lucide-react';
 import { resumeData } from '@/lib/resume-data';
 import { FinshotsDetail } from './finshots-detail';
 import Image from 'next/image';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// #region agent log
-fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'project-detail-view.tsx:8',message:'Import check',data:{finshotsDetailType:typeof FinshotsDetail,finshotsDetailIsUndefined:FinshotsDetail===undefined},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-// #endregion
 
 interface ProjectDetailViewProps {
   projectId: string;
@@ -24,6 +20,11 @@ const nesoiImages = [
   { src: '/svg/Group 29.png', title: 'Nesoi Dashboard', description: 'Adviser/client-facing dashboard interface' },
 ];
 
+// Images for Falcon Design System project
+const falconImages = [
+  { src: '/falcon design system/image.png', title: 'Falcon Design System', description: 'Comprehensive design system interface' },
+];
+
 export function ProjectDetailView({ projectId, onBack, hideBackButton = false }: ProjectDetailViewProps) {
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   
@@ -34,9 +35,6 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
   const closeZoom = () => {
     setZoomedImage(null);
   };
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'project-detail-view.tsx:18',message:'ProjectDetailView entry',data:{projectId,hideBackButton},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
 
   const project = resumeData.projects.find(
     p => p.title.toLowerCase().replace(/\s+/g, '-') === projectId.toLowerCase().replace(/\s+/g, '-')
@@ -46,31 +44,15 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
   const normalizedProjectId = projectId.toLowerCase().replace(/\s+/g, '-');
   const normalizedTitle = project?.title.toLowerCase().replace(/\s+/g, '-') || '';
   
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'project-detail-view.tsx:25',message:'Before Finshots check',data:{normalizedProjectId,normalizedTitle,isFinshots:normalizedProjectId.includes('finshots')||normalizedTitle.includes('finshots'),finshotsDetailAvailable:typeof FinshotsDetail!=='undefined'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
-  
   if (normalizedProjectId.includes('finshots') || normalizedTitle.includes('finshots') || 
       projectId.toLowerCase() === 'finshots-news-app' || normalizedTitle === 'finshots-news-app') {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'project-detail-view.tsx:28',message:'Rendering FinshotsDetail',data:{finshotsDetailType:typeof FinshotsDetail,finshotsDetailIsFunction:typeof FinshotsDetail==='function',finshotsDetailIsUndefined:FinshotsDetail===undefined,finshotsDetailIsNull:FinshotsDetail===null},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
     try {
       if (!FinshotsDetail) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'project-detail-view.tsx:32',message:'FinshotsDetail is falsy before render',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
         throw new Error('FinshotsDetail is undefined');
       }
       const element = <FinshotsDetail projectId={projectId} onBack={onBack} hideBackButton={hideBackButton} />;
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'project-detail-view.tsx:37',message:'FinshotsDetail element created',data:{elementType:typeof element,elementIsUndefined:element===undefined},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
       return element;
     } catch (error) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'project-detail-view.tsx:41',message:'Error rendering FinshotsDetail',data:{errorMessage:error instanceof Error?error.message:String(error),errorStack:error instanceof Error?error.stack:undefined},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
       throw error;
     }
   }
@@ -154,6 +136,30 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
                 <p className="text-lg leading-relaxed text-muted-foreground">{project.details}</p>
               )}
             </>
+          )}
+          {project.notes && project.notes.length > 0 && (
+            <div id={`${projectId}-notes`} className="mb-8">
+              <h2 className="text-2xl font-normal text-foreground">Notes</h2>
+              <div className="mt-4 space-y-3">
+                {project.notes.map((note, idx) => (
+                  <p key={idx} className="text-base leading-relaxed text-muted-foreground">
+                    {note}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+          {project.activityHistory && project.activityHistory.length > 0 && (
+            <div id={`${projectId}-activity-history`} className="mb-8">
+              <h2 className="text-2xl font-normal text-foreground">Activity history</h2>
+              <div className="mt-4 space-y-3">
+                {project.activityHistory.map((entry, idx) => (
+                  <p key={idx} className="text-base leading-relaxed text-muted-foreground">
+                    {entry}
+                  </p>
+                ))}
+              </div>
+            </div>
           )}
           {project.url && (
             <div className="flex flex-wrap gap-4 pt-2">
@@ -255,6 +261,83 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
         </div>
       )}
 
+      {/* Design Gallery - For Falcon Design System project */}
+      {project && (project.title.toLowerCase().includes('falcon') || projectId.toLowerCase().includes('falcon')) && falconImages.length > 0 && (
+        <div className="mb-64 -mx-4 md:-mx-6 lg:-mx-8">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8 px-4 md:px-6 lg:px-8">
+            <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Design Gallery</h2>
+            <div className="lg:col-span-3"></div>
+          </div>
+          <div className="w-full">
+            {falconImages.map((image, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.6,
+                  delay: idx * 0.1,
+                  ease: [0.42, 0, 1, 1]
+                }}
+                className="mb-8 last:mb-0 w-full"
+              >
+                <div
+                  className="relative w-full cursor-pointer group"
+                  onClick={() => handleImageClick(image.src)}
+                >
+                  <div className="relative w-full" style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}>
+                    <Image
+                      src={image.src}
+                      alt={image.title}
+                      width={1920}
+                      height={1080}
+                      className="w-full h-auto object-contain group-hover:opacity-90 transition-opacity duration-300"
+                      sizes="100vw"
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {project.designGallery && project.designGallery.length > 0 && (
+        <div id={`${projectId}-design`} className="mb-32">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-normal text-foreground">Design gallery</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {project.designGallery.map((entry, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                className="rounded-2xl border border-border/40 bg-card/60 overflow-hidden"
+              >
+                <div
+                  className="relative w-full h-72 cursor-pointer"
+                  onClick={() => handleImageClick(entry.src)}
+                >
+                  <Image
+                    src={entry.src}
+                    alt={entry.title || 'Design gallery'}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                </div>
+                <div className="px-4 py-3 space-y-1">
+                  <p className="text-sm uppercase tracking-wider text-muted-foreground">{entry.title}</p>
+                  {entry.description && <p className="text-base text-muted-foreground">{entry.description}</p>}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Zoom Modal */}
       <AnimatePresence>
         {zoomedImage && (
@@ -306,6 +389,26 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
         </div>
       )}
 
+
+      {project.painPoints && project.painPoints.length > 0 && (
+        <div id={`${projectId}-painpoints`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Painpoints</h2>
+          <div className="lg:col-span-3">
+            {project.painPointsIntro && (
+              <p className="text-lg leading-relaxed text-muted-foreground mb-4">{project.painPointsIntro}</p>
+            )}
+            <div className="space-y-4">
+              {project.painPoints.map((pain, idx) => (
+                <div key={idx} className="p-4 border border-border/50 rounded-xl bg-card/40">
+                  <p className="text-lg font-semibold text-foreground">{pain.title}</p>
+                  <p className="text-base leading-relaxed text-muted-foreground">{pain.detail}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Research Section */}
       {project.research && (
         <div id={`${projectId}-research`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -314,6 +417,32 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
             <p className="text-lg leading-relaxed text-muted-foreground">
               {project.research}
             </p>
+          </div>
+        </div>
+      )}
+
+      {project.takeStepBack && (
+        <div className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Take a step back</h2>
+          <div className="lg:col-span-3">
+            <p className="text-lg leading-relaxed text-muted-foreground">
+              {project.takeStepBack}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {project.personas && project.personas.length > 0 && (
+        <div id={`${projectId}-personas`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Personas</h2>
+          <div className="lg:col-span-3 space-y-4">
+            {project.personas.map((persona, idx) => (
+              <div key={idx} className="p-4 border border-border/50 rounded-xl bg-card/40">
+                <p className="text-lg font-semibold text-foreground">{persona.name}</p>
+                <p className="text-sm text-muted-foreground mb-2">{persona.occupation}</p>
+                <p className="text-base leading-relaxed text-muted-foreground">{persona.goal}</p>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -327,6 +456,30 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
               {project.approach}
             </p>
           </div>
+        </div>
+      )}
+
+      {project.explorations && project.explorations.length > 0 && (
+        <div id={`${projectId}-exploring`} className="mb-64">
+          <h2 className="text-2xl font-normal text-foreground mb-6">Exploring possibilities</h2>
+          <div className="space-y-8">
+            {project.explorations.map((exploration, idx) => (
+              <div key={idx} className="space-y-3">
+                <p className="text-sm uppercase tracking-wider text-muted-foreground">{exploration.tag}</p>
+                <h3 className="text-xl font-semibold text-foreground">{exploration.title}</h3>
+                <p className="text-base leading-relaxed text-muted-foreground">{exploration.problem}</p>
+                <p className="text-base leading-relaxed text-foreground font-semibold">Solution</p>
+                <p className="text-base leading-relaxed text-muted-foreground">{exploration.solution}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {project.prototype && (
+        <div id={`${projectId}-prototype`} className="mb-64">
+          <h2 className="text-2xl font-normal text-foreground mb-3">Prototype</h2>
+          <p className="text-lg leading-relaxed text-muted-foreground">{project.prototype}</p>
         </div>
       )}
 
@@ -347,6 +500,9 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
         <div id={`${projectId}-stats`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
           <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Some stats</h2>
           <div className="lg:col-span-3">
+            {project.impactOverview && (
+              <p className="text-lg leading-relaxed text-muted-foreground mb-5">{project.impactOverview}</p>
+            )}
             <div className="space-y-3">
               {project.results.map((result, idx) => (
                 <div key={idx} className="flex items-start gap-3">
@@ -361,7 +517,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {/* Key Features */}
       {project.keyFeatures && project.keyFeatures.length > 0 && (
-        <div id={`${projectId}-key-features`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+        <div id={`${projectId}-key-features`} className="mb-32 grid grid-cols-1 lg:grid-cols-5 gap-8">
           <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Key Features</h2>
           <div className="lg:col-span-3">
             <div className="space-y-4">
@@ -373,6 +529,88 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {project.keyFeatureImage && (
+        <div id={`${projectId}-feature-image`} className="mb-32 space-y-3">
+          <h2 className="text-2xl font-normal text-foreground">Feature snapshot</h2>
+          <div className="relative w-full aspect-[16/9] rounded-3xl border border-border/50 overflow-hidden shadow-xl">
+            <Image
+              src={project.keyFeatureImage.src}
+              alt={project.keyFeatureImage.alt || 'Key feature illustration'}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 90vw"
+            />
+          </div>
+          {project.keyFeatureImage.caption && (
+            <p className="text-base text-muted-foreground">{project.keyFeatureImage.caption}</p>
+          )}
+        </div>
+      )}
+
+      {project.businessOpportunity && project.businessOpportunity.length > 0 && (
+        <div id={`${projectId}-business`} className="mb-32 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Business opportunity</h2>
+          <div className="lg:col-span-3">
+            <div className="space-y-3">
+              {project.businessOpportunity.map((opportunity, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <span className="text-primary mt-1">→</span>
+                  <p className="text-lg text-muted-foreground">{opportunity}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Learnings */}
+      {project.learnings && (
+        <div id={`${projectId}-learnings`} className="mb-32 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Learnings</h2>
+          <div className="lg:col-span-3">
+            {Array.isArray(project.learnings) ? (
+              <div className="space-y-4">
+                {project.learnings.map((learning, idx) => (
+                  <div key={idx} className="flex items-start gap-3">
+                    <span className="text-primary mt-1">•</span>
+                    <p className="text-lg text-muted-foreground">{learning}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-lg leading-relaxed text-muted-foreground">{project.learnings}</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {project.targetAudience && (
+        <div id={`${projectId}-target-audience`} className="mb-6 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Target Audience</h2>
+          <div className="lg:col-span-3 space-y-3">
+            <p className="text-lg leading-relaxed text-muted-foreground">{project.targetAudience}</p>
+          </div>
+        </div>
+      )}
+
+      {project.targetAudienceImage && (
+        <div id={`${projectId}-target-snapshot`} className="mb-32 space-y-3">
+          <h2 className="text-2xl font-normal text-foreground">Target snapshot</h2>
+          <div className="relative w-full aspect-[16/9] rounded-3xl border border-border/50 overflow-hidden shadow-xl">
+            <Image
+              src={project.targetAudienceImage.src}
+              alt={project.targetAudienceImage.alt || 'Target audience snapshot'}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 90vw"
+            />
+          </div>
+          {project.targetAudienceImage.caption && (
+            <p className="text-base text-muted-foreground">{project.targetAudienceImage.caption}</p>
+          )}
         </div>
       )}
 
@@ -393,37 +631,6 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
         </div>
       )}
 
-      {/* Learnings */}
-      {project.learnings && (
-        <div id={`${projectId}-learnings`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Learnings</h2>
-          <div className="lg:col-span-3">
-            {Array.isArray(project.learnings) ? (
-              <div className="space-y-4">
-                {project.learnings.map((learning, idx) => (
-                  <div key={idx} className="flex items-start gap-3">
-                    <span className="text-primary mt-1">•</span>
-                    <p className="text-lg text-muted-foreground">{learning}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-lg leading-relaxed text-muted-foreground">{project.learnings}</p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Target Audience */}
-      {project.targetAudience && (
-        <div id={`${projectId}-target-audience`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Target Audience</h2>
-          <div className="lg:col-span-3">
-            <p className="text-lg leading-relaxed text-muted-foreground">{project.targetAudience}</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
-

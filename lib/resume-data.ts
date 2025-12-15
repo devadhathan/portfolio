@@ -104,16 +104,33 @@ export const resumeData = {
       role: "Interaction designer, UX researcher",
       tools: ["Figma", "Tailwind CSS", "Loom"],
       team: "Shreyans, Lokesh, Narasmiha, Vishnu, Sachin",
-      description: "The Falcon Design System is a comprehensive, unified framework that brings consistency, efficiency, and accessibility to all digital products. It provides a robust library of reusable UI components, a cohesive visual language, and clear design guidelines.",
+      description: `The Falcon Design System is a comprehensive, unified framework that brings consistency, efficiency, and accessibility to all our digital products. It provides a robust library of reusable UI components, a cohesive visual language, and clear design guidelines that streamline the creation of intuitive interfaces across multiple platforms.
+
+Built on the principles of modularity and reusability, Falcon standardizes elements such as typography, color palettes, icons, and interactive components. This not only ensures a consistent brand experience but also accelerates product development by reducing redundancy. Thorough documentation and best practices foster effective collaboration among designers, developers, and stakeholders, enabling cohesive teamwork and faster iterations.`,
       problem: "How might we develop a unified design system that streamlines workflows, ensures consistent and accessible user experiences, and empowers cross-functional teams to rapidly iterate and innovate?",
-      targetAudience: "Internal designers and developers who craft and implement digital interfaces, product managers, stakeholders, cross-functional teams, external partners and agencies.",
+      targetAudience: "Internal designers and developers who craft and implement digital interfaces, product managers and stakeholders who need to maintain alignment and a cohesive brand experience, cross-functional teams such as marketing, content, and customer support, as well as external partners and agencies looking for a consistent design language.",
+      targetAudienceImage: {
+        src: '/falcon design system/image copy 2.png',
+        alt: 'Falcon design system preview',
+        caption: '3D icons created for the use cases.'
+      },
+      keyFeatureImage: {
+        src: '/falcon design system/image copy.png',
+        alt: 'Falcon design system key feature modules',
+        caption: 'Iconography, documentation, and component samples beside the tokens.'
+      },
       impact: [
-        "Enhanced Consistency: Standardized UI elements ensure a unified brand experience",
-        "Accelerated Development: Comprehensive documentation and ready-to-use components streamlined workflows",
-        "Improved Collaboration: Shared design language fosters better alignment between designers, developers, and stakeholders",
-        "Increased User Satisfaction: Consistent and accessible interfaces enhance overall user experience"
+        "Enhanced Consistency: By implementing standardized UI elements and design patterns, Falcon ensures a unified brand experience that builds trust and clarity for users.",
+        "Accelerated Development: The system’s comprehensive documentation and ready-to-use components have streamlined workflows, reducing design redundancies and speeding up product iterations.",
+        "Improved Collaboration: A shared design language fosters better alignment between designers, developers, and stakeholders, promoting a seamless cross-functional workflow.",
+        "Increased User Satisfaction: Consistent and accessible interfaces enhance the overall user experience, leading to improved engagement and a stronger digital presence."
       ],
-      keyFeatures: ["Reusable components", "Typography system", "Color palettes", "Icons library", "Interactive components", "Accessibility compliance"]
+      keyFeatures: ["Reusable components", "Typography system", "Color palettes", "Icons library", "Interactive components", "Accessibility compliance"],
+      problemImage: {
+        src: '/falcon design system/image copy.png',
+        alt: 'Falcon design system overview',
+        caption: 'Design tools, tokens, and guidelines that make Falcon cohesive.'
+      }
     },
     {
       title: "Finshots News App",
@@ -149,27 +166,104 @@ export const resumeData = {
       period: "2022",
       url: "https://devadhathan.com/ditto-onboarding",
       role: "Interaction designer, UX researcher",
-      tools: ["Figma", "After Effects", "Illustrator", "Amplitude", "Loom"],
+      tools: ["Figma", "After effects", "Illustrator", "Amplitude", "Loom"],
       team: "Arif, Manoranjan, Lokesh",
-      description: "Reimagined the onboarding experience to reduce friction for new users and improve conversion rates in the slot booking process.",
-      problem: "Users were dropping off before completing the slot booking process, resulting in low conversion rates. Major challenge was aligning design solutions with business goals while maintaining user-centric approach.",
-      approach: "Analyzed data to identify major drop-off points, spoke with customers to uncover improvement opportunities, conducted cognitive walkthroughs, interviewed users to pinpoint key questions, and created personas to understand pain points.",
+      description: `In 2022, Ditto Insurance—an Indian startup launched in 2021—presented significant opportunities for improvement. Collaborating with my product manager, I reimagined the onboarding experience to reduce friction for new users. As a product designer, I leveraged data-driven insights and iterative design methods to pinpoint user pain points and develop tailored solutions that enhanced both functionality and user satisfaction.`,
+      problem: `Users were dropping off before completing the slot booking process, resulting in low conversion rates. A major challenge was aligning our design solutions with the business goal of increasing conversions while maintaining a user-centric approach. Understanding the root causes of abandonment in a relatively new product required continuous collaboration across design, product, and technical teams.`,
+      takeStepBack: `Rather than jumping into solutions, I first focused on understanding the problem. I analyzed analytics to identify where the major drop-offs occurred, spoke with customers, ran a cognitive walkthrough, and interviewed users to surface the right questions. These insights produced two personas—Ian, a marketing manager who needs support when preferred slots are unavailable, and Maaya, a 27-year-old teacher who wants assurance her phone number remains spam-free—helping us better understand pain points and refine our approach.`,
+      approach: `We broke the onboarding experience into manageable problems, then addressed each one with targeted, data-backed solutions. For slot shortages, we introduced WhatsApp support, clear exit points, and guidance toward advisors when availability was constrained. To build trust, we iterated on badge, tooltip, and nudge concepts with policy writers, ultimately shipping a mobile-friendly nudge treatment that reinforced the “We never spam” promise. We also added confirmations and autosave prompts to prevent data loss when users accidentally left the flow.`,
+      prototype: "Built interactive prototypes to validate the WhatsApp assistance flows, spam-free messaging, and error-prevention modals across mobile breakpoints.",
+      painPointsIntro: `We identified key problems in the onboarding journey and broke them down into bite-sized issues so we could tackle them individually.`,
+      personas: [
+        {
+          name: "Ian",
+          occupation: "Marketing Manager",
+          goal: "As a user, I want support when my desired time slot is not available so that I can still secure an appointment without frustration."
+        },
+        {
+          name: "Maaya, Age: 27",
+          occupation: "Teacher",
+          goal: "As a user, I want assurance that my phone number is safe from spam so that I feel confident sharing my contact details."
+        }
+      ],
+      painPoints: [
+        {
+          title: "No error prevention",
+          detail: "Customers frequently experienced accidental data loss because the flow lacked safeguards when they left the experience unknowingly."
+        },
+        {
+          title: "Fear of spamming",
+          detail: "Users hesitated to share phone numbers due to concerns about spam calls and uncertainty around how their data would be used."
+        },
+        {
+          title: "No slots available",
+          detail: "Advisor capacity limited users from booking desired time slots, leading to frustration and abandonment."
+        }
+      ],
+      hmw: "How might we redesign the booking experience to proactively prevent user errors and accidental data loss, alleviate customers’ concerns about spam when sharing their phone numbers, and optimize advisor availability to ensure users can secure their desired time slots?",
       keyFeatures: [
-        "Progress indicators showing booking steps",
-        "Simplified slot booking flow",
-        "Clear call-to-action buttons",
-        "Improved information architecture"
+        "Progress indicators to show booking status and reinforce progress",
+        "Simplified slot booking with WhatsApp support and clear exit points when advisors are unavailable",
+        "Trust-building copy paired with badges, tooltips, and nudges emphasizing a spam-free experience",
+        "Error-prevention modals that confirm exit actions and keep work-in-progress intact",
+        "Contextual notes, activity history, and tags to preserve lead context when ownership changes",
+        "Optimized information architecture that keeps essential tools accessible",
+        "Dynamic, role-aware dashboards for sales, support, and marketing teams"
+      ],
+      businessOpportunity: [
+        "Safeguard Against Accidental Exits and Data Loss",
+        "Increase Conversion Rates",
+        "Lower Support Costs",
+        "Assurance Against Spamming phone numbers",
+        "Build Trust and Credibility",
+        "Enhance Lead Quality",
+        "Support When Preferred Slots Are Unavailable",
+        "Maximize Sales Opportunities",
+        "Improve Customer Satisfaction"
+      ],
+      explorations: [
+        {
+          tag: "Problem #1",
+          title: "Users Unable to Reach Desired Time Slots",
+          problem: "In the original workflow, advisor capacity limited users from booking their preferred slots and expanding the schedule wasn’t feasible.",
+          solution: "We added WhatsApp support, clearer exit points, and proactive messaging that guided users toward alternative assistance when slots were full."
+        },
+        {
+          tag: "Problem #2",
+          title: "Trust Issues with Sharing Phone Numbers",
+          problem: "Users dropped off at the phone number stage because they feared spam calls, undermining the momentum of the flow.",
+          solution: "Collaborating with policy writers, we emphasized ‘We never spam’ via badge, tooltip, and nudge treatments, ultimately shipping a mobile-friendly nudge design that reinforced this promise."
+        },
+        {
+          tag: "Problem #3",
+          title: "Lost Data on Accidental Exit",
+          problem: "Users were frustrated when accidental exits erased their progress, creating a counterintuitive experience.",
+          solution: "We introduced confirmation pop-ups that preserved in-progress data and guided users to WhatsApp when slots were unavailable, preventing unexpected data loss."
+        }
+      ],
+      impactOverview: `The redesign had broad effects: Ditto now sees over one lakh monthly visitors, with around 600+ people booking through the portal on an average day. Thanks to the energy and passion of the team, we drove key business metrics upward.`,
+      impact: [
+        "Safeguarded against accidental exits and preserved customer progress",
+        "Built trust and credibility through transparent communication about spam protection",
+        "Delivered role-specific support and reporting to maximize sales and lead quality"
       ],
       results: [
-        "17% increase in conversion rates",
-        "8% decrease in drop-off rates within 60 days",
-        "600 slots booked successfully"
+        "17% increase in conversion rates of health insurance premiums in 60 days, with ₹3cr+ in premiums sold",
+        "5% increase in daily slot bookings (~500-600 slots per day)",
+        "8% decrease in customer drop-off rates over 60 days"
       ],
       learnings: [
-        "Focus only on data points that directly inform the solution",
-        "Collaboration is key - constant engagement with developers, PMs, and stakeholders",
-        "User testing is essential even for small changes",
-        "Flexibility and adaptability in design are critical"
+        "Takeaway 01: It's crucial to focus only on the data points that directly inform the solution. Data overload can obscure the problem and delay the decision-making process.",
+        "Takeaway 02: Collaboration is key to success. Constant engagement with developers, product managers, and stakeholders ensured alignment and helped overcome challenges quickly.",
+        "Takeaway 03: User testing is essential, even for small changes. Prototyping and gathering feedback early on helped refine the design and ensure we addressed real user pain points.",
+        "Takeaway 04: Flexibility and adaptability in design are critical. Being open to change and adjusting to new constraints or insights is necessary to deliver the best possible solution."
+      ],
+      designGallery: [
+        {
+          src: '/ditto insurance/image.png',
+          title: 'Booking confirmation',
+          description: 'Guided flows with progress indicators and WhatsApp assistance.'
+        }
       ]
     },
     {
@@ -187,20 +281,39 @@ export const resumeData = {
       title: "CRM Redesign",
       type: "Product Design",
       company: "Ditto Insurance",
-      period: "2022",
-      description: "Redesigned the internal CRM system to improve team efficiency and user experience. Focused on streamlining workflows and reducing cognitive load for insurance agents.",
-      problem: "Internal CRM was outdated and inefficient, causing frustration among agents and reducing productivity.",
-      approach: "Conducted user interviews with agents, analyzed workflow patterns, created personas, and designed new interface with improved information architecture.",
+      period: "July 2022 - December 2022",
+      role: "Interaction designer, UX researcher, UX Designer",
+      tools: ["Figma", "Google Docs", "After Effects", "Loom", "Miro"],
+      team: "Arif, Lokesh, Shreyans, Sachin, Shaily",
+      description: `Over the course of four months, I partnered with the Ditto team to build a CRM that streamlined sales operations and delivered intuitive, actionable reporting. Ditto started as a no-spam insurance platform in 2021 with the goal of simplifying insurance selection across India, and the growing lead volume made it clear that the early Excel-based workflows needed a more scalable foundation.`,
+      problem: "Manual lead tracking with Excel became unsustainable as the lead volume increased, and the existing CRM lacked role-specific workflows, real-time insight, and a cohesive, customizable interface.",
+      approach: `Based on user feedback, I envisioned a CRM built for seamless usability, role-specific dashboards, personalized workflows, and integrated communication tools. The redesign prioritized streamlined navigation, centralized communications, and dashboards that surfaced the right data for each role.`,
+      targetAudience: "Internal teams responsible for customer relationships—sales, support, account management—and strategic leaders who need reporting, plus partners who require a unified platform for customer engagement.",
+      impact: [
+        "Role-specific interfaces reduced redundancy and kept teams focused on their priorities.",
+        "Integrated messaging, email, and call tools centralized communication and removed friction.",
+        "Real-time insights and dynamic visuals empowered decision-makers with fresh data."
+      ],
       keyFeatures: [
-        "Streamlined workflow patterns",
-        "Improved information architecture",
-        "Reduced cognitive load",
-        "Better data visualization"
+        "Role-specific workflows with tailored dashboards for sales, support, and management",
+        "Integrated messaging, email, and call tools that keep communication in one place",
+        "Personalized dashboards, filters, and notifications to fit individual preferences",
+        "Optimized navigation and information architecture for quick access",
+        "Dynamic charts and real-time insights for faster decision-making",
+        "Activity history and note-taking to preserve conversational context",
+        "Lead tagging for segmentation, filtering, and campaign targeting"
       ],
       results: [
-        "20% improvement in team efficiency",
-        "Reduced task completion time by 30%",
-        "Improved user satisfaction scores"
+        "Streamlined communication and coordination across the sales organization",
+        "Faster onboarding for new advisors with clear activity histories and tags",
+        "Data-rich dashboards increased confidence in reporting and daily decisions"
+      ],
+      designGallery: [
+        {
+          src: '/CRM/image.png',
+          title: 'CRM dashboard',
+          description: 'Role-aware dashboards and tagging for leads.'
+        }
       ]
     },
     {
@@ -234,4 +347,3 @@ export const resumeData = {
     "IBM Design Thinking Practitioner"
   ]
 };
-

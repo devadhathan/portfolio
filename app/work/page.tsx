@@ -1,14 +1,57 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Code2, Calendar, ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
 import { resumeData } from '@/lib/resume-data';
 import { TopBar } from '@/components/top-bar';
 import { BottomNav } from '@/components/bottom-nav';
 import { ProjectDetailView } from '@/components/project-detail-view';
 import { useRouter } from 'next/navigation';
+
+type Project = (typeof resumeData.projects)[number];
+
+const getProjectThumbnail = (project: Project): string => {
+  const title = project.title.toLowerCase();
+
+  if (title.includes('finshots')) {
+    return '/finshots/image.png';
+  }
+
+  if (title.includes('nesoi')) {
+    return '/svg/Group 29.png';
+  }
+
+  if (title.includes('falcon')) {
+    return '/falcon design system/image.png';
+  }
+
+  if (title.includes('onboarding')) {
+    return '/ditto insurance/image.png';
+  }
+
+  if (title.includes('crm')) {
+    return '/CRM/image.png';
+  }
+
+  return '/photos/image.png';
+};
+
+const getProjectSummary = (project: Project): string => {
+  const base = project.description || project.problem || '';
+  const words = base
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 3);
+
+  if (words.length === 0) {
+    return 'View case study';
+  }
+
+  return words.join(' ');
+};
 
 export default function WorkPage() {
   const router = useRouter();
@@ -145,49 +188,123 @@ export default function WorkPage() {
             </div>
           </div>
         ) : (
-        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+        <div className="max-w-[1300px] mx-auto px-4 md:px-6 lg:px-8">
           <div className="mb-8 text-center">
             <h1 className="text-3xl md:text-4xl font-bold mb-2">Work</h1>
             <p className="text-muted-foreground">My projects</p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 auto-rows-[minmax(200px,auto)]">
-            {/* Project Cards */}
-            {projects.map((project, index) => {
-                const projectId = getProjectId(project.title);
+          {/* Grid for project cards - 3 columns layout */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 lg:gap-8 auto-rows-[minmax(260px,auto)]">
+            {/* Separate Finshots from other projects */}
+            {(() => {
+              const finshotsProject = projects.find(p => p.title.toLowerCase().includes('finshots'));
+              const otherProjects = projects.filter(p => !p.title.toLowerCase().includes('finshots'));
+              
               return (
-                <Card 
-                  key={index}
-                  className="col-span-1 rounded-2xl border-2 border-border/70 bg-card/60 backdrop-blur-md cursor-pointer hover:border-primary/50 transition-all"
-                    onClick={() => setSelectedProject(projectId)}
-                >
-                  <CardHeader className="pb-2">
-                    <CardTitle className="flex items-center gap-2 text-[16px]">
-                      <div className="p-1.5 bg-primary/20 rounded-full">
-                        <Code2 className="h-4 w-4" />
-                      </div>
-                      {project.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-3">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                      {project.type && (
-                        <span className="px-2 py-0.5 rounded bg-primary/10 text-primary">
-                          {project.type}
-                        </span>
-                      )}
-                      {(project.company || project.institution) && (
-                        <span>• {project.company || project.institution}</span>
-                      )}
-                      {project.period && <span>• {project.period}</span>}
-                    </div>
-                    <p className="text-[14px] text-muted-foreground leading-relaxed">
-                      {project.description || project.problem || 'Project details'}
-                    </p>
-                  </CardContent>
-                </Card>
+                <>
+                  {/* Column 1 & 2: Other projects (first 2 in col 1, next 2 in col 2) */}
+                  {otherProjects.slice(0, 4).map((project, index) => {
+                    const projectId = getProjectId(project.title);
+                    return (
+                      <Card 
+                        key={`other-${index}`}
+                        className="col-span-1 rounded-2xl border-2 border-border/70 bg-card/60 backdrop-blur-md cursor-pointer hover:border-primary/60 transition-all group overflow-hidden h-full flex flex-col"
+                        onClick={() => setSelectedProject(projectId)}
+                      >
+                        <div className="flex flex-col h-full">
+                          {/* Thumbnail - reduced size */}
+                          <div className="relative w-full h-64 md:h-72 lg:h-80 bg-secondary/30 border-b border-border/40 overflow-hidden flex-shrink-0">
+                            <Image
+                              src={getProjectThumbnail(project)}
+                              alt={project.title}
+                              fill
+                              className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            />
+                          </div>
+
+                          <CardHeader className="pb-2 pt-3 px-4 flex-shrink-0">
+                            <CardTitle className="text-[16px] md:text-[17px]">
+                              <span className="line-clamp-1">{project.title}</span>
+                            </CardTitle>
+                          </CardHeader>
+
+                          <CardContent className="flex flex-col gap-2 px-4 pb-4 pt-0 flex-1 justify-between">
+                            <div className="flex flex-wrap items-center gap-2 text-[11px] md:text-[12px] text-muted-foreground">
+                              {project.type && (
+                                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] md:text-[12px]">
+                                  {project.type}
+                                </span>
+                              )}
+                              {(project.company || project.institution) && (
+                                <span className="truncate text-[11px] md:text-[12px]">
+                                  {project.company || project.institution}
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="text-[13px] md:text-[14px] text-muted-foreground leading-relaxed line-clamp-2">
+                              {getProjectSummary(project)}
+                            </p>
+                          </CardContent>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                  
+                  {/* Column 3: Finshots (spans 2 rows) */}
+                  {finshotsProject && (() => {
+                    const projectId = getProjectId(finshotsProject.title);
+                    return (
+                      <Card 
+                        key="finshots"
+                        className="col-span-1 lg:col-start-3 lg:col-span-1 lg:row-start-1 lg:row-span-2 rounded-2xl border-2 border-border/70 bg-card/60 backdrop-blur-md cursor-pointer hover:border-primary/60 transition-all group overflow-hidden h-full flex flex-col"
+                        onClick={() => setSelectedProject(projectId)}
+                      >
+                        <div className="flex flex-col h-full">
+                          {/* Thumbnail - larger for 2-row span */}
+                          <div className="relative w-full h-96 md:h-112 lg:h-[700px] bg-secondary/30 border-b border-border/40 overflow-hidden flex-shrink-0">
+                            <Image
+                              src={getProjectThumbnail(finshotsProject)}
+                              alt={finshotsProject.title}
+                              fill
+                              className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            />
+                          </div>
+
+                          <CardHeader className="pb-2 pt-3 px-4 flex-shrink-0">
+                            <CardTitle className="text-[16px] md:text-[17px]">
+                              <span className="line-clamp-1">{finshotsProject.title}</span>
+                            </CardTitle>
+                          </CardHeader>
+
+                          <CardContent className="flex flex-col gap-2 px-4 pb-4 pt-0 flex-1 justify-between">
+                            <div className="flex flex-wrap items-center gap-2 text-[11px] md:text-[12px] text-muted-foreground">
+                              {finshotsProject.type && (
+                                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] md:text-[12px]">
+                                  {finshotsProject.type}
+                                </span>
+                              )}
+                              {(finshotsProject.company || finshotsProject.institution) && (
+                                <span className="truncate text-[11px] md:text-[12px]">
+                                  {finshotsProject.company || finshotsProject.institution}
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="text-[13px] md:text-[14px] text-muted-foreground leading-relaxed line-clamp-3">
+                              {getProjectSummary(finshotsProject)}
+                            </p>
+                          </CardContent>
+                        </div>
+                      </Card>
+                    );
+                  })()}
+                </>
               );
-            })}
+            })()}
           </div>
         </div>
         )}
@@ -196,5 +313,3 @@ export default function WorkPage() {
     </div>
   );
 }
-
-

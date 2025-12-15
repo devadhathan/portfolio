@@ -226,7 +226,7 @@ export default function Home() {
         
         {/* Main Content */}
         <div className={`flex-1 w-full px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8 relative z-10 transition-[margin-left,margin-right,padding-right] duration-500 ease-in-out ${isSidebarCollapsed && isChatCollapsed ? 'lg:ml-0 lg:mr-0' : isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-80'} ${isChatCollapsed ? 'lg:pr-32' : 'lg:pr-[440px]'} pb-24 md:pb-28 lg:pb-8 overflow-x-hidden`}>
-          <div className={`transition-[max-width,margin-left,margin-right] duration-500 ease-in-out ${isSidebarCollapsed && isChatCollapsed ? 'max-w-6xl mx-auto' : isChatCollapsed ? 'max-w-6xl mx-auto' : 'max-w-none mx-0'}`}>
+          <div className={`transition-[max-width,margin-left,margin-right] duration-500 ease-in-out ${isSidebarCollapsed && isChatCollapsed ? 'max-w-7xl mx-auto' : isChatCollapsed ? 'max-w-7xl mx-auto' : 'max-w-none mx-0'}`}>
             {isAgentWorking ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
               <div className="flex gap-2 mb-6">

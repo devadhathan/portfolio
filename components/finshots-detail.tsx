@@ -9,10 +9,6 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// #region agent log
-fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'finshots-detail.tsx:11',message:'Import verification',data:{Card:typeof Card,CardContent:typeof CardContent,Button:typeof Button,ChevronLeft:typeof ChevronLeft,ChevronRight:typeof ChevronRight,motion:typeof motion,AnimatePresence:typeof AnimatePresence},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-// #endregion
-
 interface FinshotsDetailProps {
   projectId: string;
   onBack: () => void;
@@ -29,18 +25,10 @@ const finshotsImages = [
 ];
 
 export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: FinshotsDetailProps) {
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'finshots-detail.tsx:27',message:'FinshotsDetail component entry',data:{projectId,hideBackButton},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
-
   const project = resumeData.projects.find(
     p => p.title.toLowerCase().replace(/\s+/g, '-') === projectId.toLowerCase().replace(/\s+/g, '-')
   );
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
-
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'finshots-detail.tsx:33',message:'State initialized',data:{projectFound:!!project},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
 
   const handleImageClick = (src: string) => {
     setZoomedImage(src);
@@ -52,9 +40,6 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
 
 
   if (!project) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'finshots-detail.tsx:50',message:'Project not found',data:{projectId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     return (
       <div className="text-center py-12 text-foreground">
         <p className="text-muted-foreground mb-4">Project not found</p>
@@ -65,10 +50,6 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       </div>
     );
   }
-
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'finshots-detail.tsx:62',message:'Rendering FinshotsDetail component',data:{projectTitle:project.title},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
 
   return (
     <div className="animate-in fade-in duration-300 w-full text-foreground pb-20 lg:pb-0 max-w-6xl mx-auto mt-24">

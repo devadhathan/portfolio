@@ -114,13 +114,6 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
   // Sort by order first, then filter visible sections
   const sortedSections = [...agentState.sections].sort((a, b) => a.order - b.order);
   const visibleSections = sortedSections.filter(s => s.visible);
-  
-  // Debug: log what sections are being rendered
-  console.log('PortfolioSections render:', {
-    totalSections: agentState.sections.length,
-    visibleSections: visibleSections.length,
-    sections: visibleSections.map(s => ({ id: s.id, title: s.title, type: s.type }))
-  });
 
   const getBentoSize = (priority: SectionPriority, sectionId: string, sectionType?: SectionType, order: number = 0) => {
     // Create varied card sizes based on type, priority, and position
@@ -284,7 +277,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
               {/* SVG Illustration */}
               <div className="relative w-full rounded-lg overflow-hidden flex items-center justify-center p-4">
                 <img
-                  src="/svg/white.svg"
+                  src="/svg/me vectorized.svg"
                   alt="Dev"
                   className={`w-full h-auto max-h-[300px] object-contain svg-hero-${theme}`}
                 />
@@ -778,16 +771,6 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
         const currentIndex = carouselIndex[section.id] || 0;
         const hasImageError = imageErrors.has(section.id);
         const shouldShowPlaceholder = photos.length === 0 || hasImageError;
-        
-        // Debug logging
-        console.log('Photo section:', {
-          id: section.id,
-          title: section.title,
-          photosCount: photos.length,
-          photos: photos,
-          hasError: hasImageError,
-          visible: section.visible
-        });
         
         return (
           <Card 
