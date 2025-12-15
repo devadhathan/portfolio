@@ -66,6 +66,36 @@ export const resumeData = {
 
   projects: [
     {
+      title: "Nesoi.ai Dashboard",
+      type: "Product Design",
+      company: "Nesoi.ai",
+      period: "July 2025 - November 2025",
+      description: "Designed and shipped adviser/client-facing dashboards used by 15+ enterprise clients, enabling them to deliver interactive, AI-powered learning modules.",
+      problem: "Enterprise clients needed an intuitive platform to create and manage AI-powered learning modules, with a focus on engagement and efficiency.",
+      approach: "Led iterative UX improvements, developed scalable workflow patterns, and partnered closely with engineering to ensure consistent UI behavior. Integrated WCAG 2.1 AA accessibility standards throughout the design process.",
+      keyFeatures: [
+        "Adviser/client-facing dashboards for enterprise clients",
+        "AI-powered learning module creation and management",
+        "Reusable Figma components and design system",
+        "WCAG 2.1 AA accessibility compliance",
+        "Scalable workflow and automation patterns"
+      ],
+      results: [
+        "92% improvement in engagement rates",
+        "37% reduction in course-creation time",
+        "15+ enterprise clients using the platform",
+        "WCAG 2.1 AA accessibility compliance achieved"
+      ],
+      learnings: [
+        "The importance of iterative design and continuous improvement",
+        "How scalable design systems can dramatically improve efficiency",
+        "Accessibility is not optional - it's essential for enterprise products",
+        "Close collaboration with engineering ensures consistent, reliable UI behavior"
+      ],
+      role: "Product Designer",
+      tools: ["Figma", "Design Systems", "Accessibility Tools"]
+    },
+    {
       title: "Falcon Design System",
       type: "Design System",
       company: "Ditto Insurance",

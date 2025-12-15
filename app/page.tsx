@@ -188,7 +188,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-card relative overflow-x-hidden [html.glass_&]:bg-transparent [html.glass_&]:bg-none">
+    <div className="min-h-screen bg-card relative overflow-x-hidden overflow-y-auto [html.glass_&]:bg-transparent [html.glass_&]:bg-none">
       {/* Initial Loading Screen - Only shows first time */}
       {mounted && showInitialLoading && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black">

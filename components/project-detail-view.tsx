@@ -2,9 +2,12 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Users, Wrench, ExternalLink, Smartphone } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, Wrench, ExternalLink, Smartphone, X, ZoomIn } from 'lucide-react';
 import { resumeData } from '@/lib/resume-data';
 import { FinshotsDetail } from './finshots-detail';
+import Image from 'next/image';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // #region agent log
 fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'project-detail-view.tsx:8',message:'Import check',data:{finshotsDetailType:typeof FinshotsDetail,finshotsDetailIsUndefined:FinshotsDetail===undefined},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
@@ -16,7 +19,21 @@ interface ProjectDetailViewProps {
   hideBackButton?: boolean;
 }
 
+// Images for Nesoi project
+const nesoiImages = [
+  { src: '/svg/Group 29.png', title: 'Nesoi Dashboard', description: 'Adviser/client-facing dashboard interface' },
+];
+
 export function ProjectDetailView({ projectId, onBack, hideBackButton = false }: ProjectDetailViewProps) {
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+  
+  const handleImageClick = (src: string) => {
+    setZoomedImage(src);
+  };
+
+  const closeZoom = () => {
+    setZoomedImage(null);
+  };
   // #region agent log
   fetch('http://127.0.0.1:7242/ingest/b7b4a418-253f-4161-b689-f7e23a180f47',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'project-detail-view.tsx:18',message:'ProjectDetailView entry',data:{projectId,hideBackButton},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
   // #endregion
@@ -196,6 +213,86 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
           )}
         </div>
       </div>
+
+      {/* Design Gallery - For Nesoi project */}
+      {project && (project.title.toLowerCase().includes('nesoi') || projectId.toLowerCase().includes('nesoi')) && nesoiImages.length > 0 && (
+        <div className="mb-64 -mx-4 md:-mx-6 lg:-mx-8">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8 px-4 md:px-6 lg:px-8">
+            <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Design Gallery</h2>
+            <div className="lg:col-span-3"></div>
+          </div>
+          <div className="w-full">
+            {nesoiImages.map((image, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.6,
+                  delay: idx * 0.1,
+                  ease: [0.42, 0, 1, 1]
+                }}
+                className="mb-8 last:mb-0 w-full"
+              >
+                <div
+                  className="relative w-full cursor-pointer group"
+                  onClick={() => handleImageClick(image.src)}
+                >
+                  <div className="relative w-full" style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}>
+                    <Image
+                      src={image.src}
+                      alt={image.title}
+                      width={1920}
+                      height={1080}
+                      className="w-full h-auto object-contain group-hover:opacity-90 transition-opacity duration-300"
+                      sizes="100vw"
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Zoom Modal */}
+      <AnimatePresence>
+        {zoomedImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={closeZoom}
+          >
+            <motion.div
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.8 }}
+              className="relative max-w-7xl max-h-[90vh] w-full h-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white"
+                onClick={closeZoom}
+              >
+                <X className="h-6 w-6" />
+              </Button>
+              <div className="relative w-full h-full">
+                <Image
+                  src={zoomedImage}
+                  alt="Zoomed view"
+                  fill
+                  className="object-contain"
+                  sizes="100vw"
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Problem Section */}
       {project.problem && (
