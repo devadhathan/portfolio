@@ -653,6 +653,6 @@ html.glass .bg-card\/30 {
 }
 
 .animate-card-reveal {
-  animation: card-reveal 0.6s ease-out forwards;
+  animation: card-reveal 1.6s ease-out forwards;
   opacity: 0;
 }

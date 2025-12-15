@@ -191,7 +191,7 @@ export default function Home() {
     <div className="min-h-screen bg-card relative overflow-x-hidden [html.glass_&]:bg-transparent [html.glass_&]:bg-none">
       {/* Initial Loading Screen - Only shows first time */}
       {mounted && showInitialLoading && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-card">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black">
           <div className="flex flex-col items-center gap-4">
             <video
               autoPlay
@@ -202,7 +202,7 @@ export default function Home() {
             >
               <source src="/videos/Subtle_Typing_Video_Generation.mp4" type="video/mp4" />
             </video>
-            <p className="text-base md:text-lg text-muted-foreground font-normal font-mono animate-pulse">
+            <p className="text-base md:text-lg text-white font-normal font-mono animate-pulse">
               Loading Dev&apos;s Portfolio
             </p>
           </div>

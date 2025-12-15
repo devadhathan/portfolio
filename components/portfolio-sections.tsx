@@ -39,7 +39,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     if (isFirstLoad) {
       const timer = setTimeout(() => {
         setIsFirstLoad(false);
-      }, 3000); // After all animations complete
+      }, 4000); // After all animations complete (extended by +1s)
       return () => clearTimeout(timer);
     }
   }, [isFirstLoad]);
@@ -282,7 +282,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
               </p>
               
               {/* SVG Illustration */}
-              <div className="relative w-full rounded-lg overflow-hidden border border-border/30 bg-background/50 flex items-center justify-center p-4">
+              <div className="relative w-full rounded-lg overflow-hidden flex items-center justify-center p-4">
                 <img
                   src="/svg/white.svg"
                   alt="Dev"
@@ -1127,15 +1127,16 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     <>
       {!hideHeaderText && (
         <div className="mb-8 text-left pt-8 md:pt-12">
-          <p className="text-sm md:text-base text-muted-foreground mb-6 font-medium animate-fade-in-blur">
+          <p className="text-sm md:text-base text-muted-foreground mb-4 font-regular animate-fade-in-blur">
             Dev&apos;s digital home
           </p>
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-light mb-4 text-foreground leading-relaxed animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>
-            I&apos;m a product designer curious about how people think, how systems behave, and how interfaces come alive. I enjoy prototyping ideas, exploring interaction and motion, and shaping complex problems into simple, meaningful experiences. With roots in engineering and hands-on startup work, I&apos;m most excited by products where design and technology meet.
-          </h1>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-medium mb-12 md:mb-16 text-foreground leading-loose animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>
+              Designer bringing interaction, <br />
+              <span className="text-2xl md:text-3xl lg:text-4xl font-medium block mt-0 md:mt-2 text-foreground leading-loose animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>technology, and people together.</span>
+            </h1>
         </div>
       )}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-4 lg:gap-4 auto-rows-[minmax(200px,auto)] pb-4 md:pb-0 w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-6 lg:gap-8 auto-rows-[minmax(200px,auto)] pb-4 md:pb-0 w-full">
         {visibleSections.map((section, index) => renderSection(section, index))}
       </div>
       

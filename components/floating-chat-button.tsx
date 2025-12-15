@@ -50,7 +50,7 @@ export function FloatingChatButton({ onClick, isCollapsed, mode: externalMode, o
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 items-end">
+    <div className="fixed bottom-20 right-6 z-50 flex flex-col gap-3 items-end">
       {/* Mode Toggle - Above main button */}
       <div className="flex items-center gap-1.5 p-1 rounded-full bg-black/80 backdrop-blur-xl border border-white/20 shadow-lg">
         <button

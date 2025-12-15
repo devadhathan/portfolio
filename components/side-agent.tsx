@@ -144,17 +144,22 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth < 1024;
+      const desktop = window.innerWidth >= 1280; // Only auto-open on desktop (xl breakpoint), not tablet
       if (mobile && !isCollapsed) {
-        // If switching to mobile and chat is open, collapse it
+        // If switching to mobile/tablet and chat is open, collapse it
         setIsCollapsed(true);
-      } else if (!mobile && isCollapsed) {
-        // If switching to desktop and chat is collapsed, open it
+        onCollapseChange?.(true);
+      } else if (desktop && isCollapsed && externalCollapsed === undefined) {
+        // Only auto-open on desktop (xl+), not tablet, and only if not externally controlled
         setIsCollapsed(false);
+        onCollapseChange?.(false);
       }
     };
+    // Check on mount and on resize
+    checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  }, [isCollapsed]);
+  }, [isCollapsed, externalCollapsed, onCollapseChange]);
   
   const handleCollapseToggle = () => {
     const newState = !isCollapsed;
@@ -990,8 +995,8 @@ EXAMPLE RESPONSE:
       </div>
       )}
       
-      {/* Mobile Chat - Bottom Sheet */}
-      {isMobile && (
+      {/* Mobile Chat - Bottom Sheet - Hidden, using FloatingChatButton instead */}
+      {false && isMobile && (
         <>
           {isCollapsed && (
             <Button 

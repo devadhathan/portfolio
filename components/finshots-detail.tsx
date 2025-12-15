@@ -180,7 +180,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
 
       {/* Bento Grid - Images Section */}
       <div className="mb-64">
-        <h2 className="text-2xl font-medium text-foreground mb-4">Design Gallery</h2>
+        <h2 className="text-2xl font-normal text-foreground mb-4">Design Gallery</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {finshotsImages.map((image, idx) => (
             <motion.div
@@ -223,7 +223,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {/* Problem Section */}
       {project.problem && (
         <div id={`${projectId}-problem`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Problem</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Problem</h2>
           <div className="lg:col-span-3">
             <p className="text-lg leading-relaxed text-muted-foreground">
               {project.problem}
@@ -235,7 +235,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {/* Research Section */}
       {project.research && (
         <div id={`${projectId}-research`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Research</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Research</h2>
           <div className="lg:col-span-3">
             <p className="text-lg leading-relaxed text-muted-foreground">
               {project.research}
@@ -247,7 +247,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {/* HMW Section */}
       {project.hmw && (
         <div id={`${projectId}-hmw`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">How Might We</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">How Might We</h2>
           <div className="lg:col-span-3">
             <p className="text-lg leading-relaxed text-muted-foreground font-medium">
               {project.hmw}
@@ -258,7 +258,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
 
       {/* Possible Solutions */}
       <div id={`${projectId}-possible-solutions`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-        <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Possible solutions</h2>
+        <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Possible solutions</h2>
         <div className="lg:col-span-3">
           <p className="text-lg leading-relaxed text-muted-foreground">
             After validating the problem and exploring potential solutions, we have determined that developing a mobile app is the best approach to address these challenges. The mobile app will offer a dedicated, user-friendly environment for accessing and rediscovering our financial insights on the go.
@@ -270,7 +270,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {project.keyFeatures && project.keyFeatures.length > 0 && (
         <div id={`${projectId}-key-features`} className="mb-64">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8">
-            <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Key features shipped</h2>
+            <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Key features shipped</h2>
             <div className="lg:col-span-3"></div>
           </div>
           <div className="space-y-12">
@@ -329,7 +329,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {/* Results Section */}
       {project.results && project.results.length > 0 && (
         <div id={`${projectId}-stats`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">What was the result</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">What was the result</h2>
           <div className="lg:col-span-3">
             <p className="text-lg leading-relaxed text-muted-foreground mb-6">
               The app received highly positive user feedback upon release. During the testing period and after launch, it became clear our reimagined interfaces and streamlined workflows better met customers' needs.
@@ -349,7 +349,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {/* Learnings Section */}
       {project.learnings && (
         <div id={`${projectId}-learnings`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">What did I learn?</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">What did I learn?</h2>
           <div className="lg:col-span-3">
             {Array.isArray(project.learnings) ? (
               <div className="space-y-4">

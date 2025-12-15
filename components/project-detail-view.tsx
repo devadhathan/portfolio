@@ -200,7 +200,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {/* Problem Section */}
       {project.problem && (
         <div id={`${projectId}-problem`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Problem</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Problem</h2>
           <div className="lg:col-span-3">
             <p className="text-lg leading-relaxed text-muted-foreground">
               {project.problem}
@@ -212,7 +212,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {/* Research Section */}
       {project.research && (
         <div id={`${projectId}-research`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Research</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Research</h2>
           <div className="lg:col-span-3">
             <p className="text-lg leading-relaxed text-muted-foreground">
               {project.research}
@@ -224,7 +224,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {/* Approach Section */}
       {project.approach && (
         <div id={`${projectId}-approach`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Approach</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Approach</h2>
           <div className="lg:col-span-3">
             <p className="text-lg leading-relaxed text-muted-foreground">
               {project.approach}
@@ -236,7 +236,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {/* HMW Section */}
       {project.hmw && (
         <div id={`${projectId}-hmw`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">How Might We</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">How Might We</h2>
           <div className="lg:col-span-3">
             <p className="text-lg leading-relaxed text-muted-foreground font-medium">
               {project.hmw}
@@ -248,7 +248,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {/* Stats Section */}
       {project.results && project.results.length > 0 && (
         <div id={`${projectId}-stats`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Some stats</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Some stats</h2>
           <div className="lg:col-span-3">
             <div className="space-y-3">
               {project.results.map((result, idx) => (
@@ -265,7 +265,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {/* Key Features */}
       {project.keyFeatures && project.keyFeatures.length > 0 && (
         <div id={`${projectId}-key-features`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Key Features</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Key Features</h2>
           <div className="lg:col-span-3">
             <div className="space-y-4">
               {project.keyFeatures.map((feature, idx) => (
@@ -282,7 +282,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {/* Impact */}
       {project.impact && project.impact.length > 0 && (
         <div id={`${projectId}-impact`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Impact</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Impact</h2>
           <div className="lg:col-span-3">
             <div className="space-y-4">
               {project.impact.map((impact, idx) => (
@@ -299,7 +299,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {/* Learnings */}
       {project.learnings && (
         <div id={`${projectId}-learnings`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Learnings</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Learnings</h2>
           <div className="lg:col-span-3">
             {Array.isArray(project.learnings) ? (
               <div className="space-y-4">
@@ -320,7 +320,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {/* Target Audience */}
       {project.targetAudience && (
         <div id={`${projectId}-target-audience`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-4xl font-medium text-foreground lg:col-span-2">Target Audience</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Target Audience</h2>
           <div className="lg:col-span-3">
             <p className="text-lg leading-relaxed text-muted-foreground">{project.targetAudience}</p>
           </div>

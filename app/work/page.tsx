@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Code2, ExternalLink, Rocket, ArrowLeft, Calendar, ChevronDown, ChevronRight } from 'lucide-react';
+import { Code2, Calendar, ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
 import { resumeData } from '@/lib/resume-data';
 import { TopBar } from '@/components/top-bar';
 import { BottomNav } from '@/components/bottom-nav';
@@ -15,7 +15,7 @@ export default function WorkPage() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
 
-  const projects = resumeData.projects.filter(project => project.title !== 'Sustainable Kiosk');
+  const projects = resumeData.projects.filter(project => project.title !== 'Sustainable Kiosk' && project.title !== 'Booking Portal Redesign');
 
   const getProjectId = (title: string): string => {
     return title.toLowerCase().trim().replace(/\s+/g, '-');
@@ -31,41 +31,21 @@ export default function WorkPage() {
       <div className="pt-14 pb-24 px-24 md:px-6 lg:px-8 overflow-visible">
         {selectedProject ? (
           <div className="flex gap-6 max-w-[1600px] mx-auto relative">
-            {/* Sidebar - Projects List (Collapsible on Hover) */}
-            <div className="group relative flex-shrink-0 w-32 hover:w-56 transition-all duration-500 ease-in-out">
-              {/* Collapsed state - horizontal tab */}
-              <div className="fixed left-4 top-20 w-auto min-w-[200px] h-auto min-h-[40px] bg-card border border-border/50 rounded-lg group-hover:opacity-0 group-hover:pointer-events-none transition-all duration-500 ease-in-out flex items-center px-4 py-2 shadow-lg z-50">
-                <Button 
-                  onClick={() => setSelectedProject(null)} 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 px-2 mr-2"
-                  title="Back to Projects"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <span className="text-sm font-medium text-foreground whitespace-nowrap">
-                  Back
-                </span>
-              </div>
-              
-              {/* Expanded content */}
-              <div className="fixed left-0 top-0 w-56 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-500 ease-in-out border-r border-border/50 pr-4 bg-card min-h-screen z-40">
-                <div className="pt-20">
-                  <div className="sticky top-20 z-50 bg-card pb-4 px-4 border-b border-border/50">
-                    <Button 
-                      onClick={() => setSelectedProject(null)} 
-                      variant="ghost" 
-                      size="sm" 
-                      className="mb-6"
-                    >
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      Back
-                    </Button>
-                    <h2 className="text-lg font-bold mb-4 text-foreground">Projects</h2>
-                  </div>
-                  <div className="px-4 pt-4">
-                    <div className="space-y-1 max-h-[calc(100vh-300px)] overflow-y-auto">
+            {/* Sidebar - Projects List (Fixed) */}
+            <div className="fixed left-8 top-0 w-64 pr-4 bg-card h-auto z-40">
+              <div className="pt-20">
+                <div className="sticky top-20 z-50 bg-card border border-border/50 rounded-lg p-4 pt-6">
+                  <Button 
+                    onClick={() => setSelectedProject(null)} 
+                    variant="ghost" 
+                    size="sm" 
+                    className="mb-4 text-muted-foreground hover:text-foreground -ml-2"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-2" />
+                    Back
+                  </Button>
+                  <h2 className="text-sm font-bold mb-4 text-foreground">Projects</h2>
+                  <div className="space-y-1 max-h-[calc(100vh-300px)] overflow-y-auto">
                       {projects.map((project) => {
                         const projectId = getProjectId(project.title);
                         const normalizedSelected = selectedProject ? normalizeProjectId(selectedProject) : null;
@@ -150,14 +130,13 @@ export default function WorkPage() {
                           </div>
                         );
                       })}
-                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Main Content - Project Details */}
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 ml-72 -ml-8">
               <ProjectDetailView 
                 projectId={selectedProject} 
                 onBack={() => setSelectedProject(null)}
@@ -205,44 +184,6 @@ export default function WorkPage() {
                     <p className="text-[14px] text-muted-foreground leading-relaxed">
                       {project.description || project.problem || 'Project details'}
                     </p>
-                    {(project.links && project.links.length > 0) || project.url ? (
-                      <div className="space-y-2">
-                        {project.links && project.links.length > 0 ? (
-                          project.links.slice(0, 2).map((link, linkIndex) => (
-                            <a
-                              key={linkIndex}
-                              href={link.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-all border border-border/20"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <Rocket className="h-4 w-4 text-primary flex-shrink-0" />
-                              <div className="flex flex-col flex-1">
-                                <span className="text-[14px] font-medium">{link.label}</span>
-                                <span className="text-[14px] text-muted-foreground text-xs">{link.url}</span>
-                              </div>
-                              <ExternalLink className="h-3 w-3 text-muted-foreground" />
-                            </a>
-                          ))
-                        ) : project.url ? (
-                          <a
-                            href={project.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-all border border-border/20"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Rocket className="h-4 w-4 text-primary flex-shrink-0" />
-                            <div className="flex flex-col flex-1">
-                              <span className="text-[14px] font-medium">View Project</span>
-                              <span className="text-[14px] text-muted-foreground text-xs">{project.url}</span>
-                            </div>
-                            <ExternalLink className="h-3 w-3 text-muted-foreground" />
-                          </a>
-                        ) : null}
-                      </div>
-                    ) : null}
                   </CardContent>
                 </Card>
               );
