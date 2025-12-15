@@ -14,19 +14,19 @@ const animationVariants = {
   pointing: {
     hover: {
       x: 4,
-      transition: { duration: 0.2, ease: 'easeOut' }
+      transition: { duration: 0.2, ease: 'easeOut' as const }
     }
   },
   bounce: {
     hover: {
       y: -4,
-      transition: { duration: 0.2, ease: 'easeOut' }
+      transition: { duration: 0.2, ease: 'easeOut' as const }
     }
   },
   pulse: {
     hover: {
       scale: 1.1,
-      transition: { duration: 0.2, ease: 'easeOut' }
+      transition: { duration: 0.2, ease: 'easeOut' as const }
     }
   },
   shake: {
@@ -38,7 +38,7 @@ const animationVariants = {
   rotate: {
     hover: {
       rotate: 15,
-      transition: { duration: 0.2, ease: 'easeOut' }
+      transition: { duration: 0.2, ease: 'easeOut' as const }
     }
   }
 };

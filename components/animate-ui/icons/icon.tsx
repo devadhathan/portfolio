@@ -120,7 +120,6 @@ function composeEventHandlers<E extends React.SyntheticEvent<unknown>>(
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyProps = Record<string, any>;
 
 function AnimateIcon({
@@ -225,6 +224,12 @@ function AnimateIcon({
     inViewOnce: animateOnViewOnce,
     inViewMargin: animateOnViewMargin,
   });
+
+  // Create a properly typed ref for Slot component
+  const slotRef = React.useMemo(() => {
+    if (typeof inViewRef === 'string') return undefined;
+    return inViewRef;
+  }, [inViewRef]) as React.Ref<HTMLElement> | undefined;
 
   const startAnim = React.useCallback(
     async (anim: 'initial' | 'animate', method: 'start' | 'set' = 'start') => {
@@ -404,7 +409,7 @@ function AnimateIcon({
 
   const content = asChild ? (
     <Slot
-      ref={inViewRef}
+      ref={slotRef as any}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onPointerDown={handlePointerDown}

@@ -143,7 +143,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
               )}
             </>
           )}
-          {project.notes && project.notes.length > 0 && (
+          {'notes' in project && Array.isArray(project.notes) && project.notes.length > 0 && (
             <div id={`${projectId}-notes`} className="mb-8">
               <h2 className="text-2xl font-normal text-foreground">Notes</h2>
               <div className="mt-4 space-y-3">
@@ -155,7 +155,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
               </div>
             </div>
           )}
-          {project.activityHistory && project.activityHistory.length > 0 && (
+          {'activityHistory' in project && Array.isArray(project.activityHistory) && project.activityHistory.length > 0 && (
             <div id={`${projectId}-activity-history`} className="mb-8">
               <h2 className="text-2xl font-normal text-foreground">Activity history</h2>
               <div className="mt-4 space-y-3">
@@ -545,22 +545,25 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
         </div>
       )}
 
-      {project.personas && project.personas.length > 0 && (
-        <div id={`${projectId}-personas`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Personas</h2>
-          <div className="lg:col-span-3">
-            <div className="grid gap-4 md:grid-cols-2">
-              {project.personas.map((persona, idx) => (
-                <div key={idx} className="p-4 border border-border/50 rounded-xl bg-card/40">
-                  <p className="text-lg font-semibold text-foreground">{persona.name}</p>
-                  <p className="text-sm text-muted-foreground mb-2">{persona.occupation}</p>
-                  <p className="text-base leading-relaxed text-muted-foreground">{persona.goal}</p>
-                </div>
-              ))}
+      {(() => {
+        const projectWithPersonas = project as any;
+        return projectWithPersonas.personas && Array.isArray(projectWithPersonas.personas) && projectWithPersonas.personas.length > 0 && (
+          <div id={`${projectId}-personas`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Personas</h2>
+            <div className="lg:col-span-3">
+              <div className="grid gap-4 md:grid-cols-2">
+                {projectWithPersonas.personas.map((persona: any, idx: number) => (
+                  <div key={idx} className="p-4 border border-border/50 rounded-xl bg-card/40">
+                    <p className="text-lg font-semibold text-foreground">{persona.name}</p>
+                    <p className="text-sm text-muted-foreground mb-2">{persona.occupation}</p>
+                    <p className="text-base leading-relaxed text-muted-foreground">{persona.goal}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {project.detailSections && project.detailSections.length > 0 && (
         <div id={`${projectId}-detail-sections`} className="space-y-12">
@@ -607,9 +610,12 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
         <div id={`${projectId}-stats`} className="mt-20 mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
           <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Some stats</h2>
           <div className="lg:col-span-3">
-            {project.impactOverview && (
-              <p className="text-lg leading-relaxed text-muted-foreground mb-5">{project.impactOverview}</p>
-            )}
+            {(() => {
+              const projectWithImpact = project as any;
+              return projectWithImpact.impactOverview && (
+                <p className="text-lg leading-relaxed text-muted-foreground mb-5">{projectWithImpact.impactOverview}</p>
+              );
+            })()}
             <div className="space-y-3">
               {project.results.map((result, idx) => (
                 <div key={idx} className="flex items-start gap-3">

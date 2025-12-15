@@ -15,6 +15,8 @@ interface FinshotsDetailProps {
   hideBackButton?: boolean;
 }
 
+const infoGraphicsImagePath = encodeURI('/finshots/Info graphics.png');
+
 const finshotsImages = [
   { src: '/finshots/n3pGQMdpISBs8GNixqX0HtgFg.png.webp', title: 'Highlights', description: 'Article view with engagement features' },
   { src: '/finshots/Bm0PeueVjQrfNc6ZGLBrN2V3wM.png.webp', title: 'Categories', description: 'Category filters and navigation' },
@@ -23,6 +25,34 @@ const finshotsImages = [
   { src: '/finshots/sr6ljGiHCaM0R1fK5YqIBWQa6kI.png.webp', title: 'Custom Notification', description: 'Personalized notification settings' },
   { src: '/finshots/s6XIdXr2BqaE8sFliwZJQA9ZM.png.webp', title: 'Filters & Search', description: 'Advanced search and filtering' },
 ];
+
+type FeatureMedia =
+  | { type: 'image'; src: string; alt: string }
+  | { type: 'video'; src: string; alt: string; backgroundImage: string };
+
+const finshotsFeatureMedia: Record<string, FeatureMedia> = {
+  Navigation: {
+    type: 'image',
+    src: '/finshots/navigation.png',
+    alt: 'Navigation flow with categories and search',
+  },
+  Infographics: {
+    type: 'image',
+    src: infoGraphicsImagePath,
+    alt: 'Illustrated infographics and data visualization',
+  },
+  Accessibility: {
+    type: 'video',
+    src: '/finshots/acess.mp4',
+    alt: 'Accessibility adjustments showcasing dark mode and font controls',
+    backgroundImage: '/finshots/Bg.png',
+  },
+  'Custom Notifications': {
+    type: 'image',
+    src: '/finshots/Notifications.png',
+    alt: 'Custom notification preferences view',
+  },
+};
 
 export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: FinshotsDetailProps) {
   const project = resumeData.projects.find(
@@ -209,6 +239,25 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
             <p className="text-lg leading-relaxed text-muted-foreground">
               {project.problem}
             </p>
+            <div className="mt-6">
+              <Card className="border-2 border-border/50 bg-transparent shadow-none">
+                <CardContent className="p-0">
+                    <div className="relative w-full aspect-[16/9] overflow-hidden rounded-[18px] bg-transparent">
+                      <video
+                        className="h-full w-full object-cover"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        poster="/finshots/Bg.png"
+                      >
+                        <source src="/finshots/first.mp4" type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       )}
@@ -256,46 +305,63 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
           </div>
           <div className="space-y-12">
             {project.keyFeatures.map((feature, idx) => {
-              // Extract feature name and description
               const parts = feature.split(':');
               const featureName = parts[0]?.trim() || '';
               const featureDesc = parts.slice(1).join(':').trim();
-              
-              // Map features to images
-              const imageMap: { [key: string]: number } = {
-                'Navigation': 1, // Categories
-                'Infographics': 2, // Infographics
-                'Accessibility': 3, // Best App 2021
-                'Custom Notifications': 4 // Custom Notification
-              };
-              
-              const imageIndex = imageMap[featureName] || 0;
-              const hasImage = imageIndex > 0 && finshotsImages[imageIndex];
+              const featureMedia = finshotsFeatureMedia[featureName];
               
               return (
-                <div key={idx} className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <div key={idx} className="space-y-4">
                   <div>
-                    <h3 className="text-2xl font-medium text-foreground mb-3">{featureName}</h3>
+                    <h3 className="text-2xl font-medium text-foreground mb-2">{featureName}</h3>
                     {featureDesc && (
                       <p className="text-lg leading-relaxed text-muted-foreground">
                         {featureDesc}
                       </p>
                     )}
                   </div>
-                  {hasImage && (
+                  {featureMedia?.type === 'image' && (
                     <Card 
-                      className="border-2 border-border/70 bg-card/60 backdrop-blur-md hover:border-primary/50 transition-all duration-300 cursor-pointer group overflow-hidden"
-                      onClick={() => handleImageClick(finshotsImages[imageIndex].src)}
+                      className="border-2 border-border/70 bg-card/60 backdrop-blur-md hover:border-primary/50 transition-all duration-300 cursor-pointer group overflow-hidden w-full"
+                      onClick={() => handleImageClick(featureMedia.src)}
                     >
                       <CardContent className="p-0 relative">
                         <div className="relative w-full aspect-[4/3] overflow-hidden rounded-lg">
                           <Image
-                            src={finshotsImages[imageIndex].src}
-                            alt={finshotsImages[imageIndex].title}
+                            src={featureMedia.src}
+                            alt={featureMedia.alt}
                             fill
-                            className="object-contain group-hover:scale-105 transition-transform duration-500"
-                            sizes="(max-width: 768px) 100vw, 50vw"
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            sizes="100vw"
                           />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                  {featureMedia?.type === 'video' && (
+                    <Card
+                      className="border-2 border-border/70 bg-card/60 backdrop-blur-md transition-all duration-300 overflow-hidden w-full bg-cover bg-center aspect-[16/9]"
+                      style={{ backgroundImage: `url(${featureMedia.backgroundImage})` }}
+                    >
+                      <CardContent className="p-0 h-full">
+                        <div className="relative h-full w-full">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-[260px] max-w-[520px] aspect-[9/16] overflow-hidden rounded-[26px] border border-white/30 bg-black/50 shadow-lg">
+                              <video
+                                className="h-full w-full object-cover"
+                                poster={featureMedia.backgroundImage}
+                                autoPlay
+                                muted
+                                loop
+                                playsInline
+                                aria-label={featureMedia.alt}
+                              >
+                                <source src={featureMedia.src} type="video/mp4" />
+                                Your browser does not support the video tag.
+                              </video>
+                            </div>
+                          </div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-card/80 via-transparent to-transparent pointer-events-none" />
                         </div>
                       </CardContent>
                     </Card>
@@ -313,7 +379,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
           <h2 className="text-2xl font-normal text-foreground lg:col-span-2">What was the result</h2>
           <div className="lg:col-span-3">
             <p className="text-lg leading-relaxed text-muted-foreground mb-6">
-              The app received highly positive user feedback upon release. During the testing period and after launch, it became clear our reimagined interfaces and streamlined workflows better met customers' needs.
+              The app received highly positive user feedback upon release. During the testing period and after launch, it became clear our reimagined interfaces and streamlined workflows better met customers&apos; needs.
             </p>
             <div className="space-y-3">
               {project.results.map((result, idx) => (

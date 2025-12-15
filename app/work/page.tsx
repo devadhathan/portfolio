@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronLeft, Menu, X } from 'lucide-react';
 import { resumeData } from '@/lib/resume-data';
 import { TopBar } from '@/components/top-bar';
 import { BottomNav } from '@/components/bottom-nav';
@@ -57,6 +57,7 @@ export default function WorkPage() {
   const router = useRouter();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const projects = resumeData.projects.filter(project => project.title !== 'Sustainable Kiosk' && project.title !== 'Booking Portal Redesign');
 
@@ -73,13 +74,31 @@ export default function WorkPage() {
       <TopBar onHomeClick={() => router.push('/')} />
       <div className="pt-14 pb-24 px-24 md:px-6 lg:px-8 overflow-visible">
         {selectedProject ? (
-          <div className="flex gap-6 max-w-[1600px] mx-auto relative">
+          <div className="flex flex-col lg:flex-row gap-6 max-w-[1600px] mx-auto relative">
+            <div className="flex items-center justify-between lg:hidden px-4 mb-3">
+              <h2 className="text-base font-semibold text-foreground">Projects</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-foreground p-2"
+                onClick={() => setIsMenuOpen(prev => !prev)}
+              >
+                {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              </Button>
+            </div>
             {/* Sidebar - Projects List (Fixed) */}
-            <div className="fixed left-8 top-0 w-64 pr-4 bg-card h-auto z-40">
+            <div
+              className={`lg:fixed lg:left-8 lg:top-0 lg:w-64 lg:pr-4 w-full pr-0 bg-card h-auto z-40 ${
+                isMenuOpen ? 'block' : 'hidden lg:block'
+              }`}
+            >
               <div className="pt-20">
                 <div className="sticky top-20 z-50 bg-card border border-border/50 rounded-lg p-4 pt-6">
                   <Button 
-                    onClick={() => setSelectedProject(null)} 
+                    onClick={() => {
+                      setSelectedProject(null);
+                      setIsMenuOpen(false);
+                    }} 
                     variant="ghost" 
                     size="sm" 
                     className="mb-4 text-muted-foreground hover:text-foreground -ml-2"
@@ -132,6 +151,7 @@ export default function WorkPage() {
                             <button
                               onClick={() => {
                                 setSelectedProject(projectId);
+                                setIsMenuOpen(false);
                                 if (sections.length > 0) {
                                   setExpandedProjects(prev => {
                                     const newSet = new Set(prev);
@@ -185,8 +205,14 @@ export default function WorkPage() {
               </div>
             </div>
 
+            {isMenuOpen && (
+              <div
+                className="fixed inset-0 z-30 bg-black/40 lg:hidden"
+                onClick={() => setIsMenuOpen(false)}
+              />
+            )}
             {/* Main Content - Project Details */}
-            <div className="flex-1 min-w-0 ml-72 -ml-8">
+            <div className="flex-1 min-w-0 lg:ml-72 ml-0">
               <ProjectDetailView 
                 projectId={selectedProject} 
                 onBack={() => setSelectedProject(null)}
