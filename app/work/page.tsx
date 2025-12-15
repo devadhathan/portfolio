@@ -97,11 +97,18 @@ export default function WorkPage() {
                         
                         // Get available sections for this project
                         const sections = [];
+                        if (project.designGallery && project.designGallery.length > 0) sections.push({ id: 'design', name: 'Design gallery' });
                         if (project.problem) sections.push({ id: 'problem', name: 'Problem' });
+                        if (project.targetAudience) sections.push({ id: 'target-audience', name: 'Target Audience' });
+                        if (project.detailSections && project.detailSections.length > 0) {
+                          project.detailSections.forEach((section) => {
+                            sections.push({ id: section.id, name: section.title });
+                          });
+                        }
                         if (project.research) sections.push({ id: 'research', name: 'Research' });
-                        if (project.approach) sections.push({ id: 'approach', name: 'Approach' });
+                        if (project.explorations && project.explorations.length > 0) sections.push({ id: 'exploring', name: 'Exploring possibilities' });
+                        if (project.prototype) sections.push({ id: 'prototype', name: 'Prototype' });
                         if (project.hmw) sections.push({ id: 'hmw', name: 'How Might We' });
-                        // Check for Finshots-specific sections
                         if (project.title.toLowerCase().includes('finshots')) {
                           sections.push({ id: 'possible-solutions', name: 'Possible solutions' });
                           if (project.results && project.results.length > 0) sections.push({ id: 'stats', name: 'What was the result' });
@@ -109,9 +116,9 @@ export default function WorkPage() {
                           if (project.results && project.results.length > 0) sections.push({ id: 'stats', name: 'Some stats' });
                         }
                         if (project.keyFeatures && project.keyFeatures.length > 0) sections.push({ id: 'key-features', name: 'Key Features' });
-                        if (project.impact && project.impact.length > 0) sections.push({ id: 'impact', name: 'Impact' });
+                        if (project.businessOpportunity && project.businessOpportunity.length > 0) sections.push({ id: 'business', name: 'Business opportunity' });
                         if (project.learnings) sections.push({ id: 'learnings', name: 'Learnings' });
-                        if (project.targetAudience) sections.push({ id: 'target-audience', name: 'Target Audience' });
+                        if (project.impact && project.impact.length > 0) sections.push({ id: 'impact', name: 'Impact' });
                         
                         const handleSectionClick = (sectionId: string) => {
                           const element = document.getElementById(`${projectId}-${sectionId}`);

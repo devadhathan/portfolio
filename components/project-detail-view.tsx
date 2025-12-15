@@ -6,7 +6,7 @@ import { ArrowLeft, Calendar, Users, ExternalLink, Smartphone, X, ZoomIn } from 
 import { resumeData } from '@/lib/resume-data';
 import { FinshotsDetail } from './finshots-detail';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProjectDetailViewProps {
@@ -39,6 +39,12 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
   const project = resumeData.projects.find(
     p => p.title.toLowerCase().replace(/\s+/g, '-') === projectId.toLowerCase().replace(/\s+/g, '-')
   );
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0 });
+    }
+  }, [projectId]);
 
   // Use custom Finshots detail page
   const normalizedProjectId = projectId.toLowerCase().replace(/\s+/g, '-');
@@ -307,17 +313,17 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-normal text-foreground">Design gallery</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             {project.designGallery.map((entry, idx) => (
               <motion.div
                 key={idx}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: idx * 0.1 }}
-                className="rounded-2xl border border-border/40 bg-card/60 overflow-hidden"
+                className="rounded-3xl border border-border/40 bg-card/60 overflow-hidden"
               >
                 <div
-                  className="relative w-full h-72 cursor-pointer"
+                  className="relative w-full aspect-[4/3] md:aspect-[16/9] min-h-[420px] cursor-pointer"
                   onClick={() => handleImageClick(entry.src)}
                 >
                   <Image
@@ -325,7 +331,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
                     alt={entry.title || 'Design gallery'}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 50vw"
+                    sizes="(max-width: 768px) 100vw, 90vw"
                   />
                 </div>
                 <div className="px-4 py-3 space-y-1">
@@ -385,10 +391,43 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
             <p className="text-lg leading-relaxed text-muted-foreground">
               {project.problem}
             </p>
+            {project.approach && (
+              <p className="text-lg leading-relaxed text-muted-foreground mt-4">
+                {project.approach}
+              </p>
+            )}
           </div>
         </div>
       )}
 
+      {project.problemImage && (
+        <div id={`${projectId}-problem-image`} className="mb-64 space-y-4">
+          <h2 className="text-2xl font-normal text-foreground">Problem snapshot</h2>
+          <div className="relative w-full aspect-[16/9] rounded-3xl border border-border/50 overflow-hidden shadow-xl">
+            <Image
+              src={project.problemImage.src}
+              alt={project.problemImage.alt || 'Problem snapshot'}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 90vw"
+            />
+          </div>
+          {project.problemImage.caption && (
+            <p className="text-base text-muted-foreground">{project.problemImage.caption}</p>
+          )}
+        </div>
+      )}
+
+      {project.takeStepBack && (
+        <div className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Take a step back</h2>
+          <div className="lg:col-span-3">
+            <p className="text-lg leading-relaxed text-muted-foreground">
+              {project.takeStepBack}
+            </p>
+          </div>
+        </div>
+      )}
 
       {project.painPoints && project.painPoints.length > 0 && (
         <div id={`${projectId}-painpoints`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -409,80 +448,6 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
         </div>
       )}
 
-      {/* Research Section */}
-      {project.research && (
-        <div id={`${projectId}-research`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Research</h2>
-          <div className="lg:col-span-3">
-            <p className="text-lg leading-relaxed text-muted-foreground">
-              {project.research}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {project.takeStepBack && (
-        <div className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Take a step back</h2>
-          <div className="lg:col-span-3">
-            <p className="text-lg leading-relaxed text-muted-foreground">
-              {project.takeStepBack}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {project.personas && project.personas.length > 0 && (
-        <div id={`${projectId}-personas`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Personas</h2>
-          <div className="lg:col-span-3 space-y-4">
-            {project.personas.map((persona, idx) => (
-              <div key={idx} className="p-4 border border-border/50 rounded-xl bg-card/40">
-                <p className="text-lg font-semibold text-foreground">{persona.name}</p>
-                <p className="text-sm text-muted-foreground mb-2">{persona.occupation}</p>
-                <p className="text-base leading-relaxed text-muted-foreground">{persona.goal}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Approach Section */}
-      {project.approach && (
-        <div id={`${projectId}-approach`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Approach</h2>
-          <div className="lg:col-span-3">
-            <p className="text-lg leading-relaxed text-muted-foreground">
-              {project.approach}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {project.explorations && project.explorations.length > 0 && (
-        <div id={`${projectId}-exploring`} className="mb-64">
-          <h2 className="text-2xl font-normal text-foreground mb-6">Exploring possibilities</h2>
-          <div className="space-y-8">
-            {project.explorations.map((exploration, idx) => (
-              <div key={idx} className="space-y-3">
-                <p className="text-sm uppercase tracking-wider text-muted-foreground">{exploration.tag}</p>
-                <h3 className="text-xl font-semibold text-foreground">{exploration.title}</h3>
-                <p className="text-base leading-relaxed text-muted-foreground">{exploration.problem}</p>
-                <p className="text-base leading-relaxed text-foreground font-semibold">Solution</p>
-                <p className="text-base leading-relaxed text-muted-foreground">{exploration.solution}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {project.prototype && (
-        <div id={`${projectId}-prototype`} className="mb-64">
-          <h2 className="text-2xl font-normal text-foreground mb-3">Prototype</h2>
-          <p className="text-lg leading-relaxed text-muted-foreground">{project.prototype}</p>
-        </div>
-      )}
-
       {/* HMW Section */}
       {project.hmw && (
         <div id={`${projectId}-hmw`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -495,9 +460,151 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
         </div>
       )}
 
+      {project.businessOpportunity && project.businessOpportunity.length > 0 && (
+        <div id={`${projectId}-business`} className="mb-32 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Business opportunity</h2>
+          <div className="lg:col-span-3">
+            <div className="space-y-3">
+              {project.businessOpportunity.map((opportunity, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <span className="text-primary mt-1">→</span>
+                  <p className="text-lg text-muted-foreground">{opportunity}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {project.explorations && project.explorations.length > 0 && (
+        <div id={`${projectId}-exploring`} className="mb-64">
+          <h2 className="text-2xl font-normal text-foreground mb-6">Exploring possibilities</h2>
+          <div className="space-y-12">
+            {project.explorations.map((exploration, idx) => (
+              <div key={idx} className="space-y-6">
+                <p className="text-sm uppercase tracking-wider text-muted-foreground">{exploration.tag}</p>
+                <h3 className="text-xl font-semibold text-foreground">{exploration.title}</h3>
+                <p className="text-base leading-relaxed text-muted-foreground">{exploration.problem}</p>
+                <p className="text-base leading-relaxed text-foreground font-semibold">Solution</p>
+                <p className="text-base leading-relaxed text-muted-foreground">{exploration.solution}</p>
+                {exploration.image && (
+                  <div className="w-full overflow-hidden rounded-3xl border border-border/50 bg-card/70 shadow-xl">
+                    <div className="relative w-full aspect-[4/3] md:aspect-[3/2] min-h-[420px]">
+                      <Image
+                        src={exploration.image}
+                        alt={exploration.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 90vw"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {project.targetAudience && (
+        <div id={`${projectId}-target-audience`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Target Audience</h2>
+          <div className="lg:col-span-3">
+            <p className="text-lg leading-relaxed text-muted-foreground">{project.targetAudience}</p>
+          </div>
+        </div>
+      )}
+
+      {project.targetAudienceImage && (
+        <div id={`${projectId}-target-snapshot`} className="mb-64 space-y-4">
+          <h2 className="text-2xl font-normal text-foreground">Target snapshot</h2>
+          <div className="relative w-full aspect-[16/9] rounded-3xl border border-border/50 overflow-hidden shadow-xl">
+            <Image
+              src={project.targetAudienceImage.src}
+              alt={project.targetAudienceImage.alt || 'Target audience snapshot'}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 90vw"
+            />
+          </div>
+          {project.targetAudienceImage.caption && (
+            <p className="text-base text-muted-foreground">{project.targetAudienceImage.caption}</p>
+          )}
+        </div>
+      )}
+
+      {/* Research Section */}
+      {project.research && (
+        <div id={`${projectId}-research`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Research</h2>
+          <div className="lg:col-span-3">
+            <p className="text-lg leading-relaxed text-muted-foreground">
+              {project.research}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {project.personas && project.personas.length > 0 && (
+        <div id={`${projectId}-personas`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Personas</h2>
+          <div className="lg:col-span-3">
+            <div className="grid gap-4 md:grid-cols-2">
+              {project.personas.map((persona, idx) => (
+                <div key={idx} className="p-4 border border-border/50 rounded-xl bg-card/40">
+                  <p className="text-lg font-semibold text-foreground">{persona.name}</p>
+                  <p className="text-sm text-muted-foreground mb-2">{persona.occupation}</p>
+                  <p className="text-base leading-relaxed text-muted-foreground">{persona.goal}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {project.detailSections && project.detailSections.length > 0 && (
+        <div id={`${projectId}-detail-sections`} className="space-y-12">
+          {project.detailSections.map((section) => {
+            const spacingClass =
+              section.id === 'my-tasks-lead-owner-change' || section.id === 'tags-for-leads'
+                ? 'mb-96'
+                : 'mb-80';
+            return (
+              <div key={section.id} id={`${projectId}-${section.id}`} className={spacingClass}>
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                  <h2 className="text-2xl font-normal text-foreground lg:col-span-2">
+                    {section.title}
+                  </h2>
+                  <div className="lg:col-span-3">
+                    <p className="text-lg leading-relaxed text-muted-foreground">
+                      {section.description}
+                    </p>
+                  </div>
+                </div>
+                {section.video && (
+                  <div className="space-y-4 mt-8">
+                    <video
+                      controls
+                      className="w-full rounded-3xl border border-border/50 shadow-lg object-cover"
+                      src={section.video}
+                      aria-label={`${section.title} walkthrough video`}
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      {section.title} video
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Stats Section */}
       {project.results && project.results.length > 0 && (
-        <div id={`${projectId}-stats`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
+        <div id={`${projectId}-stats`} className="mt-20 mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
           <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Some stats</h2>
           <div className="lg:col-span-3">
             {project.impactOverview && (
@@ -550,22 +657,6 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
         </div>
       )}
 
-      {project.businessOpportunity && project.businessOpportunity.length > 0 && (
-        <div id={`${projectId}-business`} className="mb-32 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Business opportunity</h2>
-          <div className="lg:col-span-3">
-            <div className="space-y-3">
-              {project.businessOpportunity.map((opportunity, idx) => (
-                <div key={idx} className="flex items-start gap-3">
-                  <span className="text-primary mt-1">→</span>
-                  <p className="text-lg text-muted-foreground">{opportunity}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Learnings */}
       {project.learnings && (
         <div id={`${projectId}-learnings`} className="mb-32 grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -587,29 +678,22 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
         </div>
       )}
 
-      {project.targetAudience && (
-        <div id={`${projectId}-target-audience`} className="mb-6 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Target Audience</h2>
-          <div className="lg:col-span-3 space-y-3">
-            <p className="text-lg leading-relaxed text-muted-foreground">{project.targetAudience}</p>
-          </div>
-        </div>
-      )}
-
-      {project.targetAudienceImage && (
-        <div id={`${projectId}-target-snapshot`} className="mb-32 space-y-3">
-          <h2 className="text-2xl font-normal text-foreground">Target snapshot</h2>
-          <div className="relative w-full aspect-[16/9] rounded-3xl border border-border/50 overflow-hidden shadow-xl">
-            <Image
-              src={project.targetAudienceImage.src}
-              alt={project.targetAudienceImage.alt || 'Target audience snapshot'}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 90vw"
-            />
-          </div>
-          {project.targetAudienceImage.caption && (
-            <p className="text-base text-muted-foreground">{project.targetAudienceImage.caption}</p>
+      {project.prototype && (
+        <div id={`${projectId}-prototype`} className="mb-64 space-y-4">
+          <h2 className="text-2xl font-normal text-foreground">Prototype</h2>
+          <p className="text-lg leading-relaxed text-muted-foreground">{project.prototype}</p>
+          {project.prototypeFrame && (
+            <div className="overflow-hidden rounded-3xl border border-border/50 shadow-xl bg-card/70">
+              <div className="relative w-full aspect-[16/9]">
+                <iframe
+                  title="Onboarding prototype"
+                  src={project.prototypeFrame}
+                  className="h-full w-full"
+                  loading="lazy"
+                  allow="fullscreen"
+                />
+              </div>
+            </div>
           )}
         </div>
       )}

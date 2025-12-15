@@ -170,22 +170,16 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       team: "Arif, Manoranjan, Lokesh",
       description: `In 2022, Ditto Insurance—an Indian startup launched in 2021—presented significant opportunities for improvement. Collaborating with my product manager, I reimagined the onboarding experience to reduce friction for new users. As a product designer, I leveraged data-driven insights and iterative design methods to pinpoint user pain points and develop tailored solutions that enhanced both functionality and user satisfaction.`,
       problem: `Users were dropping off before completing the slot booking process, resulting in low conversion rates. A major challenge was aligning our design solutions with the business goal of increasing conversions while maintaining a user-centric approach. Understanding the root causes of abandonment in a relatively new product required continuous collaboration across design, product, and technical teams.`,
+      problemImage: {
+        src: '/ditto insurance/image copy.png',
+        alt: 'Booking abandonment snapshot',
+        caption: 'Users were abandoning the slot booking flow before completing their purchase.'
+      },
       takeStepBack: `Rather than jumping into solutions, I first focused on understanding the problem. I analyzed analytics to identify where the major drop-offs occurred, spoke with customers, ran a cognitive walkthrough, and interviewed users to surface the right questions. These insights produced two personas—Ian, a marketing manager who needs support when preferred slots are unavailable, and Maaya, a 27-year-old teacher who wants assurance her phone number remains spam-free—helping us better understand pain points and refine our approach.`,
       approach: `We broke the onboarding experience into manageable problems, then addressed each one with targeted, data-backed solutions. For slot shortages, we introduced WhatsApp support, clear exit points, and guidance toward advisors when availability was constrained. To build trust, we iterated on badge, tooltip, and nudge concepts with policy writers, ultimately shipping a mobile-friendly nudge treatment that reinforced the “We never spam” promise. We also added confirmations and autosave prompts to prevent data loss when users accidentally left the flow.`,
       prototype: "Built interactive prototypes to validate the WhatsApp assistance flows, spam-free messaging, and error-prevention modals across mobile breakpoints.",
+      prototypeFrame: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fdesign%2F7hcowr6VnLOewHm2ubJmZi%2FDitto-onboarding%3Fembed-host%3Dshare%26kind%3Dfile%26node-id%3D0-1%26page-selector%3D1%26theme%3Dlight%26version%3D2%26viewer%3D1",
       painPointsIntro: `We identified key problems in the onboarding journey and broke them down into bite-sized issues so we could tackle them individually.`,
-      personas: [
-        {
-          name: "Ian",
-          occupation: "Marketing Manager",
-          goal: "As a user, I want support when my desired time slot is not available so that I can still secure an appointment without frustration."
-        },
-        {
-          name: "Maaya, Age: 27",
-          occupation: "Teacher",
-          goal: "As a user, I want assurance that my phone number is safe from spam so that I feel confident sharing my contact details."
-        }
-      ],
       painPoints: [
         {
           title: "No error prevention",
@@ -226,28 +220,29 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
           tag: "Problem #1",
           title: "Users Unable to Reach Desired Time Slots",
           problem: "In the original workflow, advisor capacity limited users from booking their preferred slots and expanding the schedule wasn’t feasible.",
-          solution: "We added WhatsApp support, clearer exit points, and proactive messaging that guided users toward alternative assistance when slots were full."
+          solution: "We added WhatsApp support, clearer exit points, and proactive messaging that guided users toward alternative assistance when slots were full.",
+          image: '/ditto insurance/1.png'
         },
         {
           tag: "Problem #2",
           title: "Trust Issues with Sharing Phone Numbers",
           problem: "Users dropped off at the phone number stage because they feared spam calls, undermining the momentum of the flow.",
-          solution: "Collaborating with policy writers, we emphasized ‘We never spam’ via badge, tooltip, and nudge treatments, ultimately shipping a mobile-friendly nudge design that reinforced this promise."
+          solution: "Collaborating with policy writers, we emphasized ‘We never spam’ via badge, tooltip, and nudge treatments, ultimately shipping a mobile-friendly nudge design that reinforced this promise.",
+          image: '/ditto insurance/2.png'
         },
         {
           tag: "Problem #3",
           title: "Lost Data on Accidental Exit",
           problem: "Users were frustrated when accidental exits erased their progress, creating a counterintuitive experience.",
-          solution: "We introduced confirmation pop-ups that preserved in-progress data and guided users to WhatsApp when slots were unavailable, preventing unexpected data loss."
+          solution: "We introduced confirmation pop-ups that preserved in-progress data and guided users to WhatsApp when slots were unavailable, preventing unexpected data loss.",
+          image: '/ditto insurance/3.png'
         }
       ],
       impactOverview: `The redesign had broad effects: Ditto now sees over one lakh monthly visitors, with around 600+ people booking through the portal on an average day. Thanks to the energy and passion of the team, we drove key business metrics upward.`,
       impact: [
         "Safeguarded against accidental exits and preserved customer progress",
         "Built trust and credibility through transparent communication about spam protection",
-        "Delivered role-specific support and reporting to maximize sales and lead quality"
-      ],
-      results: [
+        "Delivered role-specific support and reporting to maximize sales and lead quality",
         "17% increase in conversion rates of health insurance premiums in 60 days, with ₹3cr+ in premiums sold",
         "5% increase in daily slot bookings (~500-600 slots per day)",
         "8% decrease in customer drop-off rates over 60 days"
@@ -288,6 +283,26 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       description: `Over the course of four months, I partnered with the Ditto team to build a CRM that streamlined sales operations and delivered intuitive, actionable reporting. Ditto started as a no-spam insurance platform in 2021 with the goal of simplifying insurance selection across India, and the growing lead volume made it clear that the early Excel-based workflows needed a more scalable foundation.`,
       problem: "Manual lead tracking with Excel became unsustainable as the lead volume increased, and the existing CRM lacked role-specific workflows, real-time insight, and a cohesive, customizable interface.",
       approach: `Based on user feedback, I envisioned a CRM built for seamless usability, role-specific dashboards, personalized workflows, and integrated communication tools. The redesign prioritized streamlined navigation, centralized communications, and dashboards that surfaced the right data for each role.`,
+      detailSections: [
+        {
+          id: 'adding-notes',
+          title: 'Adding notes',
+          description: `Notes are used to keep a record of any comments, or observations that the user would have relating to that particular lead. Users will be able to keep track of how a sale is progressing. When leads are switched between advisors, notes help the new advisor in understanding the lead’s history and requirements.`,
+          video: '/CRM/Notes.mp4'
+        },
+        {
+          id: 'my-tasks-lead-owner-change',
+          title: 'My Tasks & Lead owner change',
+          description: `Adding a sale is possible from the Sales Tab also (apart from when marking a payment task successful and on the leads page). The sales form is opened on the right-side panel. For sales done through Ditto links, the user needs to enter only the application number. On clicking the ‘Get Details’ button, all the policy details will be shown in the subsequent fields. This is fetched from the ops portal. This is possible if that policy number is still unclaimed by any advisor.`,
+          video: '/CRM/leads.mp4'
+        },
+        {
+          id: 'tags-for-leads',
+          title: 'Tags for Leads',
+          description: `Tags are identifiers, that can be added to leads. This lets the user identify, filter/segment and target leads with campaigns. The tags section is present on the bottom right side as part of the lead details on the individual lead pages.`,
+          video: '/CRM/Tags.mp4'
+        }
+      ],
       targetAudience: "Internal teams responsible for customer relationships—sales, support, account management—and strategic leaders who need reporting, plus partners who require a unified platform for customer engagement.",
       impact: [
         "Role-specific interfaces reduced redundancy and kept teams focused on their priorities.",
