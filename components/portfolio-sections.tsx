@@ -1113,9 +1113,9 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           <p className="text-sm md:text-base text-muted-foreground mb-4 font-regular animate-fade-in-blur">
             Dev&apos;s digital home
           </p>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-medium mb-12 md:mb-16 text-foreground leading-loose animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-medium mb-12 md:mb-16 text-foreground leading-[16px] animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>
               Designer bringing interaction, <br />
-              <span className="text-2xl md:text-3xl lg:text-4xl font-medium block mt-0 md:mt-2 text-foreground leading-loose animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>technology, and people together.</span>
+              <span className="text-2xl md:text-3xl lg:text-4xl font-medium block mt-0 md:mt-2 text-foreground leading-[16px] animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>technology, and people together.</span>
             </h1>
         </div>
       )}

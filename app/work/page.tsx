@@ -40,6 +40,10 @@ const getProjectThumbnail = (project: Project): string => {
 };
 
 const getProjectSummary = (project: Project): string => {
+  if (project.cardSubtext) {
+    return project.cardSubtext;
+  }
+
   const base = project.description || project.problem || '';
   const words = base
     .split(/\s+/)
@@ -72,7 +76,7 @@ export default function WorkPage() {
   return (
     <div className="min-h-screen bg-card">
       <TopBar onHomeClick={() => router.push('/')} />
-      <div className="pt-14 pb-24 px-24 md:px-6 lg:px-8 overflow-visible">
+      <div className="pt-14 pb-24 px-4 md:px-6 lg:px-8 overflow-visible">
         {selectedProject ? (
           <div className="flex flex-col lg:flex-row gap-6 max-w-[1600px] mx-auto relative">
             <div className="flex items-center justify-between lg:hidden px-4 mb-3">
@@ -228,7 +232,7 @@ export default function WorkPage() {
           </div>
           
           {/* Grid for project cards - 3 columns layout */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 lg:gap-8 auto-rows-[minmax(260px,auto)]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 lg:gap-8 auto-rows-[minmax(260px,auto)] w-full">
             {/* Separate Finshots from other projects */}
             {(() => {
               const finshotsProject = projects.find(p => p.title.toLowerCase().includes('finshots'));

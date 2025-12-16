@@ -71,6 +71,7 @@ export const resumeData = {
       company: "Nesoi.ai",
       period: "July 2025 - November 2025",
       description: "Designed and shipped adviser/client-facing dashboards used by 15+ enterprise clients, enabling them to deliver interactive, AI-powered learning modules.",
+      cardSubtext: "Interactive Video Learning",
       problem: "Enterprise clients needed an intuitive platform to create and manage AI-powered learning modules, with a focus on engagement and efficiency.",
       approach: "Led iterative UX improvements, developed scalable workflow patterns, and partnered closely with engineering to ensure consistent UI behavior. Integrated WCAG 2.1 AA accessibility standards throughout the design process.",
       keyFeatures: [
@@ -104,6 +105,7 @@ export const resumeData = {
       role: "Interaction designer, UX researcher",
       tools: ["Figma", "Tailwind CSS", "Loom"],
       team: "Shreyans, Lokesh, Narasmiha, Vishnu, Sachin",
+      cardSubtext: "Insurance Design System",
       description: `The Falcon Design System is a comprehensive, unified framework that brings consistency, efficiency, and accessibility to all our digital products. It provides a robust library of reusable UI components, a cohesive visual language, and clear design guidelines that streamline the creation of intuitive interfaces across multiple platforms.
 
 Built on the principles of modularity and reusability, Falcon standardizes elements such as typography, color palettes, icons, and interactive components. This not only ensures a consistent brand experience but also accelerates product development by reducing redundancy. Thorough documentation and best practices foster effective collaboration among designers, developers, and stakeholders, enabling cohesive teamwork and faster iterations.`,
@@ -137,10 +139,11 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       type: "Mobile App Design",
       company: "Finshots",
       period: "2019-2020",
-      url: "https://devadhathan.com/finshots-new",
+      url: "https://play.google.com/store/apps/details?id=com.finception.finshots.android&hl=en_GB",
       role: "Product Designer, UX Designer",
       tools: ["Adobe XD", "After Effects", "Illustrator", "Sketch", "Principle"],
       team: "Arif, Manoranjan, Lokesh",
+      cardSubtext: "Daily Financial News",
       description: "Redesigned the Finshots mobile app to provide a centralized platform for accessing financial news and insights. The app addresses the challenge of fragmented content delivery across emails, social posts, and other channels.",
       problem: "Frequent readers of our financial content struggle to revisit old stories due to inefficient navigation on our website and in our emails. Endless scrolling and scattered content make it difficult for users to locate previously engaged stories, leading to frustration and decreased engagement. Feedback from social media and surveys indicates a strong demand for a more accessible, centralized platform that simplifies content discovery",
       research: "The journey began with a simple yet crucial question: Why are users struggling to stay engaged with Finshots' content, despite its growing popularity? We conducted a thorough analysis using: Google Play Store reviews, Social media feedback, Direct user queries. A clear theme emerged: Users loved the content but felt overwhelmed by its fragmented delivery across emails, social posts, and other channels. Revisiting or following up on valuable financial news was cumbersome due to a lack of centralized access. The issue wasn't about the quality of the content—it was about making it more accessible and intuitive to navigate.",
@@ -168,6 +171,7 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       role: "Interaction designer, UX researcher",
       tools: ["Figma", "After effects", "Illustrator", "Amplitude", "Loom"],
       team: "Arif, Manoranjan, Lokesh",
+      cardSubtext: "Ditto Customer Onboarding",
       description: `In 2022, Ditto Insurance—an Indian startup launched in 2021—presented significant opportunities for improvement. Collaborating with my product manager, I reimagined the onboarding experience to reduce friction for new users. As a product designer, I leveraged data-driven insights and iterative design methods to pinpoint user pain points and develop tailored solutions that enhanced both functionality and user satisfaction.`,
       problem: `Users were dropping off before completing the slot booking process, resulting in low conversion rates. A major challenge was aligning our design solutions with the business goal of increasing conversions while maintaining a user-centric approach. Understanding the root causes of abandonment in a relatively new product required continuous collaboration across design, product, and technical teams.`,
       problemImage: {
@@ -280,6 +284,7 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       role: "Interaction designer, UX researcher, UX Designer",
       tools: ["Figma", "Google Docs", "After Effects", "Loom", "Miro"],
       team: "Arif, Lokesh, Shreyans, Sachin, Shaily",
+      cardSubtext: "Insurance CRM",
       description: `Over the course of four months, I partnered with the Ditto team to build a CRM that streamlined sales operations and delivered intuitive, actionable reporting. Ditto started as a no-spam insurance platform in 2021 with the goal of simplifying insurance selection across India, and the growing lead volume made it clear that the early Excel-based workflows needed a more scalable foundation.`,
       problem: "Manual lead tracking with Excel became unsustainable as the lead volume increased, and the existing CRM lacked role-specific workflows, real-time insight, and a cohesive, customizable interface.",
       approach: `Based on user feedback, I envisioned a CRM built for seamless usability, role-specific dashboards, personalized workflows, and integrated communication tools. The redesign prioritized streamlined navigation, centralized communications, and dashboards that surfaced the right data for each role.`,
