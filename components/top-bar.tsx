@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Sparkles, Image as ImageIcon, Sun } from 'lucide-react';
+import { Sparkles, Image as ImageIcon, Sun, Menu as MenuIcon, List } from 'lucide-react';
 import { useTheme, availableThemes, rgbThemes } from '@/contexts/theme-context';
 import { useBackground } from '@/contexts/background-context';
 import {
@@ -13,9 +13,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MobileSidebar } from './mobile-sidebar';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { ContactChat } from './contact-chat';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { resumeData } from '@/lib/resume-data';
 
 interface TopBarProps {
   onProjectSelect?: (projectSlug: string) => void;
@@ -27,7 +35,10 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
   const { backgroundImage, setBackgroundImage, availableBackgrounds } = useBackground();
   const isGlassTheme = theme === 'glass';
   const router = useRouter();
+  const pathname = usePathname();
+  const isWorkPage = pathname === '/work';
   const [chatOpen, setChatOpen] = useState(false);
+  const [isProjectSheetOpen, setIsProjectSheetOpen] = useState(false);
 
   const handleLogoClick = () => {
     // Reset portfolio state if handler provided
@@ -47,9 +58,54 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
       <div className="w-full px-3 md:px-5 lg:px-6">
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center gap-2">
-            <div className="lg:hidden">
-              <MobileSidebar onProjectSelect={onProjectSelect} />
-            </div>
+            {!isWorkPage && (
+              <div className="lg:hidden">
+                <MobileSidebar onProjectSelect={onProjectSelect} />
+              </div>
+            )}
+            {isWorkPage && (
+              <div className="lg:hidden">
+                <Sheet open={isProjectSheetOpen} onOpenChange={setIsProjectSheetOpen}>
+                  <SheetTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 rounded-full bg-card/60 border border-border/40 shadow-lg hover:border-primary/60 transition-all"
+                      aria-label="Open project list"
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="border-r border-border/30 p-4">
+                    <SheetHeader>
+                      <SheetTitle>Projects</SheetTitle>
+                    </SheetHeader>
+                    <div className="mt-3 space-y-2 max-h-[60vh] overflow-y-auto">
+                      {resumeData.projects
+                        .filter(project => project.title !== 'Sustainable Kiosk' && project.title !== 'Booking Portal Redesign')
+                        .map((project) => {
+                          const projectId = project.title.toLowerCase().trim().replace(/\s+/g, '-');
+                          return (
+                            <button
+                              key={projectId}
+                              onClick={() => {
+                                onProjectSelect?.(projectId);
+                                setIsProjectSheetOpen(false);
+                              }}
+                              className="w-full rounded-2xl border border-border/30 bg-secondary/20 px-3 py-2 text-left transition-colors hover:border-primary hover:bg-secondary/30"
+                            >
+                              <span className="text-[14px] font-semibold">{project.title}</span>
+                              <span className="text-[12px] text-muted-foreground block">
+                                {project.company || project.type || project.period}
+                              </span>
+                            </button>
+                          );
+                        })}
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
+            )}
             <button
               onClick={handleLogoClick}
               className="flex items-center hover:opacity-80 transition-opacity"
@@ -230,4 +286,3 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
     </div>
   );
 }
-

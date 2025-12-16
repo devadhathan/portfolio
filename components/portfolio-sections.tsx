@@ -123,10 +123,11 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
       'hero': 'col-span-1 sm:col-span-1 lg:col-span-1',
       'preferences': 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1',
       'photos': 'col-span-1 sm:col-span-1 lg:col-span-2 row-span-2',
-      'video': 'col-span-1 sm:col-span-2 lg:col-span-1 row-span-1',
+      'video': 'col-span-1 sm:col-span-2 lg:col-span-1 row-span-2',
       'connect': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
+      'last-portfolio-version': 'col-span-1 sm:col-span-2 lg:col-span-1 row-span-1',
       'contact': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
-      'philosophy': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
+      'philosophy': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2',
       'experience': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2',
     };
 
@@ -1010,6 +1011,16 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 </div>
               ) : (
                 <>
+                  {section.image && (
+                    <div className="relative w-full h-40 rounded-2xl overflow-hidden border border-border/20 bg-muted">
+                      <Image
+                        src={section.image}
+                        alt={`${section.title || 'Custom'} thumbnail`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
                   {section.description && (
                     <p className="text-[14px] text-muted-foreground leading-relaxed">
                       {section.description}

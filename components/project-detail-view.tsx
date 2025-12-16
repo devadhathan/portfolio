@@ -82,29 +82,29 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
   }
 
   return (
-    <div className="animate-in fade-in duration-300 w-full text-foreground pb-20 lg:pb-0 max-w-6xl mx-auto mt-24">
+    <div className="animate-in fade-in duration-300 w-full text-foreground pb-20 lg:pb-0 max-w-6xl mx-auto mt-8 lg:mt-24 px-4 md:px-6 lg:px-0">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 lg:mb-8">
+        <div className="w-full">
           {!hideBackButton && (
-            <Button onClick={onBack} variant="ghost" size="sm" className="mb-5">
+            <Button onClick={onBack} variant="ghost" size="sm" className="mb-4 lg:mb-5">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Portfolio
             </Button>
           )}
           <div className="flex items-center gap-3 mb-3">
-            <h1 className="text-3xl font-bold text-foreground">{project.title}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{project.title}</h1>
           </div>
-          <div className="flex items-center gap-5 text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-3 md:gap-5 text-xs md:text-sm text-muted-foreground">
             {(project.company || project.institution) && (
               <span className="flex items-center gap-1.5">
-                <Users className="h-4 w-4" />
+                <Users className="h-3.5 w-3.5 md:h-4 md:w-4" />
                 {project.company || project.institution}
               </span>
             )}
             {project.period && (
               <span className="flex items-center gap-1.5">
-                <Calendar className="h-4 w-4" />
+                <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4" />
                 {project.period}
               </span>
             )}
@@ -118,13 +118,13 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       </div>
 
       {/* Main Content Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-12 mb-8 lg:mb-12">
         {/* Left Content - Description */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 lg:space-y-6">
           {project.description && (
             <>
               {project.description.split('\n\n').map((paragraph, idx) => (
-                <p key={idx} className="text-lg leading-relaxed text-muted-foreground">
+                <p key={idx} className="text-base md:text-lg leading-relaxed text-muted-foreground">
                   {paragraph}
                 </p>
               ))}
@@ -134,12 +134,12 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
             <>
               {Array.isArray(project.details) ? (
                 project.details.map((detail, idx) => (
-                  <p key={idx} className="text-lg leading-relaxed text-muted-foreground">
+                  <p key={idx} className="text-base md:text-lg leading-relaxed text-muted-foreground">
                     {detail}
                   </p>
                 ))
               ) : (
-                <p className="text-lg leading-relaxed text-muted-foreground">{project.details}</p>
+                <p className="text-base md:text-lg leading-relaxed text-muted-foreground">{project.details}</p>
               )}
             </>
           )}
@@ -184,43 +184,43 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
         </div>
         
         {/* Right Content - Structured Project Details */}
-        <div className="lg:col-span-1 space-y-0 border-l border-border/50 pl-8">
+        <div className="lg:col-span-1 space-y-0 border-t lg:border-t-0 lg:border-l border-border/50 pt-6 lg:pt-0 lg:pl-8">
           {project.type && (
-            <div className="pb-6 border-b border-border/50">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Product</h3>
-              <p className="text-base text-foreground">{project.type}</p>
+            <div className="pb-4 lg:pb-6 border-b border-border/50">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 lg:mb-3">Product</h3>
+              <p className="text-sm md:text-base text-foreground">{project.type}</p>
             </div>
           )}
           
           {project.tools && project.tools.length > 0 && (
-            <div className="py-6 border-b border-border/50">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Skills</h3>
-              <div className="space-y-2">
+            <div className="py-4 lg:py-6 border-b border-border/50">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 lg:mb-3">Skills</h3>
+              <div className="space-y-1.5 lg:space-y-2">
                 {project.tools.map((tool, idx) => (
-                  <p key={idx} className="text-base text-foreground">{tool}</p>
+                  <p key={idx} className="text-sm md:text-base text-foreground">{tool}</p>
                 ))}
               </div>
             </div>
           )}
           
           {project.role && (
-            <div className="py-6 border-b border-border/50">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">My role</h3>
-              <p className="text-base text-foreground">{project.role}</p>
+            <div className="py-4 lg:py-6 border-b border-border/50">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 lg:mb-3">My role</h3>
+              <p className="text-sm md:text-base text-foreground">{project.role}</p>
             </div>
           )}
           
           {project.period && (
-            <div className="py-6 border-b border-border/50">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Timeline</h3>
-              <p className="text-base text-foreground">{project.period}</p>
+            <div className="py-4 lg:py-6 border-b border-border/50">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 lg:mb-3">Timeline</h3>
+              <p className="text-sm md:text-base text-foreground">{project.period}</p>
             </div>
           )}
           
           {project.team && (
-            <div className="pt-6">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Team</h3>
-              <p className="text-base text-foreground">{project.team}</p>
+            <div className="pt-4 lg:pt-6">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 lg:mb-3">Team</h3>
+              <p className="text-sm md:text-base text-foreground">{project.team}</p>
             </div>
           )}
         </div>
@@ -228,9 +228,9 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {/* Design Gallery - For Nesoi project */}
       {project && (project.title.toLowerCase().includes('nesoi') || projectId.toLowerCase().includes('nesoi')) && nesoiImages.length > 0 && (
-        <div className="mb-64 -mx-4 md:-mx-6 lg:-mx-8">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8 px-4 md:px-6 lg:px-8">
-            <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Design Gallery</h2>
+        <div className="mb-16 lg:mb-64 -mx-4 md:-mx-6 lg:-mx-8">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8 mb-6 lg:mb-8 px-4 md:px-6 lg:px-8">
+            <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Design Gallery</h2>
             <div className="lg:col-span-3"></div>
           </div>
           <div className="w-full">
@@ -269,9 +269,9 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {/* Design Gallery - For Falcon Design System project */}
       {project && (project.title.toLowerCase().includes('falcon') || projectId.toLowerCase().includes('falcon')) && falconImages.length > 0 && (
-        <div className="mb-64 -mx-4 md:-mx-6 lg:-mx-8">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8 px-4 md:px-6 lg:px-8">
-            <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Design Gallery</h2>
+        <div className="mb-16 lg:mb-64 -mx-4 md:-mx-6 lg:-mx-8">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8 mb-6 lg:mb-8 px-4 md:px-6 lg:px-8">
+            <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Design Gallery</h2>
             <div className="lg:col-span-3"></div>
           </div>
           <div className="w-full">
@@ -309,9 +309,9 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       )}
 
       {project.designGallery && project.designGallery.length > 0 && (
-        <div id={`${projectId}-design`} className="mb-32">
+        <div id={`${projectId}-design`} className="mb-16 lg:mb-32">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-normal text-foreground">Design gallery</h2>
+            <h2 className="text-xl md:text-2xl font-normal text-foreground">Design gallery</h2>
           </div>
           <div className="grid grid-cols-1 gap-6">
             {project.designGallery.map((entry, idx) => (
@@ -385,14 +385,14 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {/* Problem Section */}
       {project.problem && (
-        <div id={`${projectId}-problem`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Problem</h2>
+        <div id={`${projectId}-problem`} className="mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Problem</h2>
           <div className="lg:col-span-3">
-            <p className="text-lg leading-relaxed text-muted-foreground">
+            <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
               {project.problem}
             </p>
             {project.approach && (
-              <p className="text-lg leading-relaxed text-muted-foreground mt-4">
+              <p className="text-base md:text-lg leading-relaxed text-muted-foreground mt-4">
                 {project.approach}
               </p>
             )}
@@ -401,8 +401,8 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       )}
 
       {project.problemImage && (
-        <div id={`${projectId}-problem-image`} className="mb-64 space-y-4">
-          <h2 className="text-2xl font-normal text-foreground">Problem snapshot</h2>
+        <div id={`${projectId}-problem-image`} className="mb-16 lg:mb-64 space-y-4">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground">Problem snapshot</h2>
           <div className="relative w-full aspect-[16/9] rounded-3xl border border-border/50 overflow-hidden shadow-xl">
             <Image
               src={project.problemImage.src}
@@ -419,10 +419,10 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       )}
 
       {project.takeStepBack && (
-        <div className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Take a step back</h2>
+        <div className="mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Take a step back</h2>
           <div className="lg:col-span-3">
-            <p className="text-lg leading-relaxed text-muted-foreground">
+            <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
               {project.takeStepBack}
             </p>
           </div>
@@ -430,17 +430,17 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       )}
 
       {project.painPoints && project.painPoints.length > 0 && (
-        <div id={`${projectId}-painpoints`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Painpoints</h2>
+        <div id={`${projectId}-painpoints`} className="mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Painpoints</h2>
           <div className="lg:col-span-3">
             {project.painPointsIntro && (
-              <p className="text-lg leading-relaxed text-muted-foreground mb-4">{project.painPointsIntro}</p>
+              <p className="text-base md:text-lg leading-relaxed text-muted-foreground mb-4">{project.painPointsIntro}</p>
             )}
-            <div className="space-y-4">
+            <div className="space-y-3 lg:space-y-4">
               {project.painPoints.map((pain, idx) => (
-                <div key={idx} className="p-4 border border-border/50 rounded-xl bg-card/40">
-                  <p className="text-lg font-semibold text-foreground">{pain.title}</p>
-                  <p className="text-base leading-relaxed text-muted-foreground">{pain.detail}</p>
+                <div key={idx} className="p-3 lg:p-4 border border-border/50 rounded-xl bg-card/40">
+                  <p className="text-base md:text-lg font-semibold text-foreground">{pain.title}</p>
+                  <p className="text-sm md:text-base leading-relaxed text-muted-foreground">{pain.detail}</p>
                 </div>
               ))}
             </div>
@@ -450,10 +450,10 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {/* HMW Section */}
       {project.hmw && (
-        <div id={`${projectId}-hmw`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">How Might We</h2>
+        <div id={`${projectId}-hmw`} className="mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">How Might We</h2>
           <div className="lg:col-span-3">
-            <p className="text-lg leading-relaxed text-muted-foreground font-medium">
+            <p className="text-base md:text-lg leading-relaxed text-muted-foreground font-medium">
               {project.hmw}
             </p>
           </div>
@@ -461,14 +461,14 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       )}
 
       {project.businessOpportunity && project.businessOpportunity.length > 0 && (
-        <div id={`${projectId}-business`} className="mb-32 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Business opportunity</h2>
+        <div id={`${projectId}-business`} className="mb-16 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Business opportunity</h2>
           <div className="lg:col-span-3">
-            <div className="space-y-3">
+            <div className="space-y-2 lg:space-y-3">
               {project.businessOpportunity.map((opportunity, idx) => (
-                <div key={idx} className="flex items-start gap-3">
+                <div key={idx} className="flex items-start gap-2 lg:gap-3">
                   <span className="text-primary mt-1">→</span>
-                  <p className="text-lg text-muted-foreground">{opportunity}</p>
+                  <p className="text-base md:text-lg text-muted-foreground">{opportunity}</p>
                 </div>
               ))}
             </div>
@@ -477,16 +477,16 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       )}
 
       {project.explorations && project.explorations.length > 0 && (
-        <div id={`${projectId}-exploring`} className="mb-64">
-          <h2 className="text-2xl font-normal text-foreground mb-6">Exploring possibilities</h2>
-          <div className="space-y-12">
+        <div id={`${projectId}-exploring`} className="mb-16 lg:mb-64">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground mb-4 lg:mb-6">Exploring possibilities</h2>
+          <div className="space-y-8 lg:space-y-12">
             {project.explorations.map((exploration, idx) => (
-              <div key={idx} className="space-y-6">
-                <p className="text-sm uppercase tracking-wider text-muted-foreground">{exploration.tag}</p>
-                <h3 className="text-xl font-semibold text-foreground">{exploration.title}</h3>
-                <p className="text-base leading-relaxed text-muted-foreground">{exploration.problem}</p>
-                <p className="text-base leading-relaxed text-foreground font-semibold">Solution</p>
-                <p className="text-base leading-relaxed text-muted-foreground">{exploration.solution}</p>
+              <div key={idx} className="space-y-4 lg:space-y-6">
+                <p className="text-xs md:text-sm uppercase tracking-wider text-muted-foreground">{exploration.tag}</p>
+                <h3 className="text-lg md:text-xl font-semibold text-foreground">{exploration.title}</h3>
+                <p className="text-sm md:text-base leading-relaxed text-muted-foreground">{exploration.problem}</p>
+                <p className="text-sm md:text-base leading-relaxed text-foreground font-semibold">Solution</p>
+                <p className="text-sm md:text-base leading-relaxed text-muted-foreground">{exploration.solution}</p>
                 {exploration.image && (
                   <div className="w-full overflow-hidden rounded-3xl border border-border/50 bg-card/70 shadow-xl">
                     <div className="relative w-full aspect-[4/3] md:aspect-[3/2] min-h-[420px]">
@@ -507,17 +507,17 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       )}
 
       {project.targetAudience && (
-        <div id={`${projectId}-target-audience`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Target Audience</h2>
+        <div id={`${projectId}-target-audience`} className="mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Target Audience</h2>
           <div className="lg:col-span-3">
-            <p className="text-lg leading-relaxed text-muted-foreground">{project.targetAudience}</p>
+            <p className="text-base md:text-lg leading-relaxed text-muted-foreground">{project.targetAudience}</p>
           </div>
         </div>
       )}
 
       {project.targetAudienceImage && (
-        <div id={`${projectId}-target-snapshot`} className="mb-64 space-y-4">
-          <h2 className="text-2xl font-normal text-foreground">Target snapshot</h2>
+        <div id={`${projectId}-target-snapshot`} className="mb-16 lg:mb-64 space-y-4">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground">Target snapshot</h2>
           <div className="relative w-full aspect-[16/9] rounded-3xl border border-border/50 overflow-hidden shadow-xl">
             <Image
               src={project.targetAudienceImage.src}
@@ -535,10 +535,10 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {/* Research Section */}
       {project.research && (
-        <div id={`${projectId}-research`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Research</h2>
+        <div id={`${projectId}-research`} className="mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Research</h2>
           <div className="lg:col-span-3">
-            <p className="text-lg leading-relaxed text-muted-foreground">
+            <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
               {project.research}
             </p>
           </div>
@@ -548,15 +548,15 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {(() => {
         const projectWithPersonas = project as any;
         return projectWithPersonas.personas && Array.isArray(projectWithPersonas.personas) && projectWithPersonas.personas.length > 0 && (
-          <div id={`${projectId}-personas`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-            <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Personas</h2>
+          <div id={`${projectId}-personas`} className="mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+            <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Personas</h2>
             <div className="lg:col-span-3">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-3 lg:gap-4 md:grid-cols-2">
                 {projectWithPersonas.personas.map((persona: any, idx: number) => (
-                  <div key={idx} className="p-4 border border-border/50 rounded-xl bg-card/40">
-                    <p className="text-lg font-semibold text-foreground">{persona.name}</p>
-                    <p className="text-sm text-muted-foreground mb-2">{persona.occupation}</p>
-                    <p className="text-base leading-relaxed text-muted-foreground">{persona.goal}</p>
+                  <div key={idx} className="p-3 lg:p-4 border border-border/50 rounded-xl bg-card/40">
+                    <p className="text-base md:text-lg font-semibold text-foreground">{persona.name}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground mb-2">{persona.occupation}</p>
+                    <p className="text-sm md:text-base leading-relaxed text-muted-foreground">{persona.goal}</p>
                   </div>
                 ))}
               </div>
@@ -566,20 +566,20 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       })()}
 
       {project.detailSections && project.detailSections.length > 0 && (
-        <div id={`${projectId}-detail-sections`} className="space-y-12">
+        <div id={`${projectId}-detail-sections`} className="space-y-8 lg:space-y-12">
           {project.detailSections.map((section) => {
             const spacingClass =
               section.id === 'my-tasks-lead-owner-change' || section.id === 'tags-for-leads'
-                ? 'mb-96'
-                : 'mb-80';
+                ? 'mb-16 lg:mb-96'
+                : 'mb-16 lg:mb-80';
             return (
               <div key={section.id} id={`${projectId}-${section.id}`} className={spacingClass}>
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                  <h2 className="text-2xl font-normal text-foreground lg:col-span-2">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+                  <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">
                     {section.title}
                   </h2>
                   <div className="lg:col-span-3">
-                    <p className="text-lg leading-relaxed text-muted-foreground">
+                    <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
                       {section.description}
                     </p>
                   </div>
@@ -607,20 +607,20 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {/* Stats Section */}
       {project.results && project.results.length > 0 && (
-        <div id={`${projectId}-stats`} className="mt-20 mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Some stats</h2>
+        <div id={`${projectId}-stats`} className="mt-8 lg:mt-20 mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Some stats</h2>
           <div className="lg:col-span-3">
             {(() => {
               const projectWithImpact = project as any;
               return projectWithImpact.impactOverview && (
-                <p className="text-lg leading-relaxed text-muted-foreground mb-5">{projectWithImpact.impactOverview}</p>
+                <p className="text-base md:text-lg leading-relaxed text-muted-foreground mb-4 lg:mb-5">{projectWithImpact.impactOverview}</p>
               );
             })()}
-            <div className="space-y-3">
+            <div className="space-y-2 lg:space-y-3">
               {project.results.map((result, idx) => (
-                <div key={idx} className="flex items-start gap-3">
+                <div key={idx} className="flex items-start gap-2 lg:gap-3">
                   <span className="text-primary mt-1">→</span>
-                  <p className="text-lg text-muted-foreground">{result}</p>
+                  <p className="text-base md:text-lg text-muted-foreground">{result}</p>
                 </div>
               ))}
             </div>
@@ -630,14 +630,14 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {/* Key Features */}
       {project.keyFeatures && project.keyFeatures.length > 0 && (
-        <div id={`${projectId}-key-features`} className="mb-32 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Key Features</h2>
+        <div id={`${projectId}-key-features`} className="mb-16 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Key Features</h2>
           <div className="lg:col-span-3">
-            <div className="space-y-4">
+            <div className="space-y-3 lg:space-y-4">
               {project.keyFeatures.map((feature, idx) => (
-                <div key={idx} className="flex items-start gap-3">
+                <div key={idx} className="flex items-start gap-2 lg:gap-3">
                   <span className="text-primary mt-1">•</span>
-                  <p className="text-lg text-muted-foreground">{feature}</p>
+                  <p className="text-base md:text-lg text-muted-foreground">{feature}</p>
                 </div>
               ))}
             </div>
@@ -646,8 +646,8 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       )}
 
       {project.keyFeatureImage && (
-        <div id={`${projectId}-feature-image`} className="mb-32 space-y-3">
-          <h2 className="text-2xl font-normal text-foreground">Feature snapshot</h2>
+        <div id={`${projectId}-feature-image`} className="mb-16 lg:mb-32 space-y-3">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground">Feature snapshot</h2>
           <div className="relative w-full aspect-[16/9] rounded-3xl border border-border/50 overflow-hidden shadow-xl">
             <Image
               src={project.keyFeatureImage.src}
@@ -665,29 +665,29 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {/* Learnings */}
       {project.learnings && (
-        <div id={`${projectId}-learnings`} className="mb-32 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Learnings</h2>
+        <div id={`${projectId}-learnings`} className="mb-16 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Learnings</h2>
           <div className="lg:col-span-3">
             {Array.isArray(project.learnings) ? (
-              <div className="space-y-4">
+              <div className="space-y-3 lg:space-y-4">
                 {project.learnings.map((learning, idx) => (
-                  <div key={idx} className="flex items-start gap-3">
+                  <div key={idx} className="flex items-start gap-2 lg:gap-3">
                     <span className="text-primary mt-1">•</span>
-                    <p className="text-lg text-muted-foreground">{learning}</p>
+                    <p className="text-base md:text-lg text-muted-foreground">{learning}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-lg leading-relaxed text-muted-foreground">{project.learnings}</p>
+              <p className="text-base md:text-lg leading-relaxed text-muted-foreground">{project.learnings}</p>
             )}
           </div>
         </div>
       )}
 
       {project.prototype && (
-        <div id={`${projectId}-prototype`} className="mb-64 space-y-4">
-          <h2 className="text-2xl font-normal text-foreground">Prototype</h2>
-          <p className="text-lg leading-relaxed text-muted-foreground">{project.prototype}</p>
+        <div id={`${projectId}-prototype`} className="mb-16 lg:mb-64 space-y-4">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground">Prototype</h2>
+          <p className="text-base md:text-lg leading-relaxed text-muted-foreground">{project.prototype}</p>
           {project.prototypeFrame && (
             <div className="overflow-hidden rounded-3xl border border-border/50 shadow-xl bg-card/70">
               <div className="relative w-full aspect-[16/9]">
@@ -706,14 +706,14 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {/* Impact */}
       {project.impact && project.impact.length > 0 && (
-        <div id={`${projectId}-impact`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Impact</h2>
+        <div id={`${projectId}-impact`} className="mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Impact</h2>
           <div className="lg:col-span-3">
-            <div className="space-y-4">
+            <div className="space-y-3 lg:space-y-4">
               {project.impact.map((impact, idx) => (
-                <div key={idx} className="flex items-start gap-3">
+                <div key={idx} className="flex items-start gap-2 lg:gap-3">
                   <span className="text-primary mt-1">→</span>
-                  <p className="text-lg text-muted-foreground">{impact}</p>
+                  <p className="text-base md:text-lg text-muted-foreground">{impact}</p>
                 </div>
               ))}
             </div>
