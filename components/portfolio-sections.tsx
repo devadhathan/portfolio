@@ -1120,13 +1120,13 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
   return (
     <>
       {!hideHeaderText && (
-        <div className="mb-8 text-left pt-8 md:pt-12">
-          <p className="text-sm md:text-base text-muted-foreground mb-4 font-regular animate-fade-in-blur">
+        <div className="mb-6 md:mb-8 text-left pt-6 md:pt-8 lg:pt-12 px-4 md:px-0">
+          <p className="text-xs md:text-sm lg:text-base text-muted-foreground mb-3 md:mb-4 font-regular animate-fade-in-blur">
             Dev&apos;s digital home
           </p>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-medium mb-12 md:mb-16 text-foreground leading-[16px] animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>
-              Designer bringing interaction, <br />
-              <span className="text-2xl md:text-3xl lg:text-4xl font-medium block mt-0 md:mt-2 text-foreground leading-[16px] animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>technology, and people together.</span>
+            <h1 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-medium mb-8 md:mb-12 lg:mb-16 text-foreground leading-tight md:leading-[16px] animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>
+              Designer bringing interaction, <br className="hidden md:block" />
+              <span className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-medium block mt-0 md:mt-2 text-foreground leading-tight md:leading-[16px] animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>technology, and people together.</span>
             </h1>
         </div>
       )}
