@@ -819,7 +819,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
               <div className="relative w-full h-full min-h-[300px] group z-10">
                 {/* Carousel Container */}
                 <div className="relative w-full h-full overflow-hidden">
-                  {photos.map((photo, idx) => (
+                  {photos.map((photo: string, idx: number) => (
                     <div
                       key={idx}
                       className={`absolute inset-0 transition-all duration-500 ease-in-out ${
