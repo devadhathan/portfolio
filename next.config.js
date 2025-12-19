@@ -5,6 +5,8 @@ const nextConfig = {
     remotePatterns: [],
     unoptimized: false,
   },
+  // Exclude the three-js-scene-creation-2 directory from the build
+  pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
 }
 
 module.exports = nextConfig
