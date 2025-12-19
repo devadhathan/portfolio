@@ -224,8 +224,9 @@ export function NotFoundScene() {
       window.removeEventListener("mousemove", handleMouseMove)
       window.removeEventListener("wheel", handleScroll)
       window.removeEventListener("resize", handleResize)
-      if (containerRef.current) {
-        containerRef.current.removeChild(renderer.domElement)
+      const container = containerRef.current
+      if (container && container.contains(renderer.domElement)) {
+        container.removeChild(renderer.domElement)
       }
       layers.forEach((layer) => {
         layer.geometry.dispose()
@@ -243,7 +244,11 @@ export function NotFoundScene() {
       circleMaterial.dispose()
       glowRings.forEach((ring) => {
         ring.geometry.dispose()
-        ring.material.dispose()
+        if (Array.isArray(ring.material)) {
+          ring.material.forEach((mat) => mat.dispose())
+        } else {
+          ring.material.dispose()
+        }
       })
       renderer.dispose()
     }
