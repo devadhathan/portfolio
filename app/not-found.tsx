@@ -19,9 +19,7 @@ export default function NotFoundPage() {
         <p className="text-lg text-white/40">This page could not be found</p>
       </div>
       {mounted && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <NotFoundScene containerClassName="relative w-full h-full" scale={0.85} />
-        </div>
+        <NotFoundScene />
       )}
     </div>
   )
