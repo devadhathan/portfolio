@@ -15,6 +15,7 @@ export function BottomNav() {
   const router = useRouter();
   const pathname = usePathname();
   const [activeTab, setActiveTab] = useState<string>('');
+  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
     const currentTab = tabs.find(tab => tab.path === pathname);
@@ -25,13 +26,32 @@ export function BottomNav() {
     }
   }, [pathname]);
 
-  const handleClick = (tabId: string, path: string) => {
+  const handleClick = async (tabId: string, path: string) => {
+    if (tabId === activeTab && pathname === path) return;
     setActiveTab(tabId);
-    router.push(path);
+    setIsNavigating(true);
+    try {
+      await router.push(path);
+    } finally {
+      setIsNavigating(false);
+    }
   };
 
   return (
     <>
+      {isNavigating && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="flex flex-col items-center gap-2 text-white">
+            <div className="flex gap-2">
+              <span className="h-3 w-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="h-3 w-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="h-3 w-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+            <p className="text-sm text-muted-foreground">Loading...
+            </p>
+          </div>
+        </div>
+      )}
       {/* Mobile-style bottom bar */}
       <div className="fixed inset-x-0 bottom-0 z-50 lg:hidden">
         <div className="flex items-center justify-between gap-1 px-2 py-1 bg-card border-t border-border/70 backdrop-blur-xl shadow-[0_-8px_40px_rgba(0,0,0,0.45)]">
