@@ -5,10 +5,10 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 export function PreferenceGraph() {
   const data = [
-    { name: 'Prototyping', value: 90 },
-    { name: 'Visual Design', value: 80 },
-    { name: 'Interaction Design', value: 75 },
     { name: 'User Research', value: 40 },
+    { name: 'Interaction Design', value: 75 },
+    { name: 'Visual Design', value: 80 },
+    { name: 'Prototyping', value: 90 },
   ];
 
   return (

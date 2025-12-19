@@ -349,7 +349,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             id="playground"
             data-section="playground"
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-auto ${isFirstLoad ? 'animate-card-reveal' : ''}`}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-auto min-h-[360px] md:min-h-[auto] ${isFirstLoad ? 'animate-card-reveal' : ''}`}
             style={isFirstLoad ? { animationDelay: `${cardDelay}s` } : undefined}
             onClick={() => handleCardClick(section.id)}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
