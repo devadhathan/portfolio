@@ -1,12 +1,20 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import * as THREE from "three"
+import { useRouter } from "next/navigation"
 
-export function NotFoundScene() {
+interface NotFoundSceneProps {
+  containerClassName?: string
+  scale?: number
+}
+
+export function NotFoundScene({ containerClassName, scale = 0.85 }: NotFoundSceneProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mousePosition = useRef({ x: 0, y: 0 })
   const scrollProgress = useRef(0)
+  const [hasRedirected, setHasRedirected] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -23,7 +31,20 @@ export function NotFoundScene() {
     })
     renderer.outputColorSpace = THREE.SRGBColorSpace
     renderer.setPixelRatio(window.devicePixelRatio)
-    renderer.setSize(window.innerWidth, window.innerHeight)
+    const setRendererDimensions = () => {
+      if (!containerRef.current) return
+      const width = containerRef.current.clientWidth
+      const height = containerRef.current.clientHeight
+      renderer.setSize(width, height)
+      const aspect = width / height
+      camera.left = -aspect
+      camera.right = aspect
+      camera.top = 1
+      camera.bottom = -1
+      camera.updateProjectionMatrix()
+    }
+    setRendererDimensions()
+    window.addEventListener("resize", setRendererDimensions)
     containerRef.current.appendChild(renderer.domElement)
 
     // Texture loader
@@ -55,7 +76,8 @@ export function NotFoundScene() {
     const shadowTexture = createShadowTexture()
 
     // Adam shadow
-    const adamShadowGeometry = new THREE.PlaneGeometry(1.2, 0.8)
+    const sizeScale = scale
+    const adamShadowGeometry = new THREE.PlaneGeometry(1.2 * sizeScale, 0.8 * sizeScale)
     const adamShadowMaterial = new THREE.MeshBasicMaterial({
       map: shadowTexture,
       transparent: true,
@@ -63,25 +85,25 @@ export function NotFoundScene() {
       depthWrite: false,
     })
     const adamShadow = new THREE.Mesh(adamShadowGeometry, adamShadowMaterial)
-    adamShadow.position.set(-0.2, -0.6, -2.1)
+    adamShadow.position.set(-0.2 * sizeScale, -0.6 * sizeScale, -2.1)
     scene.add(adamShadow)
 
     // Adam
     const adamTexture = textureLoader.load("/images/adam.png")
     adamTexture.colorSpace = THREE.SRGBColorSpace
-    const adamGeometry = new THREE.PlaneGeometry(1.4, 1.5)
+    const adamGeometry = new THREE.PlaneGeometry(1.4 * sizeScale, 1.5 * sizeScale)
     const adamMaterial = new THREE.MeshBasicMaterial({
       map: adamTexture,
       transparent: true,
       depthWrite: false,
     })
     const adamMesh = new THREE.Mesh(adamGeometry, adamMaterial)
-    adamMesh.position.set(-0.2, 0, -2)
+    adamMesh.position.set(-0.2 * sizeScale, 0, -2)
     scene.add(adamMesh)
     layers.push(adamMesh)
 
     // God shadow
-    const godShadowGeometry = new THREE.PlaneGeometry(1.5, 0.9)
+    const godShadowGeometry = new THREE.PlaneGeometry(1.5 * sizeScale, 0.9 * sizeScale)
     const godShadowMaterial = new THREE.MeshBasicMaterial({
       map: shadowTexture,
       transparent: true,
@@ -89,25 +111,25 @@ export function NotFoundScene() {
       depthWrite: false,
     })
     const godShadow = new THREE.Mesh(godShadowGeometry, godShadowMaterial)
-    godShadow.position.set(0.56, -0.55, -1.1)
+    godShadow.position.set(0.56 * sizeScale, -0.55 * sizeScale, -1.1)
     scene.add(godShadow)
 
     // God
     const godTexture = textureLoader.load("/images/god.png")
     godTexture.colorSpace = THREE.SRGBColorSpace
-    const godGeometry = new THREE.PlaneGeometry(1.8, 1.5)
+    const godGeometry = new THREE.PlaneGeometry(1.8 * sizeScale, 1.5 * sizeScale)
     const godMaterial = new THREE.MeshBasicMaterial({
       map: godTexture,
       transparent: true,
       depthWrite: false,
     })
     const godMesh = new THREE.Mesh(godGeometry, godMaterial)
-    godMesh.position.set(0.56, 0, -1)
+    godMesh.position.set(0.56 * sizeScale, 0, -1)
     scene.add(godMesh)
     layers.push(godMesh)
 
     // --- GLOW EFFECTS ---
-    const circleGeometry = new THREE.CircleGeometry(0.05, 64)
+    const circleGeometry = new THREE.CircleGeometry(0.05 * sizeScale, 64)
     const circleMaterial = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       transparent: true,
@@ -115,13 +137,13 @@ export function NotFoundScene() {
       depthWrite: false,
     })
     const glowCircle = new THREE.Mesh(circleGeometry, circleMaterial)
-    glowCircle.position.set(-0.3, -0.12, 0)
+    glowCircle.position.set(-0.3 * sizeScale, -0.12 * sizeScale, 0)
     glowCircle.scale.set(0, 0, 1)
     scene.add(glowCircle)
 
     const glowRings: THREE.Mesh[] = []
     for (let i = 0; i < 3; i++) {
-      const ringGeometry = new THREE.RingGeometry(0.05 + i * 0.02, 0.06 + i * 0.02, 64)
+      const ringGeometry = new THREE.RingGeometry((0.05 + i * 0.02) * sizeScale, (0.06 + i * 0.02) * sizeScale, 64)
       const ringMaterial = new THREE.MeshBasicMaterial({
         color: 0xffffff,
         transparent: true,
@@ -130,7 +152,7 @@ export function NotFoundScene() {
         depthWrite: false,
       })
       const ring = new THREE.Mesh(ringGeometry, ringMaterial)
-      ring.position.set(-0.3, -0.12, 0)
+      ring.position.set(-0.3 * sizeScale, -0.12 * sizeScale, 0)
       ring.scale.set(0, 0, 0.3)
       scene.add(ring)
       glowRings.push(ring)
@@ -146,31 +168,20 @@ export function NotFoundScene() {
       event.preventDefault()
       // Slower scroll speed for smoother control (0.0005 instead of 0.0009)
       scrollProgress.current = Math.max(0, Math.min(1, scrollProgress.current + event.deltaY * 0.0005))
+      if (scrollProgress.current >= 1 && !hasRedirected) {
+        setHasRedirected(true)
+        router.push("/")
+      }
     }
 
     window.addEventListener("mousemove", handleMouseMove)
     window.addEventListener("wheel", handleScroll, { passive: false })
 
-    const handleResize = () => {
-      const width = window.innerWidth
-      const height = window.innerHeight
-      const newAspect = width / height
-
-      camera.left = -newAspect
-      camera.right = newAspect
-      camera.updateProjectionMatrix()
-
-      renderer.setSize(width, height)
-    }
-
-    window.addEventListener("resize", handleResize)
-    handleResize()
-
     // --- ANIMATION ---
     const animate = () => {
       requestAnimationFrame(animate)
 
-      const parallaxStrength = [0.03, 0.04]
+      const parallaxStrength = [0.03 * sizeScale, 0.04 * sizeScale]
 
       // 1. Calculate Glow Logic - now starts at 60% scroll and expands more slowly
       const triggerThreshold = 0.6 // Glow starts after 60% scroll (was 0.4)
@@ -188,22 +199,22 @@ export function NotFoundScene() {
 
         if (index === 0) {
           // Adam
-          layer.position.x += (-0.8 + targetX - layer.position.x) * 0.1
-          layer.position.y += (-0.2 + targetY - layer.position.y) * 0.1
-          adamShadow.position.x += (-0.8 + targetX - adamShadow.position.x) * 0.1
-          adamShadow.position.y += (-0.6 + targetY - adamShadow.position.y) * 0.1
+          layer.position.x += ((-0.8 * sizeScale) + targetX - layer.position.x) * 0.1
+          layer.position.y += ((-0.2 * sizeScale) + targetY - layer.position.y) * 0.1
+          adamShadow.position.x += ((-0.8 * sizeScale) + targetX - adamShadow.position.x) * 0.1
+          adamShadow.position.y += ((-0.6 * sizeScale) + targetY - adamShadow.position.y) * 0.1
         } else if (index === 1) {
           // God
-          const godBaseX = 0.6 - scrollProgress.current * 0.1
+          const godBaseX = (0.6 * sizeScale) - scrollProgress.current * 0.1
           layer.position.x += (godBaseX + targetX - layer.position.x) * 0.1
-          layer.position.y += (-0.18 + targetY - layer.position.y) * 0.1
+          layer.position.y += ((-0.18 * sizeScale) + targetY - layer.position.y) * 0.1
           godShadow.position.x += (godBaseX + targetX - godShadow.position.x) * 0.1
-          godShadow.position.y += (-0.55 + targetY - godShadow.position.y) * 0.1
+          godShadow.position.y += ((-0.55 * sizeScale) + targetY - godShadow.position.y) * 0.1
         }
       })
 
       // 3. Apply Scaled Progress to Glow
-      const maxScale = 50
+      const maxScale = 45
 
       // Use glowProgress instead of scrollProgress.current
       const circleScale = glowProgress * maxScale
@@ -223,7 +234,7 @@ export function NotFoundScene() {
     return () => {
       window.removeEventListener("mousemove", handleMouseMove)
       window.removeEventListener("wheel", handleScroll)
-      window.removeEventListener("resize", handleResize)
+      window.removeEventListener("resize", setRendererDimensions)
       const container = containerRef.current
       if (container && container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement)
@@ -252,12 +263,12 @@ export function NotFoundScene() {
       })
       renderer.dispose()
     }
-  }, [])
+  }, [hasRedirected, router])
 
   return (
     <div
       ref={containerRef}
-      className="w-full h-screen fixed inset-0 overflow-hidden"
+      className={containerClassName ?? "w-full h-screen fixed inset-0 overflow-hidden"}
       style={{ touchAction: "none" }}
     />
   )

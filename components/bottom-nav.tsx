@@ -17,7 +17,6 @@ export function BottomNav() {
   const [activeTab, setActiveTab] = useState<string>('');
 
   useEffect(() => {
-    // Set active tab based on current pathname
     const currentTab = tabs.find(tab => tab.path === pathname);
     if (currentTab) {
       setActiveTab(currentTab.id);
@@ -32,30 +31,58 @@ export function BottomNav() {
   };
 
   return (
-    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
-      <div className="flex items-center gap-2 px-2 py-2 bg-card backdrop-blur-xl border-2 border-border/70 rounded-full shadow-lg">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => handleClick(tab.id, tab.path)}
-              className={`
-                flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200
-                ${isActive 
-                  ? 'bg-primary text-primary-foreground shadow-md' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-                }
-              `}
-            >
-              <Icon className="h-4 w-4" />
-              <span className="text-sm font-medium">{tab.label}</span>
-            </button>
-          );
-        })}
+    <>
+      {/* Mobile-style bottom bar */}
+      <div className="fixed inset-x-0 bottom-0 z-50 lg:hidden">
+        <div className="flex items-center justify-between gap-1 px-2 py-1 bg-card border-t border-border/70 backdrop-blur-xl shadow-[0_-8px_40px_rgba(0,0,0,0.45)]">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => handleClick(tab.id, tab.path)}
+                className={`
+                  flex-1 flex flex-col items-center gap-0.5 rounded-2xl px-1 py-2 transition-all duration-200
+                  ${isActive
+                    ? 'text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                  }
+                `}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="text-[11px] font-semibold">{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
-    </div>
+
+      {/* Desktop pill nav */}
+      <div className="hidden lg:block fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+        <div className="flex items-center gap-2 px-2 py-2 bg-card backdrop-blur-xl border-2 border-border/70 rounded-full shadow-lg">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => handleClick(tab.id, tab.path)}
+                className={`
+                  flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-200
+                  ${isActive 
+                    ? 'bg-primary text-primary-foreground shadow-md' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                  }
+                `}
+              >
+                <Icon className="h-4 w-4" />
+                <span className="text-sm font-medium">{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </>
   );
 }
-
