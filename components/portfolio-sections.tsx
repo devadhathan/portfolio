@@ -108,17 +108,11 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     }, 150);
   }, []);
 
-  // Safety check for agentState - after all hooks
-  if (!agentState || !agentState.sections) {
-    return (
-      <div className="text-center py-12 text-muted-foreground">
-        <p>No portfolio sections available</p>
-      </div>
-    );
-  }
-
-  // Sort by order first, then filter visible sections
-  const sortedSections = React.useMemo(() => [...agentState.sections].sort((a, b) => a.order - b.order), [agentState.sections]);
+  // Sort by order first, then filter visible sections - must be before early return
+  const sortedSections = React.useMemo(() => {
+    if (!agentState || !agentState.sections) return [];
+    return [...agentState.sections].sort((a, b) => a.order - b.order);
+  }, [agentState]);
   const visibleSections = React.useMemo(() => sortedSections.filter(s => s.visible), [sortedSections]);
 
   const getPhotoSources = useCallback((section: any) => {
@@ -157,6 +151,15 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
       intervals.forEach(clearInterval);
     };
   }, [visibleSections, getPhotoSources]);
+
+  // Safety check for agentState - after all hooks
+  if (!agentState || !agentState.sections) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <p>No portfolio sections available</p>
+      </div>
+    );
+  }
 
   const getBentoSize = (priority: SectionPriority, sectionId: string, sectionType?: SectionType, order: number = 0) => {
     // Create varied card sizes based on type, priority, and position
