@@ -70,7 +70,7 @@ Hope you enjoy exploring! 🚀`,
     },
     {
       id: '2',
-      content: deploymentDate ? `Last updated: ${deploymentDate}` : 'Last updated: ...',
+      content: deploymentDate ? `Deployment date: ${deploymentDate}` : 'Deployment date: ...',
       lastUpdated: deploymentTimestamp ?? new Date(),
     },
     {
@@ -86,20 +86,6 @@ Hope you enjoy exploring! 🚀`,
       day: 'numeric',
       year: 'numeric',
     });
-  };
-
-  const formatRelativeTime = (date: Date) => {
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return formatDateTime(date);
   };
 
   return (
@@ -127,12 +113,6 @@ Hope you enjoy exploring! 🚀`,
                   <p className={`text-xs flex-1 leading-relaxed ${note.isIntent ? 'font-medium' : ''}`}>
                     {note.isIntent ? '💭 Personal Message' : note.content.length > 50 ? `${note.content.substring(0, 50)}...` : note.content}
                   </p>
-                  {note.id === '2' && (
-                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
-                      <Clock className="h-3 w-3" />
-                      <span>{formatRelativeTime(note.lastUpdated)}</span>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
@@ -150,7 +130,7 @@ Hope you enjoy exploring! 🚀`,
             {selectedNote?.id === '2' && (
               <DialogDescription className="flex items-center gap-2 pt-2">
                 <Clock className="h-3.5 w-3.5" />
-                <span>Last updated: {selectedNote && formatDateTime(selectedNote.lastUpdated)}</span>
+                <span>Deployment date: {selectedNote && formatDateTime(selectedNote.lastUpdated)}</span>
               </DialogDescription>
             )}
           </DialogHeader>

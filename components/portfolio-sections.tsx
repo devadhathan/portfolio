@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -11,6 +11,12 @@ import ReactMarkdown from 'react-markdown';
 import { PreferenceGraph } from './preference-graph';
 import { resumeData } from '@/lib/resume-data';
 import { useTheme } from '@/contexts/theme-context';
+
+const DEFAULT_PHOTO_PATHS = [
+  '/photos/O6bInc2LhAgXBkQ6yLobk41OLss.jpg',
+  '/photos/ZZXFdA0RZyD5h20wZdhoCxLhy0.jpg',
+  '/photos/Le5RRVetScFh9EG3aEJYsrCsM.jpg.avif',
+];
 
 interface PortfolioSectionsProps {
   agentState: AgentState;
@@ -112,8 +118,45 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
   }
 
   // Sort by order first, then filter visible sections
-  const sortedSections = [...agentState.sections].sort((a, b) => a.order - b.order);
-  const visibleSections = sortedSections.filter(s => s.visible);
+  const sortedSections = React.useMemo(() => [...agentState.sections].sort((a, b) => a.order - b.order), [agentState.sections]);
+  const visibleSections = React.useMemo(() => sortedSections.filter(s => s.visible), [sortedSections]);
+
+  const getPhotoSources = useCallback((section: any) => {
+    if (section.images && section.images.length > 0) {
+      return section.images;
+    }
+
+    if (section.image) {
+      return [section.image];
+    }
+
+    return DEFAULT_PHOTO_PATHS;
+  }, []);
+
+  useEffect(() => {
+    const intervals: number[] = [];
+
+    visibleSections.forEach((section) => {
+      if (section.id !== 'photos') return;
+
+      const photos = getPhotoSources(section);
+      if (photos.length <= 1) return;
+
+      const interval = window.setInterval(() => {
+        setCarouselIndex((prev) => {
+          const current = prev[section.id] ?? 0;
+          const next = (current + 1) % photos.length;
+          return { ...prev, [section.id]: next };
+        });
+      }, 4000);
+
+      intervals.push(interval);
+    });
+
+    return () => {
+      intervals.forEach(clearInterval);
+    };
+  }, [visibleSections, getPhotoSources]);
 
   const getBentoSize = (priority: SectionPriority, sectionId: string, sectionType?: SectionType, order: number = 0) => {
     // Create varied card sizes based on type, priority, and position
@@ -328,14 +371,13 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             onMouseLeave={() => handleMouseLeave(section.id)}
           >
             {borderReveal}
-            <CardHeader className="pb-2 flex-shrink-0 relative z-10">
-              <CardTitle className="flex items-center gap-2 text-[16px] mb-2">
-                <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
-                  <Sparkles className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                </div>
-                Design Philosophy
-              </CardTitle>
-            </CardHeader>
+              <CardHeader className="pb-2 flex-shrink-0 relative z-10">
+                <CardTitle className="text-[16px] mb-2">
+                  <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
+                    Design Philosophy
+                  </span>
+                </CardTitle>
+              </CardHeader>
             <CardContent className="space-y-1.5 relative z-10">
               <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
                 <Heart className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:animate-pulse transition-all duration-300" />
@@ -403,11 +445,10 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             >
               {borderReveal}
               <CardHeader className="pb-2 flex-shrink-0 relative z-10">
-                <CardTitle className="flex items-center gap-2 text-[16px]">
-                  <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-105 transition-all duration-300">
-                    <Briefcase className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                  </div>
-                  Experience
+                <CardTitle className="text-[16px]">
+                  <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
+                    Experience
+                  </span>
                 </CardTitle>
                 <CardDescription className="text-[14px]">Current Role</CardDescription>
               </CardHeader>
@@ -498,11 +539,10 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           >
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
-              <CardTitle className="flex items-center gap-2 text-[16px]">
-                <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-105 transition-all duration-300">
-                  <Briefcase className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                </div>
-                {expTitle}
+              <CardTitle className="text-[16px]">
+                <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
+                  {expTitle}
+                </span>
               </CardTitle>
               {section.description && section.description.includes('|') && (
                 <CardDescription className="text-[14px]">{section.description.split('|')[0].trim()}</CardDescription>
@@ -563,11 +603,10 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           >
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
-              <CardTitle className="flex items-center gap-2 text-[16px]">
-                <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
-                  <Code2 className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                </div>
-                {section.title || 'Projects'}
+              <CardTitle className="text-[16px]">
+                <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
+                  {section.title || 'Projects'}
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 relative z-10">
@@ -667,11 +706,10 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           >
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
-              <CardTitle className="flex items-center gap-2 text-[16px]">
-                <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
-                  <Zap className="h-4 w-4 group-hover:scale-125 group-hover:brightness-125 transition-all duration-300" />
-                </div>
-                {section.title || 'Skills'}
+              <CardTitle className="text-[16px]">
+                <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
+                  {section.title || 'Skills'}
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 relative z-10">
@@ -715,11 +753,10 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           >
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
-              <CardTitle className="flex items-center gap-2 text-[16px]">
-                <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
-                  <Award className="h-4 w-4 group-hover:scale-110 transition-all duration-300" />
-                </div>
-                {section.title || 'Education'}
+              <CardTitle className="text-[16px]">
+                <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
+                  {section.title || 'Education'}
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 relative z-10">
@@ -759,16 +796,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
         );
 
       case 'photos':
-        // Default photos for camera roll - use available photos from public/photos
-        const defaultPhotos = [
-          '/photos/O6bInc2LhAgXBkQ6yLobk41OLss.jpg',
-          '/photos/ZZXFdA0RZyD5h20wZdhoCxLhy0.jpg',
-          '/photos/Le5RRVetScFh9EG3aEJYsrCsM.jpg.avif'
-        ];
-        // Always use default photos if section doesn't have images
-        const photos = (section.images && section.images.length > 0) 
-          ? section.images 
-          : (section.image ? [section.image] : defaultPhotos);
+        const photos = getPhotoSources(section);
         const currentIndex = carouselIndex[section.id] || 0;
         const hasImageError = imageErrors.has(section.id);
         const shouldShowPlaceholder = photos.length === 0 || hasImageError;
@@ -996,11 +1024,10 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           >
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
-              <CardTitle className="flex items-center gap-2 text-[16px]">
-                <div className="p-1.5 bg-primary/20 rounded-full">
-                  <FileText className="h-4 w-4" />
-                </div>
-                {section.title || 'Custom Section'}
+              <CardTitle className="text-[16px]">
+                <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
+                  {section.title || 'Custom Section'}
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 relative z-10">
@@ -1064,11 +1091,10 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           >
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
-              <CardTitle className="flex items-center gap-2 text-[16px] mb-2">
-                <div className="p-1.5 bg-primary/20 rounded-full group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
-                  <Mail className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                </div>
-                Connect
+              <CardTitle className="text-[16px] mb-2">
+                <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
+                  Connect
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 relative z-10 flex-1">
@@ -1121,13 +1147,13 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     <>
       {!hideHeaderText && (
         <div className="mb-6 md:mb-8 text-left pt-6 md:pt-8 lg:pt-12 px-4 md:px-0">
-          <p className="text-xs md:text-sm lg:text-base text-muted-foreground mb-3 md:mb-4 font-regular animate-fade-in-blur">
+          <p className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-muted-foreground mb-3 md:mb-4 animate-fade-in-blur">
             Dev&apos;s digital home
           </p>
-            <h1 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-medium mb-8 md:mb-12 lg:mb-16 text-foreground leading-tight md:leading-[16px] animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>
-              Designer bringing interaction, <br className="hidden md:block" />
-              <span className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-medium block mt-0 md:mt-2 text-foreground leading-tight md:leading-[16px] animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>technology, and people together.</span>
-            </h1>
+          <h1 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-light mb-8 md:mb-12 lg:mb-16 text-foreground tracking-[0.04em] leading-tight md:leading-[16px] animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>
+            Designer bringing interaction, <br className="hidden md:block" />
+            <span className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-light block mt-0 md:mt-2 text-foreground leading-tight md:leading-[16px] animate-fade-in-blur tracking-[0.04em]" style={{ animationDelay: '0.1s' }}>technology, and people together.</span>
+          </h1>
         </div>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-6 lg:gap-8 auto-rows-[minmax(200px,auto)] pb-4 md:pb-0 w-full">
@@ -1184,7 +1210,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 {selectedSection.id === 'hero' && (
                   <>
                     <div>
-                      <h4 className="font-medium mb-2 text-base">About</h4>
+                      <h4 className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground mb-2">About</h4>
                       <p className="text-sm text-muted-foreground leading-relaxed">
                         Building meaningful digital experiences through thoughtful design and user-centric solutions.
                       </p>
@@ -1206,7 +1232,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 {selectedSection.id === 'preferences' && (
                   <>
                     <div>
-                      <h4 className="font-medium mb-3 text-base">Design Preferences</h4>
+                      <h4 className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground mb-3">Design Preferences</h4>
                       <div className="space-y-3">
                         <div className="p-3 rounded-lg bg-secondary/30 border border-border/30">
                           <div className="flex justify-between items-center mb-1">
@@ -1246,13 +1272,13 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 {selectedSection.id === 'about' && (
                   <>
                     <div>
-                      <h4 className="font-medium mb-2 text-base">About Me</h4>
+                      <h4 className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground mb-2">About Me</h4>
                       <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                         I design with care, always keeping the user at the center. Good design begins with understanding people and their needs.
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-medium mb-2 text-base">Core Skills</h4>
+                      <h4 className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground mb-2">Core Skills</h4>
                       <div className="flex flex-wrap gap-2">
                         {['Product Design', 'UI/UX', 'Prototyping', 'Design Systems', 'User Research', 'Interaction Design'].map((skill, idx) => {
                           const colors = ['bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300', 'bg-purple-500/15 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300', 'bg-pink-500/15 dark:bg-pink-500/15 text-pink-700 dark:text-pink-300', 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300', 'bg-green-500/15 dark:bg-green-500/15 text-green-700 dark:text-green-300', 'bg-orange-500/15 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300', 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'];
@@ -1268,7 +1294,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                       </div>
                     </div>
                     <div className="pt-4">
-                      <h4 className="font-medium mb-2 text-base">Tools</h4>
+                      <h4 className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground mb-2">Tools</h4>
                       <div className="flex flex-wrap gap-2">
                         {['Sketch', 'Principle', 'After Effects', 'Webflow'].map((tool, idx) => {
                           const colors = ['bg-emerald-500/15 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300', 'bg-teal-500/15 dark:bg-teal-500/15 text-teal-700 dark:text-teal-300', 'bg-violet-500/15 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300', 'bg-rose-500/15 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300', 'bg-amber-500/15 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300'];
@@ -1290,7 +1316,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 {selectedSection.id === 'philosophy' && (
                   <>
                     <div>
-                      <h4 className="font-medium mb-3 text-base">Design Philosophy</h4>
+                      <h4 className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground mb-3">Design Philosophy</h4>
                       <div className="space-y-3">
                         <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
                           <div className="flex items-start gap-3">
@@ -1345,8 +1371,8 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 {selectedSection.id === 'experience' && (
                   <>
                     {selectedSection.content ? (
-                      <div>
-                        <h4 className="font-medium mb-2 text-base">Experience Details</h4>
+                        <div>
+                          <h4 className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground mb-2">Experience Details</h4>
                         <div className="text-sm text-muted-foreground leading-relaxed prose dark:prose-invert prose-sm max-w-none">
                           <ReactMarkdown>{selectedSection.content}</ReactMarkdown>
                         </div>

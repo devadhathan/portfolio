@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Neue+Montreal:wght@300;400;500;600&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -39,6 +40,8 @@ html {
   --svg-fill-septenary: #E9E9E9;
   --svg-fill-octonary: #EDEDED;
   --svg-fill-white: #FFFFFF;
+  --font-dm-mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-neue-montreal: "Neue Montreal", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .light {
@@ -200,6 +203,25 @@ html {
   --svg-fill-septenary: #569DF9;
   --svg-fill-octonary: #5AA1F9;
   --svg-fill-white: #60A5FA;
+}
+
+.font-dm-mono {
+  font-family: var(
+    --font-dm-mono,
+    "DM Mono",
+    ui-monospace,
+    "SFMono-Regular",
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    "Courier New",
+    monospace
+  );
+}
+
+.font-neue-montreal {
+  font-family: var(--font-neue-montreal);
 }
 
 @layer base {

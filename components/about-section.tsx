@@ -2,8 +2,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { resumeData } from '@/lib/resume-data';
-import { Award } from 'lucide-react';
-
 export function AboutSection() {
   return (
     <div className="mt-10 space-y-8 animate-in fade-in duration-300">
@@ -14,8 +12,9 @@ export function AboutSection() {
             <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
               <CardHeader className="pb-4">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Award className="h-4 w-4" />
-                  Awards
+                  <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
+                    Awards
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
@@ -32,11 +31,12 @@ export function AboutSection() {
           )}
 
           {resumeData.certifications.length > 0 && (
-            <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Award className="h-4 w-4" />
-                  Certifications
+              <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
+                      Certifications
+                    </span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
@@ -56,4 +56,3 @@ export function AboutSection() {
     </div>
   );
 }
-

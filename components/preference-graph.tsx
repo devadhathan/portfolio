@@ -1,7 +1,6 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export function PreferenceGraph() {
@@ -26,11 +25,10 @@ export function PreferenceGraph() {
         }}
       />
       <div className="pb-4 flex-shrink-0 relative z-10">
-        <div className="text-[16px] font-medium flex items-center gap-2">
-          <div className="p-1.5 bg-primary/20 rounded-full flex items-center justify-center">
-            <TrendingUp className="h-4 w-4 text-primary" />
-          </div>
-          Design Preferences
+        <div className="text-[16px] font-medium">
+          <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
+            Design Preferences
+          </span>
         </div>
       </div>
       <div className="flex-1 flex flex-col justify-between gap-4 relative z-10">
