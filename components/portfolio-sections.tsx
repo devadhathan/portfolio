@@ -869,7 +869,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 {/* Image Indicators */}
                 {photos.length > 1 && (
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-                    {photos.map((_, idx) => (
+                    {photos.map((_: string, idx: number) => (
                       <button
                         key={idx}
                         onClick={(e) => {
