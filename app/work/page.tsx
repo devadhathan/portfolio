@@ -13,6 +13,7 @@ import { ProjectDetailView } from '@/components/project-detail-view';
 import { useRouter } from 'next/navigation';
 
 type Project = (typeof resumeData.projects)[number];
+const LAST_SELECTED_PROJECT_KEY = 'portfolio-last-project';
 
 const getProjectThumbnail = (project: Project): string => {
   const title = project.title.toLowerCase();
@@ -74,11 +75,24 @@ export default function WorkPage() {
     return id.toLowerCase().trim().replace(/\s+/g, '-');
   };
 
+  const selectProject = (projectId: string) => {
+    setSelectedProject(projectId);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LAST_SELECTED_PROJECT_KEY, projectId);
+    }
+  };
+
+  const clearProjectSelection = () => {
+    setSelectedProject(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(LAST_SELECTED_PROJECT_KEY);
+    }
+  };
+
   // Handle URL parameter to open specific project
   useEffect(() => {
     const projectParam = searchParams.get('project');
     if (projectParam) {
-      // Find the project that matches the ID from URL
       const normalizedParam = normalizeProjectId(projectParam);
       const matchingProject = projects.find(project => {
         const projectId = getProjectId(project.title);
@@ -86,16 +100,32 @@ export default function WorkPage() {
       });
       
       if (matchingProject) {
-        setSelectedProject(getProjectId(matchingProject.title));
-        // Clean up URL parameter after setting the project
+        const projectId = getProjectId(matchingProject.title);
+        selectProject(projectId);
         router.replace('/work', { scroll: false });
+        return;
       }
     }
-  }, [searchParams, router]);
+
+    if (typeof window !== 'undefined') {
+      const storedProject = localStorage.getItem(LAST_SELECTED_PROJECT_KEY);
+      if (storedProject) {
+        const normalizedStored = normalizeProjectId(storedProject);
+        const storedMatch = projects.find(project => {
+          const projectId = getProjectId(project.title);
+          return normalizeProjectId(projectId) === normalizedStored;
+        });
+
+        if (storedMatch) {
+          selectProject(getProjectId(storedMatch.title));
+        }
+      }
+    }
+  }, [searchParams, router, projects]);
 
   return (
     <div className="min-h-screen bg-card">
-      <TopBar onHomeClick={() => router.push('/')} />
+      <TopBar onHomeClick={() => router.push('/')} onProjectSelect={(projectId) => selectProject(projectId)} />
       <div className="pt-14 pb-24 px-4 md:px-6 lg:px-8 overflow-visible">
         {selectedProject ? (
           <div className="flex flex-col lg:flex-row gap-6 max-w-[1600px] mx-auto relative">
@@ -107,7 +137,7 @@ export default function WorkPage() {
                 <div className="sticky top-20 z-50 bg-card border border-border/50 rounded-lg p-4 pt-6">
                   <Button 
                     onClick={() => {
-                      setSelectedProject(null);
+                      clearProjectSelection();
                     }} 
                     variant="ghost" 
                     size="sm" 
@@ -160,7 +190,7 @@ export default function WorkPage() {
                           <div key={projectId} className="space-y-1">
                             <button
                               onClick={() => {
-                                setSelectedProject(projectId);
+                                selectProject(projectId);
                                 if (sections.length > 0) {
                                   setExpandedProjects(prev => {
                                     const newSet = new Set(prev);
@@ -218,7 +248,7 @@ export default function WorkPage() {
             <div className="flex-1 min-w-0 lg:ml-72 ml-0">
               <ProjectDetailView 
                 projectId={selectedProject} 
-                onBack={() => setSelectedProject(null)}
+                onBack={() => clearProjectSelection()}
                 hideBackButton={true}
               />
             </div>
@@ -246,7 +276,7 @@ export default function WorkPage() {
                       <Card 
                         key={`other-${index}`}
                         className="col-span-1 rounded-2xl border-2 border-border/70 bg-card/60 backdrop-blur-md cursor-pointer hover:border-primary/60 transition-all group overflow-hidden h-full flex flex-col"
-                        onClick={() => setSelectedProject(projectId)}
+                        onClick={() => selectProject(projectId)}
                       >
                         <div className="flex flex-col h-full">
                           {/* Thumbnail - reduced size */}
@@ -296,7 +326,7 @@ export default function WorkPage() {
                       <Card 
                         key="finshots"
                         className="col-span-1 lg:col-start-3 lg:col-span-1 lg:row-start-1 lg:row-span-2 rounded-2xl border-2 border-border/70 bg-card/60 backdrop-blur-md cursor-pointer hover:border-primary/60 transition-all group overflow-hidden h-full flex flex-col"
-                        onClick={() => setSelectedProject(projectId)}
+                        onClick={() => selectProject(projectId)}
                       >
                         <div className="flex flex-col h-full">
                           {/* Thumbnail - larger for 2-row span */}

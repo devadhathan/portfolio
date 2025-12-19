@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Send, Bot, User, RotateCcw, ChevronRight, ChevronLeft, ChevronDown, Sparkles, MessageCircle, Smile, MessageSquare } from 'lucide-react';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetClose } from '@/components/ui/sheet';
 import { PortfolioAgent, AgentCommand, AgentState, PortfolioSection } from '@/lib/agent';
 import { resumeData } from '@/lib/resume-data';
 import { ResizableChat } from './resizable-chat';
@@ -98,12 +98,13 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
   const [promptCount, setPromptCount] = useState(10); // Start with 10 prompts
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024); // lg breakpoint
+    const updateIsMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
     };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+
+    updateIsMobile();
+    window.addEventListener('resize', updateIsMobile);
+    return () => window.removeEventListener('resize', updateIsMobile);
   }, []);
 
   // Track if component is mounted to prevent flash
@@ -147,26 +148,27 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
     }
   }, [onExpandRequest, isCollapsed, onCollapseChange]);
 
-  // Update collapsed state when screen size changes
   useEffect(() => {
-    const checkMobile = () => {
+    if (externalCollapsed !== undefined) {
+      return;
+    }
+
+    const handleResize = () => {
       const mobile = window.innerWidth < 1024;
-      const desktop = window.innerWidth >= 1280; // Only auto-open on desktop (xl breakpoint), not tablet
+      const desktop = window.innerWidth >= 1280;
       if (mobile && !isCollapsed) {
-        // If switching to mobile/tablet and chat is open, collapse it
         setIsCollapsed(true);
         onCollapseChange?.(true);
-      } else if (desktop && isCollapsed && externalCollapsed === undefined) {
-        // Only auto-open on desktop (xl+), not tablet, and only if not externally controlled
+      } else if (desktop && isCollapsed) {
         setIsCollapsed(false);
         onCollapseChange?.(false);
       }
     };
-    // Check on mount and on resize
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, [isCollapsed, externalCollapsed, onCollapseChange]);
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [externalCollapsed, isCollapsed, onCollapseChange]);
   
   const handleCollapseToggle = () => {
     const newState = !isCollapsed;
@@ -1010,15 +1012,20 @@ EXAMPLE RESPONSE:
       {/* Mobile Chat - Bottom Sheet */}
       {isMobile && (
           <Sheet open={!isCollapsed} onOpenChange={handleSheetOpenChange}>
-            <SheetContent side="bottom" className="h-[85vh] p-0 flex flex-col">
+          <SheetContent side="bottom" hideClose className="h-[85vh] p-0 flex flex-col">
               <div className="h-full p-4 flex flex-col">
                 <Card className="h-full flex flex-col bg-card/80 backdrop-blur-xl border-2 border-border/70 shadow-2xl">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 flex-shrink-0">
                     <CardTitle className="flex items-center gap-2"><Smile className="h-5 w-5" /> Portfolio Agent</CardTitle>
                     <div className="flex items-center gap-1">
                       <Button variant="ghost" size="icon" onClick={handleReset} className="h-8 w-8" title="Reset Layout"><RotateCcw className="h-4 w-4" /></Button>
+                      <SheetClose asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" title="Close chat">
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </SheetClose>
                     </div>
-                    </CardHeader>
+                  </CardHeader>
                     <Separator className="flex-shrink-0" />
                     <div className="flex-1 flex flex-col overflow-hidden min-h-0">
                       <ScrollArea className="flex-1 w-full min-h-0">
