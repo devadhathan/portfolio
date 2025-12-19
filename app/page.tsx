@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { SideAgent } from '@/components/side-agent';
 import { PortfolioSections } from '@/components/portfolio-sections';
 import { TopBar } from '@/components/top-bar';
@@ -78,10 +79,10 @@ export default function Home() {
     // Set explanation as complete and trigger card display
     setIsExplanationComplete(complete);
     if (complete) {
-      // Delay showing cards to match when cards are actually set in state (800ms after explanation completes)
+      // Delay briefly to let the explanation settle before revealing cards
       setTimeout(() => {
         setShouldShowCards(true);
-      }, 900); // Slightly after cards are set in state
+      }, 350);
     } else {
       setShouldShowCards(false);
     }
@@ -291,12 +292,16 @@ export default function Home() {
                       
                       return paragraphs.length > 0 ? paragraphs : [text];
                     })().map((paragraph, index, array) => (
-                      <p key={index} className="mb-0">
-                        {paragraph}
+                      <div key={index} className="mb-0">
+                        <ReactMarkdown components={{
+                          p: ({ node, ...props }) => <p className="mb-0" {...props} />,
+                        }}>
+                          {paragraph}
+                        </ReactMarkdown>
                         {index === array.length - 1 && !isExplanationComplete && explanation && displayedExplanation.length < explanation.length && (
                           <span className="inline-block w-1.5 h-4 ml-1 bg-foreground/50 animate-pulse" />
                         )}
-                      </p>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -352,4 +357,3 @@ export default function Home() {
     </div>
   );
 }
-

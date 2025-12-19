@@ -15,22 +15,42 @@ interface Note {
 
 export function NotesWidget() {
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
-  const [formattedDate, setFormattedDate] = useState<string>('');
+  const [deploymentDate, setDeploymentDate] = useState<string | null>(null);
+  const [deploymentTimestamp, setDeploymentTimestamp] = useState<Date | null>(null);
 
-  // Get current date/time for last updated
-  const websiteLastUpdated = new Date();
-
-  // Format date only on client side after hydration
   useEffect(() => {
-    const formatted = websiteLastUpdated.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    });
-    setFormattedDate(formatted);
+    const controller = new AbortController();
+
+    const fetchLastUpdated = async () => {
+      try {
+        const response = await fetch('/api/last-updated', {
+          cache: 'no-store',
+          signal: controller.signal,
+        });
+
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!data.lastUpdatedDate) return;
+
+        const parsedDate = new Date(data.lastUpdatedDate);
+        if (Number.isNaN(parsedDate.getTime())) return;
+
+        const formatted = parsedDate.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        });
+
+        setDeploymentDate(formatted);
+        setDeploymentTimestamp(parsedDate);
+      } catch (error) {
+        if ((error as Error).name === 'AbortError') return;
+        // Silently ignore fetch errors
+      }
+    };
+
+    fetchLastUpdated();
+    return () => controller.abort();
   }, []);
 
   const notes: Note[] = useMemo(() => [
@@ -50,24 +70,21 @@ Hope you enjoy exploring! 🚀`,
     },
     {
       id: '2',
-      content: formattedDate ? `Last updated: ${formattedDate}` : 'Last updated: ...',
-      lastUpdated: websiteLastUpdated,
+      content: deploymentDate ? `Last updated: ${deploymentDate}` : 'Last updated: ...',
+      lastUpdated: deploymentTimestamp ?? new Date(),
     },
     {
       id: '3',
       content: 'Currently working from Edinburgh',
       lastUpdated: new Date('2024-12-19T08:00:00'),
     },
-  ], [formattedDate]);
+  ], [deploymentDate, deploymentTimestamp]);
 
   const formatDateTime = (date: Date) => {
-    return date.toLocaleString('en-US', {
+    return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
     });
   };
 
@@ -149,4 +166,3 @@ Hope you enjoy exploring! 🚀`,
     </>
   );
 }
-

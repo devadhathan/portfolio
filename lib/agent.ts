@@ -47,6 +47,19 @@ const defaultSections: PortfolioSection[] = [
   { id: 'video', title: 'Dew - AI Character', priority: 'medium', order: 6, visible: true, type: 'video', content: '/videos/2tUv4Phgglg0Cvb9dLfZYDnN1k.mp4', links: [{ label: 'Read on Medium', url: 'https://medium.com/@devadhathanmd18/why-ai-needs-a-face-building-dew-my-duolingo-inspired-ai-character-2d4e56f94772' }] },
   { id: 'philosophy', title: 'Design Philosophy', priority: 'medium', order: 7, visible: true },
   { id: 'connect', title: 'Connect', priority: 'medium', order: 8, visible: true, type: 'contact' },
+  {
+    id: 'last-portfolio-version',
+    title: 'Last portfolio version',
+    priority: 'low',
+    order: 9,
+    visible: true,
+    type: 'custom',
+    description: 'Revisit the previous Framer-hosted portfolio experience.',
+    image: '/Old design/Old portfolio.png',
+    links: [
+      { label: 'Launch last version', url: 'https://devadhathan.framer.website' }
+    ],
+  },
 ];
 
 export class PortfolioAgent {
@@ -456,4 +469,3 @@ export class PortfolioAgent {
     this.state.originalSections = [...this.state.originalSections, ...newPhotoSections];
   }
 }
-

@@ -28,27 +28,32 @@ interface SideAgentProps {
 
 // --- 1. RICH CONTENT DATABASE (Source of Truth) ---
 // This ensures cards always have descriptions and links, regardless of what the AI generates.
+// Helper function to convert project title to ID (matching work page logic)
+const getProjectIdFromTitle = (title: string): string => {
+  return title.toLowerCase().trim().replace(/\s+/g, '-');
+};
+
 const CONTENT_DATABASE: Record<string, Partial<PortfolioSection> & { link?: string }> = {
   'falcon': {
     title: 'Falcon Design System',
     type: 'projects',
     description: 'A comprehensive design system for Ditto Insurance.',
     content: 'Built on principles of modularity and reusability, Falcon standardizes elements such as typography, color palettes, icons, and interactive components to streamline development.\n\n**Impact:**\n- Unified brand experience across platforms\n- Accelerated development cycles\n- Improved accessibility standards',
-    link: 'https://devadhathan.com/design-system3'
+    link: `/work?project=${getProjectIdFromTitle('Falcon Design System')}`
   },
   'finshots': {
     title: 'Finshots News App',
     type: 'projects',
     description: 'Award-winning financial news application.',
     content: 'Redesigned the mobile experience to provide a centralized platform for financial insights.\n\n**Results:**\n- **100k+** Downloads\n- **4.9** Star Rating\n- Google Play "Best App of 2020"',
-    link: 'https://devadhathan.com/finshots-new'
+    link: `/work?project=${getProjectIdFromTitle('Finshots News App')}`
   },
   'onboarding': {
-    title: 'Ditto Onboarding',
+    title: 'Onboarding Redesign',
     type: 'projects',
     description: 'Optimized flow for insurance slot booking.',
     content: 'Reimagined the user journey to reduce friction and drop-offs.\n\n**Metrics:**\n- 17% increase in conversion\n- 8% reduction in drop-offs',
-    link: 'https://devadhathan.com/ditto-onboarding'
+    link: `/work?project=${getProjectIdFromTitle('Onboarding Redesign')}`
   },
   'kiosk': {
     title: 'Sustainable Kiosk',
@@ -60,13 +65,15 @@ const CONTENT_DATABASE: Record<string, Partial<PortfolioSection> & { link?: stri
     title: 'CRM Redesign',
     type: 'projects',
     description: 'Internal tool optimization for insurance agents.',
-    content: ' streamlined workflows and reduced cognitive load.\n\n**Impact:** 20% boost in team efficiency and 30% faster task completion.'
+    content: ' streamlined workflows and reduced cognitive load.\n\n**Impact:** 20% boost in team efficiency and 30% faster task completion.',
+    link: `/work?project=${getProjectIdFromTitle('CRM Redesign')}`
   },
   'booking': {
-    title: 'Booking Portal',
+    title: 'Booking Portal Redesign',
     type: 'projects',
     description: 'Web portal redesign focused on conversion.',
-    content: 'Applied the Double Diamond process to revamp the booking experience, achieving WCAG 2.1 AA accessibility compliance.'
+    content: 'Applied the Double Diamond process to revamp the booking experience, achieving WCAG 2.1 AA accessibility compliance.',
+    link: `/work?project=${getProjectIdFromTitle('Booking Portal Redesign')}`
   },
   'experience': {
     title: 'Work Experience',
@@ -165,6 +172,11 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
     const newState = !isCollapsed;
     setIsCollapsed(newState);
     onCollapseChange?.(newState);
+  };
+  const handleSheetOpenChange = (open: boolean) => {
+    const newCollapsed = !open;
+    setIsCollapsed(newCollapsed);
+    onCollapseChange?.(newCollapsed);
   };
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'agent' | 'assistant'; content: string; isStreaming?: boolean }>>([
     { role: 'agent', content: 'Hi! I can help you navigate. Try saying "Show me the design system" or "List the projects".' }
@@ -995,33 +1007,17 @@ EXAMPLE RESPONSE:
       </div>
       )}
       
-      {/* Mobile Chat - Bottom Sheet - Hidden, using FloatingChatButton instead */}
-      {false && isMobile && (
-        <>
-          {isCollapsed && (
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="lg:hidden fixed bottom-4 right-4 rounded-full h-14 w-14 shadow-2xl z-[100] bg-card hover:bg-card/90 border-2 border-border backdrop-blur-sm flex items-center justify-center p-0"
-              onClick={handleCollapseToggle}
-            >
-              <MessageSquare className="h-6 w-6 text-foreground flex-shrink-0" />
-            </Button>
-          )}
-          {!isCollapsed && (
-            <Sheet open={!isCollapsed} onOpenChange={(open) => {
-              if (!open) {
-                handleCollapseToggle();
-              }
-            }}>
-              <SheetContent side="bottom" className="h-[85vh] p-0 flex flex-col">
-                <div className="h-full p-4 flex flex-col">
-                  <Card className="h-full flex flex-col bg-card/80 backdrop-blur-xl border-2 border-border/70 shadow-2xl">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 flex-shrink-0">
-                      <CardTitle className="flex items-center gap-2"><Smile className="h-5 w-5" /> Portfolio Agent</CardTitle>
-                      <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" onClick={handleReset} className="h-8 w-8" title="Reset Layout"><RotateCcw className="h-4 w-4" /></Button>
-                      </div>
+      {/* Mobile Chat - Bottom Sheet */}
+      {isMobile && (
+          <Sheet open={!isCollapsed} onOpenChange={handleSheetOpenChange}>
+            <SheetContent side="bottom" className="h-[85vh] p-0 flex flex-col">
+              <div className="h-full p-4 flex flex-col">
+                <Card className="h-full flex flex-col bg-card/80 backdrop-blur-xl border-2 border-border/70 shadow-2xl">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 flex-shrink-0">
+                    <CardTitle className="flex items-center gap-2"><Smile className="h-5 w-5" /> Portfolio Agent</CardTitle>
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="icon" onClick={handleReset} className="h-8 w-8" title="Reset Layout"><RotateCcw className="h-4 w-4" /></Button>
+                    </div>
                     </CardHeader>
                     <Separator className="flex-shrink-0" />
                     <div className="flex-1 flex flex-col overflow-hidden min-h-0">
@@ -1101,7 +1097,7 @@ EXAMPLE RESPONSE:
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  setMode('ask');
+                                  handleModeChange('ask');
                                 }}
                                 disabled={isLoading}
                                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
@@ -1117,7 +1113,7 @@ EXAMPLE RESPONSE:
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  setMode('agent');
+                                  handleModeChange('agent');
                                 }}
                                 disabled={isLoading}
                                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
@@ -1147,8 +1143,6 @@ EXAMPLE RESPONSE:
                 </div>
               </SheetContent>
             </Sheet>
-          )}
-        </>
       )}
     </>
   );

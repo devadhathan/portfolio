@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -59,6 +60,7 @@ const getProjectSummary = (project: Project): string => {
 
 export default function WorkPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
 
@@ -71,6 +73,25 @@ export default function WorkPage() {
   const normalizeProjectId = (id: string): string => {
     return id.toLowerCase().trim().replace(/\s+/g, '-');
   };
+
+  // Handle URL parameter to open specific project
+  useEffect(() => {
+    const projectParam = searchParams.get('project');
+    if (projectParam) {
+      // Find the project that matches the ID from URL
+      const normalizedParam = normalizeProjectId(projectParam);
+      const matchingProject = projects.find(project => {
+        const projectId = getProjectId(project.title);
+        return normalizeProjectId(projectId) === normalizedParam;
+      });
+      
+      if (matchingProject) {
+        setSelectedProject(getProjectId(matchingProject.title));
+        // Clean up URL parameter after setting the project
+        router.replace('/work', { scroll: false });
+      }
+    }
+  }, [searchParams, router]);
 
   return (
     <div className="min-h-screen bg-card">

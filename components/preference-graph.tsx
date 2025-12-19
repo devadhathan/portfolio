@@ -76,7 +76,7 @@ export function PreferenceGraph() {
         {/* Description */}
         <div className="pt-4 border-t border-border/30">
           <p className="text-[14px] text-muted-foreground leading-relaxed">
-            I prefer prototyping and bringing ideas to life quickly, with less emphasis on extensive user research.
+            I like prototyping and bringing ideas to life quickly.
           </p>
         </div>
       </div>
