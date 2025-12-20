@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Neue+Montreal:wght@300;400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Google+Plex+Sans:wght@400;500;600;700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -42,6 +43,7 @@ html {
   --svg-fill-white: #FFFFFF;
   --font-dm-mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --font-neue-montreal: "Neue Montreal", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-google-plex-sans: "Google Plex Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .light {
@@ -224,6 +226,10 @@ html {
   font-family: var(--font-neue-montreal);
 }
 
+.font-google-plex-sans {
+  font-family: var(--font-google-plex-sans);
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -231,6 +237,7 @@ html {
   body {
     @apply bg-background text-foreground;
     font-size: 14px;
+    font-family: var(--font-google-plex-sans);
   }
   html {
     font-size: 14px;
@@ -299,6 +306,73 @@ html {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+  }
+}
+
+@keyframes shimmer-slide {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.shimmer-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    40deg,
+    rgba(255, 255, 255, 0) 10%,
+    rgba(255, 255, 255, 0.3) 45%,
+    rgba(255, 255, 255, 0.6) 55%,
+    rgba(255, 255, 255, 0) 90%
+  );
+  mix-blend-mode: screen;
+  transform: translateX(-120%);
+  animation: shimmer-slide 0.9s ease-in-out;
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+.shimmer-button .shimmer-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: #ffffff;
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.shimmer-button .shimmer-dot-1 {
+  top: 16%;
+  left: 18%;
+}
+
+.shimmer-button .shimmer-dot-2 {
+  bottom: 18%;
+  right: 20%;
+}
+
+.shimmer-button .shimmer-dot-1,
+.shimmer-button .shimmer-dot-2 {
+  animation: shimmer-dot 0.9s ease-in-out;
+}
+
+@keyframes shimmer-dot {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
   }
 }
 

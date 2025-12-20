@@ -297,29 +297,33 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           >
             {borderReveal}
             
-            <CardHeader className="flex flex-col justify-center flex-shrink-0 relative z-10 pb-2 px-4 pt-4">
+            <CardHeader className="flex flex-col justify-center flex-shrink-0 relative z-10 pb-0 px-4 pt-4">
               <div className="mb-3">
-                <CardTitle 
-                  className={`text-2xl md:text-3xl font-semibold mb-0.5 ${isFirstLoad ? 'animate-line-reveal' : ''}`}
-                  style={isFirstLoad ? { animationDelay: '0s' } : undefined}
-                >
-                  Dev
-                </CardTitle>
-                <CardDescription 
-                  className={`text-[12px] md:text-[13px] text-foreground/80 ${isFirstLoad ? 'animate-line-reveal' : ''}`}
-                  style={isFirstLoad ? { animationDelay: '0.3s' } : undefined}
-                >
-                  Product Designer
-                </CardDescription>
-              </div>
+              <CardTitle 
+                className={`text-2xl md:text-3xl font-semibold mb-0.5 ${isFirstLoad ? 'animate-line-reveal' : ''}`}
+                style={isFirstLoad ? { animationDelay: '0s' } : undefined}
+              >
+                Dev
+              </CardTitle>
+            </div>
             </CardHeader>
-            <CardContent className="px-4 pb-4 pt-0 flex flex-col gap-3 relative z-10">
+            <CardContent className="px-4 pb-4 pt-0 flex flex-col gap-2 relative z-10">
               <p 
-                className={`text-[13px] text-muted-foreground leading-relaxed ${isFirstLoad ? 'animate-line-reveal' : ''}`}
+                className={`text-[13px] text-muted-foreground leading-relaxed ${isFirstLoad ? 'animate-line-reveal' : ''} mb-3`}
                 style={isFirstLoad ? { animationDelay: '0.4s' } : undefined}
               >
                 Building meaningful digital experiences through thoughtful design and user-centric solutions.
               </p>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
+                  <Globe className="h-3.5 w-3.5" />
+                  <span>Currently in Edinburgh</span>
+                </div>
+                <div className="flex items-center gap-2 text-[13px]">
+                  <Zap className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-primary">Available for work</span>
+                </div>
+              </div>
               
               {/* SVG Illustration */}
               <div className="relative w-full rounded-lg overflow-hidden flex items-center justify-center p-4">
@@ -328,15 +332,6 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                   alt="Dev"
                   className={`w-full h-auto max-h-[300px] object-contain svg-hero-${theme}`}
                 />
-              </div>
-              
-              <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
-                <Globe className="h-3.5 w-3.5" />
-                <span>Currently in Edinburgh</span>
-              </div>
-              <div className="flex items-center gap-2 text-[13px]">
-                <Zap className="h-3.5 w-3.5 text-primary" />
-                <span className="text-primary">Available for work</span>
               </div>
             </CardContent>
           </Card>
@@ -467,9 +462,6 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                           <span>July 2025 - November 2025</span>
                         </div>
                       </div>
-                      <p className="text-[14px] text-muted-foreground leading-relaxed mb-3">
-                        Designing innovative solutions and user-centered experiences for AI-powered products.
-                      </p>
                       <div className="flex flex-wrap gap-1.5">
                         {['Prototyping', 'Design Systems', 'UX Research'].map((tag) => (
                           <span key={tag} className={`px-2 py-0.5 rounded text-[14px] ${tag.includes('Design') ? 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>
@@ -488,9 +480,6 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                           <span>November 2021 - December 2022</span>
                         </div>
                       </div>
-                      <p className="text-[14px] text-muted-foreground leading-relaxed mb-3">
-                        Led redesign of booking portal achieving 17% conversion increase. Created Falcon Design System and redesigned internal CRM improving team efficiency by 20%.
-                      </p>
                       <div className="flex flex-wrap gap-1.5">
                         {['Design Systems', 'UX Research', 'Prototyping'].map((tag) => (
                           <span key={tag} className={`px-2 py-0.5 rounded text-[14px] ${tag.includes('Design') ? 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>
@@ -509,9 +498,6 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                           <span>August 2019 - October 2021</span>
                         </div>
                       </div>
-                      <p className="text-[14px] text-muted-foreground leading-relaxed mb-3">
-                        Designed award-winning mobile app, contributed to Google Play &quot;Best App of 2020&quot; award, helped achieve 100k+ downloads and 500k+ subscribers.
-                      </p>
                       <div className="flex flex-wrap gap-1.5">
                         {['Mobile Design', 'UX Research', 'Prototyping'].map((tag) => (
                           <span key={tag} className={`px-2 py-0.5 rounded text-[14px] ${tag.includes('Design') ? 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>

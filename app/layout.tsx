@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className={`${dmMono.variable} font-neue-montreal`}>
+      <body className={dmMono.variable}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

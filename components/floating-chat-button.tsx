@@ -20,6 +20,7 @@ export function FloatingChatButton({ onClick, isCollapsed, mode: externalMode, o
       setInternalMode(externalMode);
     }
   }, [externalMode]);
+  const [shouldShimmer, setShouldShimmer] = useState(false);
   
   const setMode = (newMode: 'ask' | 'agent') => {
     try {
@@ -44,6 +45,26 @@ export function FloatingChatButton({ onClick, isCollapsed, mode: externalMode, o
       return () => clearTimeout(timer);
     }
   }, [isCollapsed]);
+
+  useEffect(() => {
+    let timeoutId: number | null = null;
+    const intervalId = window.setInterval(() => {
+      setShouldShimmer(true);
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+      timeoutId = window.setTimeout(() => {
+        setShouldShimmer(false);
+      }, 900);
+    }, 5000);
+
+    return () => {
+      window.clearInterval(intervalId);
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, []);
 
   if (!isCollapsed) {
     return null; // Don't show when chat is open
@@ -94,20 +115,24 @@ export function FloatingChatButton({ onClick, isCollapsed, mode: externalMode, o
       </div>
 
       {/* Main Chat Button - Circular, glowing with one-time bounce */}
-      <button
-        onClick={() => {
-          onClick();
-        }}
-        className={`h-14 w-14 rounded-full bg-black/90 backdrop-blur-xl border border-white/30 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] hover:scale-110 transition-all duration-200 flex items-center justify-center group ${
-          shouldBounce ? 'animate-bounce-once' : ''
-        }`}
-      >
-        {mode === 'agent' ? (
-          <Sparkles className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
-        ) : (
-          <MessageCircle className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
-        )}
-      </button>
-    </div>
+          <button
+            onClick={() => {
+              onClick();
+            }}
+            className={`relative h-14 w-14 rounded-full bg-black/90 backdrop-blur-xl border border-white/30 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] hover:scale-110 transition-all duration-200 flex items-center justify-center group overflow-hidden ${
+              shouldBounce ? 'animate-bounce-once' : ''
+            } ${shouldShimmer ? 'shimmer-button' : ''}`}
+          >
+            {mode === 'agent' ? (
+              <>
+                <Sparkles className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
+                <span className="shimmer-dot shimmer-dot-1" aria-hidden />
+                <span className="shimmer-dot shimmer-dot-2" aria-hidden />
+              </>
+            ) : (
+              <MessageCircle className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
+            )}
+          </button>
+        </div>
   );
 }

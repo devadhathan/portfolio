@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { resumeData } from '@/lib/resume-data';
 export function AboutSection() {
   return (
-    <div className="mt-10 space-y-8 animate-in fade-in duration-300">
+    <div className="mt-10 space-y-8 animate-in fade-in duration-300 pb-24">
       {/* Awards & Certifications */}
       {(resumeData.awards.length > 0 || resumeData.certifications.length > 0) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
