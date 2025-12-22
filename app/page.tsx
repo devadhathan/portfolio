@@ -319,22 +319,20 @@ export default function Home() {
                 ((!explanation && !displayedExplanation && !isAgentWorking) ||
                 // Show generated cards only after explanation is complete
                 (shouldShowCards && isExplanationComplete)) && (
-                  <>
-                    <div className={`transition-all duration-600 animate-fade-in-blur ${contentGutterClass}`}>
-                        <PortfolioSections 
-                          agentState={agentState} 
-                          hideHeaderText={isAgentWorking || shouldShowCards}
-                          onProjectSelect={setSelectedProject}
-                          onShowProjectsList={() => setShowProjectsList(true)}
-                        />
-                    </div>
-                    {/* Only show AboutSection (awards/certifications) for default state, not generated cards */}
-                    {!agentState.isCustomLayout && (
-                      <div className="transition-all duration-600 animate-fade-in-blur mx-0 px-8 md:px-8 lg:px-8">
-                        <AboutSection />
-                      </div>
-                    )}
-                  </>
+                  <div className={`transition-all duration-600 animate-fade-in-blur ${contentGutterClass}`}>
+                      <PortfolioSections 
+                        agentState={agentState} 
+                        hideHeaderText={isAgentWorking || shouldShowCards}
+                        onProjectSelect={setSelectedProject}
+                        onShowProjectsList={() => setShowProjectsList(true)}
+                      />
+                      {/* Only show AboutSection (awards/certifications) for default state, not generated cards */}
+                      {!agentState.isCustomLayout && (
+                        <div className="mt-10">
+                          <AboutSection />
+                        </div>
+                      )}
+                  </div>
                 )
               )}
             </>
