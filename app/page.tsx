@@ -33,10 +33,10 @@ export default function Home() {
   const areBothPanelsExpanded = !isChatCollapsed && !isSidebarCollapsed;
   const isAnyPanelExpanded = !isChatCollapsed || !isSidebarCollapsed;
   const contentGutterClass = areBothPanelsExpanded
-    ? 'mx-2 px-3 sm:mx-3 sm:px-4 md:mx-3 md:px-4 lg:mx-5 lg:px-6 xl:mx-8 xl:px-10'
+    ? 'mx-3 px-4 sm:mx-3 sm:px-4 md:mx-3 md:px-4 lg:mx-5 lg:px-6 xl:mx-8 xl:px-10'
     : isAnyPanelExpanded
-      ? 'mx-3 px-3 sm:mx-3 sm:px-4 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-8 xl:px-10'
-      : 'mx-3 px-3 sm:mx-4 sm:px-5 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-[70px] xl:px-[90px]';
+      ? 'mx-3 px-4 sm:mx-3 sm:px-4 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-8 xl:px-10'
+      : 'mx-4 px-4 sm:mx-4 sm:px-5 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-[70px] xl:px-[90px]';
 
   // Dynamic loading messages that change over time
   const loadingMessages = [

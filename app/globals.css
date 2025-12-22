@@ -582,6 +582,11 @@ html.red body {
   filter: brightness(0) saturate(100%) invert(36%) sepia(100%) saturate(7421%) hue-rotate(347deg) brightness(1.35) !important;
 }
 
+/* Hero illustration wrapper */
+.hero-illustration {
+  position: relative;
+}
+
 /* One-time bounce animation */
 @keyframes bounce-once {
   0%, 100% {

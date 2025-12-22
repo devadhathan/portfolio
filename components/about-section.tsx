@@ -7,9 +7,9 @@ export function AboutSection() {
     <div className="mt-10 space-y-8 animate-in fade-in duration-300 pb-24 px-4 sm:px-6 lg:px-0">
       {/* Awards & Certifications */}
       {(resumeData.awards.length > 0 || resumeData.certifications.length > 0) && (
-        <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-2">
+        <div className="mx-auto grid w-full max-w-none grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-2">
           {resumeData.awards.length > 0 && (
-            <Card className="about-section-card border border-border/70 bg-card/60 dark:bg-[#171717] backdrop-blur-none">
+            <Card className="about-section-card w-full border border-border/70 bg-[#171717] text-white">
               <CardHeader className="pb-4">
                 <CardTitle className="text-base flex items-center gap-2">
                   <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
@@ -31,12 +31,12 @@ export function AboutSection() {
           )}
 
           {resumeData.certifications.length > 0 && (
-              <Card className="about-section-card border border-border/70 bg-card/60 dark:bg-[#171717] backdrop-blur-none">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
-                      Certifications
-                    </span>
+            <Card className="about-section-card w-full border border-border/70 bg-[#171717] text-white">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
+                    Certifications
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">

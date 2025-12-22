@@ -344,18 +344,14 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 Building meaningful digital experiences through thoughtful design and user-centric solutions.
               </p>
               <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
+                <div className="flex items-center gap-3 text-[13px] text-muted-foreground">
                   <Globe className="h-3.5 w-3.5" />
                   <span>Currently in Edinburgh</span>
-                </div>
-                <div className="flex items-center gap-2 text-[13px]">
-                  <Zap className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-primary">Available for work</span>
                 </div>
               </div>
               
               {/* SVG Illustration */}
-              <div className="relative w-full rounded-lg overflow-hidden flex items-center justify-center p-4">
+              <div className="relative w-full rounded-lg overflow-hidden flex items-center justify-center p-4 border border-border/40 dark:border-border/60 hero-illustration mt-4">
                 <img
                   src="/svg/me vectorized.svg"
                   alt="Dev"
