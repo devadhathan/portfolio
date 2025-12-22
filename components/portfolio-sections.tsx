@@ -64,6 +64,8 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
   const videoRefs = React.useRef<{ [key: string]: HTMLVideoElement | null }>({});
   // Track if this is the first load for animations
   const [isFirstLoad, setIsFirstLoad] = React.useState(true);
+  const heroRectRef = React.useRef<DOMRect | null>(null);
+  const [heroCursor, setHeroCursor] = React.useState<{ x: number; y: number } | null>(null);
   
   // Reset first load flag after animations complete
   React.useEffect(() => {
@@ -133,12 +135,35 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     }, 150);
   }, []);
 
+  const handleHeroPointerMove = React.useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    heroRectRef.current = rect;
+    setHeroCursor({
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    });
+  }, []);
+
+  const handleHeroPointerLeave = React.useCallback(() => {
+    setHeroCursor(null);
+    heroRectRef.current = null;
+  }, []);
+
   // Sort by order first, then filter visible sections - must be before early return
   const sortedSections = React.useMemo(() => {
     if (!agentState || !agentState.sections) return [];
     return [...agentState.sections].sort((a, b) => a.order - b.order);
   }, [agentState]);
   const visibleSections = React.useMemo(() => sortedSections.filter(s => s.visible), [sortedSections]);
+  const displaySections = React.useMemo(() => {
+    const list = [...visibleSections];
+    const expIndex = list.findIndex(section => section.id === 'experience');
+    const photosIndex = list.findIndex(section => section.id === 'photos');
+    if (expIndex !== -1 && photosIndex !== -1) {
+      [list[expIndex], list[photosIndex]] = [list[photosIndex], list[expIndex]];
+    }
+    return list;
+  }, [visibleSections]);
 
   const getPhotoSources = useCallback((section: any) => {
     if (section.images && section.images.length > 0) {
@@ -191,8 +216,8 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     // This creates a more dynamic bento grid layout
     // On mobile, all cards should be single column (col-span-1)
     const sizeMap: { [key: string]: string } = {
-      'hero': 'col-span-1 sm:col-span-1 lg:col-span-1',
-      'preferences': 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1',
+      'hero': 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1',
+      'preferences': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
       'photos': 'col-span-1 sm:col-span-1 lg:col-span-2 row-span-2',
       'video': 'col-span-1 sm:col-span-2 lg:col-span-1 row-span-2',
       'connect': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
@@ -289,7 +314,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     
     // Calculate animation delay for cards
     // Hero card appears at 0.6s, other cards follow with staggered delays
-    const heroIndex = visibleSections.findIndex(s => s.id === 'hero');
+    const heroIndex = displaySections.findIndex(s => s.id === 'hero');
     const cardDelay = section.id === 'hero' 
       ? 0.6 
       : 0.8 + ((heroIndex >= 0 && index > heroIndex ? index - 1 : index) * 0.1);
@@ -311,16 +336,38 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     const SectionIcon = getSectionIcon(section.id);
     switch (section.id) {
       case 'hero':
+        const heroImageStyle = heroCursor && heroRectRef.current
+          ? (() => {
+              const width = heroRectRef.current?.width || 1;
+              const height = heroRectRef.current?.height || 1;
+              const offsetX = (heroCursor.x / width) - 0.5;
+              const offsetY = (heroCursor.y / height) - 0.5;
+              const translateX = offsetX * 6;
+              const translateY = offsetY * 6;
+              const rotateY = offsetX * 12;
+              const rotateX = -offsetY * 12;
+              return {
+                transform: `translate3d(${translateX}px, ${translateY}px, 0) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`
+              };
+            })()
+          : { transform: 'translate3d(0px, 0px, 0px) rotateX(0deg) rotateY(0deg)' };
+
         return (
-          <Card 
-            key={section.id} 
-            data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} group flex flex-col relative overflow-hidden ${isFirstLoad ? 'animate-card-reveal' : ''}`}
-            style={isFirstLoad ? { animationDelay: '0.6s' } : undefined}
-            onClick={() => handleCardClick(section.id)}
-            onMouseMove={(e) => handleMouseMove(section.id, e)}
-            onMouseLeave={() => handleMouseLeave(section.id)}
-          >
+      <Card 
+        key={section.id} 
+        data-card-id={section.id}
+        className={`${baseStyles} ${bentoSize} group flex flex-col relative overflow-hidden ${isFirstLoad ? 'animate-card-reveal' : ''}`}
+        style={isFirstLoad ? { animationDelay: '0.6s' } : undefined}
+        onClick={() => handleCardClick(section.id)}
+        onMouseMove={(e) => {
+          handleMouseMove(section.id, e);
+          handleHeroPointerMove(e);
+        }}
+        onMouseLeave={() => {
+          handleMouseLeave(section.id);
+          handleHeroPointerLeave();
+        }}
+      >
             {borderReveal}
             
             <CardHeader className="flex flex-col justify-center flex-shrink-0 relative z-10 pb-0 px-4 pt-4">
@@ -336,27 +383,36 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 </CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="px-4 pb-4 pt-0 flex flex-col gap-2 relative z-10">
-              <p 
-                className={`text-[13px] text-muted-foreground leading-relaxed ${isFirstLoad ? 'animate-line-reveal' : ''} mb-3`}
-                style={isFirstLoad ? { animationDelay: '0.4s' } : undefined}
-              >
-                Building meaningful digital experiences through thoughtful design and user-centric solutions.
-              </p>
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-3 text-[13px] text-muted-foreground">
-                  <Globe className="h-3.5 w-3.5" />
-                  <span>Currently in Edinburgh</span>
+            <CardContent className="px-3 pb-3 pt-0 relative z-10 flex flex-col gap-4 md:px-4 md:pb-4 md:flex-row md:items-start h-full">
+              <div className="flex-1 flex flex-col gap-3 justify-between h-full pb-8">
+                <div className="max-w-[360px] sm:max-w-[420px]">
+                  <p 
+                    className={`text-[13px] text-muted-foreground leading-relaxed ${isFirstLoad ? 'animate-line-reveal' : ''}`}
+                    style={isFirstLoad ? { animationDelay: '0.4s' } : undefined}
+                  >
+                    Building meaningful digital experiences through thoughtful design and user-centric solutions.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-1 text-[13px] text-muted-foreground">
+                  <div className="flex items-center gap-3">
+                    <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span>Currently in Edinburgh</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-muted-foreground transition-colors duration-200 group-hover:text-emerald-400">
+                    <Briefcase className="h-3.5 w-3.5 text-muted-foreground transition-colors duration-200 group-hover:text-emerald-400" />
+                    <span className="font-medium">Available for work</span>
+                  </div>
                 </div>
               </div>
-              
-              {/* SVG Illustration */}
-              <div className="relative w-full rounded-lg overflow-hidden flex items-center justify-center p-4 border border-border/40 dark:border-border/60 hero-illustration mt-4">
-                <img
-                  src="/svg/me vectorized.svg"
-                  alt="Dev"
-                  className={`w-full h-auto max-h-[260px] object-contain svg-hero-${theme} scale-[0.92] transition-transform duration-500`}
-                />
+              <div className="flex-1 flex justify-center">
+                <div className="relative w-full max-w-[380px] rounded-lg overflow-hidden flex items-center justify-center p-4 border border-border/40 dark:border-border/60 hero-illustration">
+                  <img
+                    src="/svg/me vectorized.svg"
+                    alt="Dev"
+                    className={`relative z-10 w-auto max-w-full max-h-[280px] object-contain svg-hero-${theme} scale-[0.92] transition-transform duration-500 will-change-transform`}
+                    style={heroImageStyle}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -483,13 +539,6 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                           <span>July 2025 - November 2025</span>
                         </div>
                       </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {['Prototyping', 'Design Systems', 'UX Research'].map((tag) => (
-                          <span key={tag} className={`px-2 py-0.5 rounded text-[14px] ${tag.includes('Design') ? 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
                     </div>
                     
                     <div className="p-4 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/40 transition-colors">
@@ -501,13 +550,6 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                           <span>November 2021 - December 2022</span>
                         </div>
                       </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {['Design Systems', 'UX Research', 'Prototyping'].map((tag) => (
-                          <span key={tag} className={`px-2 py-0.5 rounded text-[14px] ${tag.includes('Design') ? 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
                     </div>
                     
                     <div className="p-4 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/40 transition-colors">
@@ -518,13 +560,6 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                           <Calendar className="h-3.5 w-3.5" />
                           <span>August 2019 - October 2021</span>
                         </div>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {['Mobile Design', 'UX Research', 'Prototyping'].map((tag) => (
-                          <span key={tag} className={`px-2 py-0.5 rounded text-[14px] ${tag.includes('Design') ? 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>
-                            {tag}
-                          </span>
-                        ))}
                       </div>
                     </div>
                   </div>
@@ -1155,7 +1190,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
         </div>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-6 lg:gap-8 auto-rows-[minmax(200px,auto)] pb-4 md:pb-0 w-full">
-        {visibleSections.map((section, index) => renderSection(section, index))}
+            {displaySections.map((section, index) => renderSection(section, index))}
       </div>
       
       {/* Detail Dialog - Exclude projects section */}

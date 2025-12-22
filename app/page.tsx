@@ -33,10 +33,10 @@ export default function Home() {
   const areBothPanelsExpanded = !isChatCollapsed && !isSidebarCollapsed;
   const isAnyPanelExpanded = !isChatCollapsed || !isSidebarCollapsed;
   const contentGutterClass = areBothPanelsExpanded
-    ? 'mx-3 px-4 sm:mx-3 sm:px-4 md:mx-3 md:px-4 lg:mx-5 lg:px-6 xl:mx-8 xl:px-10'
+    ? 'mx-0 px-4 sm:mx-3 sm:px-4 md:mx-3 md:px-4 lg:mx-5 lg:px-6 xl:mx-8 xl:px-10'
     : isAnyPanelExpanded
-      ? 'mx-3 px-4 sm:mx-3 sm:px-4 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-8 xl:px-10'
-      : 'mx-4 px-4 sm:mx-4 sm:px-5 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-[70px] xl:px-[90px]';
+      ? 'mx-0 px-4 sm:mx-3 sm:px-4 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-8 xl:px-10'
+      : 'mx-0 px-4 sm:mx-4 sm:px-5 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-[70px] xl:px-[90px]';
 
   // Dynamic loading messages that change over time
   const loadingMessages = [
@@ -319,16 +319,22 @@ export default function Home() {
                 ((!explanation && !displayedExplanation && !isAgentWorking) ||
                 // Show generated cards only after explanation is complete
                 (shouldShowCards && isExplanationComplete)) && (
-                  <div className={`transition-all duration-600 animate-fade-in-blur ${contentGutterClass}`}>
-                      <PortfolioSections 
-                        agentState={agentState} 
-                        hideHeaderText={isAgentWorking || shouldShowCards}
-                        onProjectSelect={setSelectedProject}
-                        onShowProjectsList={() => setShowProjectsList(true)}
-                      />
-                      {/* Only show AboutSection (awards/certifications) for default state, not generated cards */}
-                      {!agentState.isCustomLayout && <AboutSection />}
-                  </div>
+                  <>
+                    <div className={`transition-all duration-600 animate-fade-in-blur ${contentGutterClass}`}>
+                        <PortfolioSections 
+                          agentState={agentState} 
+                          hideHeaderText={isAgentWorking || shouldShowCards}
+                          onProjectSelect={setSelectedProject}
+                          onShowProjectsList={() => setShowProjectsList(true)}
+                        />
+                    </div>
+                    {/* Only show AboutSection (awards/certifications) for default state, not generated cards */}
+                    {!agentState.isCustomLayout && (
+                      <div className="transition-all duration-600 animate-fade-in-blur mx-0 px-8 md:px-8 lg:px-8">
+                        <AboutSection />
+                      </div>
+                    )}
+                  </>
                 )
               )}
             </>

@@ -244,7 +244,7 @@ export default function WorkPage() {
                     return (
                       <Card 
                         key={`other-${index}`}
-                        className="col-span-1 rounded-2xl border-2 border-border/70 bg-card/60 backdrop-blur-md cursor-pointer hover:border-primary/60 transition-all group overflow-hidden h-full flex flex-col"
+                        className="col-span-1 rounded-2xl border-2 border-border/70 bg-[#171717] text-white cursor-pointer hover:border-primary/60 transition-all group overflow-hidden h-full flex flex-col"
                         onClick={() => setSelectedProject(projectId)}
                       >
                         <div className="flex flex-col h-full">
@@ -294,7 +294,7 @@ export default function WorkPage() {
                     return (
                       <Card 
                         key="finshots"
-                        className="col-span-1 lg:col-start-3 lg:col-span-1 lg:row-start-1 lg:row-span-2 rounded-2xl border-2 border-border/70 bg-card/60 backdrop-blur-md cursor-pointer hover:border-primary/60 transition-all group overflow-hidden h-full flex flex-col"
+                        className="col-span-1 lg:col-start-3 lg:col-span-1 lg:row-start-1 lg:row-span-2 rounded-2xl border-2 border-border/70 bg-[#171717] text-white cursor-pointer hover:border-primary/60 transition-all group overflow-hidden h-full flex flex-col"
                         onClick={() => setSelectedProject(projectId)}
                       >
                         <div className="flex flex-col h-full">
