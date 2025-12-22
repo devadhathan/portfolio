@@ -175,38 +175,6 @@ html {
 }
 
 
-.glass {
-  --background: 220 20% 10%;
-  --foreground: 210 40% 98%;
-  --card: 220 15% 12%;
-  --card-foreground: 210 40% 98%;
-  --popover: 220 15% 12%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 220 85% 65%;
-  --primary-foreground: 220 20% 10%;
-  --secondary: 217 20% 18%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217 20% 18%;
-  --muted-foreground: 215 20.2% 75%;
-  --accent: 217 20% 18%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 50%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217 25% 25%;
-  --input: 217 25% 25%;
-  --ring: 220 85% 65%;
-  --theme-color: #60A5FA;
-  --svg-fill-primary: #60A5FA;
-  --svg-fill-secondary: #6EB0FB;
-  --svg-fill-tertiary: #64A8FA;
-  --svg-fill-quaternary: #68ABFA;
-  --svg-fill-quinary: #62A6FA;
-  --svg-fill-senary: #65A9FA;
-  --svg-fill-septenary: #569DF9;
-  --svg-fill-octonary: #5AA1F9;
-  --svg-fill-white: #60A5FA;
-}
-
 .font-dm-mono {
   font-family: var(
     --font-dm-mono,
@@ -398,81 +366,11 @@ html.red body {
 }
 
 
-html.glass {
-  --glass-bg-image: url('/photos/plant.png');
-}
-
-html.glass body {
-  background-color: transparent !important;
-  background-image: 
-    var(--glass-bg-image, url('/photos/plant.png')),
-    radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
-    radial-gradient(ellipse at 80% 80%, rgba(147, 51, 234, 0.1) 0%, transparent 40%),
-    radial-gradient(ellipse at 50% 50%, rgba(34, 197, 94, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 0% 100%, rgba(251, 146, 60, 0.08) 0%, transparent 40%);
-  background-size: cover, auto, auto, auto, auto;
-  background-position: center, center, center, center, center;
-  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
-  background-blend-mode: normal, overlay, overlay, overlay, overlay;
-  background-attachment: fixed;
-  position: relative;
-  transition: background-image 0.3s ease;
-  min-height: 100vh;
-}
-
-html.glass body[data-bg="gradient"] {
-  background-image: 
-    radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.2) 0%, transparent 40%),
-    radial-gradient(ellipse at 80% 80%, rgba(147, 51, 234, 0.2) 0%, transparent 40%),
-    radial-gradient(ellipse at 50% 50%, rgba(34, 197, 94, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse at 0% 100%, rgba(251, 146, 60, 0.15) 0%, transparent 40%),
-    linear-gradient(135deg, hsl(220 20% 8%) 0%, hsl(220 15% 12%) 50%, hsl(220 20% 10%) 100%);
-}
-
-html.glass {
-  background-color: transparent !important;
-  min-height: 100vh;
-}
-
-html.glass body[data-bg="none"] {
-  background-image: 
-    radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.2) 0%, transparent 40%),
-    radial-gradient(ellipse at 80% 80%, rgba(147, 51, 234, 0.2) 0%, transparent 40%),
-    radial-gradient(ellipse at 50% 50%, rgba(34, 197, 94, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse at 0% 100%, rgba(251, 146, 60, 0.15) 0%, transparent 40%),
-    linear-gradient(135deg, hsl(220 20% 8%) 0%, hsl(220 15% 12%) 50%, hsl(220 20% 10%) 100%);
-}
-
-html.glass body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: 
-    linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.02) 50%, transparent 70%),
-    radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: -1;
-  opacity: 0.5;
-}
-
-/* Glass theme specific styling */
-html.glass .rounded-2xl {
-  background: rgba(255, 255, 255, 0.03) !important;
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-color: rgba(255, 255, 255, 0.15) !important;
-}
-
-html.glass .bg-card\/60,
-html.glass .bg-card\/50,
-html.glass .bg-card\/40,
-html.glass .bg-card\/30 {
-  background: rgba(255, 255, 255, 0.03) !important;
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-}
-
 @layer utilities {
+  .about-section-card {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
   .bg-gradient-grid {
     background-image: 
       linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
@@ -481,13 +379,6 @@ html.glass .bg-card\/30 {
     opacity: 0.05;
   }
   
-  .glass {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
   .animate-pulse-subtle {
     animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
@@ -665,11 +556,6 @@ html.glass .bg-card\/30 {
   filter: brightness(0) saturate(100%) invert(36%) sepia(100%) saturate(7421%) hue-rotate(347deg) brightness(1.35) !important;
 }
 
-/* Glass: #60A5FA - RGB(96, 165, 250) */
-.glass .svg-theme-aware {
-  filter: brightness(0) saturate(100%) invert(58%) sepia(100%) saturate(3500%) hue-rotate(200deg) brightness(1.2) opacity(0.9) !important;
-}
-
 /* Hero SVG Color Modes - Theme-specific styling for white.svg */
 /* Dark theme: white/light gray (#F5F5F5) */
 .svg-hero-dark {
@@ -694,11 +580,6 @@ html.glass .bg-card\/30 {
 /* Red theme: #FC553B */
 .svg-hero-red {
   filter: brightness(0) saturate(100%) invert(36%) sepia(100%) saturate(7421%) hue-rotate(347deg) brightness(1.35) !important;
-}
-
-/* Glass theme: #60A5FA */
-.svg-hero-glass {
-  filter: brightness(0) saturate(100%) invert(58%) sepia(100%) saturate(3500%) hue-rotate(200deg) brightness(1.2) opacity(0.9) !important;
 }
 
 /* One-time bounce animation */

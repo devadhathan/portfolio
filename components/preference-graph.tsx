@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { TrendingUp } from 'lucide-react';
 
 export function PreferenceGraph() {
   const data = [
@@ -25,11 +26,12 @@ export function PreferenceGraph() {
         }}
       />
       <div className="pb-4 flex-shrink-0 relative z-10">
-        <div className="text-[16px] font-medium">
+        <CardTitle className="text-[11px] font-dm-mono uppercase tracking-[0.4em] text-foreground flex items-center gap-2">
+          <TrendingUp className="h-3.5 w-3.5 text-primary flex-shrink-0" />
           <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
             Design Preferences
           </span>
-        </div>
+        </CardTitle>
       </div>
       <div className="flex-1 flex flex-col justify-between gap-4 relative z-10">
         {/* Line Chart Graph */}
@@ -72,7 +74,7 @@ export function PreferenceGraph() {
         </div>
         
         {/* Description */}
-        <div className="pt-4 border-t border-border/30">
+        <div className="pt-4">
           <p className="text-[14px] text-muted-foreground leading-relaxed">
             I like prototyping and bringing ideas to life quickly.
           </p>

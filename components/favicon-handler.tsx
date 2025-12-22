@@ -73,9 +73,8 @@ export function FaviconHandler() {
         // Moon icon - simplified
         path.setAttribute('d', 'M22.5 17.5c-2.5 0-4.5-2-4.5-4.5 0-1 .3-2 .8-2.8C16.2 9 14 7 11.5 7c-3 0-5.5 2.5-5.5 5.5 0 3 2.5 5.5 5.5 5.5 2.5 0 4.5-1.2 5.7-3 0.8 0.5 1.8 0.8 2.8 0.8 2.5 0 4.5-2 4.5-4.5 0-0.5-0.1-1-0.3-1.5-0.3 0.3-0.7 0.5-1.2 0.5z');
         path.setAttribute('fill', '#ffffff');
-      } else if (theme === 'glass') {
-        // Sparkles icon - simplified
-        path.setAttribute('d', 'M16 8L17 12L21 13L17 14L16 18L15 14L11 13L15 12L16 8ZM24 20L24.5 22L26.5 22.5L24.5 23L24 25L23.5 23L21.5 22.5L23.5 22L24 20ZM8 22L8.5 23.5L10 24L8.5 24.5L8 26L7.5 24.5L6 24L7.5 23.5L8 22Z');
+      } else {
+        path.setAttribute('d', 'M22.5 17.5c-2.5 0-4.5-2-4.5-4.5 0-1 .3-2 .8-2.8C16.2 9 14 7 11.5 7c-3 0-5.5 2.5-5.5 5.5 0 3 2.5 5.5 5.5 5.5 2.5 0 4.5-1.2 5.7-3 0.8 0.5 1.8 0.8 2.8 0.8 2.5 0 4.5-2 4.5-4.5 0-0.5-0.1-1-0.3-1.5-0.3 0.3-0.7 0.5-1.2 0.5z');
         path.setAttribute('fill', '#ffffff');
       }
       
@@ -97,4 +96,3 @@ export function FaviconHandler() {
 
   return null;
 }
-

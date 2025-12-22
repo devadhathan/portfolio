@@ -1,9 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Sparkles, Image as ImageIcon, Sun, Menu as MenuIcon, List } from 'lucide-react';
+import { Sun, List } from 'lucide-react';
 import { useTheme, availableThemes, rgbThemes } from '@/contexts/theme-context';
-import { useBackground } from '@/contexts/background-context';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,8 +31,6 @@ interface TopBarProps {
 
 export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
   const { theme, setTheme } = useTheme();
-  const { backgroundImage, setBackgroundImage, availableBackgrounds } = useBackground();
-  const isGlassTheme = theme === 'glass';
   const router = useRouter();
   const pathname = usePathname();
   const isWorkPage = pathname === '/work';
@@ -49,12 +46,8 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
     router.push('/');
   };
 
-  const handleMessageClick = () => {
-    setChatOpen(true);
-  };
-
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-card backdrop-blur-2xl border-b border-border/30 shadow-lg shadow-black/20">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-card backdrop-blur-2xl border-b border-border/30">
       <div className="w-full px-3 md:px-5 lg:px-6">
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center gap-2">
@@ -122,15 +115,6 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
           </div>
           
           <div className="flex items-center gap-2">
-            <button 
-              onClick={handleMessageClick}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/40 border border-border/30 text-xs hover:bg-secondary/50 transition-colors cursor-pointer"
-            >
-              <Sparkles className="h-3 w-3 text-primary" />
-              <span className="hidden sm:inline">Message me</span>
-              <span className="sm:hidden">Message</span>
-            </button>
-            
             {/* Mobile: Single dropdown for all themes */}
             <div className="lg:hidden">
               <DropdownMenu>
@@ -170,6 +154,7 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
                       </DropdownMenuItem>
                     );
                   })}
+                  <DropdownMenuSeparator />
                   {rgbThemes.map((rgbTheme) => (
                     <DropdownMenuItem
                       key={rgbTheme.id}
@@ -185,30 +170,13 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
                       </div>
                     </DropdownMenuItem>
                   ))}
-                  {isGlassTheme && (
-                    <>
-                      <DropdownMenuSeparator />
-                      {availableBackgrounds.map((bg) => (
-                        <DropdownMenuItem
-                          key={bg.id}
-                          onClick={() => setBackgroundImage(bg.id)}
-                          className={backgroundImage === bg.id ? 'bg-secondary' : ''}
-                        >
-                          <div className="flex items-center gap-2">
-                            <ImageIcon className="h-3 w-3" />
-                            <span>{bg.name}</span>
-                          </div>
-                        </DropdownMenuItem>
-                      ))}
-                    </>
-                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
 
             {/* Desktop: Separate theme controls */}
             <div className="hidden lg:flex items-center gap-2">
-              {/* Dark, Light, Glass tabs */}
+              {/* Theme toggles */}
               <div className="flex items-center gap-0.5 px-1 py-1 rounded-full bg-secondary/40 border border-border/30">
                 {availableThemes.map((t) => {
                   const IconComponent = t.icon;
@@ -219,44 +187,18 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => setTheme(t.id)}
-                      className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs transition-colors h-auto ${
+                      className={`flex items-center justify-center px-3 py-2 rounded-full transition-colors h-auto ${
                         isActive
                           ? 'bg-background text-foreground shadow-sm'
                           : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
                       }`}
                     >
-                      {IconComponent && <IconComponent className="h-3 w-3 flex-shrink-0" />}
-                      <span>{t.name}</span>
+                      {IconComponent && <IconComponent className="h-4 w-4" />}
+                      <span className="sr-only">{t.name}</span>
                     </Button>
                   );
                 })}
               </div>
-
-              {isGlassTheme && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/40 border border-border/30 text-xs hover:bg-secondary/50 transition-colors h-auto"
-                    >
-                      <ImageIcon className="h-3 w-3 text-primary" aria-hidden="true" />
-                      <span>{availableBackgrounds.find(bg => bg.id === backgroundImage)?.name || 'Background'}</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-32">
-                    {availableBackgrounds.map((bg) => (
-                      <DropdownMenuItem
-                        key={bg.id}
-                        onClick={() => setBackgroundImage(bg.id)}
-                        className={backgroundImage === bg.id ? 'bg-secondary' : ''}
-                      >
-                        {bg.name}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
 
               {/* Red, Green, Blue buttons */}
               <div className="flex items-center gap-1 px-1 py-1 rounded-full bg-secondary/40 border border-border/30">

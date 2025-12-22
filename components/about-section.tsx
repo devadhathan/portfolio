@@ -4,12 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { resumeData } from '@/lib/resume-data';
 export function AboutSection() {
   return (
-    <div className="mt-10 space-y-8 animate-in fade-in duration-300 pb-24">
+    <div className="mt-10 space-y-8 animate-in fade-in duration-300 pb-24 px-4 sm:px-6 lg:px-0">
       {/* Awards & Certifications */}
       {(resumeData.awards.length > 0 || resumeData.certifications.length > 0) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-2">
           {resumeData.awards.length > 0 && (
-            <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
+            <Card className="about-section-card border border-border/70 bg-card/60 dark:bg-[#171717] backdrop-blur-none">
               <CardHeader className="pb-4">
                 <CardTitle className="text-base flex items-center gap-2">
                   <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
@@ -31,7 +31,7 @@ export function AboutSection() {
           )}
 
           {resumeData.certifications.length > 0 && (
-              <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md">
+              <Card className="about-section-card border border-border/70 bg-card/60 dark:bg-[#171717] backdrop-blur-none">
                 <CardHeader className="pb-4">
                   <CardTitle className="text-base flex items-center gap-2">
                     <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">

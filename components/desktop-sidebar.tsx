@@ -131,7 +131,7 @@ export function DesktopSidebar({ onProjectSelect, isCollapsed = false, onCollaps
         <>
           <div className="p-4 space-y-4 flex-shrink-0">
         {/* Clock Widget - Analog */}
-        <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md dark:shadow-md">
+        <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#171717] dark:shadow-md">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
               <Clock className="h-4 w-4 text-primary" />
@@ -249,7 +249,7 @@ export function DesktopSidebar({ onProjectSelect, isCollapsed = false, onCollaps
 
           {/* Projects List - Notion Style */}
           <div className="px-4 pb-4 flex-1 min-h-0 flex flex-col overflow-hidden">
-            <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md dark:shadow-md h-full flex flex-col">
+            <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#171717] dark:shadow-md h-full flex flex-col">
               <CardHeader className="pb-3 flex-shrink-0">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <FolderKanban className="h-4 w-4 text-primary" />

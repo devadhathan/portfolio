@@ -3,7 +3,6 @@ import { DM_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { ClientThemeProvider } from "@/components/client-theme-provider";
-import { BackgroundProvider } from "@/contexts/background-context";
 import { FaviconHandler } from "@/components/favicon-handler";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -25,15 +24,13 @@ export default function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
-          themes={['dark', 'light', 'blue', 'green', 'red', 'glass']}
+          themes={['dark', 'light', 'blue', 'green', 'red']}
           enableSystem={false}
         >
-          <BackgroundProvider>
-            <ClientThemeProvider>
-              <FaviconHandler />
-              {children}
-            </ClientThemeProvider>
-          </BackgroundProvider>
+          <ClientThemeProvider>
+            <FaviconHandler />
+            {children}
+          </ClientThemeProvider>
         </ThemeProvider>
         <Analytics />
       </body>

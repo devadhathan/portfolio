@@ -30,6 +30,13 @@ export default function Home() {
   const resetAgentRef = useRef<(() => void) | null>(null);
   const [showInitialLoading, setShowInitialLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const areBothPanelsExpanded = !isChatCollapsed && !isSidebarCollapsed;
+  const isAnyPanelExpanded = !isChatCollapsed || !isSidebarCollapsed;
+  const contentGutterClass = areBothPanelsExpanded
+    ? 'mx-2 px-3 sm:mx-3 sm:px-4 md:mx-3 md:px-4 lg:mx-5 lg:px-6 xl:mx-8 xl:px-10'
+    : isAnyPanelExpanded
+      ? 'mx-3 px-3 sm:mx-3 sm:px-4 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-8 xl:px-10'
+      : 'mx-3 px-3 sm:mx-4 sm:px-5 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-[70px] xl:px-[90px]';
 
   // Dynamic loading messages that change over time
   const loadingMessages = [
@@ -189,7 +196,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-card relative overflow-x-hidden overflow-y-auto [html.glass_&]:bg-transparent [html.glass_&]:bg-none">
+    <div className="min-h-screen bg-card relative overflow-x-hidden overflow-y-auto">
       {/* Initial Loading Screen - Only shows first time */}
       {mounted && showInitialLoading && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black">
@@ -212,8 +219,6 @@ export default function Home() {
       {!showInitialLoading && (
         <>
           <TopBar onProjectSelect={setSelectedProject} onHomeClick={handleHomeClick} />
-          <div className="absolute inset-0 bg-gradient-grid pointer-events-none opacity-30 z-0 [html.glass_&]:hidden"></div>
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none z-0 [html.glass_&]:hidden"></div>
           
           <div className="flex pt-14 relative z-10">
         {/* Desktop Sidebar - Fixed */}
@@ -227,7 +232,7 @@ export default function Home() {
         
         {/* Main Content */}
         <div className={`flex-1 w-full px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8 relative z-10 transition-[margin-left,margin-right,padding-right] duration-500 ease-in-out ${isSidebarCollapsed && isChatCollapsed ? 'lg:ml-0 lg:mr-0' : isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-80'} ${isChatCollapsed ? 'lg:pr-32' : 'lg:pr-[440px]'} pb-24 md:pb-28 lg:pb-8 overflow-x-hidden`}>
-          <div className={`transition-[max-width,margin-left,margin-right] duration-500 ease-in-out ${isSidebarCollapsed && isChatCollapsed ? 'max-w-7xl mx-auto' : isChatCollapsed ? 'max-w-7xl mx-auto' : 'max-w-none mx-0'}`}>
+          <div className={`transition-[max-width,margin-left,margin-right] duration-500 ease-in-out ${isSidebarCollapsed && isChatCollapsed ? 'max-w-[1500px] mx-auto' : isChatCollapsed ? 'max-w-7xl mx-auto' : 'max-w-none mx-0'}`}>
             {isAgentWorking ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
               <div className="flex gap-2 mb-6">
@@ -314,15 +319,15 @@ export default function Home() {
                 ((!explanation && !displayedExplanation && !isAgentWorking) ||
                 // Show generated cards only after explanation is complete
                 (shouldShowCards && isExplanationComplete)) && (
-                  <div className={`transition-all duration-600 animate-fade-in-blur`}>
-                    <PortfolioSections 
-                      agentState={agentState} 
-                      hideHeaderText={isAgentWorking || shouldShowCards}
-                      onProjectSelect={setSelectedProject}
-                      onShowProjectsList={() => setShowProjectsList(true)}
-                    />
-                    {/* Only show AboutSection (awards/certifications) for default state, not generated cards */}
-                    {!agentState.isCustomLayout && <AboutSection />}
+                  <div className={`transition-all duration-600 animate-fade-in-blur ${contentGutterClass}`}>
+                      <PortfolioSections 
+                        agentState={agentState} 
+                        hideHeaderText={isAgentWorking || shouldShowCards}
+                        onProjectSelect={setSelectedProject}
+                        onShowProjectsList={() => setShowProjectsList(true)}
+                      />
+                      {/* Only show AboutSection (awards/certifications) for default state, not generated cards */}
+                      {!agentState.isCustomLayout && <AboutSection />}
                   </div>
                 )
               )}

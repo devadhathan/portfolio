@@ -20,9 +20,9 @@ export default function ContactPage() {
             <p className="text-muted-foreground">Get in touch with me</p>
           </div>
           
-          <div className="flex flex-col gap-6 max-w-2xl mx-auto">
+          <div className="flex flex-col gap-6 items-center">
             {/* Email Card */}
-            <Card className="rounded-2xl border-2 border-border/70 bg-card/60 backdrop-blur-md">
+            <Card className="w-full max-w-3xl rounded-2xl border-2 border-border/70 bg-card/60 backdrop-blur-md">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-[16px]">
                   <div className="p-1.5 bg-primary/20 rounded-full">
@@ -34,7 +34,7 @@ export default function ContactPage() {
               <CardContent className="flex flex-col gap-3">
                 <a 
                   href={`mailto:${resumeData.email}`}
-                  className="flex items-center gap-3 p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 hover:scale-[1.02] transition-all duration-200 border border-border/20"
+                  className="flex w-full items-center gap-3 p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 hover:scale-[1.02] transition-all duration-200 border border-border/20"
                 >
                   <Mail className="h-5 w-5 text-primary flex-shrink-0" />
                   <div className="flex flex-col">
@@ -46,7 +46,7 @@ export default function ContactPage() {
             </Card>
 
             {/* Links Card */}
-            <Card className="rounded-2xl border-2 border-border/70 bg-card/60 backdrop-blur-md">
+            <Card className="w-full max-w-3xl rounded-2xl border-2 border-border/70 bg-card/60 backdrop-blur-md">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-[16px]">
                   <div className="p-1.5 bg-primary/20 rounded-full">
@@ -55,40 +55,40 @@ export default function ContactPage() {
                   Links
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col gap-2">
-                <div className="flex flex-wrap gap-3 justify-center">
-                  <a 
-                    href="https://www.linkedin.com/in/devadhathan" 
-                    target="_blank" 
+              <CardContent>
+                <div className="flex flex-wrap gap-4">
+                  <a
+                    href="https://www.linkedin.com/in/devadhathan"
+                    target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 hover:scale-[1.02] transition-all duration-200 border border-border/20"
+                    className="flex-1 min-w-[180px] max-w-[220px] flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 hover:scale-[1.02] transition-all duration-200 border border-border/20"
                   >
                     <Linkedin className="h-4 w-4 text-primary flex-shrink-0" />
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-0.5">
                       <span className="text-[14px] font-medium">LinkedIn</span>
-                      <span className="text-[14px] text-muted-foreground">Connect with me</span>
+                      <span className="text-[13px] text-muted-foreground">Connect with me</span>
                     </div>
                   </a>
-                  <a 
-                    href="#" 
-                    className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 hover:scale-[1.02] transition-all duration-200 border border-border/20"
+                  <a
+                    href="#"
+                    className="flex-1 min-w-[180px] max-w-[220px] flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 hover:scale-[1.02] transition-all duration-200 border border-border/20"
                   >
                     <FileText className="h-4 w-4 text-primary flex-shrink-0" />
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-0.5">
                       <span className="text-[14px] font-medium">Resume</span>
-                      <span className="text-[14px] text-muted-foreground">Download PDF</span>
+                      <span className="text-[13px] text-muted-foreground">Download PDF</span>
                     </div>
                   </a>
-                  <a 
-                    href="https://github.com/devadhathan" 
-                    target="_blank" 
+                  <a
+                    href="https://github.com/devadhathan"
+                    target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 hover:scale-[1.02] transition-all duration-200 border border-border/20"
+                    className="flex-1 min-w-[180px] max-w-[220px] flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 hover:scale-[1.02] transition-all duration-200 border border-border/20"
                   >
                     <Github className="h-4 w-4 text-primary flex-shrink-0" />
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-0.5">
                       <span className="text-[14px] font-medium">GitHub</span>
-                      <span className="text-[14px] text-muted-foreground">View my work</span>
+                      <span className="text-[13px] text-muted-foreground">View my work</span>
                     </div>
                   </a>
                 </div>
@@ -101,4 +101,3 @@ export default function ContactPage() {
     </div>
   );
 }
-

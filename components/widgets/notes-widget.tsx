@@ -90,7 +90,7 @@ Hope you enjoy exploring! 🚀`,
 
   return (
     <>
-      <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md dark:shadow-md flex flex-col max-h-[300px]">
+      <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#171717] dark:shadow-md flex flex-col max-h-[300px]">
         <CardHeader className="pb-3 flex-shrink-0">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <FileText className="h-4 w-4 text-primary" />
@@ -101,19 +101,15 @@ Hope you enjoy exploring! 🚀`,
           <ScrollArea className="flex-1 min-h-0">
             <div className="space-y-2 pr-2">
               {notes.map((note) => (
-                <div
-                  key={note.id}
-                  onClick={() => setSelectedNote(note)}
-                  className={`flex flex-col gap-1 p-2.5 rounded-md border transition-all cursor-pointer ${
-                    note.isIntent
-                      ? 'bg-primary/10 border-primary/30 hover:bg-primary/15 hover:border-primary/40'
-                      : 'bg-secondary/30 border-border/20 hover:bg-secondary/40 hover:border-border/30'
-                  }`}
-                >
-                  <p className={`text-xs flex-1 leading-relaxed ${note.isIntent ? 'font-medium' : ''}`}>
-                    {note.isIntent ? '💭 Personal Message' : note.content.length > 50 ? `${note.content.substring(0, 50)}...` : note.content}
-                  </p>
-                </div>
+                  <div
+                    key={note.id}
+                    onClick={() => setSelectedNote(note)}
+                    className="flex flex-col gap-1 p-2.5 rounded-md border border-border/20 transition-all cursor-pointer bg-secondary/30 hover:bg-secondary/40 hover:border-border/30"
+                  >
+                    <p className="text-xs flex-1 leading-relaxed">
+                      {note.isIntent ? '💭 Personal Message' : note.content.length > 50 ? `${note.content.substring(0, 50)}...` : note.content}
+                    </p>
+                  </div>
               ))}
             </div>
           </ScrollArea>

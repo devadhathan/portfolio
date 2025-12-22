@@ -5,12 +5,37 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AgentState, SectionPriority, SectionType } from '@/lib/agent';
-import { User, Briefcase, Mail, Linkedin, FileText, Sparkles, Heart, Lightbulb, Target, Rocket, Code2, Calendar, Award, Globe, Github, Zap, FolderKanban, Image as ImageIcon, ChevronLeft, ChevronRight, ExternalLink, TrendingUp } from 'lucide-react';
+import { User, Briefcase, Mail, Linkedin, FileText, Sparkles, Heart, Lightbulb, Target, Rocket, Code2, Calendar, Award, Globe, Github, Zap, FolderKanban, Image as ImageIcon, ChevronLeft, ChevronRight, ExternalLink, TrendingUp, type LucideIcon } from 'lucide-react';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import { PreferenceGraph } from './preference-graph';
 import { resumeData } from '@/lib/resume-data';
 import { useTheme } from '@/contexts/theme-context';
+
+const SECTION_ICON_MAP: Record<string, LucideIcon> = {
+  hero: User,
+  preferences: TrendingUp,
+  about: User,
+  philosophy: Sparkles,
+  experience: Briefcase,
+  connect: Mail,
+  contact: Mail,
+  skills: Code2,
+  projects: FolderKanban,
+  photos: ImageIcon,
+  video: ImageIcon,
+  education: FileText,
+  'last-portfolio-version': Globe,
+};
+
+const getSectionIcon = (id: string) => SECTION_ICON_MAP[id] ?? Sparkles;
+
+const SectionLabel = ({ label, icon: Icon }: { label: string; icon: LucideIcon }) => (
+  <div className="flex items-center gap-2">
+    <Icon className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+    <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">{label}</span>
+  </div>
+);
 
 const DEFAULT_PHOTO_PATHS = [
   '/photos/O6bInc2LhAgXBkQ6yLobk41OLss.jpg',
@@ -204,7 +229,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     
     // Card background color - theme responsive
     // Dark mode: #121212 (dark grey), Light mode: hsl(0, 0%, 96%) (light grey)
-    const bgStyles = 'bg-card/60 backdrop-blur-md';
+    const bgStyles = 'bg-card/60 backdrop-blur-none dark:bg-[#171717]';
 
     // Border effects - match weather and clock cards: border-2 border-border/70
     const borderStyles: Record<Exclude<SectionPriority, 'hidden'>, string> = {
@@ -283,6 +308,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
       />
     ) : null;
     
+    const SectionIcon = getSectionIcon(section.id);
     switch (section.id) {
       case 'hero':
         return (
@@ -299,13 +325,16 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             
             <CardHeader className="flex flex-col justify-center flex-shrink-0 relative z-10 pb-0 px-4 pt-4">
               <div className="mb-3">
-              <CardTitle 
-                className={`text-2xl md:text-3xl font-semibold mb-0.5 ${isFirstLoad ? 'animate-line-reveal' : ''}`}
-                style={isFirstLoad ? { animationDelay: '0s' } : undefined}
-              >
-                Dev
-              </CardTitle>
-            </div>
+                <CardTitle 
+                  className={`text-[11px] font-dm-mono uppercase tracking-[0.4em] text-foreground ${isFirstLoad ? 'animate-line-reveal' : ''}`}
+                  style={isFirstLoad ? { animationDelay: '0s' } : undefined}
+                >
+                  <div className="flex items-center gap-2">
+                    <SectionIcon className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                    <span>Dev</span>
+                  </div>
+                </CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="px-4 pb-4 pt-0 flex flex-col gap-2 relative z-10">
               <p 
@@ -330,7 +359,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 <img
                   src="/svg/me vectorized.svg"
                   alt="Dev"
-                  className={`w-full h-auto max-h-[300px] object-contain svg-hero-${theme}`}
+                  className={`w-full h-auto max-h-[260px] object-contain svg-hero-${theme} scale-[0.92] transition-transform duration-500`}
                 />
               </div>
             </CardContent>
@@ -371,9 +400,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             {borderReveal}
               <CardHeader className="pb-2 flex-shrink-0 relative z-10">
                 <CardTitle className="text-[16px] mb-2">
-                  <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
-                    Design Philosophy
-                  </span>
+                  <SectionLabel label="Design Philosophy" icon={SectionIcon} />
                 </CardTitle>
               </CardHeader>
             <CardContent className="space-y-1.5 relative z-10">
@@ -444,9 +471,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
               {borderReveal}
               <CardHeader className="pb-2 flex-shrink-0 relative z-10">
                 <CardTitle className="text-[16px]">
-                  <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
-                    Experience
-                  </span>
+                  <SectionLabel label="Experience" icon={SectionIcon} />
                 </CardTitle>
                 <CardDescription className="text-[14px]">Current Role</CardDescription>
               </CardHeader>
@@ -529,9 +554,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="text-[16px]">
-                <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
-                  {expTitle}
-                </span>
+                <SectionLabel label={expTitle} icon={SectionIcon} />
               </CardTitle>
               {section.description && section.description.includes('|') && (
                 <CardDescription className="text-[14px]">{section.description.split('|')[0].trim()}</CardDescription>
@@ -593,9 +616,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="text-[16px]">
-                <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
-                  {section.title || 'Projects'}
-                </span>
+                <SectionLabel label={section.title || 'Projects'} icon={SectionIcon} />
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 relative z-10">
@@ -696,9 +717,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="text-[16px]">
-                <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
-                  {section.title || 'Skills'}
-                </span>
+                <SectionLabel label={section.title || 'Skills'} icon={SectionIcon} />
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 relative z-10">
@@ -743,9 +762,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="text-[16px]">
-                <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
-                  {section.title || 'Education'}
-                </span>
+                <SectionLabel label={section.title || 'Education'} icon={SectionIcon} />
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 relative z-10">
@@ -1014,9 +1031,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="text-[16px]">
-                <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
-                  {section.title || 'Custom Section'}
-                </span>
+                <SectionLabel label={section.title || 'Custom Section'} icon={SectionIcon} />
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 relative z-10">
@@ -1081,9 +1096,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="text-[16px] mb-2">
-                <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
-                  Connect
-                </span>
+                <SectionLabel label="Connect" icon={SectionIcon} />
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 relative z-10 flex-1">
@@ -1139,9 +1152,9 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           <p className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-muted-foreground mb-3 md:mb-4 animate-fade-in-blur">
             Dev&apos;s digital home
           </p>
-          <h1 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-light mb-8 md:mb-12 lg:mb-16 text-foreground tracking-[0.04em] leading-tight md:leading-[16px] animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>
+          <h1 className="text-3xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-4xl font-light mb-8 md:mb-12 lg:mb-16 text-foreground tracking-[0.04em] leading-tight md:leading-[16px] animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>
             Designer bringing interaction, <br className="hidden md:block" />
-            <span className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-light block mt-0 md:mt-2 text-foreground leading-tight md:leading-[16px] animate-fade-in-blur tracking-[0.04em]" style={{ animationDelay: '0.1s' }}>technology, and people together.</span>
+            <span className="text-3xl md:text-2xl lg:text-3xl xl:text-4xl font-light block mt-0 md:mt-2 text-foreground leading-tight md:leading-[16px] animate-fade-in-blur tracking-[0.04em]" style={{ animationDelay: '0.1s' }}>technology, and people together.</span>
           </h1>
         </div>
       )}

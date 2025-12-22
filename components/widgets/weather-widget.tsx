@@ -17,7 +17,7 @@ export function WeatherWidget() {
   const Icon = weather.icon;
 
   return (
-    <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md dark:shadow-md">
+    <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#171717] dark:shadow-md">
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Icon className="h-4 w-4 text-primary" />
@@ -47,4 +47,3 @@ export function WeatherWidget() {
     </Card>
   );
 }
-

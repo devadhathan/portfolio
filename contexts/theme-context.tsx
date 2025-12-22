@@ -2,14 +2,13 @@
 
 import { useTheme as useNextTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
-import { Moon, Sun, Sparkles } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 
-export type Theme = 'dark' | 'light' | 'blue' | 'green' | 'red' | 'glass';
+export type Theme = 'dark' | 'light' | 'blue' | 'green' | 'red';
 
 export const availableThemes = [
   { id: 'dark' as Theme, name: 'Dark', icon: Moon, color: null },
   { id: 'light' as Theme, name: 'Light', icon: Sun, color: null },
-  { id: 'glass' as Theme, name: 'Glass', icon: Sparkles, color: null },
 ];
 
 export const rgbThemes = [
@@ -33,14 +32,6 @@ export function useTheme() {
       // next-themes handles this, but we ensure it's set correctly
       document.documentElement.className = theme;
       
-      // Trigger background update when theme changes to glass
-      if (theme === 'glass') {
-        // Small delay to ensure DOM is updated
-        setTimeout(() => {
-          const event = new Event('theme-changed');
-          document.dispatchEvent(event);
-        }, 100);
-      }
     }
   }, [theme, mounted]);
 
