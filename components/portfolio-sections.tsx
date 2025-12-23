@@ -43,6 +43,9 @@ const DEFAULT_PHOTO_PATHS = [
   '/photos/Le5RRVetScFh9EG3aEJYsrCsM.jpg.avif',
 ];
 
+const HERO_INTRO_VIDEO = '/videos/Can_you_create_202512230008_e8yfn.mp4';
+const HERO_LOOP_VIDEO = '/videos/second.mp4';
+
 interface PortfolioSectionsProps {
   agentState: AgentState;
   hideHeaderText?: boolean;
@@ -64,8 +67,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
   const videoRefs = React.useRef<{ [key: string]: HTMLVideoElement | null }>({});
   // Track if this is the first load for animations
   const [isFirstLoad, setIsFirstLoad] = React.useState(true);
-  const heroRectRef = React.useRef<DOMRect | null>(null);
-  const [heroCursor, setHeroCursor] = React.useState<{ x: number; y: number } | null>(null);
+  const [heroVideoStage, setHeroVideoStage] = React.useState<'intro' | 'loop'>('intro');
   
   // Reset first load flag after animations complete
   React.useEffect(() => {
@@ -76,6 +78,10 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
       return () => clearTimeout(timer);
     }
   }, [isFirstLoad]);
+
+  React.useEffect(() => {
+    setHeroVideoStage('intro');
+  }, [theme]);
 
   // Mouse tracking handlers - must be defined before early returns
   // Track mouse position with larger detection radius for nearby cards
@@ -133,20 +139,6 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     setTimeout(() => {
       setMousePositions(prev => ({ ...prev, [sectionId]: null }));
     }, 150);
-  }, []);
-
-  const handleHeroPointerMove = React.useCallback((event: React.MouseEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    heroRectRef.current = rect;
-    setHeroCursor({
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-    });
-  }, []);
-
-  const handleHeroPointerLeave = React.useCallback(() => {
-    setHeroCursor(null);
-    heroRectRef.current = null;
   }, []);
 
   // Sort by order first, then filter visible sections - must be before early return
@@ -336,22 +328,6 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     const SectionIcon = getSectionIcon(section.id);
     switch (section.id) {
       case 'hero':
-        const heroImageStyle = heroCursor && heroRectRef.current
-          ? (() => {
-              const width = heroRectRef.current?.width || 1;
-              const height = heroRectRef.current?.height || 1;
-              const offsetX = (heroCursor.x / width) - 0.5;
-              const offsetY = (heroCursor.y / height) - 0.5;
-              const translateX = offsetX * 6;
-              const translateY = offsetY * 6;
-              const rotateY = offsetX * 12;
-              const rotateX = -offsetY * 12;
-              return {
-                transform: `translate3d(${translateX}px, ${translateY}px, 0) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`
-              };
-            })()
-          : { transform: 'translate3d(0px, 0px, 0px) rotateX(0deg) rotateY(0deg)' };
-
         return (
       <Card 
         key={section.id} 
@@ -361,11 +337,9 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
         onClick={() => handleCardClick(section.id)}
         onMouseMove={(e) => {
           handleMouseMove(section.id, e);
-          handleHeroPointerMove(e);
         }}
         onMouseLeave={() => {
           handleMouseLeave(section.id);
-          handleHeroPointerLeave();
         }}
       >
             {borderReveal}
@@ -404,16 +378,43 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                   </div>
                 </div>
               </div>
-              <div className="flex-1 flex justify-center">
-                <div className="relative w-full max-w-[380px] rounded-lg overflow-hidden flex items-center justify-center p-4 border border-border/40 dark:border-border/60 hero-illustration">
-                  <img
-                    src="/svg/me vectorized.svg"
-                    alt="Dev"
-                    className={`relative z-10 w-auto max-w-full max-h-[280px] object-contain svg-hero-${theme} scale-[0.92] transition-transform duration-500 will-change-transform`}
-                    style={heroImageStyle}
-                  />
+            <div className="flex-1 flex justify-center">
+              <div className="relative w-full max-w-[420px] rounded-lg overflow-hidden border border-border/40 dark:border-border/60 hero-illustration">
+                <div className="relative w-full h-[300px] max-h-[300px]">
+                  {theme === 'dark' ? (
+                    <div className="relative w-full h-full">
+                      <video
+                        key={`hero-video-${heroVideoStage}`}
+                        src={heroVideoStage === 'intro' ? HERO_INTRO_VIDEO : HERO_LOOP_VIDEO}
+                        loop={heroVideoStage === 'loop'}
+                        className="absolute inset-0"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          objectPosition: 'center',
+                        }}
+                        autoPlay
+                        muted
+                        playsInline
+                        aria-label="Hero animation"
+                        onEnded={() => {
+                          if (heroVideoStage === 'intro') {
+                            setHeroVideoStage('loop');
+                          }
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <img
+                      src="/svg/me vectorized.svg"
+                      alt="Dev"
+                      className={`relative z-10 mx-auto w-auto max-w-full max-h-[300px] object-contain svg-hero-${theme}`}
+                    />
+                  )}
                 </div>
               </div>
+            </div>
             </CardContent>
           </Card>
         );
