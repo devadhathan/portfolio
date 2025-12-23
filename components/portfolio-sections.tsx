@@ -68,6 +68,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
   // Track if this is the first load for animations
   const [isFirstLoad, setIsFirstLoad] = React.useState(true);
   const [heroVideoStage, setHeroVideoStage] = React.useState<'intro' | 'loop'>('intro');
+  const loopVideoPreloadRef = React.useRef<HTMLVideoElement | null>(null);
   
   // Reset first load flag after animations complete
   React.useEffect(() => {
@@ -82,6 +83,10 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
   React.useEffect(() => {
     setHeroVideoStage('intro');
   }, [theme]);
+
+  React.useEffect(() => {
+    loopVideoPreloadRef.current?.load();
+  }, []);
 
   // Mouse tracking handlers - must be defined before early returns
   // Track mouse position with larger detection radius for nearby cards
@@ -1179,6 +1184,15 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
 
   return (
     <>
+      <video
+        ref={loopVideoPreloadRef}
+        src={HERO_LOOP_VIDEO}
+        preload="auto"
+        muted
+        playsInline
+        className="hidden"
+        aria-hidden="true"
+      />
       {!hideHeaderText && (
         <div className="mb-6 md:mb-8 text-left pt-6 md:pt-8 lg:pt-12 px-4 md:px-0">
           <p className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-muted-foreground mb-3 md:mb-4 animate-fade-in-blur">
