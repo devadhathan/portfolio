@@ -113,6 +113,8 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
               />
             </button>
           </div>
+
+          <div className="flex-1" />
           
           <div className="flex items-center gap-2">
             {/* Mobile: Single dropdown for all themes */}

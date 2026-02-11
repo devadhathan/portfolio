@@ -1,16 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
 import { resumeData } from '@/lib/resume-data';
 import { TopBar } from '@/components/top-bar';
 import { BottomNav } from '@/components/bottom-nav';
-import { ProjectDetailView } from '@/components/project-detail-view';
 import { useRouter } from 'next/navigation';
+
+// Lazy load the heavy project detail component
+const ProjectDetailView = dynamic(
+  () => import('@/components/project-detail-view').then(mod => ({ default: mod.ProjectDetailView })),
+  { ssr: false, loading: () => <div className="flex items-center justify-center min-h-[50vh]"><div className="animate-pulse text-muted-foreground">Loading project...</div></div> }
+);
 
 type Project = (typeof resumeData.projects)[number];
 
@@ -254,6 +260,7 @@ export default function WorkPage() {
                               src={getProjectThumbnail(project)}
                               alt={project.title}
                               fill
+                              loading="lazy"
                               className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             />
@@ -304,6 +311,7 @@ export default function WorkPage() {
                               src={getProjectThumbnail(finshotsProject)}
                               alt={finshotsProject.title}
                               fill
+                              loading="lazy"
                               className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             />

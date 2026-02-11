@@ -1,7 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { NotFoundScene } from "@/components/not-found-scene"
+import dynamic from "next/dynamic"
+
+const NotFoundScene = dynamic(
+  () => import("@/components/not-found-scene").then(mod => ({ default: mod.NotFoundScene })),
+  { ssr: false }
+)
 
 export default function NotFoundPage() {
   const [mounted, setMounted] = useState(false)

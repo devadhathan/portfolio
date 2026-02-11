@@ -7,7 +7,8 @@ import { ArrowLeft, Calendar, Users, Wrench, ExternalLink, X, ZoomIn, Smartphone
 import { resumeData } from '@/lib/resume-data';
 import Image from 'next/image';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { SafeAnimatePresence } from './safe-animate-presence';
 
 interface FinshotsDetailProps {
   projectId: string;
@@ -417,12 +418,14 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
 
 
       {/* Zoom Modal */}
-      <AnimatePresence>
+      <SafeAnimatePresence mode="wait" initial={false}>
         {zoomedImage && (
           <motion.div
+            key={zoomedImage}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
             onClick={closeZoom}
           >
@@ -430,6 +433,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }}
               className="relative max-w-7xl max-h-[90vh] w-full h-full"
               onClick={(e) => e.stopPropagation()}
             >
@@ -453,7 +457,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </SafeAnimatePresence>
     </div>
   );
 }

@@ -1,17 +1,20 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import ReactMarkdown from 'react-markdown';
-import { SideAgent } from '@/components/side-agent';
-import { PortfolioSections } from '@/components/portfolio-sections';
+import dynamic from 'next/dynamic';
 import { TopBar } from '@/components/top-bar';
-import { DesktopSidebar } from '@/components/desktop-sidebar';
 import { AboutSection } from '@/components/about-section';
-import { ProjectDetailView } from '@/components/project-detail-view';
-import { ProjectsListView } from '@/components/projects-list-view';
 import { BottomNav } from '@/components/bottom-nav';
-import { FloatingChatButton } from '@/components/floating-chat-button';
 import { AgentState } from '@/lib/agent';
+
+// Lazy load heavy components to reduce initial bundle size
+const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
+const SideAgent = dynamic(() => import('@/components/side-agent').then(mod => ({ default: mod.SideAgent })), { ssr: false });
+const PortfolioSections = dynamic(() => import('@/components/portfolio-sections').then(mod => ({ default: mod.PortfolioSections })), { ssr: false });
+const DesktopSidebar = dynamic(() => import('@/components/desktop-sidebar').then(mod => ({ default: mod.DesktopSidebar })), { ssr: false });
+const ProjectDetailView = dynamic(() => import('@/components/project-detail-view').then(mod => ({ default: mod.ProjectDetailView })), { ssr: false });
+const ProjectsListView = dynamic(() => import('@/components/projects-list-view').then(mod => ({ default: mod.ProjectsListView })), { ssr: false });
+const FloatingChatButton = dynamic(() => import('@/components/floating-chat-button').then(mod => ({ default: mod.FloatingChatButton })), { ssr: false });
 
 export default function Home() {
   const [agentState, setAgentState] = useState<AgentState | null>(null);

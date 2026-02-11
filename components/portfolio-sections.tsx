@@ -215,13 +215,13 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     const sizeMap: { [key: string]: string } = {
       'hero': 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1',
       'preferences': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
-      'photos': 'col-span-1 sm:col-span-1 lg:col-span-2 row-span-2',
+      'photos': 'col-span-1 sm:col-span-1 lg:col-span-2 row-span-1',
       'video': 'col-span-1 sm:col-span-2 lg:col-span-1 row-span-2',
       'connect': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
       'last-portfolio-version': 'col-span-1 sm:col-span-2 lg:col-span-1 row-span-1',
       'contact': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
       'philosophy': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2',
-      'experience': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2',
+      'experience': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
     };
 
     // Use predefined size if available
@@ -1086,6 +1086,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                         alt={`${section.title || 'Custom'} thumbnail`}
                         fill
                         className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
                     </div>
                   )}
@@ -1205,7 +1206,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
         </div>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-6 lg:gap-8 auto-rows-[minmax(200px,auto)] pb-4 md:pb-0 w-full">
-            {displaySections.map((section, index) => renderSection(section, index))}
+        {displaySections.map((section, index) => renderSection(section, index))}
       </div>
       
       {/* Detail Dialog - Exclude projects section */}

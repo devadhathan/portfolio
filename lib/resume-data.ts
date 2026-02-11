@@ -4,7 +4,7 @@ export const resumeData = {
   website: "devadhathan.com",
   linkedin: "in/devadhathan/",
   phone: "+447388289392",
-  
+
   experience: [
     {
       role: "Product Designer",
@@ -70,28 +70,75 @@ export const resumeData = {
       type: "Product Design",
       company: "Nesoi.ai",
       period: "July 2025 - November 2025",
-      description: "Designed and shipped adviser/client-facing dashboards used by 15+ enterprise clients, enabling them to deliver interactive, AI-powered learning modules.",
-      cardSubtext: "Interactive Video Learning",
-      problem: "Enterprise clients needed an intuitive platform to create and manage AI-powered learning modules, with a focus on engagement and efficiency.",
-      approach: "Led iterative UX improvements, developed scalable workflow patterns, and partnered closely with engineering to ensure consistent UI behavior. Integrated WCAG 2.1 AA accessibility standards throughout the design process.",
-      keyFeatures: [
-        "Adviser/client-facing dashboards for enterprise clients",
-        "AI-powered learning module creation and management",
-        "Reusable Figma components and design system",
-        "WCAG 2.1 AA accessibility compliance",
-        "Scalable workflow and automation patterns"
+      description:
+        "Nesoi.ai is an AI-powered learning platform used by Amazon, the University of Toronto, Bain & Company, and other large organizations. Teams rely on it to create interactive learning content, train employees, and improve knowledge retention.",
+      cardSubtext: "AI chat-first creation experience",
+      detailSections: [
+        {
+          id: "problem",
+          title: "Problem",
+          description:
+            "Before this project, content creators could upload raw materials (documents, videos, slides) but turning that into engaging learning experiences was manual and time-consuming. There was no conversational way to collaborate with AI, no guided structure for shaping learning flows, and limited support for iterating on ideas, so creators spent effort on assembly instead of pedagogy and outcomes."
+        },
+
+        {
+          id: "goals",
+          title: "Goals",
+          description:
+            "The goal was to embed AI into the creation experience so it feels natural and collaborative, help creators explore, refine, and iterate conversationally instead of filling out rigid forms, and build on a scalable design system that spans dashboards, creation tools, and admin interfaces."
+        },
+
+        {
+          id: "challenge",
+          title: "Framing the challenge",
+          description:
+            "We reframed the work through How might we questions: enabling creators to converse with AI while building, supporting flexible exploration instead of strict wizards, and making AI feel like a learning partner rather than just a generator.",
+          image: "/CRM/initial image.png"
+        },
+
+        {
+          id: "chat-decision",
+          title: "AI chat as the primary creation tool",
+          description:
+            "Introduced an AI chat interface embedded in the creation experience so creators always see both their material and the conversation. They can ask questions, request transformations, and refine outputs in natural language while the chat restructures, summarizes, and adapts content into learning flows, a familiar model that handles ambiguity better than fixed forms."
+        },
+
+        {
+          id: "system",
+          title: "System and component design",
+          description:
+            "System work was anchored on the Obra UI design system from Shadcn and customized for Nesoi needs, focusing on message bubbles with clear AI/user distinction plus loading and error states, input prompts that support structured templates and freeform prompts, and conversation layouts that handle long sessions while preserving orientation so patterns can be reused across dashboards, creation tools, and admin interfaces.",
+          image: "/CRM/Figma.png"
+        },
+
+        {
+          id: "workflows",
+          title: "AI chat workflows",
+          description:
+            "Core flows covered initial exploration (AI greets creators after analysing assets), transforming content (simplifying, chaptering, or making content interactive via templates or freeform prompts), refining and iterating (structured suggestions with follow-up questions and alternative outputs), and multiple iterations (viewing and comparing versions without losing earlier drafts) under the principle that AI supports thinking without replacing it.",
+          image: "/CRM/comparison.png"
+        },
+
+        {
+          id: "constraints",
+          title: "Constraints",
+          description:
+            "Evolving AI capabilities demanded flexible patterns, the product lacked any prior chat experience so we studied familiar tools such as Slack and ChatGPT for enterprise inspiration, and a tight timeline forced us to focus on the core happy path while deferring complex features like multi-user chat collaboration."
+        },
+
+        {
+          id: "delivery",
+          title: "Delivery and validation",
+          description:
+            "Delivered high-fidelity designs, a Figma library aligned with the design system, and developer-ready specs while sharing Obra UI customizations via GitHub and deploying a Vercel prototype for internal testing; feedback noted that chat felt natural, creators mixed templates and freeform prompts, iteration sped up to 3–4 refinement rounds per session, and the consistent system increased developer confidence, paving the way for client-facing pilots alongside future opportunities like saved prompt templates, multi-content comparison, and collaborative chat for teams.",
+          image: "/CRM/validation.png"
+        }
       ],
-      results: [
-        "92% improvement in engagement rates",
-        "37% reduction in course-creation time",
-        "15+ enterprise clients using the platform",
-        "WCAG 2.1 AA accessibility compliance achieved"
-      ],
+
       learnings: [
-        "The importance of iterative design and continuous improvement",
-        "How scalable design systems can dramatically improve efficiency",
-        "Accessibility is not optional - it's essential for enterprise products",
-        "Close collaboration with engineering ensures consistent, reliable UI behavior"
+        "Conversational AI lowers the barrier to creation when it is embedded directly into real workflows instead of isolated as a separate tool.",
+        "Enterprise users want control and clarity; clear states, transparent behaviour, and safe iteration paths keep trust intact.",
+        "Designing AI products depends on trust and UX patterns as much as it does on model capabilities."
       ],
       role: "Product Designer",
       tools: ["Figma", "Design Systems", "Accessibility Tools"]

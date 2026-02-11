@@ -11,6 +11,14 @@ const dmMono = DM_Mono({ subsets: ["latin"], weight: ["300", "400", "500"], vari
 export const metadata: Metadata = {
   title: "Devadhathan - Product Designer",
   description: "Portfolio of Devadhathan, Product Designer",
+  icons: {
+    icon: [
+      { url: "/photos/Image@4x.png", type: "image/png" },
+    ],
+    apple: [
+      { url: "/photos/Image@4x.png", type: "image/png" },
+    ],
+  },
 };
 
 export default function RootLayout({

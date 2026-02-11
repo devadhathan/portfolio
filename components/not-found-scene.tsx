@@ -210,8 +210,12 @@ export function NotFoundScene() {
       window.removeEventListener("mousemove", handleMouseMove)
       window.removeEventListener("wheel", handleScroll)
       window.removeEventListener("resize", handleResize)
-      if (currentContainer) {
-        currentContainer.removeChild(renderer.domElement)
+      if (currentContainer && renderer.domElement && currentContainer.contains(renderer.domElement)) {
+        try {
+          currentContainer.removeChild(renderer.domElement)
+        } catch (error) {
+          // Silently handle cleanup errors during page transitions
+        }
       }
       layers.forEach((layer) => {
         layer.geometry.dispose()

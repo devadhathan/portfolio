@@ -1,7 +1,6 @@
 'use client';
-
-import { BottomNav } from '@/components/bottom-nav';
 import { TopBar } from '@/components/top-bar';
+import { BottomNav } from '@/components/bottom-nav';
 import { useRouter } from 'next/navigation';
 
 const videoFiles = [

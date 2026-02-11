@@ -169,6 +169,7 @@ export function ParticleImageCard({ className }: ParticleImageCardProps) {
               alt="Devadhathan M D"
               fill
               className="object-cover"
+              sizes="(max-width: 768px) 256px, 320px"
               priority
             />
           </div>

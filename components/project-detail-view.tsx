@@ -7,7 +7,8 @@ import { resumeData } from '@/lib/resume-data';
 import { FinshotsDetail } from './finshots-detail';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { SafeAnimatePresence } from './safe-animate-presence';
 
 interface ProjectDetailViewProps {
   projectId: string;
@@ -36,19 +37,21 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
     setZoomedImage(null);
   };
 
-  const project = resumeData.projects.find(
+  const project = projectId ? resumeData.projects.find(
     p => p.title.toLowerCase().replace(/\s+/g, '-') === projectId.toLowerCase().replace(/\s+/g, '-')
-  );
+  ) : null;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0 });
     }
+    // Close zoom modal when project changes to prevent cleanup errors
+    setZoomedImage(null);
   }, [projectId]);
 
   // Use custom Finshots detail page
-  const normalizedProjectId = projectId.toLowerCase().replace(/\s+/g, '-');
-  const normalizedTitle = project?.title.toLowerCase().replace(/\s+/g, '-') || '';
+  const normalizedProjectId = projectId ? projectId.toLowerCase().replace(/\s+/g, '-') : '';
+  const normalizedTitle = project?.title ? project.title.toLowerCase().replace(/\s+/g, '-') : '';
   
   if (normalizedProjectId.includes('finshots') || normalizedTitle.includes('finshots') || 
       projectId.toLowerCase() === 'finshots-news-app' || normalizedTitle === 'finshots-news-app') {
@@ -256,8 +259,10 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
                       alt={image.title}
                       width={1920}
                       height={1080}
+                      loading="lazy"
+                      priority={false}
                       className="w-full h-auto object-contain group-hover:opacity-90 transition-opacity duration-300"
-                      sizes="100vw"
+                      sizes="(max-width: 768px) 100vw, 80vw"
                     />
                   </div>
                 </div>
@@ -297,8 +302,10 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
                       alt={image.title}
                       width={1920}
                       height={1080}
+                      loading="lazy"
+                      priority={false}
                       className="w-full h-auto object-contain group-hover:opacity-90 transition-opacity duration-300"
-                      sizes="100vw"
+                      sizes="(max-width: 768px) 100vw, 80vw"
                     />
                   </div>
                 </div>
@@ -345,12 +352,14 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       )}
 
       {/* Zoom Modal */}
-      <AnimatePresence>
+      <SafeAnimatePresence mode="wait" initial={false}>
         {zoomedImage && (
           <motion.div
+            key={zoomedImage}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={closeZoom}
           >
@@ -358,6 +367,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.8 }}
+              transition={{ duration: 0.2 }}
               className="relative max-w-7xl max-h-[90vh] w-full h-full"
               onClick={(e) => e.stopPropagation()}
             >
@@ -381,11 +391,11 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </SafeAnimatePresence>
 
       {/* Problem Section */}
       {project.problem && (
-        <div id={`${projectId}-problem`} className="mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+        <div id={`${projectId}-problem`} className="mb-12 lg:mb-24 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
           <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Problem</h2>
           <div className="lg:col-span-3">
             <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
@@ -570,8 +580,8 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
           {project.detailSections.map((section) => {
             const spacingClass =
               section.id === 'my-tasks-lead-owner-change' || section.id === 'tags-for-leads'
-                ? 'mb-16 lg:mb-96'
-                : 'mb-16 lg:mb-80';
+                ? 'mb-12 lg:mb-24'
+                : 'mb-12 lg:mb-24';
             return (
               <div key={section.id} id={`${projectId}-${section.id}`} className={spacingClass}>
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
@@ -584,7 +594,31 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
                     </p>
                   </div>
                 </div>
-                {section.video && (
+                {'image' in section && section.image && (
+                  <div className="space-y-4 mt-8">
+                    <div
+                      className="relative w-full cursor-pointer group"
+                      onClick={() => handleImageClick(section.image)}
+                    >
+                      <div className="relative w-full" style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}>
+                        <Image
+                          src={section.image}
+                          alt={section.title || 'Section image'}
+                          width={1920}
+                          height={1080}
+                          loading="lazy"
+                          priority={false}
+                          className="object-contain group-hover:opacity-90 transition-transform duration-300 rounded-3xl border border-border/50 shadow-lg"
+                          sizes="(max-width: 768px) 100vw, 80vw"
+                          onError={(e) => {
+                            console.error('Failed to load section image:', section.image);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {'video' in section && section.video && (
                   <div className="space-y-4 mt-8">
                     <video
                       controls
@@ -665,7 +699,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {/* Learnings */}
       {project.learnings && (
-        <div id={`${projectId}-learnings`} className="mb-16 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+        <div id={`${projectId}-learnings`} className="mt-16 lg:mt-24 mb-16 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
           <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Learnings</h2>
           <div className="lg:col-span-3">
             {Array.isArray(project.learnings) ? (
@@ -720,6 +754,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
           </div>
         </div>
       )}
+
 
     </div>
   );
