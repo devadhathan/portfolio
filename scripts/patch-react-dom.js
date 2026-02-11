@@ -1,12 +1,12 @@
 /**
- * Patches React DOM's unmountHoistable function to add a null check
- * for instance.parentNode before calling removeChild.
- * 
- * This fixes a known bug where React tries to remove hoisted elements
- * (like <link>, <meta>, <style> in <head>) during page transitions,
- * but the element's parentNode is already null.
- * 
- * See: https://github.com/facebook/react/issues/26608
+ * Patches React DOM to add null checks before removeChild calls during
+ * unmount/cleanup. Fixes errors during Next.js page transitions when
+ * the DOM tree is torn down and parent refs can be null.
+ *
+ * Patches:
+ * 1. unmountHoistable - instance.parentNode can be null
+ * 2. removeChild - parentInstance can be null
+ * 3. removeChildFromContainer - container.parentNode can be null when COMMENT_NODE
  */
 const fs = require('fs');
 const path = require('path');
@@ -17,35 +17,73 @@ const files = [
   'node_modules/next/dist/compiled/react-dom/cjs/react-dom.profiling.js',
 ];
 
-const buggyCode = `function unmountHoistable(instance) {
+const patches = [
+  {
+    name: 'unmountHoistable',
+    buggy: `function unmountHoistable(instance) {
   instance.parentNode.removeChild(instance);
-}`;
-
-const fixedCode = `function unmountHoistable(instance) {
+}`,
+    fixed: `function unmountHoistable(instance) {
   if (instance.parentNode) {
     instance.parentNode.removeChild(instance);
   }
-}`;
+}`,
+  },
+  {
+    name: 'removeChild',
+    buggy: `function removeChild(parentInstance, child) {
+  parentInstance.removeChild(child);
+}`,
+    fixed: `function removeChild(parentInstance, child) {
+  if (parentInstance) {
+    parentInstance.removeChild(child);
+  }
+}`,
+  },
+  {
+    name: 'removeChildFromContainer',
+    buggy: `function removeChildFromContainer(container, child) {
+  if (container.nodeType === COMMENT_NODE) {
+    container.parentNode.removeChild(child);
+  } else {
+    container.removeChild(child);
+  }
+}`,
+    fixed: `function removeChildFromContainer(container, child) {
+  if (container.nodeType === COMMENT_NODE) {
+    if (container.parentNode) {
+      container.parentNode.removeChild(child);
+    }
+  } else {
+    container.removeChild(child);
+  }
+}`,
+  },
+];
 
-let patchCount = 0;
+let totalPatched = 0;
 
 files.forEach((file) => {
   const filePath = path.resolve(__dirname, '..', file);
-  if (fs.existsSync(filePath)) {
-    let content = fs.readFileSync(filePath, 'utf8');
-    if (content.includes(buggyCode)) {
-      content = content.replace(buggyCode, fixedCode);
-      fs.writeFileSync(filePath, content, 'utf8');
-      patchCount++;
-      console.log(`✓ Patched ${file}`);
-    } else if (content.includes(fixedCode)) {
-      console.log(`✓ Already patched ${file}`);
-    } else {
-      console.log(`⚠ Could not find unmountHoistable in ${file}`);
-    }
-  } else {
+  if (!fs.existsSync(filePath)) {
     console.log(`⚠ File not found: ${file}`);
+    return;
+  }
+  let content = fs.readFileSync(filePath, 'utf8');
+  let filePatched = 0;
+  patches.forEach(({ name, buggy, fixed }) => {
+    if (content.includes(buggy)) {
+      content = content.replace(buggy, fixed);
+      filePatched++;
+      totalPatched++;
+    } else if (!content.includes(fixed)) {
+      console.log(`⚠ Could not find ${name} in ${file}`);
+    }
+  });
+  if (filePatched > 0) {
+    fs.writeFileSync(filePath, content, 'utf8');
+    console.log(`✓ Patched ${filePatched} place(s) in ${file}`);
   }
 });
 
-console.log(`\nPatched ${patchCount} file(s)`);
+console.log(`\nPatched ${totalPatched} total`);

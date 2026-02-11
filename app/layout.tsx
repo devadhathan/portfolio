@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { ClientThemeProvider } from "@/components/client-theme-provider";
 import { FaviconHandler } from "@/components/favicon-handler";
+import { MotionErrorBoundary } from "@/components/motion-error-boundary";
 import { Analytics } from "@vercel/analytics/next";
 
 const dmMono = DM_Mono({ subsets: ["latin"], weight: ["300", "400", "500"], variable: "--font-dm-mono" });
@@ -37,7 +38,9 @@ export default function RootLayout({
         >
           <ClientThemeProvider>
             <FaviconHandler />
-            {children}
+            <MotionErrorBoundary>
+              {children}
+            </MotionErrorBoundary>
           </ClientThemeProvider>
         </ThemeProvider>
         <Analytics />
