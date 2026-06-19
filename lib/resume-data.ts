@@ -8,6 +8,14 @@ export const resumeData = {
   experience: [
     {
       role: "Product Designer",
+      company: "Wordsmith AI",
+      period: "April 2026 - June 2026",
+      achievements: [
+        "Designed product experiences for Wordsmith AI, an AI-powered writing and content platform.",
+      ]
+    },
+    {
+      role: "Product Designer",
       company: "Nesoi.ai",
       period: "July 2025 - November 2025",
       achievements: [
@@ -132,6 +140,13 @@ export const resumeData = {
           description:
             "Delivered high-fidelity designs, a Figma library aligned with the design system, and developer-ready specs while sharing Obra UI customizations via GitHub and deploying a Vercel prototype for internal testing; feedback noted that chat felt natural, creators mixed templates and freeform prompts, iteration sped up to 3–4 refinement rounds per session, and the consistent system increased developer confidence, paving the way for client-facing pilots alongside future opportunities like saved prompt templates, multi-content comparison, and collaborative chat for teams.",
           image: "/CRM/validation.png"
+        },
+        {
+          id: "prototype",
+          title: "Prototype",
+          description:
+            "Interactive prototype demonstrating the AI chat-first creation experience, showing how creators can collaborate with AI to transform content into engaging learning flows.",
+          prototypeGif: "/CRM/prototype.gif"
         }
       ],
 

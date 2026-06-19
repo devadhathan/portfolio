@@ -88,55 +88,14 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     loopVideoPreloadRef.current?.load();
   }, []);
 
-  // Mouse tracking handlers - must be defined before early returns
-  // Track mouse position with larger detection radius for nearby cards
   const handleMouseMove = React.useCallback((sectionId: string, e: React.MouseEvent<HTMLDivElement>) => {
     if (!e.currentTarget) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
-    // Update current card
-    if (typeof x === 'number' && typeof y === 'number' && !isNaN(x) && !isNaN(y)) {
+    if (!isNaN(x) && !isNaN(y)) {
       setMousePositions(prev => ({ ...prev, [sectionId]: { x, y } }));
     }
-    
-    // Check nearby cards (within 250px radius) - using requestAnimationFrame for performance
-    requestAnimationFrame(() => {
-      const allCards = document.querySelectorAll('[data-card-id]');
-      allCards.forEach((card) => {
-        if (card instanceof HTMLElement) {
-          const cardRect = card.getBoundingClientRect();
-          const cardId = card.getAttribute('data-card-id');
-          if (!cardId || cardId === sectionId) return; // Skip current card (already updated)
-          
-          // Calculate distance from mouse to card center
-          const cardCenterX = cardRect.left + cardRect.width / 2;
-          const cardCenterY = cardRect.top + cardRect.height / 2;
-          const distanceX = e.clientX - cardCenterX;
-          const distanceY = e.clientY - cardCenterY;
-          const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
-          
-          // If cursor is within 250px of card, activate border effect
-          if (distance < 250) {
-            const relativeX = e.clientX - cardRect.left;
-            const relativeY = e.clientY - cardRect.top;
-            if (typeof relativeX === 'number' && typeof relativeY === 'number' && !isNaN(relativeX) && !isNaN(relativeY)) {
-              setMousePositions(prev => ({ ...prev, [cardId]: { x: relativeX, y: relativeY } }));
-            }
-          } else {
-            // Clear if too far away
-            setMousePositions(prev => {
-              const current = prev[cardId];
-              if (current) {
-                return { ...prev, [cardId]: null };
-              }
-              return prev;
-            });
-          }
-        }
-      });
-    });
   }, []);
 
   const handleMouseLeave = React.useCallback((sectionId: string) => {
@@ -189,7 +148,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           const next = (current + 1) % photos.length;
           return { ...prev, [section.id]: next };
         });
-      }, 4000);
+      }, 5500);
 
       intervals.push(interval);
     });
@@ -364,7 +323,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             </CardHeader>
             <CardContent className="px-3 pb-3 pt-0 relative z-10 flex flex-col gap-4 md:px-4 md:pb-4 md:flex-row md:items-start h-full">
               <div className="flex-1 flex flex-col gap-3 justify-between h-full pb-8">
-                <div className="max-w-[360px] sm:max-w-[420px]">
+                <div className="max-w-[288px] w-[252px] min-w-0">
                   <p 
                     className={`text-[13px] text-muted-foreground leading-relaxed ${isFirstLoad ? 'animate-line-reveal' : ''}`}
                     style={isFirstLoad ? { animationDelay: '0.4s' } : undefined}
@@ -402,6 +361,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                         autoPlay
                         muted
                         playsInline
+                        preload="auto"
                         aria-label="Hero animation"
                         onEnded={() => {
                           if (heroVideoStage === 'intro') {
@@ -466,7 +426,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 <Heart className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:animate-pulse transition-all duration-300" />
                 <div>
                   <p className="text-[14px] font-medium mb-0.5">User-Centered Design</p>
-                  <p className="text-[13px] text-muted-foreground leading-relaxed">
+                  <p className="text-[13px] text-muted-foreground leading-relaxed max-w-[288px] w-[252px] min-w-0">
                     I design with care, always keeping the user at the center of every decision.
                   </p>
                 </div>
@@ -475,7 +435,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 <Lightbulb className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:brightness-125 transition-all duration-300" />
                 <div>
                   <p className="text-[14px] font-medium mb-0.5">Human Technology</p>
-                  <p className="text-[13px] text-muted-foreground leading-relaxed">
+                  <p className="text-[13px] text-muted-foreground leading-relaxed max-w-[288px] w-[252px] min-w-0">
                     Technology should feel natural and intuitive, built for humans.
                   </p>
                 </div>
@@ -484,7 +444,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 <Target className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:rotate-12 transition-all duration-300" />
                 <div>
                   <p className="text-[14px] font-medium mb-0.5">Iterative Improvement</p>
-                  <p className="text-[13px] text-muted-foreground leading-relaxed">
+                  <p className="text-[13px] text-muted-foreground leading-relaxed max-w-[288px] w-[252px] min-w-0">
                     Great design is born from continuous refinement and learning from feedback.
                   </p>
                 </div>
@@ -493,7 +453,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 <Rocket className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:translate-y-[-2px] transition-all duration-300" />
                 <div>
                   <p className="text-[14px] font-medium mb-0.5">Accessibility First</p>
-                  <p className="text-[13px] text-muted-foreground leading-relaxed">
+                  <p className="text-[13px] text-muted-foreground leading-relaxed max-w-[288px] w-[252px] min-w-0">
                     Designing inclusively ensures everyone can access and enjoy digital experiences.
                   </p>
                 </div>
@@ -502,7 +462,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:rotate-180 transition-all duration-300" />
                 <div>
                   <p className="text-[14px] font-medium mb-0.5">Data-Driven Insights</p>
-                  <p className="text-[13px] text-muted-foreground leading-relaxed">
+                  <p className="text-[13px] text-muted-foreground leading-relaxed max-w-[288px] w-[252px] min-w-0">
                     Balancing creativity with metrics to create solutions that resonate and perform.
                   </p>
                 </div>
@@ -531,11 +491,22 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 <CardTitle className="text-[16px]">
                   <SectionLabel label="Experience" icon={SectionIcon} />
                 </CardTitle>
-                <CardDescription className="text-[14px]">Current Role</CardDescription>
+                <CardDescription className="text-[14px]">Latest Role</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-3 relative z-10">
                 <ScrollArea className="w-full max-h-[400px]">
                   <div className="space-y-4 pr-2">
+                    <div className="p-4 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/40 transition-colors">
+                      <div className="mb-3">
+                        <h4 className="font-medium text-[14px] mb-1">Product Designer</h4>
+                        <p className="text-[14px] text-primary mb-2">Wordsmith AI</p>
+                        <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span>April 2026 - June 2026</span>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="p-4 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/40 transition-colors">
                       <div className="mb-3">
                         <h4 className="font-medium text-[14px] mb-1">Product Designer</h4>
@@ -843,115 +814,73 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
         const currentIndex = carouselIndex[section.id] || 0;
         const hasImageError = imageErrors.has(section.id);
         const shouldShowPlaceholder = photos.length === 0 || hasImageError;
-        
+
         return (
-          <Card 
-            key={section.id} 
+          <Card
+            key={section.id}
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-full overflow-hidden group ${isFirstLoad ? 'animate-card-reveal' : ''}`}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-full overflow-hidden group p-0 ${isFirstLoad ? 'animate-card-reveal' : ''}`}
             style={isFirstLoad ? { animationDelay: `${cardDelay}s` } : undefined}
-            onClick={() => handleCardClick(section.id)}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
           >
             {borderReveal}
             {!shouldShowPlaceholder && photos.length > 0 ? (
-              <div className="relative w-full h-full min-h-[300px] group z-10">
-                {/* Carousel Container */}
-                <div className="relative w-full h-full overflow-hidden">
-                  {photos.map((photo: string, idx: number) => (
+              <div className="relative w-full h-full min-h-[320px] z-10 flex gap-2.5 p-2 overflow-hidden rounded-2xl">
+                {photos.map((photo: string, idx: number) => {
+                  const isActive = idx === currentIndex;
+                  // Staggered widths: closer to active = wider strip
+                  const distance = Math.abs(idx - currentIndex);
+                  const collapsedFlex = distance === 1 ? 1.4 : distance === 2 ? 0.8 : 0.5;
+                  return (
                     <div
                       key={idx}
-                      className={`absolute inset-0 transition-all duration-500 ease-in-out ${
-                        idx === currentIndex
-                          ? 'opacity-100 translate-x-0'
-                          : idx < currentIndex
-                          ? 'opacity-0 -translate-x-full'
-                          : 'opacity-0 translate-x-full'
-                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCarouselIndex(prev => ({ ...prev, [section.id]: idx }));
+                      }}
+                      className="relative h-full overflow-hidden cursor-pointer"
+                      style={{
+                        flex: isActive ? '10 1 0%' : `${collapsedFlex} 1 0%`,
+                        transition: 'flex 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                        borderRadius: '1.5rem',
+                        minWidth: 0,
+                      }}
                     >
                       <Image
                         src={photo}
                         alt={`${section.title || 'Photo'} ${idx + 1}`}
                         fill
                         className="object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        sizes="(max-width: 768px) 100vw, 50vw"
                         unoptimized={photo.endsWith('.avif')}
-                        onError={(e) => {
-                          console.error('Image load error:', photo, e);
+                        onError={() => {
                           setImageErrors(prev => new Set(prev).add(section.id));
                         }}
                       />
-                    </div>
-                  ))}
-                </div>
-
-                {/* Navigation Arrows */}
-                {photos.length > 1 && (
-                  <>
-                    <button
-                      onClick={(e) => prevImage(section.id, photos.length, e)}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 hover:scale-110"
-                      aria-label="Previous image"
-                    >
-                      <ChevronLeft className="h-5 w-5 text-white" />
-                    </button>
-                    <button
-                      onClick={(e) => nextImage(section.id, photos.length, e)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 hover:scale-110"
-                      aria-label="Next image"
-                    >
-                      <ChevronRight className="h-5 w-5 text-white" />
-                    </button>
-                  </>
-                )}
-
-                {/* Image Indicators */}
-                {photos.length > 1 && (
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-                    {photos.map((_: string, idx: number) => (
-                      <button
-                        key={idx}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCarouselIndex(prev => ({ ...prev, [section.id]: idx }));
+                      {/* Dark overlay on collapsed panels */}
+                      <div
+                        className="absolute inset-0 bg-black pointer-events-none"
+                        style={{
+                          opacity: isActive ? 0 : 0.45,
+                          transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
                         }}
-                        className={`h-1.5 rounded-full transition-all duration-300 ${
-                          idx === currentIndex
-                            ? 'w-6 bg-white'
-                            : 'w-1.5 bg-white/50 hover:bg-white/75'
-                        }`}
-                        aria-label={`Go to image ${idx + 1}`}
                       />
-                    ))}
-                  </div>
-                )}
-
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                
-                {/* Title & Description */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-10">
-                  <CardTitle className="text-white text-[16px] font-semibold mb-1">
-                    {section.title || 'Photo'}
-                  </CardTitle>
-                  {section.description && (
-                    <CardDescription className="text-white/80 text-[14px]">
-                      {section.description}
-                    </CardDescription>
-                  )}
-                  {photos.length > 1 && (
-                    <p className="text-white/60 text-xs mt-1">
-                      {currentIndex + 1} / {photos.length}
-                    </p>
-                  )}
-                </div>
-
-                {/* Image Icon Badge */}
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 pointer-events-none">
-                  <div className="p-2 bg-black/50 rounded-lg backdrop-blur-sm">
-                    <ImageIcon className="h-4 w-4 text-white" />
-                  </div>
+                      {/* Bottom gradient on active */}
+                      <div
+                        className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
+                        style={{
+                          background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)',
+                          opacity: isActive ? 1 : 0,
+                          transition: 'opacity 1.2s ease',
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+                {/* Counter badge */}
+                <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-sm text-white/80 text-[11px] font-medium z-10 pointer-events-none">
+                  {currentIndex + 1} / {photos.length}
                 </div>
               </div>
             ) : (
@@ -965,17 +894,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                   <CardTitle className="text-[16px] mb-1">
                     {section.title || 'Photo'}
                   </CardTitle>
-                  {section.description && (
-                    <CardDescription className="text-[14px] mb-3">
-                      {section.description}
-                    </CardDescription>
-                  )}
                 </CardHeader>
-                <CardContent className="text-center px-4">
-                  <p className="text-[12px] text-muted-foreground mb-2">
-                    {photos.length === 0 ? 'No images set' : 'Images not found'}
-                  </p>
-                </CardContent>
               </div>
             )}
           </Card>
@@ -1003,9 +922,13 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
               }
             }}
             onMouseEnter={() => {
-              // Play video on mouse enter
+              // Load and play video on mouse enter
               const video = videoRefs.current[section.id];
               if (video) {
+                if (!video.src) {
+                  video.src = videoSrc;
+                  video.load();
+                }
                 video.play().catch(err => console.error('Video play error:', err));
               }
             }}
@@ -1022,11 +945,11 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                     ref={(el) => {
                       if (el) videoRefs.current[section.id] = el;
                     }}
-                    src={videoSrc}
                     className="w-full h-full object-cover"
                     loop
                     muted
                     playsInline
+                    preload="none"
                   />
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
@@ -1188,7 +1111,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
       <video
         ref={loopVideoPreloadRef}
         src={HERO_LOOP_VIDEO}
-        preload="auto"
+        preload="metadata"
         muted
         playsInline
         className="hidden"

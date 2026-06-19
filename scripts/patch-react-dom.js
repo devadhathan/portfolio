@@ -59,6 +59,48 @@ const patches = [
   }
 }`,
   },
+  {
+    name: 'clearSuspenseBoundary (production)',
+    buggy: `function clearSuspenseBoundary(parentInstance, suspenseInstance) {
+  let node = suspenseInstance; // Delete all nodes within this suspense boundary.`,
+    fixed: `function clearSuspenseBoundary(parentInstance, suspenseInstance) {
+  if (!parentInstance) return;
+  let node = suspenseInstance; // Delete all nodes within this suspense boundary.`,
+  },
+  {
+    name: 'clearSuspenseBoundary (development)',
+    buggy: `function clearSuspenseBoundary(parentInstance, suspenseInstance) {
+  var node = suspenseInstance; // Delete all nodes within this suspense boundary.`,
+    fixed: `function clearSuspenseBoundary(parentInstance, suspenseInstance) {
+  if (!parentInstance) return;
+  var node = suspenseInstance; // Delete all nodes within this suspense boundary.`,
+  },
+  {
+    name: 'clearContainerSparingly',
+    buggy: `    }
+
+    container.removeChild(node);
+  }
+
+  return;
+} // Making this so we can eventually move all of the instance caching to the commit phase.`,
+    fixed: `    }
+
+    if (container) container.removeChild(node);
+  }
+
+  return;
+} // Making this so we can eventually move all of the instance caching to the commit phase.`,
+  },
+  {
+    name: 'clearSingleton',
+    buggy: `    if (isMarkedHoistable(node) || nodeName === 'HEAD' || nodeName === 'BODY' || nodeName === 'SCRIPT' || nodeName === 'STYLE' || nodeName === 'LINK' && node.rel.toLowerCase() === 'stylesheet') ; else {
+      element.removeChild(node);
+    }`,
+    fixed: `    if (isMarkedHoistable(node) || nodeName === 'HEAD' || nodeName === 'BODY' || nodeName === 'SCRIPT' || nodeName === 'STYLE' || nodeName === 'LINK' && node.rel.toLowerCase() === 'stylesheet') ; else {
+      if (element) element.removeChild(node);
+    }`,
+  },
 ];
 
 let totalPatched = 0;

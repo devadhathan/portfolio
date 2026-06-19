@@ -7,8 +7,6 @@ import { resumeData } from '@/lib/resume-data';
 import { FinshotsDetail } from './finshots-detail';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { SafeAnimatePresence } from './safe-animate-presence';
 
 interface ProjectDetailViewProps {
   projectId: string;
@@ -40,6 +38,9 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
   const project = projectId ? resumeData.projects.find(
     p => p.title.toLowerCase().replace(/\s+/g, '-') === projectId.toLowerCase().replace(/\s+/g, '-')
   ) : null;
+
+  // Check if this is Nesoi project for increased spacing
+  const isNesoi = project ? (project.title.toLowerCase().includes('nesoi') || projectId.toLowerCase().includes('nesoi')) : false;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -238,17 +239,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
           </div>
           <div className="w-full">
             {nesoiImages.map((image, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.6,
-                  delay: idx * 0.1,
-                  ease: [0.42, 0, 1, 1]
-                }}
-                className="mb-8 last:mb-0 w-full"
-              >
+              <div key={idx} className="mb-8 last:mb-0 w-full">
                 <div
                   className="relative w-full cursor-pointer group"
                   onClick={() => handleImageClick(image.src)}
@@ -266,7 +257,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
                     />
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -281,17 +272,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
           </div>
           <div className="w-full">
             {falconImages.map((image, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.6,
-                  delay: idx * 0.1,
-                  ease: [0.42, 0, 1, 1]
-                }}
-                className="mb-8 last:mb-0 w-full"
-              >
+              <div key={idx} className="mb-8 last:mb-0 w-full">
                 <div
                   className="relative w-full cursor-pointer group"
                   onClick={() => handleImageClick(image.src)}
@@ -309,7 +290,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
                     />
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -322,11 +303,8 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
           </div>
           <div className="grid grid-cols-1 gap-6">
             {project.designGallery.map((entry, idx) => (
-              <motion.div
+              <div
                 key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
                 className="rounded-3xl border border-border/40 bg-card/60 overflow-hidden"
               >
                 <div
@@ -345,57 +323,46 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
                   <p className="text-sm uppercase tracking-wider text-muted-foreground">{entry.title}</p>
                   {entry.description && <p className="text-base text-muted-foreground">{entry.description}</p>}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
       )}
 
       {/* Zoom Modal */}
-      <SafeAnimatePresence mode="wait" initial={false}>
-        {zoomedImage && (
-          <motion.div
-            key={zoomedImage}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
-            onClick={closeZoom}
+      {zoomedImage && (
+        <div
+          className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={closeZoom}
+        >
+          <div
+            className="relative max-w-7xl max-h-[90vh] w-full h-full"
+            onClick={(e) => e.stopPropagation()}
           >
-            <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.8 }}
-              transition={{ duration: 0.2 }}
-              className="relative max-w-7xl max-h-[90vh] w-full h-full"
-              onClick={(e) => e.stopPropagation()}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white"
+              onClick={closeZoom}
             >
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white"
-                onClick={closeZoom}
-              >
-                <X className="h-6 w-6" />
-              </Button>
-              <div className="relative w-full h-full">
-                <Image
-                  src={zoomedImage}
-                  alt="Zoomed view"
-                  fill
-                  className="object-contain"
-                  sizes="100vw"
-                />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </SafeAnimatePresence>
+              <X className="h-6 w-6" />
+            </Button>
+            <div className="relative w-full h-full">
+              <Image
+                src={zoomedImage}
+                alt="Zoomed view"
+                fill
+                className="object-contain"
+                sizes="100vw"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Problem Section */}
       {project.problem && (
-        <div id={`${projectId}-problem`} className="mb-12 lg:mb-24 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+        <div id={`${projectId}-problem`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-12 lg:mb-24 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
           <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Problem</h2>
           <div className="lg:col-span-3">
             <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
@@ -429,7 +396,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       )}
 
       {project.takeStepBack && (
-        <div className="mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+        <div className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
           <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Take a step back</h2>
           <div className="lg:col-span-3">
             <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
@@ -440,7 +407,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       )}
 
       {project.painPoints && project.painPoints.length > 0 && (
-        <div id={`${projectId}-painpoints`} className="mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+        <div id={`${projectId}-painpoints`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
           <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Painpoints</h2>
           <div className="lg:col-span-3">
             {project.painPointsIntro && (
@@ -460,7 +427,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {/* HMW Section */}
       {project.hmw && (
-        <div id={`${projectId}-hmw`} className="mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+        <div id={`${projectId}-hmw`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
           <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">How Might We</h2>
           <div className="lg:col-span-3">
             <p className="text-base md:text-lg leading-relaxed text-muted-foreground font-medium">
@@ -471,7 +438,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       )}
 
       {project.businessOpportunity && project.businessOpportunity.length > 0 && (
-        <div id={`${projectId}-business`} className="mb-16 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+        <div id={`${projectId}-business`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
           <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Business opportunity</h2>
           <div className="lg:col-span-3">
             <div className="space-y-2 lg:space-y-3">
@@ -487,7 +454,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       )}
 
       {project.explorations && project.explorations.length > 0 && (
-        <div id={`${projectId}-exploring`} className="mb-16 lg:mb-64">
+        <div id={`${projectId}-exploring`} className={isNesoi ? "mb-24 lg:mb-48" : "mb-16 lg:mb-64"}>
           <h2 className="text-xl md:text-2xl font-normal text-foreground mb-4 lg:mb-6">Exploring possibilities</h2>
           <div className="space-y-8 lg:space-y-12">
             {project.explorations.map((exploration, idx) => (
@@ -517,7 +484,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       )}
 
       {project.targetAudience && (
-        <div id={`${projectId}-target-audience`} className="mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+        <div id={`${projectId}-target-audience`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
           <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Target Audience</h2>
           <div className="lg:col-span-3">
             <p className="text-base md:text-lg leading-relaxed text-muted-foreground">{project.targetAudience}</p>
@@ -526,7 +493,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       )}
 
       {project.targetAudienceImage && (
-        <div id={`${projectId}-target-snapshot`} className="mb-16 lg:mb-64 space-y-4">
+        <div id={`${projectId}-target-snapshot`} className={isNesoi ? "mb-24 lg:mb-48 space-y-4" : "mb-16 lg:mb-64 space-y-4"}>
           <h2 className="text-xl md:text-2xl font-normal text-foreground">Target snapshot</h2>
           <div className="relative w-full aspect-[16/9] rounded-3xl border border-border/50 overflow-hidden shadow-xl">
             <Image
@@ -545,7 +512,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {/* Research Section */}
       {project.research && (
-        <div id={`${projectId}-research`} className="mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+        <div id={`${projectId}-research`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
           <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Research</h2>
           <div className="lg:col-span-3">
             <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
@@ -558,7 +525,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {(() => {
         const projectWithPersonas = project as any;
         return projectWithPersonas.personas && Array.isArray(projectWithPersonas.personas) && projectWithPersonas.personas.length > 0 && (
-          <div id={`${projectId}-personas`} className="mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+          <div id={`${projectId}-personas`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
             <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Personas</h2>
             <div className="lg:col-span-3">
               <div className="grid gap-3 lg:gap-4 md:grid-cols-2">
@@ -576,10 +543,11 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       })()}
 
       {project.detailSections && project.detailSections.length > 0 && (
-        <div id={`${projectId}-detail-sections`} className="space-y-8 lg:space-y-12">
+        <div id={`${projectId}-detail-sections`}>
           {project.detailSections.map((section) => {
-            const spacingClass =
-              section.id === 'my-tasks-lead-owner-change' || section.id === 'tags-for-leads'
+            const spacingClass = isNesoi
+              ? 'mb-24 lg:mb-48'
+              : section.id === 'my-tasks-lead-owner-change' || section.id === 'tags-for-leads'
                 ? 'mb-12 lg:mb-24'
                 : 'mb-12 lg:mb-24';
             return (
@@ -633,6 +601,30 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
                     </p>
                   </div>
                 )}
+                {'prototypeGif' in section && section.prototypeGif && (
+                  <div className="space-y-4 mt-8">
+                    <div
+                      className="relative w-full cursor-pointer group"
+                      onClick={() => handleImageClick(section.prototypeGif)}
+                    >
+                      <div className="relative w-full" style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}>
+                        <Image
+                          src={section.prototypeGif}
+                          alt={`${section.title} prototype` || 'Prototype'}
+                          width={1920}
+                          height={1080}
+                          loading="lazy"
+                          priority={false}
+                          className="object-contain group-hover:opacity-90 transition-transform duration-300 rounded-3xl border border-border/50 shadow-lg"
+                          sizes="(max-width: 768px) 100vw, 80vw"
+                          onError={(e) => {
+                            console.error('Failed to load prototype gif:', section.prototypeGif);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -641,7 +633,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {/* Stats Section */}
       {project.results && project.results.length > 0 && (
-        <div id={`${projectId}-stats`} className="mt-8 lg:mt-20 mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+        <div id={`${projectId}-stats`} className={isNesoi ? "mt-8 lg:mt-20 mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mt-8 lg:mt-20 mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
           <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Some stats</h2>
           <div className="lg:col-span-3">
             {(() => {
@@ -664,7 +656,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {/* Key Features */}
       {project.keyFeatures && project.keyFeatures.length > 0 && (
-        <div id={`${projectId}-key-features`} className="mb-16 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+        <div id={`${projectId}-key-features`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
           <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Key Features</h2>
           <div className="lg:col-span-3">
             <div className="space-y-3 lg:space-y-4">
@@ -680,7 +672,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       )}
 
       {project.keyFeatureImage && (
-        <div id={`${projectId}-feature-image`} className="mb-16 lg:mb-32 space-y-3">
+        <div id={`${projectId}-feature-image`} className={isNesoi ? "mb-24 lg:mb-48 space-y-3" : "mb-16 lg:mb-32 space-y-3"}>
           <h2 className="text-xl md:text-2xl font-normal text-foreground">Feature snapshot</h2>
           <div className="relative w-full aspect-[16/9] rounded-3xl border border-border/50 overflow-hidden shadow-xl">
             <Image
@@ -699,7 +691,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {/* Learnings */}
       {project.learnings && (
-        <div id={`${projectId}-learnings`} className="mt-16 lg:mt-24 mb-16 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+        <div id={`${projectId}-learnings`} className={isNesoi ? "mt-24 lg:mt-48 mb-16 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mt-16 lg:mt-24 mb-16 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
           <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Learnings</h2>
           <div className="lg:col-span-3">
             {Array.isArray(project.learnings) ? (
@@ -719,7 +711,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       )}
 
       {project.prototype && (
-        <div id={`${projectId}-prototype`} className="mb-16 lg:mb-64 space-y-4">
+        <div id={`${projectId}-prototype`} className={isNesoi ? "mb-24 lg:mb-48 space-y-4" : "mb-16 lg:mb-64 space-y-4"}>
           <h2 className="text-xl md:text-2xl font-normal text-foreground">Prototype</h2>
           <p className="text-base md:text-lg leading-relaxed text-muted-foreground">{project.prototype}</p>
           {project.prototypeFrame && (
@@ -740,7 +732,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {/* Impact */}
       {project.impact && project.impact.length > 0 && (
-        <div id={`${projectId}-impact`} className="mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
+        <div id={`${projectId}-impact`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
           <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Impact</h2>
           <div className="lg:col-span-3">
             <div className="space-y-3 lg:space-y-4">

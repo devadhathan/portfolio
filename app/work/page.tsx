@@ -8,8 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
 import { resumeData } from '@/lib/resume-data';
-import { TopBar } from '@/components/top-bar';
-import { BottomNav } from '@/components/bottom-nav';
+import { TopBar, MobileBottomNav } from '@/components/top-bar';
+
 import { useRouter } from 'next/navigation';
 
 // Lazy load the heavy project detail component
@@ -64,7 +64,7 @@ const getProjectSummary = (project: Project): string => {
   return words.join(' ');
 };
 
-export default function WorkPage() {
+function WorkPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
@@ -352,7 +352,19 @@ export default function WorkPage() {
         </div>
         )}
       </div>
-      <BottomNav />
+      <MobileBottomNav />
     </div>
+  );
+}
+
+export default function WorkPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-card flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    }>
+      <WorkPageContent />
+    </Suspense>
   );
 }

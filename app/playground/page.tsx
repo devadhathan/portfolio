@@ -1,6 +1,6 @@
 'use client';
-import { TopBar } from '@/components/top-bar';
-import { BottomNav } from '@/components/bottom-nav';
+import { TopBar, MobileBottomNav } from '@/components/top-bar';
+
 import { useRouter } from 'next/navigation';
 
 const videoFiles = [
@@ -88,7 +88,7 @@ export default function PlaygroundPage() {
           </section>
         </div>
       </main>
-      <BottomNav />
+      <MobileBottomNav />
     </div>
   );
 }

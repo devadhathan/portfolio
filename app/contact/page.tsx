@@ -3,8 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mail, Linkedin, FileText, Github, Globe } from 'lucide-react';
 import { resumeData } from '@/lib/resume-data';
-import { TopBar } from '@/components/top-bar';
-import { BottomNav } from '@/components/bottom-nav';
+import { TopBar, MobileBottomNav } from '@/components/top-bar';
+
 import { useRouter } from 'next/navigation';
 
 export default function ContactPage() {
@@ -97,7 +97,7 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
-      <BottomNav />
+      <MobileBottomNav />
     </div>
   );
 }

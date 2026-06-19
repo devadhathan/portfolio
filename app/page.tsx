@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { TopBar } from '@/components/top-bar';
+import { TopBar, MobileBottomNav } from '@/components/top-bar';
 import { AboutSection } from '@/components/about-section';
-import { BottomNav } from '@/components/bottom-nav';
 import { AgentState } from '@/lib/agent';
+import type { GenUIItem } from '@/components/side-agent';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 // Lazy load heavy components to reduce initial bundle size
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
@@ -16,8 +18,16 @@ const ProjectDetailView = dynamic(() => import('@/components/project-detail-view
 const ProjectsListView = dynamic(() => import('@/components/projects-list-view').then(mod => ({ default: mod.ProjectsListView })), { ssr: false });
 const FloatingChatButton = dynamic(() => import('@/components/floating-chat-button').then(mod => ({ default: mod.FloatingChatButton })), { ssr: false });
 
+const LOADING_MESSAGES = [
+  'Arranging your portfolio sections',
+  'Curating the best projects',
+  'Organizing content for you',
+  'Almost there...'
+];
+
 export default function Home() {
   const [agentState, setAgentState] = useState<AgentState | null>(null);
+  const [genUIItems, setGenUIItems] = useState<GenUIItem[] | null>(null);
   const [isAgentWorking, setIsAgentWorking] = useState(false);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [isChatCollapsed, setIsChatCollapsed] = useState(true);
@@ -28,26 +38,16 @@ export default function Home() {
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
-  const [chatMode, setChatMode] = useState<'ask' | 'agent'>('agent');
+  const [chatMode, setChatMode] = useState<'ask' | 'agent'>('ask');
   const [showProjectsList, setShowProjectsList] = useState(false);
   const resetAgentRef = useRef<(() => void) | null>(null);
+  const explanationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showInitialLoading, setShowInitialLoading] = useState(false);
+  const [fadingOut, setFadingOut] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const areBothPanelsExpanded = !isChatCollapsed && !isSidebarCollapsed;
-  const isAnyPanelExpanded = !isChatCollapsed || !isSidebarCollapsed;
-  const contentGutterClass = areBothPanelsExpanded
-    ? 'mx-0 px-4 sm:mx-3 sm:px-4 md:mx-3 md:px-4 lg:mx-5 lg:px-6 xl:mx-8 xl:px-10'
-    : isAnyPanelExpanded
-      ? 'mx-0 px-4 sm:mx-3 sm:px-4 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-8 xl:px-10'
-      : 'mx-0 px-4 sm:mx-4 sm:px-5 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-[70px] xl:px-[90px]';
-
-  // Dynamic loading messages that change over time
-  const loadingMessages = [
-    'Arranging your portfolio sections',
-    'Curating the best projects',
-    'Organizing content for you',
-    'Almost there...'
-  ];
+  const contentGutterClass = isSidebarCollapsed
+    ? 'mx-0 px-4 sm:mx-4 sm:px-5 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-[70px] xl:px-[90px]'
+    : 'mx-0 px-4 sm:mx-3 sm:px-4 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-8 xl:px-10';
 
   const handleStateChange = (state: AgentState) => {
     setAgentState(state);
@@ -66,16 +66,14 @@ export default function Home() {
     // Let explanation stay visible until new command starts
   };
 
-  // Update loading message based on duration
   useEffect(() => {
     if (!isAgentWorking || loadingStartTime === null) return;
 
     const interval = setInterval(() => {
       const elapsed = Date.now() - loadingStartTime;
-      // Change message every 2 seconds
       const newIndex = Math.min(
         Math.floor(elapsed / 2000),
-        loadingMessages.length - 1
+        LOADING_MESSAGES.length - 1
       );
       if (newIndex !== loadingMessageIndex) {
         setLoadingMessageIndex(newIndex);
@@ -83,7 +81,7 @@ export default function Home() {
     }, 500);
 
     return () => clearInterval(interval);
-  }, [isAgentWorking, loadingStartTime, loadingMessageIndex, loadingMessages.length]);
+  }, [isAgentWorking, loadingStartTime, loadingMessageIndex]);
 
   const handleExplanationComplete = (complete: boolean) => {
     // Set explanation as complete and trigger card display
@@ -108,30 +106,23 @@ export default function Home() {
       setDisplayedExplanation('');
       setIsExplanationComplete(false);
       setShouldShowCards(false);
-      // Clear any pending animation
-      if ((window as any).explanationTimeout) {
-        clearTimeout((window as any).explanationTimeout);
-        delete (window as any).explanationTimeout;
+      if (explanationTimeoutRef.current) {
+        clearTimeout(explanationTimeoutRef.current);
+        explanationTimeoutRef.current = null;
       }
       return;
     }
     
-    // Allow processing explanation even if agent just finished working
-    // The explanation should always update when new text comes in
-    
     setExplanation(text);
     
-    // Show text immediately as it streams, with subtle word-by-word reveal
     const targetWords = text.split(' ');
     const currentWords = displayedExplanation.split(' ').filter(w => w.length > 0);
     
     if (targetWords.length > currentWords.length) {
-      // Clear any existing timeout
-      if ((window as any).explanationTimeout) {
-        clearTimeout((window as any).explanationTimeout);
+      if (explanationTimeoutRef.current) {
+        clearTimeout(explanationTimeoutRef.current);
       }
       
-      // Animate new words with very short delay for smooth streaming
       let wordIndex = currentWords.length;
       const animateNextWord = () => {
         if (wordIndex < targetWords.length) {
@@ -140,23 +131,19 @@ export default function Home() {
           wordIndex++;
           
           if (wordIndex < targetWords.length) {
-            // Very short delay (30ms) for smooth streaming effect
-            (window as any).explanationTimeout = setTimeout(animateNextWord, 30);
+            explanationTimeoutRef.current = setTimeout(animateNextWord, 30);
           } else {
-            // All words displayed
             setIsExplanationComplete(true);
-            delete (window as any).explanationTimeout;
+            explanationTimeoutRef.current = null;
           }
         } else {
           setIsExplanationComplete(true);
-          delete (window as any).explanationTimeout;
+          explanationTimeoutRef.current = null;
         }
       };
       
-      // Start animation immediately
       animateNextWord();
     } else if (text.trim().length > 0) {
-      // Text is complete - ensure it's displayed and marked complete
       if (displayedExplanation !== text) {
         setDisplayedExplanation(text);
       }
@@ -177,24 +164,37 @@ export default function Home() {
     setSelectedProject(null);
   };
 
-  // Show loading screen every time page loads
+  const explanationParagraphs = useMemo(() => {
+    const text = displayedExplanation || explanation || '';
+    if (!text) return [text];
+    let paragraphs = text
+      .split(/\n\n+/)
+      .filter(p => p.trim().length > 0)
+      .map(p => p.trim());
+    
+    if (paragraphs.length === 1 && text.length > 150) {
+      const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+      const grouped: string[] = [];
+      for (let i = 0; i < sentences.length; i += 2) {
+        const group = sentences.slice(i, Math.min(i + 2, sentences.length)).join(' ').trim();
+        if (group) grouped.push(group);
+      }
+      paragraphs = grouped.length > 0 ? grouped : paragraphs;
+    }
+    
+    return paragraphs.length > 0 ? paragraphs : [text];
+  }, [displayedExplanation, explanation]);
+
   useEffect(() => {
     setMounted(true);
-    const hasSeenLoading = localStorage.getItem('portfolio-has-loaded');
-    const isFirstLoad = !hasSeenLoading;
-    
     setShowInitialLoading(true);
-    
-    // First load: 3 seconds, subsequent visits: 0.8 seconds
-    const duration = isFirstLoad ? 3000 : 800;
-    
     const timer = setTimeout(() => {
-      setShowInitialLoading(false);
-      if (isFirstLoad) {
-        localStorage.setItem('portfolio-has-loaded', 'true');
-      }
-    }, duration);
-    
+      setFadingOut(true);
+      setTimeout(() => {
+        setShowInitialLoading(false);
+        setFadingOut(false);
+      }, 800);
+    }, 2000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -202,13 +202,14 @@ export default function Home() {
     <div className="min-h-screen bg-card relative overflow-x-hidden overflow-y-auto">
       {/* Initial Loading Screen - Only shows first time */}
       {mounted && showInitialLoading && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black">
+        <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-black transition-opacity duration-700 ${fadingOut ? 'opacity-0' : 'opacity-100'}`}>
           <div className="flex flex-col items-center gap-4">
             <video
               autoPlay
               muted
               loop={false}
               playsInline
+              preload="auto"
               className="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 object-contain"
             >
               <source src="/videos/Subtle_Typing_Video_Generation.mp4" type="video/mp4" />
@@ -219,8 +220,7 @@ export default function Home() {
           </div>
         </div>
       )}
-      {!showInitialLoading && (
-        <>
+      <div className={showInitialLoading ? 'invisible' : 'visible'}>
           <TopBar onProjectSelect={setSelectedProject} onHomeClick={handleHomeClick} />
           
           <div className="flex pt-14 relative z-10">
@@ -234,8 +234,8 @@ export default function Home() {
         </div>
         
         {/* Main Content */}
-        <div className={`flex-1 w-full px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8 relative z-10 transition-[margin-left,margin-right,padding-right] duration-500 ease-in-out ${isSidebarCollapsed && isChatCollapsed ? 'lg:ml-0 lg:mr-0' : isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-80'} ${isChatCollapsed ? 'lg:pr-32' : 'lg:pr-[440px]'} pb-24 md:pb-28 lg:pb-8 overflow-x-hidden`}>
-          <div className={`transition-[max-width,margin-left,margin-right] duration-500 ease-in-out ${isSidebarCollapsed && isChatCollapsed ? 'max-w-[1500px] mx-auto' : isChatCollapsed ? 'max-w-7xl mx-auto' : 'max-w-none mx-0'}`}>
+        <div className={`flex-1 w-full px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8 relative z-10 transition-[margin-left] duration-500 ease-in-out ${isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-80'} pb-24 md:pb-28 lg:pb-8 overflow-x-hidden`}>
+          <div className={`transition-[max-width,margin] duration-500 ease-in-out ${isSidebarCollapsed ? 'max-w-[1500px] mx-auto' : 'max-w-7xl mx-auto'}`}>
             {isAgentWorking ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
               <div className="flex gap-2 mb-6">
@@ -244,7 +244,7 @@ export default function Home() {
                 <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
               </div>
               <p className="text-lg text-foreground font-semibold mb-2">Agent is working...</p>
-              <p className="text-sm text-muted-foreground/70">{loadingMessages[loadingMessageIndex]}</p>
+              <p className="text-sm text-muted-foreground/70">{LOADING_MESSAGES[loadingMessageIndex]}</p>
             </div>
           ) : selectedProject ? (
             <div className="w-full">
@@ -269,93 +269,163 @@ export default function Home() {
                 selectedProjectId={selectedProject}
               />
             </div>
-          ) : agentState ? (
-            <>
-              {/* Always show explanation if it exists, even while streaming */}
-              {(explanation || displayedExplanation) && (
-                <div className="mb-6 p-5 md:p-6 rounded-lg bg-card/60 backdrop-blur-md border-2 border-border/70">
-                  {(displayedExplanation || explanation || '').trim().split(' ').length > 3 && (
-                    <h2 className="text-xl font-semibold mb-4 text-foreground">Overview</h2>
-                  )}
-                  <div className="text-base text-muted-foreground leading-relaxed space-y-3">
-                    {(() => {
-                      const text = displayedExplanation || explanation || '';
-                      // Split text into paragraphs by double newlines first
-                      let paragraphs = text
-                        .split(/\n\n+/)
-                        .filter(p => p.trim().length > 0)
-                        .map(p => p.trim());
-                      
-                      // If no double newlines and text is long, split by sentences
-                      if (paragraphs.length === 1 && text.length > 150) {
-                        const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-                        // Group 2-3 sentences per paragraph
-                        const grouped: string[] = [];
-                        for (let i = 0; i < sentences.length; i += 2) {
-                          const group = sentences.slice(i, Math.min(i + 2, sentences.length)).join(' ').trim();
-                          if (group) grouped.push(group);
-                        }
-                        paragraphs = grouped.length > 0 ? grouped : paragraphs;
-                      }
-                      
-                      return paragraphs.length > 0 ? paragraphs : [text];
-                    })().map((paragraph, index, array) => (
-                      <div key={index} className="mb-0">
-                        <ReactMarkdown components={{
-                          p: ({ node, ...props }) => <p className="mb-0" {...props} />,
-                        }}>
-                          {paragraph}
-                        </ReactMarkdown>
-                        {index === array.length - 1 && !isExplanationComplete && explanation && displayedExplanation.length < explanation.length && (
-                          <span className="inline-block w-1.5 h-4 ml-1 bg-foreground/50 animate-pulse" />
+          ) : genUIItems ? (
+            /* ── Agent Gen UI canvas ── */
+            <div className="animate-fade-in-blur pb-32">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-auto">
+                {genUIItems.map((item, i) => {
+                  if (item.type === 'stat') return (
+                    <Card key={i} className="bg-card/80 border-border/60 backdrop-blur-sm hover:border-border transition-colors">
+                      <CardContent className="pt-6">
+                        <p className="text-4xl font-bold text-foreground tabular-nums">{item.value}</p>
+                        <p className="text-sm font-medium text-foreground/80 mt-1">{item.label}</p>
+                        {item.context && <p className="text-xs text-muted-foreground mt-0.5">{item.context}</p>}
+                      </CardContent>
+                    </Card>
+                  );
+                  if (item.type === 'project') return (
+                    <Card key={i} className="bg-card/80 border-border/60 backdrop-blur-sm hover:border-border transition-colors group cursor-pointer" onClick={() => item.link && (window.location.href = item.link)}>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-semibold flex items-center justify-between">
+                          {item.title}
+                          {item.link && <span className="text-muted-foreground text-xs group-hover:text-primary transition-colors">View →</span>}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
+                        {item.tags && item.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-3">
+                            {item.tags.map((t, j) => <Badge key={j} variant="secondary" className="text-[10px]">{t}</Badge>)}
+                          </div>
                         )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {/* Show cards based on state:
-                  1. Default state: show if no explanation and not generating (isAgentWorking false)
-                  2. Generated cards: show only after explanation is complete (shouldShowCards true) */}
-              {agentState && (
-                // Show default cards only when not working and no explanation
-                ((!explanation && !displayedExplanation && !isAgentWorking) ||
-                // Show generated cards only after explanation is complete
-                (shouldShowCards && isExplanationComplete)) && (
-                  <div className={`transition-all duration-600 animate-fade-in-blur ${contentGutterClass}`}>
-                      <PortfolioSections 
-                        agentState={agentState} 
-                        hideHeaderText={isAgentWorking || shouldShowCards}
-                        onProjectSelect={setSelectedProject}
-                        onShowProjectsList={() => setShowProjectsList(true)}
-                      />
-                      {/* Only show AboutSection (awards/certifications) for default state, not generated cards */}
-                      {!agentState.isCustomLayout && (
-                        <div className="mt-10">
-                          <AboutSection />
+                      </CardContent>
+                    </Card>
+                  );
+                  if (item.type === 'timeline') return (
+                    <Card key={i} className="bg-card/80 border-border/60 backdrop-blur-sm hover:border-border transition-colors">
+                      <CardContent className="pt-6">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <p className="text-sm font-semibold text-foreground">{item.role}</p>
+                          <p className="text-xs text-muted-foreground whitespace-nowrap">{item.period}</p>
                         </div>
-                      )}
-                  </div>
-                )
-              )}
-            </>
+                        <p className="text-xs text-primary mb-2">{item.company}</p>
+                        {item.highlights && (
+                          <ul className="space-y-1">
+                            {item.highlights.map((h, j) => (
+                              <li key={j} className="text-xs text-muted-foreground flex gap-1.5"><span className="text-primary mt-0.5">·</span>{h}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                  if (item.type === 'skill_grid') return (
+                    <Card key={i} className="bg-card/80 border-border/60 backdrop-blur-sm hover:border-border transition-colors sm:col-span-2">
+                      <CardContent className="pt-6 space-y-4">
+                        {item.categories.map((cat, j) => (
+                          <div key={j}>
+                            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{cat.name}</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {cat.skills.map((s, k) => <Badge key={k} variant="outline" className="text-[11px] font-normal">{s}</Badge>)}
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  );
+                  if (item.type === 'quote') return (
+                    <Card key={i} className="bg-card/80 border-border/60 backdrop-blur-sm hover:border-border transition-colors border-l-2 border-l-primary sm:col-span-2 lg:col-span-3">
+                      <CardContent className="pt-6">
+                        <p className="text-base text-foreground/90 italic leading-relaxed">{`\u201C${item.text}\u201D`}</p>
+                      </CardContent>
+                    </Card>
+                  );
+                  if (item.type === 'chart') {
+                    const maxVal = Math.max(...item.bars.map(b => b.value));
+                    return (
+                      <Card key={i} className="bg-card/80 border-border/60 backdrop-blur-sm hover:border-border transition-colors sm:col-span-2">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-semibold">{item.title}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          {item.bars.map((bar, j) => (
+                            <div key={j} className="flex items-center gap-3">
+                              <span className="text-xs text-muted-foreground w-20 truncate flex-shrink-0">{bar.label}</span>
+                              <div className="flex-1 h-6 bg-secondary/50 rounded-full overflow-hidden">
+                                <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${(bar.value / maxVal) * 100}%`, background: bar.color || 'hsl(var(--primary))' }} />
+                              </div>
+                              <span className="text-xs font-semibold text-foreground w-14 text-right flex-shrink-0">{bar.displayValue}</span>
+                            </div>
+                          ))}
+                        </CardContent>
+                      </Card>
+                    );
+                  }
+                  if (item.type === 'image') {
+                    const imgCard = (
+                      <Card key={i} className="bg-card/80 border-border/60 backdrop-blur-sm hover:border-border transition-colors overflow-hidden group cursor-pointer">
+                        <div className="aspect-video overflow-hidden">
+                          <img src={item.src} alt={item.alt} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                        </div>
+                        {item.caption && (
+                          <CardContent className="pt-3 pb-4">
+                            <p className="text-xs text-muted-foreground">{item.caption}</p>
+                          </CardContent>
+                        )}
+                      </Card>
+                    );
+                    return item.link ? <a key={i} href={item.link} className="block no-underline">{imgCard}</a> : imgCard;
+                  }
+                  if (item.type === 'info') {
+                    const infoCard = (
+                      <Card key={i} className="bg-card/80 border-border/60 backdrop-blur-sm hover:border-border transition-colors">
+                        <CardContent className="pt-6">
+                          <div className="flex items-start gap-3">
+                            {item.icon && <span className="text-2xl mt-0.5">{item.icon}</span>}
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                              {item.subtitle && <p className="text-xs text-primary mt-0.5">{item.subtitle}</p>}
+                              <p className="text-xs text-muted-foreground leading-relaxed mt-1.5">{item.body}</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                    return item.link ? <a key={i} href={item.link} className="block no-underline">{infoCard}</a> : infoCard;
+                  }
+                  return null;
+                })}
+              </div>
+            </div>
+          ) : agentState ? (
+            /* ── Default home portfolio ── */
+            <div className={`transition-all duration-600 animate-fade-in-blur ${contentGutterClass}`}>
+              <PortfolioSections
+                agentState={agentState}
+                hideHeaderText={false}
+                onProjectSelect={setSelectedProject}
+                onShowProjectsList={() => setShowProjectsList(true)}
+              />
+              <div className="mt-10">
+                <AboutSection />
+              </div>
+            </div>
           ) : null}
           </div>
         </div>
       </div>
           
-          <SideAgent 
-            onStateChange={handleStateChange} 
-            onAgentWorking={handleAgentWorking} 
-            onCollapseChange={handleCollapseChange} 
-            onExplanation={handleExplanation} 
-            onExplanationComplete={handleExplanationComplete} 
+          <SideAgent
+            onStateChange={handleStateChange}
+            onAgentWorking={handleAgentWorking}
+            onCollapseChange={handleCollapseChange}
+            onExplanation={handleExplanation}
+            onExplanationComplete={handleExplanationComplete}
+            onGenUI={(items) => setGenUIItems(items)}
             resetRef={resetAgentRef}
             externalCollapsed={isChatCollapsed}
-            onExpandRequest={() => setIsChatCollapsed(false)}
             initialMode={chatMode}
           />
-          <BottomNav />
           <FloatingChatButton 
             onClick={() => {
               setIsChatCollapsed(false);
@@ -364,8 +434,8 @@ export default function Home() {
             mode={chatMode}
             onModeChange={setChatMode}
           />
-        </>
-      )}
+      </div>
+      <MobileBottomNav />
     </div>
   );
 }

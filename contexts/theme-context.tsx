@@ -12,9 +12,9 @@ export const availableThemes = [
 ];
 
 export const rgbThemes = [
-  { id: 'red' as Theme, name: 'Red', icon: null, color: '#FC553B' },
-  { id: 'green' as Theme, name: 'Green', icon: null, color: '#94D28B' },
-  { id: 'blue' as Theme, name: 'Blue', icon: null, color: '#466BFD' },
+  { id: 'red' as Theme, name: 'Red', icon: null, color: '#FC553B', letter: 'R' },
+  { id: 'green' as Theme, name: 'Green', icon: null, color: '#94D28B', letter: 'G' },
+  { id: 'blue' as Theme, name: 'Blue', icon: null, color: '#466BFD', letter: 'B' },
 ];
 
 export function useTheme() {
@@ -25,15 +25,6 @@ export function useTheme() {
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  // Ensure theme class is applied correctly after mount
-  useEffect(() => {
-    if (mounted && theme && typeof document !== 'undefined') {
-      // next-themes handles this, but we ensure it's set correctly
-      document.documentElement.className = theme;
-      
-    }
-  }, [theme, mounted]);
 
   const setTheme = (newTheme: Theme) => {
     setNextTheme(newTheme);

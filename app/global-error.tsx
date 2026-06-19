@@ -9,12 +9,12 @@ export default function GlobalError({
 }) {
   return (
     <html>
-      <body>
-        <div className="flex min-h-screen flex-col items-center justify-center p-4">
-          <h2 className="text-2xl font-bold mb-4">Something went wrong!</h2>
+      <body style={{ margin: 0, background: '#0a0a0a', color: '#fff', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'system-ui, sans-serif' }}>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Something went wrong</h2>
           <button
             onClick={() => reset()}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded"
+            style={{ padding: '0.5rem 1rem', cursor: 'pointer', borderRadius: '0.25rem', border: 'none', background: '#3b82f6', color: '#fff' }}
           >
             Try again
           </button>

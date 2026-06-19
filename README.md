@@ -1,3 +1,4 @@
+
 # Portfolio with Side Agent
 
 A modern portfolio page built with Next.js, TypeScript, and shadcn/ui, featuring an intelligent side agent that allows you to dynamically customize and prioritize portfolio sections through natural language commands.

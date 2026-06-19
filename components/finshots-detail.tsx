@@ -3,12 +3,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Users, Wrench, ExternalLink, X, ZoomIn, Smartphone, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, ExternalLink, X, ZoomIn, Smartphone } from 'lucide-react';
 import { resumeData } from '@/lib/resume-data';
 import Image from 'next/image';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { SafeAnimatePresence } from './safe-animate-presence';
 
 interface FinshotsDetailProps {
   projectId: string;
@@ -195,16 +193,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
         <h2 className="text-2xl font-normal text-foreground mb-4">Design Gallery</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {finshotsImages.map((image, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 30, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{
-                duration: 0.6,
-                delay: idx * 0.08,
-                ease: [0.42, 0, 1, 1] // ease-in cubic bezier
-              }}
-            >
+            <div key={idx}>
             <Card 
               className="col-span-1 border-2 border-border/70 bg-card/60 backdrop-blur-md hover:border-primary/50 transition-all duration-300 cursor-pointer group overflow-hidden"
               onClick={() => handleImageClick(image.src)}
@@ -227,7 +216,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
                 </div>
               </CardContent>
             </Card>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
@@ -418,46 +407,35 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
 
 
       {/* Zoom Modal */}
-      <SafeAnimatePresence mode="wait" initial={false}>
-        {zoomedImage && (
-          <motion.div
-            key={zoomedImage}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
-            onClick={closeZoom}
+      {zoomedImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+          onClick={closeZoom}
+        >
+          <div
+            className="relative max-w-7xl max-h-[90vh] w-full h-full"
+            onClick={(e) => e.stopPropagation()}
           >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="relative max-w-7xl max-h-[90vh] w-full h-full"
-              onClick={(e) => e.stopPropagation()}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 z-10 bg-background/80 hover:bg-background"
+              onClick={closeZoom}
             >
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-4 right-4 z-10 bg-background/80 hover:bg-background"
-                onClick={closeZoom}
-              >
-                <X className="h-5 w-5" />
-              </Button>
-              <div className="relative w-full h-full">
-                <Image
-                  src={zoomedImage}
-                  alt="Zoomed view"
-                  fill
-                  className="object-contain"
-                  sizes="100vw"
-                />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </SafeAnimatePresence>
+              <X className="h-5 w-5" />
+            </Button>
+            <div className="relative w-full h-full">
+              <Image
+                src={zoomedImage}
+                alt="Zoomed view"
+                fill
+                className="object-contain"
+                sizes="100vw"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
