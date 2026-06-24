@@ -17,6 +17,8 @@ export const rgbThemes = [
   { id: 'blue' as Theme, name: 'Blue', icon: null, color: '#466BFD', letter: 'B' },
 ];
 
+export const allThemes = [...availableThemes, ...rgbThemes];
+
 export function useTheme() {
   const { theme: nextTheme, setTheme: setNextTheme } = useNextTheme();
   const [mounted, setMounted] = useState(false);

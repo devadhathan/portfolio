@@ -2,16 +2,16 @@
 
 import { Button } from '@/components/ui/button';
 import { Sun, List, User, Briefcase, Mail, Gamepad2 } from 'lucide-react';
-import { useTheme, availableThemes, rgbThemes } from '@/contexts/theme-context';
+import { useTheme, allThemes } from '@/contexts/theme-context';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MobileSidebar } from './mobile-sidebar';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { ContactChat } from './contact-chat';
 import {
@@ -23,6 +23,11 @@ import {
 } from '@/components/ui/sheet';
 import { resumeData } from '@/lib/resume-data';
 import { motion } from 'framer-motion';
+
+const MobileSidebar = dynamic(
+  () => import('./mobile-sidebar').then((mod) => ({ default: mod.MobileSidebar })),
+  { ssr: false },
+);
 
 const NAV_TABS = [
   { label: 'About', path: '/', icon: User },
@@ -39,6 +44,7 @@ interface TopBarProps {
 export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
+  const router = useRouter();
   const isWorkPage = pathname === '/work';
   const [chatOpen, setChatOpen] = useState(false);
   const [isProjectSheetOpen, setIsProjectSheetOpen] = useState(false);
@@ -53,7 +59,7 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
     if (pathname === '/') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      window.location.href = '/';
+      router.push('/');
     }
   };
 
@@ -67,9 +73,9 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
     setActiveTab(tabPath);
     setIsSliding(true);
     if (tabPath === '/' && onHomeClick) onHomeClick();
-    // Navigate after the pill lands
+    // Client-side navigate after the pill lands (no full reload → smooth)
     setTimeout(() => {
-      window.location.href = tabPath;
+      router.push(tabPath);
     }, 320);
   };
 
@@ -210,135 +216,71 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
           </nav>
 
           <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Mobile: dropdown theme picker */}
-            <div className="lg:hidden">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <motion.div whileTap={{ scale: 0.91 }}>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/[0.08] shadow-[0_2px_8px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.06)] text-xs hover:bg-white/[0.09] transition-colors h-auto"
-                    >
-                      {(() => {
-                        const currentTheme = [...availableThemes, ...rgbThemes].find(t => t.id === theme);
-                        if (currentTheme?.icon) {
-                          const IconComponent = currentTheme.icon;
-                          return <IconComponent className="h-3 w-3 text-primary" />;
-                        }
-                        if (currentTheme?.color && 'letter' in currentTheme && currentTheme.letter) {
-                          return (
-                            <div
-                              className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-black/80"
-                              style={{ backgroundColor: currentTheme.color }}
-                            >
-                              {currentTheme.letter}
-                            </div>
-                          );
-                        }
-                        if (currentTheme?.color) {
-                          return <div className="w-3 h-3 rounded-full" style={{ backgroundColor: currentTheme.color }} />;
-                        }
-                        return <Sun className="h-3 w-3 text-primary" />;
-                      })()}
-                      <span className="hidden sm:inline">Theme</span>
-                    </Button>
-                  </motion.div>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="w-40 bg-card/65 backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.22)]"
-                >
-                  {availableThemes.map((t) => {
-                    const IconComponent = t.icon;
-                    return (
-                      <DropdownMenuItem
-                        key={t.id}
-                        onClick={() => setTheme(t.id)}
-                        className={theme === t.id ? 'bg-white/10' : ''}
-                      >
-                        <div className="flex items-center gap-2">
-                          {IconComponent && <IconComponent className="h-3 w-3" />}
-                          <span>{t.name}</span>
-                        </div>
-                      </DropdownMenuItem>
-                    );
-                  })}
-                  {rgbThemes.map((rgbTheme) => (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <motion.div whileTap={{ scale: 0.91 }}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/[0.08] shadow-[0_2px_8px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.06)] text-xs hover:bg-white/[0.09] transition-colors h-auto"
+                  >
+                    {(() => {
+                      const currentTheme = allThemes.find(t => t.id === theme);
+                      if (currentTheme?.icon) {
+                        const IconComponent = currentTheme.icon;
+                        return <IconComponent className="h-3.5 w-3.5 text-primary" />;
+                      }
+                      if (currentTheme?.color && 'letter' in currentTheme && currentTheme.letter) {
+                        return (
+                          <div
+                            className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-black/80"
+                            style={{ backgroundColor: currentTheme.color }}
+                          >
+                            {currentTheme.letter}
+                          </div>
+                        );
+                      }
+                      if (currentTheme?.color) {
+                        return <div className="w-3 h-3 rounded-full" style={{ backgroundColor: currentTheme.color }} />;
+                      }
+                      return <Sun className="h-3.5 w-3.5 text-primary" />;
+                    })()}
+                    <span className="hidden sm:inline">{allThemes.find(t => t.id === theme)?.name ?? 'Theme'}</span>
+                  </Button>
+                </motion.div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-44 bg-card/65 backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.22)]"
+              >
+                {allThemes.map((t) => {
+                  const IconComponent = t.icon;
+                  return (
                     <DropdownMenuItem
-                      key={rgbTheme.id}
-                      onClick={() => setTheme(rgbTheme.id)}
-                      className={theme === rgbTheme.id ? 'bg-white/10' : ''}
+                      key={t.id}
+                      onClick={() => setTheme(t.id)}
+                      className={theme === t.id ? 'bg-white/10' : ''}
                     >
                       <div className="flex items-center gap-2">
-                        <div
-                          className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-black/80"
-                          style={{ backgroundColor: rgbTheme.color }}
-                        >
-                          {rgbTheme.letter}
-                        </div>
-                        <span>{rgbTheme.name}</span>
+                        {IconComponent ? (
+                          <IconComponent className="h-3.5 w-3.5" />
+                        ) : t.color && 'letter' in t && t.letter ? (
+                          <div
+                            className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-black/80"
+                            style={{ backgroundColor: t.color }}
+                          >
+                            {t.letter}
+                          </div>
+                        ) : t.color ? (
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: t.color }} />
+                        ) : null}
+                        <span>{t.name}</span>
                       </div>
                     </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            {/* Desktop: theme pill — glass, animated indicator */}
-            <div className="hidden lg:flex items-center gap-0.5 px-1 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.06)]">
-              {availableThemes.map((t) => {
-                const IconComponent = t.icon;
-                const isActive = theme === t.id;
-                return (
-                  <motion.div key={t.id} whileTap={{ scale: 0.86 }}>
-                    <button
-                      onClick={() => setTheme(t.id)}
-                      className={`relative flex items-center justify-center px-3 py-2 rounded-full h-auto transition-colors ${
-                        isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                      title={t.name}
-                    >
-                      {isActive && (
-                        <motion.div
-                          layoutId="theme-active"
-                          className="absolute inset-0 rounded-full bg-background/80 backdrop-blur-sm shadow-[0_1px_6px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.12)]"
-                          transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                        />
-                      )}
-                      {IconComponent && <IconComponent className="h-4 w-4 relative z-10" />}
-                      <span className="sr-only">{t.name}</span>
-                    </button>
-                  </motion.div>
-                );
-              })}
-              {rgbThemes.map((rgbTheme) => {
-                const isActive = theme === rgbTheme.id;
-                return (
-                  <motion.div key={rgbTheme.id} whileTap={{ scale: 0.86 }}>
-                    <button
-                      onClick={() => setTheme(rgbTheme.id)}
-                      className="relative flex items-center justify-center p-0 w-8 h-8 rounded-full"
-                      title={rgbTheme.name}
-                    >
-                      {isActive && (
-                        <motion.div
-                          layoutId="theme-active"
-                          className="absolute inset-0 rounded-full bg-background/80 backdrop-blur-sm shadow-[0_1px_6px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.12)]"
-                          transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                        />
-                      )}
-                      <div
-                        className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-black/80 flex-shrink-0 relative z-10"
-                        style={{ backgroundColor: rgbTheme.color }}
-                      >
-                        {rgbTheme.letter}
-                      </div>
-                    </button>
-                  </motion.div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
@@ -349,6 +291,7 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
 
 export function MobileBottomNav() {
   const pathname = usePathname();
+  const router = useRouter();
 
   const handleTabClick = (e: React.MouseEvent<HTMLAnchorElement>, tabPath: string) => {
     e.preventDefault();
@@ -356,7 +299,7 @@ export function MobileBottomNav() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-    window.location.href = tabPath;
+    router.push(tabPath);
   };
 
   return (

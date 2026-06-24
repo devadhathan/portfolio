@@ -31,9 +31,9 @@ const SECTION_ICON_MAP: Record<string, LucideIcon> = {
 const getSectionIcon = (id: string) => SECTION_ICON_MAP[id] ?? Sparkles;
 
 const SectionLabel = ({ label, icon: Icon }: { label: string; icon: LucideIcon }) => (
-  <div className="flex items-center gap-2">
-    <Icon className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-    <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">{label}</span>
+  <div className="flex items-center gap-2.5">
+    <Icon className="h-4 w-4 text-foreground/80 flex-shrink-0" />
+    <span className="text-[15px] font-medium tracking-tight text-foreground">{label}</span>
   </div>
 );
 
@@ -68,6 +68,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
   // Track if this is the first load for animations
   const [isFirstLoad, setIsFirstLoad] = React.useState(true);
   const [heroVideoStage, setHeroVideoStage] = React.useState<'intro' | 'loop'>('intro');
+  const heroVideoRef = React.useRef<HTMLVideoElement>(null);
   const loopVideoPreloadRef = React.useRef<HTMLVideoElement | null>(null);
   
   // Reset first load flag after animations complete
@@ -87,6 +88,13 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
   React.useEffect(() => {
     loopVideoPreloadRef.current?.load();
   }, []);
+
+  React.useEffect(() => {
+    const video = heroVideoRef.current;
+    if (!video || theme !== 'dark') return;
+
+    video.play().catch(() => undefined);
+  }, [theme, heroVideoStage]);
 
   const handleMouseMove = React.useCallback((sectionId: string, e: React.MouseEvent<HTMLDivElement>) => {
     if (!e.currentTarget) return;
@@ -118,6 +126,12 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     if (expIndex !== -1 && photosIndex !== -1) {
       [list[expIndex], list[photosIndex]] = [list[photosIndex], list[expIndex]];
     }
+    // Swap the Experience and Design Preferences (graph) cards' positions.
+    const expIdx2 = list.findIndex(section => section.id === 'experience');
+    const prefIdx = list.findIndex(section => section.id === 'preferences');
+    if (expIdx2 !== -1 && prefIdx !== -1) {
+      [list[expIdx2], list[prefIdx]] = [list[prefIdx], list[expIdx2]];
+    }
     return list;
   }, [visibleSections]);
 
@@ -133,30 +147,8 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     return DEFAULT_PHOTO_PATHS;
   }, []);
 
-  useEffect(() => {
-    const intervals: number[] = [];
-
-    visibleSections.forEach((section) => {
-      if (section.id !== 'photos') return;
-
-      const photos = getPhotoSources(section);
-      if (photos.length <= 1) return;
-
-      const interval = window.setInterval(() => {
-        setCarouselIndex((prev) => {
-          const current = prev[section.id] ?? 0;
-          const next = (current + 1) % photos.length;
-          return { ...prev, [section.id]: next };
-        });
-      }, 5500);
-
-      intervals.push(interval);
-    });
-
-    return () => {
-      intervals.forEach(clearInterval);
-    };
-  }, [visibleSections, getPhotoSources]);
+  // Photo carousel does NOT auto-advance — photos only change on click,
+  // animating smoothly via the flex/opacity transitions.
 
   // Safety check for agentState - after all hooks
   if (!agentState || !agentState.sections) {
@@ -205,12 +197,13 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
   };
 
   const getPriorityStyles = (priority: SectionPriority, sectionType?: SectionType) => {
-    // Gradient backgrounds that change to borders on hover
-    const baseStyles = 'rounded-2xl border-2 border-border/70 cursor-pointer transition-all duration-500 ease-out relative overflow-hidden group';
-    
+    // Supabase-style cards: thin subtle border, deep near-black surface,
+    // border gently brightens on hover.
+    const baseStyles = 'rounded-lg border border-border/40 hover:border-border/70 cursor-pointer transition-all duration-500 ease-out relative overflow-hidden group';
+
     // Card background color - theme responsive
-    // Dark mode: #121212 (dark grey), Light mode: hsl(0, 0%, 96%) (light grey)
-    const bgStyles = 'bg-card/60 backdrop-blur-none dark:bg-[#171717]';
+    // Dark mode: deep charcoal (#161616), Light mode: light grey surface
+    const bgStyles = 'bg-card/60 backdrop-blur-none dark:bg-[#161616]';
 
     // Border effects - match weather and clock cards: border-2 border-border/70
     const borderStyles: Record<Exclude<SectionPriority, 'hidden'>, string> = {
@@ -279,7 +272,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     // Increased radius to 200px for larger effect area
     const borderReveal = isHovered && mousePos ? (
       <div 
-        className="absolute inset-0 pointer-events-none rounded-2xl z-[1]"
+        className="absolute inset-0 pointer-events-none rounded-lg z-[1]"
         style={{
           border: '1px solid hsl(var(--primary) / 0.5)',
           WebkitMaskImage: `radial-gradient(circle 200px at ${mousePos.x}px ${mousePos.y}px, black 30%, transparent 75%)`,
@@ -311,11 +304,11 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             <CardHeader className="flex flex-col justify-center flex-shrink-0 relative z-10 pb-0 px-4 pt-4">
               <div className="mb-3">
                 <CardTitle 
-                  className={`text-[11px] font-dm-mono uppercase tracking-[0.4em] text-foreground ${isFirstLoad ? 'animate-line-reveal' : ''}`}
+                  className={`text-[15px] font-medium tracking-tight text-foreground ${isFirstLoad ? 'animate-line-reveal' : ''}`}
                   style={isFirstLoad ? { animationDelay: '0s' } : undefined}
                 >
-                  <div className="flex items-center gap-2">
-                    <SectionIcon className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                  <div className="flex items-center gap-2.5">
+                    <SectionIcon className="h-4 w-4 text-foreground/80 flex-shrink-0" />
                     <span>Dev</span>
                   </div>
                 </CardTitle>
@@ -325,10 +318,11 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
               <div className="flex-1 flex flex-col gap-3 justify-between h-full pb-8">
                 <div className="max-w-[288px] w-[252px] min-w-0">
                   <p 
-                    className={`text-[13px] text-muted-foreground leading-relaxed ${isFirstLoad ? 'animate-line-reveal' : ''}`}
+                    className={`text-[13px] text-muted-foreground/70 leading-relaxed ${isFirstLoad ? 'animate-line-reveal' : ''}`}
                     style={isFirstLoad ? { animationDelay: '0.4s' } : undefined}
                   >
-                    Building meaningful digital experiences through thoughtful design and user-centric solutions.
+                    Building meaningful digital experiences through{' '}
+                    <span className="text-foreground">thoughtful design and user-centric solutions.</span>
                   </p>
                 </div>
                 <div className="flex flex-col gap-1 text-[13px] text-muted-foreground">
@@ -343,22 +337,23 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 </div>
               </div>
             <div className="flex-1 flex justify-center">
-              <div className="relative w-full max-w-[420px] rounded-lg overflow-hidden border border-border/40 dark:border-border/60 hero-illustration">
-                <div className="relative w-full h-[300px] max-h-[300px]">
+              <div className="relative w-full max-w-[560px] rounded-lg overflow-hidden border border-border/40 dark:border-border/60 hero-illustration">
+                <div className="relative w-full h-[340px] max-h-[340px]">
                   {theme === 'dark' ? (
                     <div className="relative w-full h-full">
                       <video
+                        ref={heroVideoRef}
                         key={`hero-video-${heroVideoStage}`}
                         src={heroVideoStage === 'intro' ? HERO_INTRO_VIDEO : HERO_LOOP_VIDEO}
                         loop={heroVideoStage === 'loop'}
-                        className="absolute inset-0"
+                        autoPlay
+                        className="absolute inset-0 opacity-80 transition-opacity duration-300 group-hover:opacity-100"
                         style={{
                           width: '100%',
                           height: '100%',
                           objectFit: 'cover',
                           objectPosition: 'center',
                         }}
-                        autoPlay
                         muted
                         playsInline
                         preload="auto"
@@ -374,7 +369,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                     <img
                       src="/svg/me vectorized.svg"
                       alt="Dev"
-                      className={`relative z-10 mx-auto w-auto max-w-full max-h-[300px] object-contain svg-hero-${theme}`}
+                      className={`relative z-10 mx-auto w-auto max-w-full max-h-[340px] object-contain opacity-80 transition-opacity duration-300 group-hover:opacity-100 svg-hero-${theme}`}
                     />
                   )}
                 </div>
@@ -391,7 +386,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             id="playground"
             data-section="playground"
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-auto min-h-[360px] md:min-h-[auto] ${isFirstLoad ? 'animate-card-reveal' : ''}`}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-full min-h-[398px] ${isFirstLoad ? 'animate-card-reveal' : ''}`}
             style={isFirstLoad ? { animationDelay: `${cardDelay}s` } : undefined}
             onClick={() => handleCardClick(section.id)}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
@@ -421,49 +416,54 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                   <SectionLabel label="Design Philosophy" icon={SectionIcon} />
                 </CardTitle>
               </CardHeader>
-            <CardContent className="space-y-1.5 relative z-10">
-              <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
+            <CardContent className="space-y-2 relative z-10">
+              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
                 <Heart className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:animate-pulse transition-all duration-300" />
                 <div>
                   <p className="text-[14px] font-medium mb-0.5">User-Centered Design</p>
-                  <p className="text-[13px] text-muted-foreground leading-relaxed max-w-[288px] w-[252px] min-w-0">
-                    I design with care, always keeping the user at the center of every decision.
+                  <p className="text-[13px] text-muted-foreground/70 leading-relaxed max-w-[288px] w-[252px] min-w-0">
+                    I design with care, always keeping{' '}
+                    <span className="text-foreground">the user at the center of every decision.</span>
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
+              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
                 <Lightbulb className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:brightness-125 transition-all duration-300" />
                 <div>
                   <p className="text-[14px] font-medium mb-0.5">Human Technology</p>
-                  <p className="text-[13px] text-muted-foreground leading-relaxed max-w-[288px] w-[252px] min-w-0">
-                    Technology should feel natural and intuitive, built for humans.
+                  <p className="text-[13px] text-muted-foreground/70 leading-relaxed max-w-[288px] w-[252px] min-w-0">
+                    Technology should feel natural and intuitive,{' '}
+                    <span className="text-foreground">built for humans.</span>
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
+              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
                 <Target className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:rotate-12 transition-all duration-300" />
                 <div>
                   <p className="text-[14px] font-medium mb-0.5">Iterative Improvement</p>
-                  <p className="text-[13px] text-muted-foreground leading-relaxed max-w-[288px] w-[252px] min-w-0">
-                    Great design is born from continuous refinement and learning from feedback.
+                  <p className="text-[13px] text-muted-foreground/70 leading-relaxed max-w-[288px] w-[252px] min-w-0">
+                    Great design is born from{' '}
+                    <span className="text-foreground">continuous refinement and learning from feedback.</span>
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
+              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
                 <Rocket className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:translate-y-[-2px] transition-all duration-300" />
                 <div>
                   <p className="text-[14px] font-medium mb-0.5">Accessibility First</p>
-                  <p className="text-[13px] text-muted-foreground leading-relaxed max-w-[288px] w-[252px] min-w-0">
-                    Designing inclusively ensures everyone can access and enjoy digital experiences.
+                  <p className="text-[13px] text-muted-foreground/70 leading-relaxed max-w-[288px] w-[252px] min-w-0">
+                    Designing inclusively ensures{' '}
+                    <span className="text-foreground">everyone can access and enjoy digital experiences.</span>
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
+              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
                 <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:rotate-180 transition-all duration-300" />
                 <div>
                   <p className="text-[14px] font-medium mb-0.5">Data-Driven Insights</p>
-                  <p className="text-[13px] text-muted-foreground leading-relaxed max-w-[288px] w-[252px] min-w-0">
-                    Balancing creativity with metrics to create solutions that resonate and perform.
+                  <p className="text-[13px] text-muted-foreground/70 leading-relaxed max-w-[288px] w-[252px] min-w-0">
+                    Balancing creativity with metrics to create{' '}
+                    <span className="text-foreground">solutions that resonate and perform.</span>
                   </p>
                 </div>
               </div>
@@ -491,56 +491,26 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 <CardTitle className="text-[16px]">
                   <SectionLabel label="Experience" icon={SectionIcon} />
                 </CardTitle>
-                <CardDescription className="text-[14px]">Latest Role</CardDescription>
               </CardHeader>
-              <CardContent className="flex flex-col gap-3 relative z-10">
-                <ScrollArea className="w-full max-h-[400px]">
-                  <div className="space-y-4 pr-2">
-                    <div className="p-4 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/40 transition-colors">
-                      <div className="mb-3">
-                        <h4 className="font-medium text-[14px] mb-1">Product Designer</h4>
-                        <p className="text-[14px] text-primary mb-2">Wordsmith AI</p>
-                        <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
-                          <Calendar className="h-3.5 w-3.5" />
-                          <span>April 2026 - June 2026</span>
-                        </div>
+              <CardContent className="flex flex-col flex-1 gap-4 relative z-10">
+                <p className="text-[13px] text-muted-foreground/70 leading-relaxed">
+                  Product Designer crafting{' '}
+                  <span className="text-foreground">thoughtful, user-centric products</span>{' '}
+                  across AI startups and fintech.
+                </p>
+                <div className="mt-auto relative -mx-6 -mb-6 overflow-hidden">
+                  <div className="grid grid-cols-1 gap-2.5 px-6 pb-6">
+                    {['Wordsmith AI', 'Nesoi.ai', 'Ditto Insurance (by Finshots)'].map((company) => (
+                      <div
+                        key={company}
+                        className="flex items-center gap-2.5 rounded-lg border border-border/60 bg-secondary/40 px-3 py-2.5"
+                      >
+                        <Briefcase className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
+                        <span className="truncate font-mono text-[12px] text-foreground/90">{company}</span>
                       </div>
-                    </div>
-
-                    <div className="p-4 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/40 transition-colors">
-                      <div className="mb-3">
-                        <h4 className="font-medium text-[14px] mb-1">Product Designer</h4>
-                        <p className="text-[14px] text-primary mb-2">Nesoi.ai</p>
-                        <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
-                          <Calendar className="h-3.5 w-3.5" />
-                          <span>July 2025 - November 2025</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="p-4 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/40 transition-colors">
-                      <div className="mb-3">
-                        <h4 className="font-medium text-[14px] mb-1">Product Designer</h4>
-                        <p className="text-[14px] text-primary mb-2">Ditto Insurance</p>
-                        <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
-                          <Calendar className="h-3.5 w-3.5" />
-                          <span>November 2021 - December 2022</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="p-4 rounded-lg bg-secondary/30 border border-border/30 hover:bg-secondary/40 transition-colors">
-                      <div className="mb-3">
-                        <h4 className="font-medium text-[14px] mb-1">UI/UX Designer</h4>
-                        <p className="text-[14px] text-primary mb-2">Finshots</p>
-                        <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
-                          <Calendar className="h-3.5 w-3.5" />
-                          <span>August 2019 - October 2021</span>
-                        </div>
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                </ScrollArea>
+                </div>
               </CardContent>
             </Card>
           );
@@ -826,7 +796,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           >
             {borderReveal}
             {!shouldShowPlaceholder && photos.length > 0 ? (
-              <div className="relative w-full h-full min-h-[320px] z-10 flex gap-2.5 p-2 overflow-hidden rounded-2xl">
+              <div className="relative w-full h-full min-h-[320px] z-10 flex gap-2.5 p-2 overflow-hidden rounded-lg">
                 {photos.map((photo: string, idx: number) => {
                   const isActive = idx === currentIndex;
                   // Staggered widths: closer to active = wider strip
@@ -1128,7 +1098,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           </h1>
         </div>
       )}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-6 lg:gap-8 auto-rows-[minmax(200px,auto)] pb-4 md:pb-0 w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-4 lg:gap-5 auto-rows-[minmax(220px,auto)] pb-4 md:pb-0 w-full">
         {displaySections.map((section, index) => renderSection(section, index))}
       </div>
       
@@ -1182,7 +1152,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 {selectedSection.id === 'hero' && (
                   <>
                     <div>
-                      <h4 className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground mb-2">About</h4>
+                      <h4 className="text-[15px] font-medium tracking-tight text-foreground mb-2">About</h4>
                       <p className="text-sm text-muted-foreground leading-relaxed">
                         Building meaningful digital experiences through thoughtful design and user-centric solutions.
                       </p>
@@ -1204,7 +1174,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 {selectedSection.id === 'preferences' && (
                   <>
                     <div>
-                      <h4 className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground mb-3">Design Preferences</h4>
+                      <h4 className="text-[15px] font-medium tracking-tight text-foreground mb-3">Design Preferences</h4>
                       <div className="space-y-3">
                         <div className="p-3 rounded-lg bg-secondary/30 border border-border/30">
                           <div className="flex justify-between items-center mb-1">
@@ -1244,13 +1214,13 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 {selectedSection.id === 'about' && (
                   <>
                     <div>
-                      <h4 className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground mb-2">About Me</h4>
+                      <h4 className="text-[15px] font-medium tracking-tight text-foreground mb-2">About Me</h4>
                       <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                         I design with care, always keeping the user at the center. Good design begins with understanding people and their needs.
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground mb-2">Core Skills</h4>
+                      <h4 className="text-[15px] font-medium tracking-tight text-foreground mb-2">Core Skills</h4>
                       <div className="flex flex-wrap gap-2">
                         {['Product Design', 'UI/UX', 'Prototyping', 'Design Systems', 'User Research', 'Interaction Design'].map((skill, idx) => {
                           const colors = ['bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300', 'bg-purple-500/15 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300', 'bg-pink-500/15 dark:bg-pink-500/15 text-pink-700 dark:text-pink-300', 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300', 'bg-green-500/15 dark:bg-green-500/15 text-green-700 dark:text-green-300', 'bg-orange-500/15 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300', 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'];
@@ -1266,7 +1236,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                       </div>
                     </div>
                     <div className="pt-4">
-                      <h4 className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground mb-2">Tools</h4>
+                      <h4 className="text-[15px] font-medium tracking-tight text-foreground mb-2">Tools</h4>
                       <div className="flex flex-wrap gap-2">
                         {['Sketch', 'Principle', 'After Effects', 'Webflow'].map((tool, idx) => {
                           const colors = ['bg-emerald-500/15 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300', 'bg-teal-500/15 dark:bg-teal-500/15 text-teal-700 dark:text-teal-300', 'bg-violet-500/15 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300', 'bg-rose-500/15 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300', 'bg-amber-500/15 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300'];
@@ -1288,7 +1258,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 {selectedSection.id === 'philosophy' && (
                   <>
                     <div>
-                      <h4 className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground mb-3">Design Philosophy</h4>
+                      <h4 className="text-[15px] font-medium tracking-tight text-foreground mb-3">Design Philosophy</h4>
                       <div className="space-y-3">
                         <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
                           <div className="flex items-start gap-3">
@@ -1344,7 +1314,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                   <>
                     {selectedSection.content ? (
                         <div>
-                          <h4 className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground mb-2">Experience Details</h4>
+                          <h4 className="text-[15px] font-medium tracking-tight text-foreground mb-2">Experience Details</h4>
                         <div className="text-sm text-muted-foreground leading-relaxed prose dark:prose-invert prose-sm max-w-none">
                           <ReactMarkdown>{selectedSection.content}</ReactMarkdown>
                         </div>
@@ -1353,6 +1323,17 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                       <>
                         <ScrollArea className="w-full max-h-[400px]">
                           <div className="space-y-4 pr-2">
+                            <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
+                              <div className="mb-3">
+                                <h4 className="font-medium text-sm mb-1">Product Designer</h4>
+                                <p className="text-sm text-primary mb-2">Wordsmith AI</p>
+                                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                  <Calendar className="h-3.5 w-3.5" />
+                                  <span>April 2026 - June 2026</span>
+                                </div>
+                              </div>
+                            </div>
+
                             <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
                               <div className="mb-3">
                                 <h4 className="font-medium text-sm mb-1">Product Designer</h4>
@@ -1377,38 +1358,17 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                             <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
                               <div className="mb-3">
                                 <h4 className="font-medium text-sm mb-1">Product Designer</h4>
-                                <p className="text-sm text-primary mb-2">Ditto Insurance</p>
+                                <p className="text-sm text-primary mb-2">Ditto Insurance (by Finshots)</p>
                                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                                   <Calendar className="h-3.5 w-3.5" />
-                                  <span>November 2021 - December 2022</span>
+                                  <span>August 2019 - December 2022</span>
                                 </div>
                               </div>
                               <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-                                Led redesign of booking portal achieving 17% conversion increase. Created Falcon Design System and redesigned internal CRM improving team efficiency by 20%.
+                                Led redesign of booking portal achieving 17% conversion increase. Created Falcon Design System and redesigned internal CRM improving team efficiency by 20%. Designed award-winning Finshots mobile app, contributing to Google Play Best App of 2020 and 100k+ downloads.
                               </p>
                               <div className="flex flex-wrap gap-1.5">
-                                {['Design Systems', 'UX Research', 'Prototyping'].map((tag) => (
-                                  <span key={tag} className={`px-2 py-0.5 rounded text-xs ${tag.includes('Design') ? 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                            
-                            <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
-                              <div className="mb-3">
-                                <h4 className="font-medium text-sm mb-1">UI/UX Designer</h4>
-                                <p className="text-sm text-primary mb-2">Finshots</p>
-                                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                                  <Calendar className="h-3.5 w-3.5" />
-                                  <span>August 2019 - October 2021</span>
-                                </div>
-                              </div>
-                              <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-                                Designed award-winning mobile app, contributed to Google Play &quot;Best App of 2020&quot; award, helped achieve 100k+ downloads and 500k+ subscribers.
-                              </p>
-                              <div className="flex flex-wrap gap-1.5">
-                                {['Mobile Design', 'UX Research', 'Prototyping'].map((tag) => (
+                                {['Design Systems', 'Mobile Design', 'UX Research', 'Prototyping'].map((tag) => (
                                   <span key={tag} className={`px-2 py-0.5 rounded text-xs ${tag.includes('Design') ? 'bg-indigo-500/15 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300' : tag.includes('Research') ? 'bg-blue-500/15 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300' : 'bg-cyan-500/15 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'}`}>
                                     {tag}
                                   </span>

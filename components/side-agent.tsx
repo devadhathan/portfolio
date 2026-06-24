@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, User, RotateCcw, ChevronLeft, ChevronDown, Sparkles, MessageCircle, Smile } from 'lucide-react';
+import { Send, User, RotateCcw, ChevronDown, Sparkles, MessageCircle, Smile } from 'lucide-react';
 import { Sheet, SheetContent, SheetClose } from '@/components/ui/sheet';
 import { PortfolioAgent, AgentCommand, AgentState, PortfolioSection } from '@/lib/agent';
 import { resumeData } from '@/lib/resume-data';
@@ -189,8 +189,7 @@ const CARD_REGISTRY: Record<string, GenUIItem> = {
   // Timeline
   'timeline:wordsmith': { type: 'timeline', role: 'Product Designer', company: 'Wordsmith AI',    period: 'Apr 2026 – Jun 2026', highlights: ['AI-powered writing and content platform'] },
   'timeline:nesoi':     { type: 'timeline', role: 'Product Designer', company: 'Nesoi.ai',         period: 'Jul 2025 – Nov 2025', highlights: ['+92% engagement', '-37% course creation time', 'WCAG 2.1 AA'] },
-  'timeline:ditto':     { type: 'timeline', role: 'Product Designer', company: 'Ditto Insurance',  period: 'Nov 2021 – Dec 2022', highlights: ['Falcon Design System', '+17% conversion', '+20% efficiency'] },
-  'timeline:finshots':  { type: 'timeline', role: 'UI/UX Designer',   company: 'Finshots',         period: 'Aug 2019 – Oct 2021', highlights: ['Google Play Best App 2020', '100k+ downloads', '4.9★'] },
+  'timeline:ditto-finshots': { type: 'timeline', role: 'Product Designer', company: 'Ditto Insurance (by Finshots)', period: 'Aug 2019 – Dec 2022', highlights: ['Falcon Design System', '+17% conversion', '+20% efficiency', 'Google Play Best App 2020', '100k+ downloads', '4.9★'] },
 
   // Skills
   'skills:design':    { type: 'skill_grid', categories: [{ name: 'Design',    skills: ['UX/UI', 'Interaction Design', 'Prototyping', 'Visual Design', 'Wireframing', 'Design Systems', 'Mockups'] }] },
@@ -329,6 +328,61 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
   const [input, setInput] = useState('');
   const [isMobile, setIsMobile] = useState(false);
   const [promptCount, setPromptCount] = useState(10); // Start with 10 prompts
+
+  // ─── Orb: white ovals (random gaze + blink) and click-to-grow ───
+  const orbRef = useRef<HTMLButtonElement>(null);
+  const [orbPupil, setOrbPupil] = useState({ x: 0, y: 0 });
+  const [orbBlink, setOrbBlink] = useState(false);
+  const [orbGrown, setOrbGrown] = useState(false);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const max = 3; // px the oval can travel from center
+    const scheduleGaze = () => {
+      timer = setTimeout(() => {
+        // Occasionally re-center, otherwise dart to a random direction.
+        if (Math.random() < 0.25) {
+          setOrbPupil({ x: 0, y: 0 });
+        } else {
+          const angle = Math.random() * Math.PI * 2;
+          const dist = 0.5 + Math.random() * 0.5;
+          setOrbPupil({ x: Math.cos(angle) * max * dist, y: Math.sin(angle) * max * dist });
+        }
+        scheduleGaze();
+      }, 900 + Math.random() * 1600);
+    };
+    scheduleGaze();
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    let blinkTimer: ReturnType<typeof setTimeout>;
+    let openTimer: ReturnType<typeof setTimeout>;
+    const scheduleBlink = () => {
+      blinkTimer = setTimeout(() => {
+        setOrbBlink(true);
+        openTimer = setTimeout(() => setOrbBlink(false), 130);
+        scheduleBlink();
+      }, 2500 + Math.random() * 3500);
+    };
+    scheduleBlink();
+    return () => {
+      clearTimeout(blinkTimer);
+      clearTimeout(openTimer);
+    };
+  }, []);
+
+  // Shrink the orb back when clicking anywhere outside it.
+  useEffect(() => {
+    if (!orbGrown) return;
+    const handleDown = (e: MouseEvent) => {
+      if (orbRef.current && !orbRef.current.contains(e.target as Node)) {
+        setOrbGrown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleDown);
+    return () => document.removeEventListener('mousedown', handleDown);
+  }, [orbGrown]);
 
   useEffect(() => {
     const updateIsMobile = () => {
@@ -600,7 +654,7 @@ Pick 2-6 card IDs from this list that best visualise the answer:
 
 STATS: stat:downloads, stat:conversion, stat:engagement, stat:efficiency, stat:rating, stat:subscribers, stat:dropoff, stat:devtime, stat:clients, stat:coursetime
 PROJECTS: project:finshots, project:falcon, project:crm, project:onboarding, project:booking, project:nesoi
-TIMELINE: timeline:wordsmith, timeline:nesoi, timeline:ditto, timeline:finshots
+TIMELINE: timeline:wordsmith, timeline:nesoi, timeline:ditto-finshots
 SKILLS: skills:design, skills:research, skills:software
 QUOTES: quote:philosophy, quote:approach, quote:systems
 CHARTS: chart:impact, chart:downloads, chart:skills, chart:nesoi
@@ -642,7 +696,7 @@ Write 2-4 sentences as a friendly, conversational reply that adds context about 
 CARD IDs TO CHOOSE FROM:
 STATS: stat:downloads, stat:conversion, stat:engagement, stat:efficiency, stat:rating, stat:subscribers, stat:dropoff, stat:devtime, stat:clients, stat:coursetime
 PROJECTS: project:finshots, project:falcon, project:crm, project:onboarding, project:booking, project:nesoi
-TIMELINE: timeline:wordsmith, timeline:nesoi, timeline:ditto, timeline:finshots
+TIMELINE: timeline:wordsmith, timeline:nesoi, timeline:ditto-finshots
 SKILLS: skills:design, skills:research, skills:software
 QUOTES: quote:philosophy, quote:approach, quote:systems
 CHARTS: chart:impact, chart:downloads, chart:skills, chart:nesoi
@@ -659,7 +713,7 @@ MAPPING:
 - "awards" / "certifications" → info:award, info:cert:google, info:cert:ibm
 - "contact" / "hire" / "location" → info:location, info:contact
 - "about" / "who" / "overview" → image:portrait, info:location, chart:impact
-- "everything" → chart:impact, project:finshots, timeline:ditto, image:falcon
+- "everything" → chart:impact, project:finshots, timeline:ditto-finshots, image:falcon
 - "visuals" / "screenshots" / "designs" → image cards
 - "graphs" / "charts" / "data" → chart cards + stat cards
 - specific project name → that project card + its image + related stats
@@ -714,7 +768,11 @@ CARDS:chart:impact,stat:downloads,stat:conversion,image:finshots`;
         }
 
         // ── STEP 2: Parse CARDS from complete response ──
-        const MARKER = /CARDS:?\s*\[?/;
+        // The model is told to end with "CARDS:id1,id2" but frequently emits a
+        // variant ("CARD:", "CARS:", "CAR::", "Cards :", a stray bracket, …).
+        // Match the whole CARDS family tolerantly so the directive is always
+        // stripped instead of leaking into the chat bubble.
+        const MARKER = /\bCAR[DS]{0,3}\s*:{1,2}\s*\[?/i;
         const markerMatch = MARKER.exec(fullResponse);
         let chatText = fullResponse;
         let cardIds: string[] = [];
@@ -725,6 +783,16 @@ CARDS:chart:impact,stat:downloads,stat:conversion,image:finshots`;
           const raw = idsPart.replace(/\].*/s, '').replace(/[\[\]]/g, '').trim();
           cardIds = raw.split(',').map(s => s.trim().replace(/['"]/g, '').trim()).filter(Boolean);
         }
+
+        // Safety net: strip any trailing card directive that slipped through —
+        // a malformed/fused "CARDS…" marker the model emitted without a clean
+        // colon (e.g. "CARDStimelinenesoi,stat:"), or a bare "id:id,id:id" list.
+        // The guard only removes a "CARDS…" tail when it clearly looks like a
+        // list (contains a comma or colon), so ordinary prose is left intact.
+        chatText = chatText
+          .replace(/\bCAR[DS]{1,3}[\s:]*[a-z0-9_:,\s-]*$/i, (m) => (/[,:]/.test(m) ? '' : m))
+          .replace(/\n?\s*(?:[a-z_]+:[a-z_]+)(?:\s*,\s*[a-z_]+(?::[a-z_]+)?)*\s*$/i, '')
+          .trim();
 
         // ── STEP 3: Resolve card IDs to registry items ──
         const allKeys = Object.keys(CARD_REGISTRY);
@@ -833,11 +901,23 @@ CARDS:chart:impact,stat:downloads,stat:conversion,image:finshots`;
     }
   };
 
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const mobileInputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-size the message box to its content — grows on paste/typing and
+  // collapses back when the value is cleared (e.g. after sending). Driving
+  // this from `input` (not onChange) ensures it also resets on programmatic
+  // clears. The CSS `max-h-*` class caps the height and enables scrolling.
+  useEffect(() => {
+    for (const el of [inputRef.current, mobileInputRef.current]) {
+      if (!el) continue;
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    }
+  }, [input]);
+
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
-    // Auto-resize textarea
-    e.target.style.height = 'auto';
-    e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`; // Max 200px height
   };
 
   return (
@@ -919,13 +999,15 @@ CARDS:chart:impact,stat:downloads,stat:conversion,image:finshots`;
               {/* Header */}
               <div className="flex items-center justify-between px-4 pt-4 pb-3 flex-shrink-0">
 
-                {/* Animated B&W orb — click collapses */}
+                {/* Animated B&W orb — click to grow / shrink */}
                 <button
-                  onClick={handleCollapseToggle}
+                  ref={orbRef}
+                  onClick={() => setOrbGrown((g) => !g)}
                   className="relative h-10 w-10 rounded-full overflow-hidden group flex-shrink-0 focus:outline-none"
-                  title="Minimize"
+                  style={{ transform: `scale(${orbGrown ? 1.7 : 1})`, transformOrigin: 'center', transition: 'transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)' }}
+                  title={orbGrown ? 'Shrink' : 'Enlarge'}
                 >
-                  <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 38% 36%, #d4d4d4 0%, #6b6b6b 40%, #1a1a1a 72%, #000000 100%)' }} />
+                  <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 38% 36%, #9a9a9a 0%, #454545 40%, #101010 72%, #000000 100%)' }} />
                   {/* blob 1 — white light */}
                   <div className="absolute rounded-full" style={{ width: '72%', height: '72%', top: '2%', left: '2%', opacity: 0.55, background: 'radial-gradient(circle, #ffffff 0%, transparent 68%)', animation: 'corb1 9s ease-in-out infinite', willChange: 'transform' }} />
                   {/* blob 2 — black depth */}
@@ -948,8 +1030,30 @@ CARDS:chart:impact,stat:downloads,stat:conversion,image:finshots`;
                   </div>
                   {/* specular */}
                   <div className="absolute inset-0 rounded-full" style={{ background: 'radial-gradient(circle at 28% 26%, rgba(255,255,255,0.65) 0%, transparent 48%)' }} />
-                  <div className="absolute inset-0 rounded-full flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ChevronLeft className="h-4 w-4 text-white" />
+
+                  {/* Glowing white ovals that glance around in random directions */}
+                  <div
+                    className="absolute inset-0 flex items-center justify-center"
+                    style={{
+                      gap: '5px',
+                      transform: `translate(${orbPupil.x}px, ${orbPupil.y}px) translateY(-4%)`,
+                      transition: 'transform 260ms ease-out',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    {[0, 1].map((i) => (
+                      <div
+                        key={i}
+                        style={{
+                          width: '22%',
+                          height: '30%',
+                          borderRadius: '50%',
+                          background: 'radial-gradient(circle at 50% 38%, #ffffff 0%, #f3f3f3 70%, #dcdcdc 100%)',
+                          transform: `scaleY(${orbBlink ? 0.12 : 1})`,
+                          transition: 'transform 90ms ease',
+                        }}
+                      />
+                    ))}
                   </div>
                 </button>
 
@@ -1023,6 +1127,7 @@ CARDS:chart:impact,stat:downloads,stat:conversion,image:finshots`;
               <div className="px-4 pb-5 pt-2 flex-shrink-0">
                 <div className="flex items-center gap-2 bg-secondary border border-border rounded-full px-4 py-2.5">
                   <textarea
+                    ref={inputRef}
                     value={input}
                     onChange={handleTextareaChange}
                     onKeyDown={handleKeyPress}
@@ -1111,6 +1216,7 @@ CARDS:chart:impact,stat:downloads,stat:conversion,image:finshots`;
                       <div className="flex flex-col gap-3 border border-border/50 rounded-lg bg-card backdrop-blur-sm p-3">
                         <div className="relative">
                           <textarea
+                            ref={mobileInputRef}
                             value={input}
                             onChange={handleTextareaChange}
                             onKeyDown={handleKeyPress}

@@ -4,7 +4,8 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { TopBar, MobileBottomNav } from '@/components/top-bar';
 import { AboutSection } from '@/components/about-section';
-import { AgentState } from '@/lib/agent';
+import { ErrorBoundary } from '@/components/error-boundary';
+import { AgentState, PortfolioAgent } from '@/lib/agent';
 import type { GenUIItem } from '@/components/side-agent';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +19,10 @@ const ProjectDetailView = dynamic(() => import('@/components/project-detail-view
 const ProjectsListView = dynamic(() => import('@/components/projects-list-view').then(mod => ({ default: mod.ProjectsListView })), { ssr: false });
 const FloatingChatButton = dynamic(() => import('@/components/floating-chat-button').then(mod => ({ default: mod.FloatingChatButton })), { ssr: false });
 
+function createDefaultAgentState(): AgentState {
+  return new PortfolioAgent().getState();
+}
+
 const LOADING_MESSAGES = [
   'Arranging your portfolio sections',
   'Curating the best projects',
@@ -26,7 +31,7 @@ const LOADING_MESSAGES = [
 ];
 
 export default function Home() {
-  const [agentState, setAgentState] = useState<AgentState | null>(null);
+  const [agentState, setAgentState] = useState<AgentState>(() => createDefaultAgentState());
   const [genUIItems, setGenUIItems] = useState<GenUIItem[] | null>(null);
   const [isAgentWorking, setIsAgentWorking] = useState(false);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
@@ -187,15 +192,53 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true);
+
+    // Show the intro loader only once per browser session — navigating back to
+    // the home view (e.g. pressing "About") should not replay it.
+    let alreadyLoaded = false;
+    try {
+      alreadyLoaded = sessionStorage.getItem('portfolioLoaded') === '1';
+    } catch {}
+
+    if (alreadyLoaded) {
+      setShowInitialLoading(false);
+      return;
+    }
+
     setShowInitialLoading(true);
-    const timer = setTimeout(() => {
+
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      try {
+        sessionStorage.setItem('portfolioLoaded', '1');
+      } catch {}
       setFadingOut(true);
       setTimeout(() => {
         setShowInitialLoading(false);
         setFadingOut(false);
-      }, 800);
-    }, 2000);
-    return () => clearTimeout(timer);
+      }, 700);
+    };
+
+    // Keep a short minimum so the intro doesn't flash, then dismiss only once
+    // the page's content (videos/images) has fully loaded.
+    const minTimer = setTimeout(() => {
+      if (document.readyState === 'complete') {
+        finish();
+      } else {
+        window.addEventListener('load', finish, { once: true });
+      }
+    }, 1200);
+
+    // Safety cap so a slow/stalled asset can never leave the loader stuck.
+    const maxTimer = setTimeout(finish, 5000);
+
+    return () => {
+      clearTimeout(minTimer);
+      clearTimeout(maxTimer);
+      window.removeEventListener('load', finish);
+    };
   }, []);
 
   return (
@@ -226,11 +269,13 @@ export default function Home() {
           <div className="flex pt-14 relative z-10">
         {/* Desktop Sidebar - Fixed */}
         <div className={`hidden lg:block fixed left-0 top-14 h-[calc(100vh-3.5rem)] z-20 transition-all duration-300 ${isSidebarCollapsed ? 'w-16' : 'w-80'}`}>
-          <DesktopSidebar 
-            onProjectSelect={setSelectedProject} 
-            isCollapsed={isSidebarCollapsed}
-            onCollapseChange={setIsSidebarCollapsed}
-          />
+          <ErrorBoundary>
+            <DesktopSidebar 
+              onProjectSelect={setSelectedProject} 
+              isCollapsed={isSidebarCollapsed}
+              onCollapseChange={setIsSidebarCollapsed}
+            />
+          </ErrorBoundary>
         </div>
         
         {/* Main Content */}
@@ -397,20 +442,22 @@ export default function Home() {
                 })}
               </div>
             </div>
-          ) : agentState ? (
+          ) : (
             /* ── Default home portfolio ── */
             <div className={`transition-all duration-600 animate-fade-in-blur ${contentGutterClass}`}>
-              <PortfolioSections
-                agentState={agentState}
-                hideHeaderText={false}
-                onProjectSelect={setSelectedProject}
-                onShowProjectsList={() => setShowProjectsList(true)}
-              />
+              <ErrorBoundary>
+                <PortfolioSections
+                  agentState={agentState}
+                  hideHeaderText={false}
+                  onProjectSelect={setSelectedProject}
+                  onShowProjectsList={() => setShowProjectsList(true)}
+                />
+              </ErrorBoundary>
               <div className="mt-10">
                 <AboutSection />
               </div>
             </div>
-          ) : null}
+          )}
           </div>
         </div>
       </div>

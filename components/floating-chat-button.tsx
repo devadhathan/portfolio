@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, type CSSProperties } from 'react';
 
 interface FloatingChatButtonProps {
   onClick: () => void;
@@ -10,17 +10,44 @@ interface FloatingChatButtonProps {
 }
 
 export function FloatingChatButton({ onClick, isCollapsed }: FloatingChatButtonProps) {
-  const [shouldBounce, setShouldBounce] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  // White ovals glance around in random directions.
+  const orbRef = useRef<HTMLDivElement>(null);
+  const [pupil, setPupil] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    if (isCollapsed) {
-      setShouldBounce(true);
-      const timer = setTimeout(() => setShouldBounce(false), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [isCollapsed]);
+    let timer: ReturnType<typeof setTimeout>;
+    const max = 3; // px the ovals can travel from center
+    const scheduleGaze = () => {
+      timer = setTimeout(() => {
+        // Occasionally re-center, otherwise dart to a random direction.
+        if (Math.random() < 0.25) {
+          setPupil({ x: 0, y: 0 });
+        } else {
+          const angle = Math.random() * Math.PI * 2;
+          const dist = 0.5 + Math.random() * 0.5;
+          setPupil({ x: Math.cos(angle) * max * dist, y: Math.sin(angle) * max * dist });
+        }
+        scheduleGaze();
+      }, 900 + Math.random() * 1600);
+    };
+    scheduleGaze();
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleClick = () => {
+    setIsAnimating(true);
+    onClick();
+    setTimeout(() => setIsAnimating(false), 900);
+  };
 
   if (!isCollapsed) return null;
+
+  const orbAnim = (name: string, duration: string, delay = '0s'): CSSProperties => ({
+    animation: `${name} ${duration} ease-in-out infinite`,
+    animationDelay: delay,
+  });
 
   return (
     <>
@@ -73,12 +100,6 @@ export function FloatingChatButton({ onClick, isCollapsed }: FloatingChatButtonP
           0%   { transform: translateX(-130%) rotate(-15deg); }
           100% { transform: translateX(160%)  rotate(-15deg); }
         }
-        @keyframes fcb-bounce {
-          0%, 100% { transform: translateY(0); }
-          40% { transform: translateY(-8px); }
-          70% { transform: translateY(-4px); }
-        }
-        .fcb-bounce { animation: fcb-bounce 0.8s ease-out; }
       `}</style>
 
       <svg width="0" height="0" style={{ position: 'absolute' }}>
@@ -90,34 +111,46 @@ export function FloatingChatButton({ onClick, isCollapsed }: FloatingChatButtonP
         </defs>
       </svg>
 
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
+      <div className="fixed bottom-20 right-6 md:bottom-8 md:right-auto md:left-1/2 md:-translate-x-1/2 z-50">
         <button
-          onClick={onClick}
-          className={`relative flex items-center gap-3 pl-2 pr-6 py-2 rounded-full bg-card border border-border shadow-lg hover:shadow-xl hover:scale-[1.04] active:scale-[0.98] transition-all duration-200 ${shouldBounce ? 'fcb-bounce' : ''}`}
+          onClick={handleClick}
+          className="relative flex items-center gap-3 h-12 w-12 md:w-auto md:h-auto md:pl-2 md:pr-6 md:py-2 justify-center rounded-full bg-card border border-border shadow-lg hover:shadow-xl hover:scale-[1.08] md:hover:scale-[1.04] active:scale-[0.95] md:active:scale-[0.98] transition-all duration-200"
         >
-          {/* Animated B&W Noise Orb */}
-          <div className="relative h-11 w-11 rounded-full overflow-hidden flex-shrink-0">
-            <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 38% 36%, #d4d4d4 0%, #6b6b6b 40%, #1a1a1a 72%, #000000 100%)' }} />
-            <div className="absolute rounded-full" style={{ width: '72%', height: '72%', top: '2%', left: '2%', opacity: 0.55, background: 'radial-gradient(circle, #ffffff 0%, transparent 68%)', animation: 'corb1 9s ease-in-out infinite', willChange: 'transform' }} />
-            <div className="absolute rounded-full" style={{ width: '68%', height: '68%', bottom: '-6%', right: '-6%', opacity: 0.72, background: 'radial-gradient(circle, #000000 0%, transparent 68%)', animation: 'corb2 12s ease-in-out infinite', willChange: 'transform' }} />
-            <div className="absolute rounded-full" style={{ width: '58%', height: '58%', bottom: '14%', left: '6%', opacity: 0.38, background: 'radial-gradient(circle, #888888 0%, transparent 68%)', animation: 'corb3 15s ease-in-out infinite', willChange: 'transform' }} />
-            <div className="absolute mix-blend-overlay" style={{ inset: '-10%', opacity: 0.30, filter: 'url(#fcb-noise)', background: 'white', animation: 'cnoise 6s ease-in-out infinite', willChange: 'transform' }} />
-            {/* wave 1 — wide soft band, left→right */}
+          <div ref={orbRef} className="relative h-10 w-10 md:h-11 md:w-11 rounded-full overflow-hidden flex-shrink-0">
+            <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 38% 36%, #9a9a9a 0%, #454545 40%, #101010 72%, #000000 100%)' }} />
+            <div className="absolute rounded-full" style={{ width: '72%', height: '72%', top: '2%', left: '2%', opacity: 0.55, background: 'radial-gradient(circle, #ffffff 0%, transparent 68%)', ...orbAnim('corb1', '9s') }} />
+            <div className="absolute rounded-full" style={{ width: '68%', height: '68%', bottom: '-6%', right: '-6%', opacity: 0.72, background: 'radial-gradient(circle, #000000 0%, transparent 68%)', ...orbAnim('corb2', '12s') }} />
+            <div className="absolute rounded-full" style={{ width: '58%', height: '58%', bottom: '14%', left: '6%', opacity: 0.38, background: 'radial-gradient(circle, #888888 0%, transparent 68%)', ...orbAnim('corb3', '15s') }} />
+            <div className="absolute mix-blend-overlay" style={{ inset: '-10%', opacity: 0.30, filter: 'url(#fcb-noise)', background: 'white', ...orbAnim('cnoise', '6s') }} />
             <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: '50%' }}>
-              <div style={{ position: 'absolute', top: '28%', left: '-20%', right: '-20%', height: '22%', borderRadius: '50%', background: 'radial-gradient(ellipse 60% 100% at 50% 50%, rgba(255,255,255,0.20) 0%, transparent 100%)', animation: 'cwave1 2.2s ease-in-out infinite', willChange: 'transform' }} />
+              <div style={{ position: 'absolute', top: '28%', left: '-20%', right: '-20%', height: '22%', borderRadius: '50%', background: 'radial-gradient(ellipse 60% 100% at 50% 50%, rgba(255,255,255,0.20) 0%, transparent 100%)', ...orbAnim('cwave1', '2.2s') }} />
             </div>
-            {/* wave 2 — opposite direction, lower */}
             <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: '50%' }}>
-              <div style={{ position: 'absolute', top: '50%', left: '-20%', right: '-20%', height: '16%', borderRadius: '50%', background: 'radial-gradient(ellipse 60% 100% at 50% 50%, rgba(255,255,255,0.13) 0%, transparent 100%)', animation: 'cwave2 3.1s ease-in-out infinite', willChange: 'transform' }} />
+              <div style={{ position: 'absolute', top: '50%', left: '-20%', right: '-20%', height: '16%', borderRadius: '50%', background: 'radial-gradient(ellipse 60% 100% at 50% 50%, rgba(255,255,255,0.13) 0%, transparent 100%)', ...orbAnim('cwave2', '3.1s') }} />
             </div>
-            {/* wave 3 — faintest, near bottom */}
             <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: '50%' }}>
-              <div style={{ position: 'absolute', top: '66%', left: '-20%', right: '-20%', height: '14%', borderRadius: '50%', background: 'radial-gradient(ellipse 60% 100% at 50% 50%, rgba(255,255,255,0.09) 0%, transparent 100%)', animation: 'cwave3 4.0s ease-in-out infinite 0.6s', willChange: 'transform' }} />
+              <div style={{ position: 'absolute', top: '66%', left: '-20%', right: '-20%', height: '14%', borderRadius: '50%', background: 'radial-gradient(ellipse 60% 100% at 50% 50%, rgba(255,255,255,0.09) 0%, transparent 100%)', ...orbAnim('cwave3', '4.0s', '0.6s') }} />
             </div>
             <div className="absolute inset-0 rounded-full" style={{ background: 'radial-gradient(circle at 28% 26%, rgba(255,255,255,0.65) 0%, transparent 48%)' }} />
+
+            <div className="absolute inset-0 flex items-center justify-center" style={{ gap: '5px', transform: `translate(${pupil.x}px, ${pupil.y}px) translateY(-4%)`, transition: 'transform 260ms ease-out', pointerEvents: 'none' }}>
+              {[0, 1].map((i) => (
+                <div
+                  key={i}
+                  style={{
+                    width: '22%',
+                    height: '30%',
+                    borderRadius: '50%',
+                    background: 'radial-gradient(circle at 50% 38%, #ffffff 0%, #f3f3f3 70%, #dcdcdc 100%)',
+                    transform: isAnimating ? 'scaleY(0.12)' : 'scaleY(1)',
+                    transition: 'transform 90ms ease',
+                  }}
+                />
+              ))}
+            </div>
           </div>
 
-          <span className="text-[15px] font-medium text-foreground whitespace-nowrap select-none">
+          <span className="hidden md:inline text-[15px] font-medium text-foreground whitespace-nowrap select-none">
             Talk to my agent
           </span>
         </button>

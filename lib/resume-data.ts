@@ -28,26 +28,15 @@ export const resumeData = {
     },
     {
       role: "Product Designer",
-      company: "Ditto insurance",
-      period: "November 2021 - December 2022",
+      company: "Ditto Insurance (by Finshots)",
+      period: "August 2019 - December 2022",
       achievements: [
-        "Led a full redesign of the booking portal using user research and the Double Diamond process, achieving a 17% increase in conversion.",
-        "Created and standardized the Falcon Design System, defining components, tokens, interaction rules, reducing design-to-development time by 30%.",
-        "Spearheaded the redesign of the internal CRM in an agile environment, improving team efficiency by 20%.",
-        "Conducted and synthesised user research, analytics, and usability testing to refine system-level patterns."
+        "Led a full redesign of the Ditto booking portal, achieving a 17% increase in conversion.",
+        "Created and standardized the Falcon Design System, reducing design-to-development time by 30%.",
+        "Spearheaded the redesign of Ditto's internal CRM, improving team efficiency by 20%.",
+        "Designed the Finshots mobile app, contributing to Google Play Best App award (2020) and 100k+ downloads.",
       ]
     },
-    {
-      role: "UI/UX Designer",
-      company: "Finshots",
-      period: "August 2019 - October 2021",
-      achievements: [
-        "Designed mobile app and managed product ecosystem integration, delivering engaging, accessible solutions in a fintech context.",
-        "Contributed to Google Play Best App award (2020).",
-        "Collaborated with developers and writers to create engaging content and visuals, contributing to achieving 500k+ subscribers.",
-        "Helped achieve 100,000+ downloads and 500K+ subscribers."
-      ]
-    }
   ],
 
   education: [

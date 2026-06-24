@@ -10,14 +10,23 @@ const nextConfig = {
   },
   // Exclude the three-js-scene-creation-2 directory from the build
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
-  // Suppress React error overlay for specific errors
-  onDemandEntries: {
-    maxInactiveAge: 25 * 1000,
-    pagesBufferLength: 2,
-  },
   // Experimental features for better performance
   experimental: {
     optimizeCss: false,
+  },
+  // macOS without fsevents falls back to per-directory fs.watch, which
+  // exhausts file descriptors (EMFILE) and silently breaks HMR. Use polling
+  // (no per-file descriptors) and ignore heavy dirs to keep it light.
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.watchOptions = {
+        ...config.watchOptions,
+        poll: 800,
+        aggregateTimeout: 300,
+        ignored: ['**/node_modules/**', '**/.next/**', '**/.git/**'],
+      };
+    }
+    return config;
   },
 }
 

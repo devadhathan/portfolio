@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { WeatherWidget } from './widgets/weather-widget';
 import { NotesWidget } from './widgets/notes-widget';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, Calendar, Menu, ChevronRight, X, FolderKanban } from 'lucide-react';
+import { Calendar, Menu, Clock, ChevronRight, FolderKanban } from 'lucide-react';
 import { resumeData } from '@/lib/resume-data';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -68,11 +68,62 @@ export function MobileSidebar({ onProjectSelect }: MobileSidebarProps) {
           <SheetTitle>Navigation</SheetTitle>
         </SheetHeader>
         <div className="p-4 space-y-4">
-          {/* Clock Widget - Analog */}
+          {/* Projects */}
+          <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md dark:shadow-md">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <FolderKanban className="h-4 w-4 text-primary shrink-0" />
+                Projects
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <ScrollArea className="h-[200px]">
+                <div className="space-y-0.5 pr-4">
+                  {resumeData.projects
+                    .filter(project => project.title !== 'Sustainable Kiosk')
+                    .map((project, index) => {
+                      const projectSlug = project.title.toLowerCase().replace(/\s+/g, '-');
+                      return (
+                        <div
+                          key={index}
+                          className="group relative"
+                        >
+                          <SheetClose asChild>
+                            <div 
+                              className="flex items-center gap-2 px-2.5 py-2 rounded hover:bg-accent/50 transition-colors cursor-pointer"
+                              onClick={() => onProjectSelect?.(projectSlug)}
+                            >
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <div className="w-1 h-1 rounded-full bg-muted-foreground/60 group-hover:bg-primary transition-colors flex-shrink-0 mt-0.5" />
+                                <p className="text-sm font-medium truncate">{project.title}</p>
+                              </div>
+                              <p className="text-xs text-muted-foreground ml-3 truncate">
+                                {project.company || project.institution} • {project.period}
+                              </p>
+                            </div>
+                            <ChevronRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                            </div>
+                          </SheetClose>
+                        </div>
+                      );
+                    })}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+
+          {/* Notes */}
+          <NotesWidget />
+
+          {/* Weather */}
+          <WeatherWidget />
+
+          {/* Time */}
           <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md dark:shadow-md">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Clock className="h-4 w-4 text-primary" />
+                <Clock className="h-4 w-4 text-primary shrink-0" />
                 <span className="text-xs font-medium">Time</span>
               </div>
               {mounted && time instanceof Date ? (
@@ -180,57 +231,6 @@ export function MobileSidebar({ onProjectSelect }: MobileSidebarProps) {
               )}
             </CardContent>
           </Card>
-
-          {/* Weather Widget */}
-          <WeatherWidget />
-
-          {/* Projects List */}
-          <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-md dark:shadow-md">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <FolderKanban className="h-4 w-4 text-primary" />
-                Projects
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <ScrollArea className="h-[200px]">
-                <div className="space-y-0.5 pr-4">
-                  {resumeData.projects
-                    .filter(project => project.title !== 'Sustainable Kiosk')
-                    .map((project, index) => {
-                      const projectSlug = project.title.toLowerCase().replace(/\s+/g, '-');
-                      return (
-                        <div
-                          key={index}
-                          className="group relative"
-                        >
-                          <SheetClose asChild>
-                            <div 
-                              className="flex items-center gap-2 px-2.5 py-2 rounded hover:bg-accent/50 transition-colors cursor-pointer"
-                              onClick={() => onProjectSelect?.(projectSlug)}
-                            >
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <div className="w-1 h-1 rounded-full bg-muted-foreground/60 group-hover:bg-primary transition-colors flex-shrink-0 mt-0.5" />
-                                <p className="text-sm font-medium truncate">{project.title}</p>
-                              </div>
-                              <p className="text-xs text-muted-foreground ml-3 truncate">
-                                {project.company || project.institution} • {project.period}
-                              </p>
-                            </div>
-                            <ChevronRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-                            </div>
-                          </SheetClose>
-                        </div>
-                      );
-                    })}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-
-          {/* Notes Widget */}
-          <NotesWidget />
         </div>
       </SheetContent>
     </Sheet>

@@ -47,7 +47,7 @@ export default function PlaygroundPage() {
   return (
     <div className="min-h-screen bg-card text-foreground">
       <TopBar onHomeClick={() => router.push('/')} />
-      <main className="pt-14 pb-24 px-2 md:px-6 lg:px-8">
+      <main className="pt-14 pb-24 px-2 md:px-6 lg:px-8 animate-fade-in-blur">
         <div className="mx-auto max-w-7xl space-y-10 mt-6 md:mt-8">
           <div className="text-center">
             <p className="text-sm uppercase tracking-[0.36em] text-muted-foreground">playground</p>

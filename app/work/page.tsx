@@ -101,7 +101,7 @@ function WorkPageContent() {
   return (
     <div className="min-h-screen bg-card">
       <TopBar onHomeClick={() => router.push('/')} onProjectSelect={setSelectedProject} />
-      <div className="pt-14 pb-24 px-4 md:px-6 lg:px-8 overflow-visible">
+      <div className="pt-14 pb-24 px-4 md:px-6 lg:px-8 overflow-visible animate-fade-in-blur">
         {selectedProject ? (
           <div className="flex flex-col lg:flex-row gap-6 max-w-[1600px] mx-auto relative">
             {/* Sidebar - Projects List (Fixed) - Hidden on mobile */}

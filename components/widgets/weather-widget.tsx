@@ -1,10 +1,9 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Cloud, Sun, Droplets, Wind } from 'lucide-react';
+import { Cloud, Droplets, Wind } from 'lucide-react';
 
 export function WeatherWidget() {
-  // Mock weather data - in real app, you'd fetch this from an API
   const weather = {
     location: 'Edinburgh',
     temp: 52,
