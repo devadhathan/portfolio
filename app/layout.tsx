@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
-import { DM_Mono } from "next/font/google";
+import { DM_Mono, IBM_Plex_Sans, Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { ClientThemeProvider } from "@/components/client-theme-provider";
-import { FaviconHandler } from "@/components/favicon-handler";
 import { Analytics } from "@vercel/analytics/next";
 
 const dmMono = DM_Mono({ subsets: ["latin"], weight: ["300", "400", "500"], variable: "--font-dm-mono" });
+const inter = Inter({ subsets: ["latin"], weight: ["300", "400", "500", "600"], variable: "--font-neue-montreal" });
+const ibmPlexSans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-google-plex-sans",
+});
 
 export const metadata: Metadata = {
   title: "Devadhathan - Product Designer",
@@ -28,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className={dmMono.variable}>
+      <body className={`${dmMono.variable} ${inter.variable} ${ibmPlexSans.variable}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -36,7 +41,6 @@ export default function RootLayout({
           enableSystem={false}
         >
           <ClientThemeProvider>
-            <FaviconHandler />
             {children}
           </ClientThemeProvider>
         </ThemeProvider>
