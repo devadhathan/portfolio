@@ -15,7 +15,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { resumeData } from '@/lib/resume-data';
+import { useSiteContent } from '@/components/site-content-provider';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AnimateIcon } from './animate-icon';
 
@@ -26,6 +26,7 @@ interface DesktopSidebarProps {
 }
 
 export function DesktopSidebar({ onProjectSelect, isCollapsed = false, onCollapseChange }: DesktopSidebarProps) {
+  const { projects } = useSiteContent();
   const [time, setTime] = useState<Date | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -233,9 +234,7 @@ export function DesktopSidebar({ onProjectSelect, isCollapsed = false, onCollaps
               <CardContent className="pt-0 flex-1 min-h-0 overflow-hidden p-0">
                 <ScrollArea className="h-full px-4 pb-4">
                   <div className="space-y-0.5">
-                    {resumeData.projects
-                      .filter(project => project.title !== 'Sustainable Kiosk')
-                      .map((project, index) => {
+                    {projects.map((project, index) => {
                         const projectSlug = project.title.toLowerCase().replace(/\s+/g, '-');
                         return (
                           <div key={index} className="group relative">

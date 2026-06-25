@@ -4,9 +4,10 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, Users, ExternalLink, X, ZoomIn, Smartphone } from 'lucide-react';
-import { resumeData } from '@/lib/resume-data';
+import { useSiteContent } from '@/components/site-content-provider';
 import Image from 'next/image';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface FinshotsDetailProps {
   projectId: string;
@@ -54,7 +55,9 @@ const finshotsFeatureMedia: Record<string, FeatureMedia> = {
 };
 
 export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: FinshotsDetailProps) {
-  const project = resumeData.projects.find(
+  const t = useTranslations('caseStudy');
+  const { projects } = useSiteContent();
+  const project = projects.find(
     p => p.title.toLowerCase().replace(/\s+/g, '-') === projectId.toLowerCase().replace(/\s+/g, '-')
   );
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
@@ -71,10 +74,10 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
   if (!project) {
     return (
       <div className="text-center py-12 text-foreground">
-        <p className="text-muted-foreground mb-4">Project not found</p>
+        <p className="text-muted-foreground mb-4">{t('projectNotFound')}</p>
         <Button onClick={onBack} variant="ghost">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
+          {t('back')}
         </Button>
       </div>
     );
@@ -88,13 +91,13 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
           {!hideBackButton && (
             <Button onClick={onBack} variant="ghost" size="sm" className="mb-5">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Portfolio
+              {t('backToPortfolio')}
             </Button>
           )}
           <div className="flex items-center gap-3 mb-3">
             <h1 className="text-3xl font-bold text-foreground">{project.title}</h1>
             <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-medium border border-red-500/30">
-              Shipped
+              {t('shipped')}
             </span>
           </div>
           <div className="flex items-center gap-5 text-sm text-muted-foreground">
@@ -124,10 +127,10 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
         {/* Left Content - Description */}
         <div className="lg:col-span-2 space-y-6">
           <p className="text-lg leading-relaxed text-muted-foreground">
-            As Finshots continued to establish itself as a trusted platform for financial news, primarily via email newsletters and the website, we noticed a significant challenge. While readers appreciated the high-quality content, navigating and revisiting older stories through emails or web searches became a cumbersome task.
+            {t('finshotsIntro1')}
           </p>
           <p className="text-lg leading-relaxed text-muted-foreground">
-            Feedback from social media and user surveys emphasized a growing demand for a more streamlined and engaging way to access financial insights. This created an opportunity to rethink how we delivered value to our audience and improve the accessibility of our content.
+            {t('finshotsIntro2')}
           </p>
           {project.url && (
             <div className="flex flex-wrap gap-4 pt-2">
@@ -137,7 +140,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
               >
-                <span className="text-base font-medium">VIEW PROJECT</span>
+                <span className="text-base font-medium">{t('viewProject')}</span>
                 <Smartphone className="h-4 w-4" />
                 <ExternalLink className="h-4 w-4" />
               </a>
@@ -149,14 +152,14 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
         <div className="lg:col-span-1 space-y-0 border-l border-border/50 pl-8">
           {project.type && (
             <div className="pb-6 border-b border-border/50">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Product</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">{t('product')}</h3>
               <p className="text-base text-foreground">{project.type}</p>
             </div>
           )}
           
           {project.tools && project.tools.length > 0 && (
             <div className="py-6 border-b border-border/50">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Skills</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">{t('skills')}</h3>
               <div className="space-y-2">
                 {project.tools.map((tool, idx) => (
                   <p key={idx} className="text-base text-foreground">{tool}</p>
@@ -167,21 +170,21 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
           
           {project.role && (
             <div className="py-6 border-b border-border/50">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">My role</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">{t('myRole')}</h3>
               <p className="text-base text-foreground">{project.role}</p>
             </div>
           )}
           
           {project.period && (
             <div className="py-6 border-b border-border/50">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Timeline</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">{t('timeline')}</h3>
               <p className="text-base text-foreground">{project.period}</p>
             </div>
           )}
           
           {project.team && (
             <div className="pt-6">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Team</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">{t('team')}</h3>
               <p className="text-base text-foreground">{project.team}</p>
             </div>
           )}
@@ -190,7 +193,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
 
       {/* Bento Grid - Images Section */}
       <div className="mb-64">
-        <h2 className="text-2xl font-normal text-foreground mb-4">Design Gallery</h2>
+        <h2 className="text-2xl font-normal text-foreground mb-4">{t('designGallery')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {finshotsImages.map((image, idx) => (
             <div key={idx}>
@@ -224,7 +227,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {/* Problem Section */}
       {project.problem && (
         <div id={`${projectId}-problem`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Problem</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('problem')}</h2>
           <div className="lg:col-span-3">
             <p className="text-lg leading-relaxed text-muted-foreground">
               {project.problem}
@@ -255,7 +258,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {/* Research Section */}
       {project.research && (
         <div id={`${projectId}-research`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Research</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('research')}</h2>
           <div className="lg:col-span-3">
             <p className="text-lg leading-relaxed text-muted-foreground">
               {project.research}
@@ -267,7 +270,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {/* HMW Section */}
       {project.hmw && (
         <div id={`${projectId}-hmw`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">How Might We</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('hmw')}</h2>
           <div className="lg:col-span-3">
             <p className="text-lg leading-relaxed text-muted-foreground font-medium">
               {project.hmw}
@@ -278,10 +281,10 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
 
       {/* Possible Solutions */}
       <div id={`${projectId}-possible-solutions`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-        <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Possible solutions</h2>
+        <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('possibleSolutions')}</h2>
         <div className="lg:col-span-3">
           <p className="text-lg leading-relaxed text-muted-foreground">
-            After validating the problem and exploring potential solutions, we have determined that developing a mobile app is the best approach to address these challenges. The mobile app will offer a dedicated, user-friendly environment for accessing and rediscovering our financial insights on the go.
+            {t('finshotsPossibleSolutions')}
           </p>
         </div>
       </div>
@@ -290,7 +293,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {project.keyFeatures && project.keyFeatures.length > 0 && (
         <div id={`${projectId}-key-features`} className="mb-64">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8">
-            <h2 className="text-2xl font-normal text-foreground lg:col-span-2">Key features shipped</h2>
+            <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('keyFeaturesShipped')}</h2>
             <div className="lg:col-span-3"></div>
           </div>
           <div className="space-y-12">
@@ -366,10 +369,10 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {/* Results Section */}
       {project.results && project.results.length > 0 && (
         <div id={`${projectId}-stats`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">What was the result</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('result')}</h2>
           <div className="lg:col-span-3">
             <p className="text-lg leading-relaxed text-muted-foreground mb-6">
-              The app received highly positive user feedback upon release. During the testing period and after launch, it became clear our reimagined interfaces and streamlined workflows better met customers&apos; needs.
+              {t('finshotsResultsIntro')}
             </p>
             <div className="space-y-3">
               {project.results.map((result, idx) => (
@@ -386,7 +389,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {/* Learnings Section */}
       {project.learnings && (
         <div id={`${projectId}-learnings`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">What did I learn?</h2>
+          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('whatDidILearn')}</h2>
           <div className="lg:col-span-3">
             {Array.isArray(project.learnings) ? (
               <div className="space-y-4">

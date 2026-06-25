@@ -3,15 +3,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, Users, ExternalLink, Smartphone, X, ZoomIn } from 'lucide-react';
-import { resumeData } from '@/lib/resume-data';
+import type { Project } from '@/lib/types/project';
+import { useSiteContent } from '@/components/site-content-provider';
 import { FinshotsDetail } from './finshots-detail';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface ProjectDetailViewProps {
   projectId: string;
   onBack: () => void;
   hideBackButton?: boolean;
+  projects?: Project[];
 }
 
 // Images for Nesoi project
@@ -24,8 +27,10 @@ const falconImages = [
   { src: '/falcon design system/image.png', title: 'Falcon Design System', description: 'Comprehensive design system interface' },
 ];
 
-export function ProjectDetailView({ projectId, onBack, hideBackButton = false }: ProjectDetailViewProps) {
+export function ProjectDetailView({ projectId, onBack, hideBackButton = false, projects }: ProjectDetailViewProps) {
+  const t = useTranslations('caseStudy');
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+  const { projects: cmsProjects } = useSiteContent();
   
   const handleImageClick = (src: string) => {
     setZoomedImage(src);
@@ -35,7 +40,9 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
     setZoomedImage(null);
   };
 
-  const project = projectId ? resumeData.projects.find(
+  const allProjects = projects ?? cmsProjects;
+
+  const project = projectId ? allProjects.find(
     p => p.title.toLowerCase().replace(/\s+/g, '-') === projectId.toLowerCase().replace(/\s+/g, '-')
   ) : null;
 
@@ -70,16 +77,16 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
   if (!project) {
     return (
       <div className="text-center py-12 text-foreground">
-        <p className="text-muted-foreground mb-4">Project not found: {projectId}</p>
+        <p className="text-muted-foreground mb-4">{t('projectNotFound')}: {projectId}</p>
         <p className="text-sm text-muted-foreground mb-4">Available projects:</p>
         <ul className="text-sm text-left max-w-md mx-auto space-y-1">
-          {resumeData.projects.map((p, i) => (
+          {allProjects.map((p, i) => (
             <li key={i}>{p.title} → {p.title.toLowerCase().replace(/\s+/g, '-')}</li>
           ))}
         </ul>
         <Button onClick={onBack} variant="ghost" className="mt-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
+          {t('back')}
         </Button>
       </div>
     );
@@ -93,7 +100,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
           {!hideBackButton && (
             <Button onClick={onBack} variant="ghost" size="sm" className="mb-4 lg:mb-5">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Portfolio
+              {t('backToPortfolio')}
             </Button>
           )}
           <div className="flex items-center gap-3 mb-3">
@@ -149,7 +156,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
           )}
           {'notes' in project && Array.isArray(project.notes) && project.notes.length > 0 && (
             <div id={`${projectId}-notes`} className="mb-8">
-              <h2 className="text-2xl font-normal text-foreground">Notes</h2>
+              <h2 className="text-2xl font-normal text-foreground">{t('notes')}</h2>
               <div className="mt-4 space-y-3">
                 {project.notes.map((note, idx) => (
                   <p key={idx} className="text-base leading-relaxed text-muted-foreground">
@@ -161,7 +168,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
           )}
           {'activityHistory' in project && Array.isArray(project.activityHistory) && project.activityHistory.length > 0 && (
             <div id={`${projectId}-activity-history`} className="mb-8">
-              <h2 className="text-2xl font-normal text-foreground">Activity history</h2>
+              <h2 className="text-2xl font-normal text-foreground">{t('activityHistory')}</h2>
               <div className="mt-4 space-y-3">
                 {project.activityHistory.map((entry, idx) => (
                   <p key={idx} className="text-base leading-relaxed text-muted-foreground">
@@ -179,7 +186,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
               >
-                <span className="text-base font-medium">VIEW PROJECT</span>
+                <span className="text-base font-medium">{t('viewProject')}</span>
                 <Smartphone className="h-4 w-4" />
                 <ExternalLink className="h-4 w-4" />
               </a>
@@ -191,14 +198,14 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
         <div className="lg:col-span-1 space-y-0 border-t lg:border-t-0 lg:border-l border-border/50 pt-6 lg:pt-0 lg:pl-8">
           {project.type && (
             <div className="pb-4 lg:pb-6 border-b border-border/50">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 lg:mb-3">Product</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 lg:mb-3">{t('product')}</h3>
               <p className="text-sm md:text-base text-foreground">{project.type}</p>
             </div>
           )}
           
           {project.tools && project.tools.length > 0 && (
             <div className="py-4 lg:py-6 border-b border-border/50">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 lg:mb-3">Skills</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 lg:mb-3">{t('skills')}</h3>
               <div className="space-y-1.5 lg:space-y-2">
                 {project.tools.map((tool, idx) => (
                   <p key={idx} className="text-sm md:text-base text-foreground">{tool}</p>
@@ -209,21 +216,21 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
           
           {project.role && (
             <div className="py-4 lg:py-6 border-b border-border/50">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 lg:mb-3">My role</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 lg:mb-3">{t('myRole')}</h3>
               <p className="text-sm md:text-base text-foreground">{project.role}</p>
             </div>
           )}
           
           {project.period && (
             <div className="py-4 lg:py-6 border-b border-border/50">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 lg:mb-3">Timeline</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 lg:mb-3">{t('timeline')}</h3>
               <p className="text-sm md:text-base text-foreground">{project.period}</p>
             </div>
           )}
           
           {project.team && (
             <div className="pt-4 lg:pt-6">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 lg:mb-3">Team</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 lg:mb-3">{t('team')}</h3>
               <p className="text-sm md:text-base text-foreground">{project.team}</p>
             </div>
           )}
@@ -234,7 +241,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {project && (project.title.toLowerCase().includes('nesoi') || projectId.toLowerCase().includes('nesoi')) && nesoiImages.length > 0 && (
         <div className="mb-16 lg:mb-64 -mx-4 md:-mx-6 lg:-mx-8">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8 mb-6 lg:mb-8 px-4 md:px-6 lg:px-8">
-            <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Design Gallery</h2>
+            <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('designGallery')}</h2>
             <div className="lg:col-span-3"></div>
           </div>
           <div className="w-full">
@@ -267,7 +274,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {project && (project.title.toLowerCase().includes('falcon') || projectId.toLowerCase().includes('falcon')) && falconImages.length > 0 && (
         <div className="mb-16 lg:mb-64 -mx-4 md:-mx-6 lg:-mx-8">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8 mb-6 lg:mb-8 px-4 md:px-6 lg:px-8">
-            <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Design Gallery</h2>
+            <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('designGallery')}</h2>
             <div className="lg:col-span-3"></div>
           </div>
           <div className="w-full">
@@ -299,7 +306,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {project.designGallery && project.designGallery.length > 0 && (
         <div id={`${projectId}-design`} className="mb-16 lg:mb-32">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl md:text-2xl font-normal text-foreground">Design gallery</h2>
+            <h2 className="text-xl md:text-2xl font-normal text-foreground">{t('designGalleryLower')}</h2>
           </div>
           <div className="grid grid-cols-1 gap-6">
             {project.designGallery.map((entry, idx) => (
@@ -363,7 +370,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {/* Problem Section */}
       {project.problem && (
         <div id={`${projectId}-problem`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-12 lg:mb-24 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
-          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Problem</h2>
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('problem')}</h2>
           <div className="lg:col-span-3">
             <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
               {project.problem}
@@ -379,7 +386,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {project.problemImage && (
         <div id={`${projectId}-problem-image`} className="mb-16 lg:mb-64 space-y-4">
-          <h2 className="text-xl md:text-2xl font-normal text-foreground">Problem snapshot</h2>
+          <h2 className="text-xl md:text-2xl font-normal text-foreground">{t('problemSnapshot')}</h2>
           <div className="relative w-full aspect-[16/9] rounded-3xl border border-border/50 overflow-hidden shadow-xl">
             <Image
               src={project.problemImage.src}
@@ -397,7 +404,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {project.takeStepBack && (
         <div className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
-          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Take a step back</h2>
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('takeStepBack')}</h2>
           <div className="lg:col-span-3">
             <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
               {project.takeStepBack}
@@ -408,7 +415,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {project.painPoints && project.painPoints.length > 0 && (
         <div id={`${projectId}-painpoints`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
-          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Painpoints</h2>
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('painpoints')}</h2>
           <div className="lg:col-span-3">
             {project.painPointsIntro && (
               <p className="text-base md:text-lg leading-relaxed text-muted-foreground mb-4">{project.painPointsIntro}</p>
@@ -428,7 +435,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {/* HMW Section */}
       {project.hmw && (
         <div id={`${projectId}-hmw`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
-          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">How Might We</h2>
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('hmw')}</h2>
           <div className="lg:col-span-3">
             <p className="text-base md:text-lg leading-relaxed text-muted-foreground font-medium">
               {project.hmw}
@@ -439,7 +446,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {project.businessOpportunity && project.businessOpportunity.length > 0 && (
         <div id={`${projectId}-business`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
-          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Business opportunity</h2>
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('businessOpportunity')}</h2>
           <div className="lg:col-span-3">
             <div className="space-y-2 lg:space-y-3">
               {project.businessOpportunity.map((opportunity, idx) => (
@@ -455,14 +462,14 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {project.explorations && project.explorations.length > 0 && (
         <div id={`${projectId}-exploring`} className={isNesoi ? "mb-24 lg:mb-48" : "mb-16 lg:mb-64"}>
-          <h2 className="text-xl md:text-2xl font-normal text-foreground mb-4 lg:mb-6">Exploring possibilities</h2>
+          <h2 className="text-xl md:text-2xl font-normal text-foreground mb-4 lg:mb-6">{t('exploring')}</h2>
           <div className="space-y-8 lg:space-y-12">
             {project.explorations.map((exploration, idx) => (
               <div key={idx} className="space-y-4 lg:space-y-6">
                 <p className="text-xs md:text-sm uppercase tracking-wider text-muted-foreground">{exploration.tag}</p>
                 <h3 className="text-lg md:text-xl font-semibold text-foreground">{exploration.title}</h3>
                 <p className="text-sm md:text-base leading-relaxed text-muted-foreground">{exploration.problem}</p>
-                <p className="text-sm md:text-base leading-relaxed text-foreground font-semibold">Solution</p>
+                <p className="text-sm md:text-base leading-relaxed text-foreground font-semibold">{t('solution')}</p>
                 <p className="text-sm md:text-base leading-relaxed text-muted-foreground">{exploration.solution}</p>
                 {exploration.image && (
                   <div className="w-full overflow-hidden rounded-3xl border border-border/50 bg-card/70 shadow-xl">
@@ -485,7 +492,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {project.targetAudience && (
         <div id={`${projectId}-target-audience`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
-          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Target Audience</h2>
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('targetAudience')}</h2>
           <div className="lg:col-span-3">
             <p className="text-base md:text-lg leading-relaxed text-muted-foreground">{project.targetAudience}</p>
           </div>
@@ -494,7 +501,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {project.targetAudienceImage && (
         <div id={`${projectId}-target-snapshot`} className={isNesoi ? "mb-24 lg:mb-48 space-y-4" : "mb-16 lg:mb-64 space-y-4"}>
-          <h2 className="text-xl md:text-2xl font-normal text-foreground">Target snapshot</h2>
+          <h2 className="text-xl md:text-2xl font-normal text-foreground">{t('targetSnapshot')}</h2>
           <div className="relative w-full aspect-[16/9] rounded-3xl border border-border/50 overflow-hidden shadow-xl">
             <Image
               src={project.targetAudienceImage.src}
@@ -513,7 +520,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {/* Research Section */}
       {project.research && (
         <div id={`${projectId}-research`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
-          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Research</h2>
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('research')}</h2>
           <div className="lg:col-span-3">
             <p className="text-base md:text-lg leading-relaxed text-muted-foreground">
               {project.research}
@@ -526,7 +533,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
         const projectWithPersonas = project as any;
         return projectWithPersonas.personas && Array.isArray(projectWithPersonas.personas) && projectWithPersonas.personas.length > 0 && (
           <div id={`${projectId}-personas`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
-            <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Personas</h2>
+            <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('personas')}</h2>
             <div className="lg:col-span-3">
               <div className="grid gap-3 lg:gap-4 md:grid-cols-2">
                 {projectWithPersonas.personas.map((persona: any, idx: number) => (
@@ -566,7 +573,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
                   <div className="space-y-4 mt-8">
                     <div
                       className="relative w-full cursor-pointer group"
-                      onClick={() => handleImageClick(section.image)}
+                      onClick={() => section.image && handleImageClick(section.image)}
                     >
                       <div className="relative w-full" style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}>
                         <Image
@@ -605,7 +612,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
                   <div className="space-y-4 mt-8">
                     <div
                       className="relative w-full cursor-pointer group"
-                      onClick={() => handleImageClick(section.prototypeGif)}
+                      onClick={() => section.prototypeGif && handleImageClick(section.prototypeGif)}
                     >
                       <div className="relative w-full" style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}>
                         <Image
@@ -634,7 +641,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {/* Stats Section */}
       {project.results && project.results.length > 0 && (
         <div id={`${projectId}-stats`} className={isNesoi ? "mt-8 lg:mt-20 mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mt-8 lg:mt-20 mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
-          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Some stats</h2>
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('someStats')}</h2>
           <div className="lg:col-span-3">
             {(() => {
               const projectWithImpact = project as any;
@@ -657,7 +664,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {/* Key Features */}
       {project.keyFeatures && project.keyFeatures.length > 0 && (
         <div id={`${projectId}-key-features`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
-          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Key Features</h2>
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('keyFeatures')}</h2>
           <div className="lg:col-span-3">
             <div className="space-y-3 lg:space-y-4">
               {project.keyFeatures.map((feature, idx) => (
@@ -673,7 +680,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {project.keyFeatureImage && (
         <div id={`${projectId}-feature-image`} className={isNesoi ? "mb-24 lg:mb-48 space-y-3" : "mb-16 lg:mb-32 space-y-3"}>
-          <h2 className="text-xl md:text-2xl font-normal text-foreground">Feature snapshot</h2>
+          <h2 className="text-xl md:text-2xl font-normal text-foreground">{t('featureSnapshot')}</h2>
           <div className="relative w-full aspect-[16/9] rounded-3xl border border-border/50 overflow-hidden shadow-xl">
             <Image
               src={project.keyFeatureImage.src}
@@ -692,7 +699,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {/* Learnings */}
       {project.learnings && (
         <div id={`${projectId}-learnings`} className={isNesoi ? "mt-24 lg:mt-48 mb-16 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mt-16 lg:mt-24 mb-16 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
-          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Learnings</h2>
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('learnings')}</h2>
           <div className="lg:col-span-3">
             {Array.isArray(project.learnings) ? (
               <div className="space-y-3 lg:space-y-4">
@@ -712,7 +719,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
 
       {project.prototype && (
         <div id={`${projectId}-prototype`} className={isNesoi ? "mb-24 lg:mb-48 space-y-4" : "mb-16 lg:mb-64 space-y-4"}>
-          <h2 className="text-xl md:text-2xl font-normal text-foreground">Prototype</h2>
+          <h2 className="text-xl md:text-2xl font-normal text-foreground">{t('prototype')}</h2>
           <p className="text-base md:text-lg leading-relaxed text-muted-foreground">{project.prototype}</p>
           {project.prototypeFrame && (
             <div className="overflow-hidden rounded-3xl border border-border/50 shadow-xl bg-card/70">
@@ -733,7 +740,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false }:
       {/* Impact */}
       {project.impact && project.impact.length > 0 && (
         <div id={`${projectId}-impact`} className={isNesoi ? "mb-24 lg:mb-48 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8" : "mb-16 lg:mb-64 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8"}>
-          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">Impact</h2>
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('impact')}</h2>
           <div className="lg:col-span-3">
             <div className="space-y-3 lg:space-y-4">
               {project.impact.map((impact, idx) => (

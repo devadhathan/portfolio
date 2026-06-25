@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, ExternalLink } from 'lucide-react';
-import { resumeData } from '@/lib/resume-data';
+import { useSiteContent } from '@/components/site-content-provider';
 import { ProjectDetailView } from './project-detail-view';
 
 interface ProjectsListViewProps {
@@ -12,7 +12,7 @@ interface ProjectsListViewProps {
 }
 
 export function ProjectsListView({ onBack, onProjectSelect, selectedProjectId }: ProjectsListViewProps) {
-  const projects = resumeData.projects;
+  const { projects } = useSiteContent();
 
   const getProjectId = (title: string): string => {
     return title.toLowerCase().replace(/\s+/g, '-');

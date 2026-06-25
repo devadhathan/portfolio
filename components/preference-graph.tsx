@@ -2,6 +2,8 @@
 
 import { CardTitle } from '@/components/ui/card';
 import { PenTool } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { HighlightedText } from './highlighted-text';
 import {
   Radar,
   RadarChart,
@@ -10,31 +12,32 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-const data = [
-  { subject: 'Prototyping', value: 90 },
-  { subject: 'Visual Design', value: 80 },
-  { subject: 'Interaction', value: 75 },
-  { subject: 'UI Design', value: 70 },
-  { subject: 'Wireframing', value: 60 },
-  { subject: 'User Research', value: 40 },
-];
+const PREFERENCE_VALUES = [90, 80, 75, 70, 60, 40] as const;
 
 export function PreferenceGraph() {
+  const t = useTranslations('home');
+
+  const data = [
+    { subject: t('preferences.prototyping'), value: PREFERENCE_VALUES[0] },
+    { subject: t('preferences.visualDesign'), value: PREFERENCE_VALUES[1] },
+    { subject: t('preferences.interaction'), value: PREFERENCE_VALUES[2] },
+    { subject: t('preferences.uiDesign'), value: PREFERENCE_VALUES[3] },
+    { subject: t('preferences.wireframing'), value: PREFERENCE_VALUES[4] },
+    { subject: t('preferences.userResearch'), value: PREFERENCE_VALUES[5] },
+  ];
+
   return (
     <div className="h-full flex flex-col p-4 relative">
       <div className="pb-2 flex-shrink-0 relative z-10">
         <CardTitle className="text-[15px] font-medium tracking-tight text-foreground flex items-center gap-2.5">
           <PenTool className="h-4 w-4 text-foreground/80 flex-shrink-0" />
           <span className="text-[15px] font-medium tracking-tight text-foreground">
-            Design Preferences
+            {t('designPreferences')}
           </span>
         </CardTitle>
       </div>
 
-      <p className="text-[13px] text-muted-foreground/70 leading-relaxed pb-2 flex-shrink-0 relative z-10">
-        I like prototyping and{' '}
-        <span className="text-foreground">bringing ideas to life quickly.</span>
-      </p>
+      <HighlightedText text={t('preferenceIntro')} className="text-[13px] text-muted-foreground/70 leading-relaxed pb-2 flex-shrink-0 relative z-10" as="p" />
 
       <div className="flex-1 flex items-center justify-center relative z-10" style={{ minHeight: '240px' }}>
         <ResponsiveContainer width="100%" height="100%">

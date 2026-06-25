@@ -11,9 +11,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { usePathname, useRouter } from '@/i18n/navigation';
+import { useEffect, useState } from 'react';
 import { ContactChat } from './contact-chat';
+import { LocaleSwitcherCompact } from './locale-switcher';
 import {
   Sheet,
   SheetContent,
@@ -21,7 +23,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { resumeData } from '@/lib/resume-data';
+import { useSiteContent } from '@/components/site-content-provider';
 import { motion } from 'framer-motion';
 
 const MobileSidebar = dynamic(
@@ -29,11 +31,11 @@ const MobileSidebar = dynamic(
   { ssr: false },
 );
 
-const NAV_TABS = [
-  { label: 'About', path: '/', icon: User },
-  { label: 'Work', path: '/work', icon: Briefcase },
-  { label: 'Contact', path: '/contact', icon: Mail },
-  { label: 'Playground', path: '/playground', icon: Gamepad2 },
+const NAV_TAB_KEYS = [
+  { labelKey: 'about' as const, path: '/', icon: User },
+  { labelKey: 'work' as const, path: '/work', icon: Briefcase },
+  { labelKey: 'contact' as const, path: '/contact', icon: Mail },
+  { labelKey: 'playground' as const, path: '/playground', icon: Gamepad2 },
 ];
 
 interface TopBarProps {
@@ -42,17 +44,21 @@ interface TopBarProps {
 }
 
 export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
+  const t = useTranslations('nav');
   const { theme, setTheme } = useTheme();
+  const { projects } = useSiteContent();
   const pathname = usePathname();
   const router = useRouter();
   const isWorkPage = pathname === '/work';
   const [chatOpen, setChatOpen] = useState(false);
   const [isProjectSheetOpen, setIsProjectSheetOpen] = useState(false);
 
-  // Tracks which tab the indicator is on — decoupled from pathname so we can
-  // move it before the navigation happens.
   const [activeTab, setActiveTab] = useState(pathname);
   const [isSliding, setIsSliding] = useState(false);
+
+  useEffect(() => {
+    setActiveTab(pathname);
+  }, [pathname]);
 
   const handleLogoClick = () => {
     if (onHomeClick) onHomeClick();
@@ -100,7 +106,7 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
                         variant="outline"
                         size="icon"
                         className="h-10 w-10 rounded-full bg-card/40 backdrop-blur-sm border border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.07)] hover:border-primary/60 transition-all"
-                        aria-label="Open project list"
+                        aria-label={t('openProjectList')}
                       >
                         <List className="h-4 w-4" />
                       </Button>
@@ -108,12 +114,10 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
                   </SheetTrigger>
                   <SheetContent side="left" className="border-r border-border/30 p-4">
                     <SheetHeader>
-                      <SheetTitle>Projects</SheetTitle>
+                      <SheetTitle>{t('projects')}</SheetTitle>
                     </SheetHeader>
                     <div className="mt-3 space-y-2 max-h-[60vh] overflow-y-auto">
-                      {resumeData.projects
-                        .filter(project => project.title !== 'Sustainable Kiosk' && project.title !== 'Booking Portal Redesign')
-                        .map((project) => {
+                      {projects.map((project) => {
                           const projectId = project.title.toLowerCase().trim().replace(/\s+/g, '-');
                           return (
                             <button
@@ -156,7 +160,7 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
 
           {/* Desktop nav tabs — glass pill, absolutely centered */}
           <nav className="hidden lg:flex items-center gap-0.5 rounded-full bg-white/[0.04] border border-white/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.06)] p-1 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            {NAV_TABS.map((tab) => {
+            {NAV_TAB_KEYS.map((tab) => {
               const isActive = activeTab === tab.path;
               return (
                 <a
@@ -209,13 +213,14 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
                       />
                     </motion.div>
                   )}
-                  <span className="relative z-10">{tab.label}</span>
+                  <span className="relative z-10">{t(tab.labelKey)}</span>
                 </a>
               );
             })}
           </nav>
 
           <div className="flex items-center gap-2 flex-shrink-0">
+            <LocaleSwitcherCompact />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <motion.div whileTap={{ scale: 0.91 }}>
@@ -290,6 +295,7 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
 }
 
 export function MobileBottomNav() {
+  const t = useTranslations('nav');
   const pathname = usePathname();
   const router = useRouter();
 
@@ -307,7 +313,7 @@ export function MobileBottomNav() {
       {/* Frost highlight */}
       <div className="absolute inset-0 bg-gradient-to-t from-white/[0.02] to-transparent pointer-events-none" />
       <div className="flex items-center justify-around h-14 px-2 relative">
-        {NAV_TABS.map((tab) => {
+        {NAV_TAB_KEYS.map((tab) => {
           const isActive = pathname === tab.path;
           const Icon = tab.icon;
           return (
@@ -322,7 +328,7 @@ export function MobileBottomNav() {
             >
               <Icon className={`h-5 w-5 ${isActive ? 'stroke-[2.5]' : ''}`} />
               <span className={`text-[10px] font-medium ${isActive ? 'font-semibold' : ''}`}>
-                {tab.label}
+                {t(tab.labelKey)}
               </span>
             </motion.a>
           );

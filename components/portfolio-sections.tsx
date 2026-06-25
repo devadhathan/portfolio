@@ -8,9 +8,11 @@ import { AgentState, SectionPriority, SectionType } from '@/lib/agent';
 import { User, Briefcase, Mail, Linkedin, FileText, Sparkles, Heart, Lightbulb, Target, Rocket, Code2, Calendar, Award, Globe, Github, Zap, FolderKanban, Image as ImageIcon, ChevronLeft, ChevronRight, ExternalLink, TrendingUp, type LucideIcon } from 'lucide-react';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
+import { HighlightedText } from './highlighted-text';
 import { PreferenceGraph } from './preference-graph';
-import { resumeData } from '@/lib/resume-data';
+import { useSiteContent } from '@/components/site-content-provider';
 import { useTheme } from '@/contexts/theme-context';
+import { useLocale, useTranslations } from 'next-intl';
 
 const SECTION_ICON_MAP: Record<string, LucideIcon> = {
   hero: User,
@@ -53,8 +55,19 @@ interface PortfolioSectionsProps {
   onShowProjectsList?: () => void;
 }
 
+const PHILOSOPHY_CARD_ITEMS = [
+  { Icon: Heart, titleKey: 'philosophy.userCenteredTitle', descKey: 'philosophy.userCenteredDesc', hoverClass: 'group-hover/item:scale-125 group-hover/item:animate-pulse' },
+  { Icon: Lightbulb, titleKey: 'philosophy.humanTechTitle', descKey: 'philosophy.humanTechDesc', hoverClass: 'group-hover/item:scale-125 group-hover/item:brightness-125' },
+  { Icon: Target, titleKey: 'philosophy.iterativeTitle', descKey: 'philosophy.iterativeDesc', hoverClass: 'group-hover/item:scale-125 group-hover/item:rotate-12' },
+  { Icon: Rocket, titleKey: 'philosophy.accessibilityTitle', descKey: 'philosophy.accessibilityDesc', hoverClass: 'group-hover/item:scale-125 group-hover/item:translate-y-[-2px]' },
+  { Icon: Sparkles, titleKey: 'philosophy.dataDrivenTitle', descKey: 'philosophy.dataDrivenDesc', hoverClass: 'group-hover/item:scale-125 group-hover/item:rotate-180' },
+] as const;
+
 export function PortfolioSections({ agentState, hideHeaderText = false, onProjectSelect, onShowProjectsList }: PortfolioSectionsProps) {
+  const t = useTranslations('home');
+  const locale = useLocale();
   const { theme } = useTheme();
+  const { settings, experience, projects } = useSiteContent();
   // Track image errors for photo sections
   const [imageErrors, setImageErrors] = React.useState<Set<string>>(new Set());
   // Track carousel state for photo sections
@@ -317,22 +330,16 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             <CardContent className="px-3 pb-3 pt-0 relative z-10 flex flex-col gap-4 md:px-4 md:pb-4 md:flex-row md:items-start h-full">
               <div className="flex-1 flex flex-col gap-3 justify-between h-full pb-8">
                 <div className="max-w-[288px] w-[252px] min-w-0">
-                  <p 
-                    className={`text-[13px] text-muted-foreground/70 leading-relaxed ${isFirstLoad ? 'animate-line-reveal' : ''}`}
-                    style={isFirstLoad ? { animationDelay: '0.4s' } : undefined}
-                  >
-                    Building meaningful digital experiences through{' '}
-                    <span className="text-foreground">thoughtful design and user-centric solutions.</span>
-                  </p>
+                  <HighlightedText text={t('devBio')} />
                 </div>
                 <div className="flex flex-col gap-1 text-[13px] text-muted-foreground">
                   <div className="flex items-center gap-3">
                     <Globe className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span>Currently in Edinburgh</span>
+                    <span>{t('location')}</span>
                   </div>
                   <div className="flex items-center gap-3 text-muted-foreground transition-colors duration-200 group-hover:text-emerald-400">
                     <Briefcase className="h-3.5 w-3.5 text-muted-foreground transition-colors duration-200 group-hover:text-emerald-400" />
-                    <span className="font-medium">Available for work</span>
+                    <span className="font-medium">{t('available')}</span>
                   </div>
                 </div>
               </div>
@@ -413,60 +420,26 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             {borderReveal}
               <CardHeader className="pb-2 flex-shrink-0 relative z-10">
                 <CardTitle className="text-[16px] mb-2">
-                  <SectionLabel label="Design Philosophy" icon={SectionIcon} />
+                  <SectionLabel label={t('designPhilosophy')} icon={SectionIcon} />
                 </CardTitle>
               </CardHeader>
             <CardContent className="space-y-2 relative z-10">
-              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
-                <Heart className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:animate-pulse transition-all duration-300" />
-                <div>
-                  <p className="text-[14px] font-medium mb-0.5">User-Centered Design</p>
-                  <p className="text-[13px] text-muted-foreground/70 leading-relaxed max-w-[288px] w-[252px] min-w-0">
-                    I design with care, always keeping{' '}
-                    <span className="text-foreground">the user at the center of every decision.</span>
-                  </p>
+              {PHILOSOPHY_CARD_ITEMS.map(({ Icon, titleKey, descKey, hoverClass }) => (
+                <div
+                  key={titleKey}
+                  className="flex items-start gap-2.5 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer"
+                >
+                  <Icon className={`h-4 w-4 text-primary mt-0.5 flex-shrink-0 transition-all duration-300 ${hoverClass}`} />
+                  <div>
+                    <p className="text-[14px] font-medium mb-0.5">{t(titleKey)}</p>
+                    <HighlightedText
+                      text={t(descKey)}
+                      className="text-[13px] text-muted-foreground/70 leading-relaxed max-w-[288px] w-[252px] min-w-0"
+                      as="p"
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
-                <Lightbulb className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:brightness-125 transition-all duration-300" />
-                <div>
-                  <p className="text-[14px] font-medium mb-0.5">Human Technology</p>
-                  <p className="text-[13px] text-muted-foreground/70 leading-relaxed max-w-[288px] w-[252px] min-w-0">
-                    Technology should feel natural and intuitive,{' '}
-                    <span className="text-foreground">built for humans.</span>
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
-                <Target className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:rotate-12 transition-all duration-300" />
-                <div>
-                  <p className="text-[14px] font-medium mb-0.5">Iterative Improvement</p>
-                  <p className="text-[13px] text-muted-foreground/70 leading-relaxed max-w-[288px] w-[252px] min-w-0">
-                    Great design is born from{' '}
-                    <span className="text-foreground">continuous refinement and learning from feedback.</span>
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
-                <Rocket className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:translate-y-[-2px] transition-all duration-300" />
-                <div>
-                  <p className="text-[14px] font-medium mb-0.5">Accessibility First</p>
-                  <p className="text-[13px] text-muted-foreground/70 leading-relaxed max-w-[288px] w-[252px] min-w-0">
-                    Designing inclusively ensures{' '}
-                    <span className="text-foreground">everyone can access and enjoy digital experiences.</span>
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/40 hover:scale-[1.02] transition-all duration-200 border border-border/20 group/item cursor-pointer">
-                <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0 group-hover/item:scale-125 group-hover/item:rotate-180 transition-all duration-300" />
-                <div>
-                  <p className="text-[14px] font-medium mb-0.5">Data-Driven Insights</p>
-                  <p className="text-[13px] text-muted-foreground/70 leading-relaxed max-w-[288px] w-[252px] min-w-0">
-                    Balancing creativity with metrics to create{' '}
-                    <span className="text-foreground">solutions that resonate and perform.</span>
-                  </p>
-                </div>
-              </div>
+              ))}
             </CardContent>
           </Card>
         );
@@ -489,24 +462,26 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
               {borderReveal}
               <CardHeader className="pb-2 flex-shrink-0 relative z-10">
                 <CardTitle className="text-[16px]">
-                  <SectionLabel label="Experience" icon={SectionIcon} />
+                  <SectionLabel label={t('experience')} icon={SectionIcon} />
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col flex-1 gap-4 relative z-10">
-                <p className="text-[13px] text-muted-foreground/70 leading-relaxed">
-                  Product Designer crafting{' '}
-                  <span className="text-foreground">thoughtful, user-centric products</span>{' '}
-                  across AI startups and fintech.
-                </p>
+                <HighlightedText
+                  text={
+                    locale === 'en' && settings.experienceIntro
+                      ? settings.experienceIntro
+                      : t('experienceIntro')
+                  }
+                />
                 <div className="mt-auto relative -mx-6 -mb-6 overflow-hidden">
                   <div className="grid grid-cols-1 gap-2.5 px-6 pb-6">
-                    {['Wordsmith AI', 'Nesoi.ai', 'Ditto Insurance (by Finshots)'].map((company) => (
+                    {(experience ?? []).map((entry) => (
                       <div
-                        key={company}
+                        key={entry.company}
                         className="flex items-center gap-2.5 rounded-lg border border-border/60 bg-secondary/40 px-3 py-2.5"
                       >
                         <Briefcase className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
-                        <span className="truncate font-mono text-[12px] text-foreground/90">{company}</span>
+                        <span className="truncate font-mono text-[12px] text-foreground/90">{entry.company}</span>
                       </div>
                     ))}
                   </div>
@@ -627,7 +602,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                           const normalizedLabel = label.toLowerCase().trim();
                           
                           // Try to find matching project from resume data
-                          const project = resumeData.projects.find(p => {
+                          const project = projects.find(p => {
                             const normalizedTitle = p.title.toLowerCase().trim();
                             return normalizedLabel === normalizedTitle || 
                                    normalizedLabel.includes(normalizedTitle) ||
@@ -873,7 +848,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
       case 'video':
         const videoSrc = section.content || '/videos/2tUv4Phgglg0Cvb9dLfZYDnN1k.mp4';
         const videoLink = section.links?.[0]?.url || 'https://medium.com/@devadhathanmd18/why-ai-needs-a-face-building-dew-my-duolingo-inspired-ai-character-2d4e56f94772';
-        const videoTitle = section.title || 'Video';
+        const videoTitle = section.id === 'video' ? t('dewTitle') : (section.title || 'Video');
         
         return (
           <Card 
@@ -936,7 +911,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                       className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg text-white text-[12px] font-medium transition-all duration-200 group/link"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <span>Read on Medium</span>
+                      <span>{t('readOnMedium')}</span>
                       <ExternalLink className="h-3 w-3 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
                     </a>
                   </div>
@@ -947,7 +922,14 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
         );
 
       case 'custom':
-      default:
+      default: {
+        const isLastPortfolio = section.id === 'last-portfolio-version';
+        const customTitle = isLastPortfolio ? t('lastPortfolio') : (section.title || 'Custom Section');
+        const customDescription = isLastPortfolio ? t('lastPortfolioDesc') : section.description;
+        const customLinks = section.links?.map((link) =>
+          isLastPortfolio ? { ...link, label: t('launchLastVersion') } : link
+        );
+
         return (
           <Card 
             key={section.id} 
@@ -961,7 +943,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="text-[16px]">
-                <SectionLabel label={section.title || 'Custom Section'} icon={SectionIcon} />
+                <SectionLabel label={customTitle} icon={SectionIcon} />
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 relative z-10">
@@ -976,21 +958,21 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                     <div className="relative w-full h-40 rounded-2xl overflow-hidden border border-border/20 bg-muted">
                       <Image
                         src={section.image}
-                        alt={`${section.title || 'Custom'} thumbnail`}
+                        alt={`${customTitle} thumbnail`}
                         fill
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
                     </div>
                   )}
-                  {section.description && (
+                  {customDescription && (
                     <p className="text-[14px] text-muted-foreground leading-relaxed">
-                      {section.description}
+                      {customDescription}
                     </p>
                   )}
-                  {section.links && section.links.length > 0 && (
+                  {customLinks && customLinks.length > 0 && (
                     <div className="space-y-2">
-                      {section.links.map((link, index) => (
+                      {customLinks.map((link, index) => (
                         <a
                           key={index}
                           href={link.url}
@@ -1012,6 +994,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             </CardContent>
           </Card>
         );
+      }
 
       case 'connect':
         return (
@@ -1027,24 +1010,24 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             {borderReveal}
             <CardHeader className="pb-2 flex-shrink-0 relative z-10">
               <CardTitle className="text-[16px] mb-2">
-                <SectionLabel label="Connect" icon={SectionIcon} />
+                <SectionLabel label={t('connect')} icon={SectionIcon} />
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 relative z-10 flex-1">
               <div className="flex flex-col gap-3">
                 <a
-                  href={`mailto:${resumeData.email}`}
+                  href={`mailto:${settings.email}`}
                   className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group/item border border-border/20"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Mail className="h-4 w-4 text-primary group-hover/item:scale-110 transition-transform flex-shrink-0" />
                   <div className="flex flex-col">
-                    <span className="text-[14px] font-medium">Email</span>
-                    <span className="text-[12px] text-muted-foreground">{resumeData.email}</span>
+                    <span className="text-[14px] font-medium">{t('email')}</span>
+                    <span className="text-[12px] text-muted-foreground">{settings.email}</span>
                   </div>
                 </a>
                 <a
-                  href={`https://linkedin.com/${resumeData.linkedin}`}
+                  href={`https://linkedin.com/${(settings.linkedin ?? 'in/devadhathan/').replace(/^\/+/, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group/item border border-border/20"
@@ -1053,11 +1036,11 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                   <Linkedin className="h-4 w-4 text-primary group-hover/item:scale-110 transition-transform flex-shrink-0" />
                   <div className="flex flex-col">
                     <span className="text-[14px] font-medium">LinkedIn</span>
-                    <span className="text-[12px] text-muted-foreground">Connect with me</span>
+                    <span className="text-[12px] text-muted-foreground">{t('connectWithMe')}</span>
                   </div>
                 </a>
                 <a
-                  href={`https://${resumeData.website}`}
+                  href={`https://${settings.website}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group/item border border-border/20"
@@ -1065,8 +1048,8 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 >
                   <Globe className="h-4 w-4 text-primary group-hover/item:scale-110 transition-transform flex-shrink-0" />
                   <div className="flex flex-col">
-                    <span className="text-[14px] font-medium">Website</span>
-                    <span className="text-[12px] text-muted-foreground">{resumeData.website}</span>
+                    <span className="text-[14px] font-medium">{t('website')}</span>
+                    <span className="text-[12px] text-muted-foreground">{settings.website}</span>
                   </div>
                 </a>
               </div>
@@ -1090,11 +1073,11 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
       {!hideHeaderText && (
         <div className="mb-6 md:mb-8 text-left pt-6 md:pt-8 lg:pt-12 px-4 md:px-0">
           <p className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-muted-foreground mb-3 md:mb-4 animate-fade-in-blur">
-            Dev&apos;s digital home
+            {t('digitalHome')}
           </p>
           <h1 className="text-3xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-4xl font-light mb-8 md:mb-12 lg:mb-16 text-foreground tracking-[0.04em] leading-tight md:leading-[16px] animate-fade-in-blur" style={{ animationDelay: '0.1s' }}>
-            Designer bringing interaction, <br className="hidden md:block" />
-            <span className="text-3xl md:text-2xl lg:text-3xl xl:text-4xl font-light block mt-0 md:mt-2 text-foreground leading-tight md:leading-[16px] animate-fade-in-blur tracking-[0.04em]" style={{ animationDelay: '0.1s' }}>technology, and people together.</span>
+            {t('heroLine1')} <br className="hidden md:block" />
+            <span className="text-3xl md:text-2xl lg:text-3xl xl:text-4xl font-light block mt-0 md:mt-2 text-foreground leading-tight md:leading-[16px] animate-fade-in-blur tracking-[0.04em]" style={{ animationDelay: '0.1s' }}>{t('heroLine2')}</span>
           </h1>
         </div>
       )}
@@ -1258,15 +1241,15 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 {selectedSection.id === 'philosophy' && (
                   <>
                     <div>
-                      <h4 className="text-[15px] font-medium tracking-tight text-foreground mb-3">Design Philosophy</h4>
+                      <h4 className="text-[15px] font-medium tracking-tight text-foreground mb-3">{t('designPhilosophy')}</h4>
                       <div className="space-y-3">
                         <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
                           <div className="flex items-start gap-3">
                             <Heart className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                             <div>
-                              <p className="text-sm font-medium mb-1">User-Centered Design</p>
+                              <p className="text-sm font-medium mb-1">{t('philosophy.userCenteredTitle')}</p>
                               <p className="text-sm text-muted-foreground leading-relaxed">
-                                I design with care, always keeping the user at the center of every decision.
+                                {t('philosophy.userCenteredDesc').replace(/\*\*/g, '')}
                               </p>
                             </div>
                           </div>
@@ -1275,9 +1258,9 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                           <div className="flex items-start gap-3">
                             <User className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                             <div>
-                              <p className="text-sm font-medium mb-1">Empathy First</p>
+                              <p className="text-sm font-medium mb-1">{t('philosophy.empathyTitle')}</p>
                               <p className="text-sm text-muted-foreground leading-relaxed">
-                                Good design begins with understanding people and their needs deeply.
+                                {t('philosophy.empathyDesc')}
                               </p>
                             </div>
                           </div>
@@ -1286,9 +1269,9 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                           <div className="flex items-start gap-3">
                             <Lightbulb className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                             <div>
-                              <p className="text-sm font-medium mb-1">Human Technology</p>
+                              <p className="text-sm font-medium mb-1">{t('philosophy.humanTechTitle')}</p>
                               <p className="text-sm text-muted-foreground leading-relaxed">
-                                Technology should feel natural and intuitive, built for humans.
+                                {t('philosophy.humanTechDesc').replace(/\*\*/g, '')}
                               </p>
                             </div>
                           </div>
@@ -1297,9 +1280,9 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                           <div className="flex items-start gap-3">
                             <Target className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                             <div>
-                              <p className="text-sm font-medium mb-1">Purposeful Solutions</p>
+                              <p className="text-sm font-medium mb-1">{t('philosophy.purposefulTitle')}</p>
                               <p className="text-sm text-muted-foreground leading-relaxed">
-                                Every solution is thoughtful, purposeful, and made to last.
+                                {t('philosophy.purposefulDesc')}
                               </p>
                             </div>
                           </div>

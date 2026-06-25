@@ -1,7 +1,7 @@
 'use client';
 import { TopBar, MobileBottomNav } from '@/components/top-bar';
-
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
 
 const videoFiles = [
   {
@@ -43,6 +43,7 @@ const imageFiles = [
 
 export default function PlaygroundPage() {
   const router = useRouter();
+  const t = useTranslations('playground');
 
   return (
     <div className="min-h-screen bg-card text-foreground">
@@ -50,7 +51,7 @@ export default function PlaygroundPage() {
       <main className="pt-14 pb-24 px-2 md:px-6 lg:px-8 animate-fade-in-blur">
         <div className="mx-auto max-w-7xl space-y-10 mt-6 md:mt-8">
           <div className="text-center">
-            <p className="text-sm uppercase tracking-[0.36em] text-muted-foreground">playground</p>
+            <p className="text-sm uppercase tracking-[0.36em] text-muted-foreground">{t('label')}</p>
           </div>
           <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 auto-rows-[minmax(0,1fr)]">
             {videoFiles.map((video) => (

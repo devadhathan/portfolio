@@ -8,21 +8,24 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Send, User, RotateCcw, ChevronDown, Sparkles, MessageCircle, Smile } from 'lucide-react';
 import { Sheet, SheetContent, SheetClose } from '@/components/ui/sheet';
-import { PortfolioAgent, AgentCommand, AgentState, PortfolioSection } from '@/lib/agent';
+import { PortfolioAgent, AgentState, PortfolioSection } from '@/lib/agent';
 import { resumeData } from '@/lib/resume-data';
 import ReactMarkdown from 'react-markdown';
+import {
+  resolveCardIds,
+  type GenUIItem,
+  type GenUIStat,
+  type GenUIProject,
+  type GenUITimeline,
+  type GenUISkills,
+  type GenUIQuote,
+  type GenUIChart,
+  type GenUIImage,
+  type GenUIInfo,
+} from '@/lib/gen-ui-registry';
+import type { LayoutActionCommand } from '@/lib/agent-loop';
 
-// ─── Gen UI types ────────────────────────────────────────────────────────────
-
-export type GenUIStat     = { type: 'stat';       label: string; value: string; context?: string };
-export type GenUIProject  = { type: 'project';    title: string; description: string; tags?: string[]; link?: string };
-export type GenUITimeline = { type: 'timeline';   role: string; company: string; period: string; highlights?: string[] };
-export type GenUISkills   = { type: 'skill_grid'; categories: { name: string; skills: string[] }[] };
-export type GenUIQuote    = { type: 'quote';      text: string; author?: string };
-export type GenUIChart    = { type: 'chart';      title: string; bars: { label: string; value: number; displayValue: string; color?: string }[] };
-export type GenUIImage    = { type: 'image';      src: string; alt: string; caption?: string; link?: string };
-export type GenUIInfo     = { type: 'info';       title: string; subtitle?: string; body: string; icon?: string; link?: string };
-export type GenUIItem     = GenUIStat | GenUIProject | GenUITimeline | GenUISkills | GenUIQuote | GenUIChart | GenUIImage | GenUIInfo;
+export type { GenUIItem, GenUIStat, GenUIProject, GenUITimeline, GenUISkills, GenUIQuote, GenUIChart, GenUIImage, GenUIInfo };
 
 function StatCard({ label, value, context }: GenUIStat) {
   return (
@@ -162,87 +165,23 @@ function GenUIBlock({ items }: { items: GenUIItem[] }) {
   );
 }
 
-// ─── Predefined Card Registry ────────────────────────────────────────────────
-// AI picks IDs from this list — we control every render, zero hallucination risk
+// CARD_REGISTRY lives in @/lib/gen-ui-registry
 
-const CARD_REGISTRY: Record<string, GenUIItem> = {
-  // Stats
-  'stat:downloads':   { type: 'stat', value: '100k+', label: 'App Downloads',          context: 'Finshots · first year' },
-  'stat:conversion':  { type: 'stat', value: '+17%',  label: 'Conversion Rate',         context: 'Ditto booking portal' },
-  'stat:engagement':  { type: 'stat', value: '+92%',  label: 'User Engagement',          context: 'Nesoi.ai dashboards' },
-  'stat:efficiency':  { type: 'stat', value: '+20%',  label: 'Team Efficiency',          context: 'Ditto CRM redesign' },
-  'stat:rating':      { type: 'stat', value: '4.9★',  label: 'Play Store Rating',        context: 'Finshots' },
-  'stat:subscribers': { type: 'stat', value: '500k+', label: 'Subscribers',              context: 'Finshots newsletter' },
-  'stat:dropoff':     { type: 'stat', value: '-8%',   label: 'Drop-off Rate',            context: 'Ditto onboarding' },
-  'stat:devtime':     { type: 'stat', value: '-30%',  label: 'Design-to-Dev Time',       context: 'Falcon Design System' },
-  'stat:clients':     { type: 'stat', value: '15+',   label: 'Enterprise Clients',       context: 'Nesoi.ai' },
-  'stat:coursetime':  { type: 'stat', value: '-37%',  label: 'Course Creation Time',     context: 'Nesoi.ai' },
-
-  // Projects
-  'project:finshots':   { type: 'project', title: 'Finshots News App',       description: 'Award-winning fintech mobile app. 100k+ downloads, 4.9★, Google Play Best App 2020.',          tags: ['Mobile', 'Fintech', 'UX'],         link: '/work?project=finshots-news-app' },
-  'project:falcon':     { type: 'project', title: 'Falcon Design System',    description: 'Comprehensive design system for Ditto Insurance. Reduced design-to-dev time by 30%.',          tags: ['Design System', 'Figma'],          link: '/work?project=falcon-design-system' },
-  'project:crm':        { type: 'project', title: 'CRM Redesign',            description: 'Internal CRM overhaul for Ditto Insurance. Boosted team efficiency by 20%.',                   tags: ['B2B', 'Product Design'],           link: '/work?project=crm-redesign' },
-  'project:onboarding': { type: 'project', title: 'Onboarding Redesign',     description: '+17% conversion, -8% drop-off. Data-driven slot booking flow redesign.',                       tags: ['Conversion', 'UX Research'],       link: '/work?project=onboarding-redesign' },
-  'project:booking':    { type: 'project', title: 'Booking Portal',          description: 'Full redesign using Double Diamond. WCAG 2.1 AA compliant. 17% conversion increase.',          tags: ['Accessibility', 'Web'],            link: '/work?project=booking-portal-redesign' },
-  'project:nesoi':      { type: 'project', title: 'Nesoi.ai Dashboard',      description: 'AI-powered learning dashboards for 15+ enterprise clients. Engagement up 92%.',               tags: ['AI', 'Dashboard', 'B2B'] },
-
-  // Timeline
-  'timeline:wordsmith': { type: 'timeline', role: 'Product Designer', company: 'Wordsmith AI',    period: 'Apr 2026 – Jun 2026', highlights: ['AI-powered writing and content platform'] },
-  'timeline:nesoi':     { type: 'timeline', role: 'Product Designer', company: 'Nesoi.ai',         period: 'Jul 2025 – Nov 2025', highlights: ['+92% engagement', '-37% course creation time', 'WCAG 2.1 AA'] },
-  'timeline:ditto-finshots': { type: 'timeline', role: 'Product Designer', company: 'Ditto Insurance (by Finshots)', period: 'Aug 2019 – Dec 2022', highlights: ['Falcon Design System', '+17% conversion', '+20% efficiency', 'Google Play Best App 2020', '100k+ downloads', '4.9★'] },
-
-  // Skills
-  'skills:design':    { type: 'skill_grid', categories: [{ name: 'Design',    skills: ['UX/UI', 'Interaction Design', 'Prototyping', 'Visual Design', 'Wireframing', 'Design Systems', 'Mockups'] }] },
-  'skills:research':  { type: 'skill_grid', categories: [{ name: 'Research',  skills: ['User Interviews', 'User Testing', 'A/B Testing', 'Journey Mapping', 'Persona Creation', 'Information Architecture'] }] },
-  'skills:software':  { type: 'skill_grid', categories: [{ name: 'Tools',     skills: ['Figma', 'Framer', 'Cursor', 'v0', 'Adobe XD', 'Principle', 'After Effects', 'HTML', 'CSS', 'JavaScript'] }] },
-
-  // Quotes
-  'quote:philosophy': { type: 'quote', text: 'Great design is invisible — it solves real problems while feeling effortless to the person using it.' },
-  'quote:approach':   { type: 'quote', text: 'I balance creativity with practicality, always keeping the user at the center of every decision.' },
-  'quote:systems':    { type: 'quote', text: 'A good design system isn\'t just a library of components — it\'s a shared language for the whole team.' },
-
-  // Charts
-  'chart:impact': { type: 'chart', title: 'Impact Across Roles', bars: [
-    { label: 'Engagement', value: 92, displayValue: '+92%', color: 'hsl(var(--primary))' },
-    { label: 'Conversion', value: 17, displayValue: '+17%', color: 'hsl(var(--primary) / 0.8)' },
-    { label: 'Efficiency', value: 20, displayValue: '+20%', color: 'hsl(var(--primary) / 0.6)' },
-    { label: 'Dev Time', value: 30, displayValue: '-30%', color: 'hsl(var(--primary) / 0.5)' },
-  ]},
-  'chart:downloads': { type: 'chart', title: 'Finshots Growth', bars: [
-    { label: 'Downloads', value: 100, displayValue: '100k+' },
-    { label: 'Subscribers', value: 500, displayValue: '500k+' },
-    { label: 'Rating', value: 98, displayValue: '4.9★' },
-  ]},
-  'chart:skills': { type: 'chart', title: 'Skill Proficiency', bars: [
-    { label: 'UX/UI', value: 95, displayValue: 'Expert' },
-    { label: 'Prototyping', value: 90, displayValue: 'Expert' },
-    { label: 'Research', value: 85, displayValue: 'Advanced' },
-    { label: 'Design Sys', value: 92, displayValue: 'Expert' },
-    { label: 'Frontend', value: 70, displayValue: 'Proficient' },
-  ]},
-  'chart:nesoi': { type: 'chart', title: 'Nesoi.ai Results', bars: [
-    { label: 'Engagement', value: 92, displayValue: '+92%' },
-    { label: 'Course Time', value: 37, displayValue: '-37%' },
-    { label: 'Clients', value: 15, displayValue: '15+' },
-  ]},
-
-  // Images
-  'image:finshots':  { type: 'image', src: '/finshots/image.png',             alt: 'Finshots News App',          caption: 'Finshots — Award-winning fintech news app',         link: '/work?project=finshots-news-app' },
-  'image:falcon':    { type: 'image', src: '/falcon design system/image.png', alt: 'Falcon Design System',       caption: 'Falcon — Comprehensive design system for Ditto',    link: '/work?project=falcon-design-system' },
-  'image:crm':       { type: 'image', src: '/CRM/prototype.gif',             alt: 'CRM Redesign Prototype',     caption: 'CRM Redesign — Interactive prototype',              link: '/work?project=crm-redesign' },
-  'image:ditto':     { type: 'image', src: '/ditto insurance/1.png',         alt: 'Ditto Insurance',            caption: 'Ditto — Booking portal redesign',                   link: '/work?project=onboarding-redesign' },
-  'image:nesoi':     { type: 'image', src: '/nesoi/final-prototype.png',     alt: 'Nesoi.ai Dashboard',         caption: 'Nesoi.ai — Enterprise learning dashboard' },
-  'image:portrait':  { type: 'image', src: '/photos/MEE.png',               alt: 'Devadhathan M D',            caption: 'Devadhathan M D — Product Designer' },
-
-  // Info cards
-  'info:education':  { type: 'info', title: 'MSc User Experience Design', subtitle: 'Edinburgh Napier University', body: '2023–2024 · Edinburgh, UK. Specialized in UX research methods, interaction design, and human-computer interaction.', icon: '🎓' },
-  'info:bsc':        { type: 'info', title: 'BSc Computer Science Engineering', subtitle: 'University of Kerala', body: 'Foundation in software engineering, data structures, and algorithms.', icon: '💻' },
-  'info:award':      { type: 'info', title: 'Google Play Best App 2020', subtitle: 'Finshots News App', body: 'Recognized by Google for outstanding user experience, design quality, and engagement metrics.', icon: '🏆' },
-  'info:cert:google': { type: 'info', title: 'Google UX Design Professional', subtitle: 'Google', body: 'Certified in user-centered design, wireframing, prototyping, and usability testing.', icon: '📜' },
-  'info:cert:ibm':   { type: 'info', title: 'IBM Design Thinking Practitioner', subtitle: 'IBM', body: 'Certified in enterprise design thinking, team collaboration, and user outcomes framework.', icon: '📜' },
-  'info:location':   { type: 'info', title: 'Based in Edinburgh, UK', subtitle: 'Originally from Kerala, India', body: 'Open to full-time Product Design roles. Available for remote or hybrid positions.', icon: '📍' },
-  'info:contact':    { type: 'info', title: 'Get in Touch', subtitle: 'Open to opportunities', body: 'Email: hello@devadhathan.com · LinkedIn: devadhathan · Portfolio: devadhathan.com', icon: '✉️', link: '/contact' },
-};
+function applyLayoutCommands(
+  agent: PortfolioAgent,
+  commands: LayoutActionCommand[],
+): AgentState {
+  let nextState = agent.getState();
+  for (const cmd of commands) {
+    if (cmd.type === 'reset') {
+      agent.reset();
+      nextState = agent.getState();
+    } else {
+      nextState = agent.executeCommand(cmd);
+    }
+  }
+  return nextState;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -616,251 +555,95 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
     }
 
      try {
-         // Prepare context for OpenAI
-         const openAIMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = messages
-           .filter(msg => !msg.isStreaming && msg.role !== 'user')
-           .map(msg => ({ role: msg.role === 'agent' ? 'assistant' as const : msg.role, content: msg.content }));
+        const conversationHistory = messages
+          .filter((msg) => !msg.isStreaming && (msg.role === 'user' || msg.role === 'agent'))
+          .map((msg) => ({
+            role: (msg.role === 'agent' ? 'assistant' : 'user') as 'user' | 'assistant',
+            content: msg.content,
+          }));
 
-         // Different prompts for ask vs agent mode
-         const systemPrompt = mode === 'ask'
-           ? `You are a Gen UI Portfolio Assistant for Devadhathan M D, a Product Designer. You answer questions AND generate relevant UI components to make information visual and interactive.
+        conversationHistory.push({ role: 'user', content: command });
 
-ABOUT DEVADHATHAN:
-- Product Designer, 5+ years experience
-- Education: MSc User Experience Design, Edinburgh Napier University (2023-2024); BSc Computer Science Engineering
-- Location: Edinburgh, UK (originally Kerala, India)
-- Status: Actively looking for full-time Product Design roles
-
-EXPERIENCE:
-- Product Designer at Wordsmith AI (Apr–Jun 2026): Designed product experiences for an AI-powered writing and content platform.
-- Product Designer at Nesoi.ai (July–Nov 2025): Adviser/client dashboards for 15+ enterprise clients. Engagement +92%, course-creation time -37%. WCAG 2.1 AA. Design system foundations.
-- Product Designer at Ditto Insurance (Nov 2021–Dec 2022): Falcon Design System (design-to-dev time -30%), booking portal redesign (+17% conversion), CRM redesign (efficiency +20%).
-- UI/UX Designer at Finshots (Aug 2019–Oct 2021): Award-winning fintech mobile app. Google Play Best App 2020. 100k+ downloads. 500k+ subscribers. 4.9 stars.
-
-SKILLS:
-Design: UX/UI, Interaction Design, Prototyping, Visual Design, Wireframing, Mockups, Design Systems
-Research: User Interviews, User Testing, Information Architecture, A/B Testing, Journey Mapping, Persona Creation, Quantitative Analysis
-Software: Figma, Cursor, v0, Framer, Sketch, Principle, Adobe XD, Illustrator, Photoshop, After Effects, HTML, CSS, JavaScript
-
-PHILOSOPHY: User-centered design, iterative improvement, accessibility-first, data-driven decisions, scalable systems.
-
-AWARDS: Google Play Best App 2020 (Finshots). Certifications: Google UX Design Professional, IBM Design Thinking Practitioner.
-
-RESPONSE FORMAT — CRITICAL:
-Write 2-3 sentences as a helpful, conversational reply with specific details (numbers, project names, highlights). Then on a NEW LINE output exactly:
-CARDS:[id1,id2,id3]
-
-Pick 2-6 card IDs from this list that best visualise the answer:
-
-STATS: stat:downloads, stat:conversion, stat:engagement, stat:efficiency, stat:rating, stat:subscribers, stat:dropoff, stat:devtime, stat:clients, stat:coursetime
-PROJECTS: project:finshots, project:falcon, project:crm, project:onboarding, project:booking, project:nesoi
-TIMELINE: timeline:wordsmith, timeline:nesoi, timeline:ditto-finshots
-SKILLS: skills:design, skills:research, skills:software
-QUOTES: quote:philosophy, quote:approach, quote:systems
-CHARTS: chart:impact, chart:downloads, chart:skills, chart:nesoi
-IMAGES: image:finshots, image:falcon, image:crm, image:ditto, image:nesoi, image:portrait
-INFO: info:education, info:bsc, info:award, info:cert:google, info:cert:ibm, info:location, info:contact
-
-RULES:
-- ALWAYS end with CARDS: followed by comma-separated IDs — use ONLY exact IDs from the list above
-- No brackets, no quotes, no spaces around commas
-- Text: 2-3 sentences, plain text, no markdown
-- Match user intent to card types:
-  impact/metrics/numbers → stat cards + chart:impact
-  projects/work/case studies → project cards + image cards
-  experience/career/timeline → timeline cards
-  skills/tools → skills cards + chart:skills
-  philosophy/approach → quote cards
-  education/degree/university → info:education, info:bsc
-  awards/certifications → info:award, info:cert:google, info:cert:ibm
-  contact/hire/location → info:location, info:contact
-  about/who/overview → image:portrait, info:location + stats
-  show me everything → mix of chart:impact + project + timeline + image
-  visuals/screenshots/designs → image cards
-  graphs/charts/data → chart cards + stat cards
-
-FORMAT (exactly like this):
-Dev has delivered strong results across his roles — from 100k+ app downloads at Finshots to a 17% conversion boost at Ditto. Here are the key numbers.
-CARDS:stat:downloads,stat:conversion,chart:impact`
-           : `You are an intelligent portfolio agent for Devadhathan M D, a Product Designer. You generate UI cards that appear in the center of his portfolio page based on what the user asks.
-
-ABOUT DEV:
-- Product Designer at Wordsmith AI (Apr–Jun 2026)
-- Product Designer at Nesoi.ai (Jul–Nov 2025): +92% engagement, -37% course creation time, 15+ enterprise clients
-- Product Designer at Ditto Insurance (2021–2022): Falcon Design System (-30% dev time), +17% conversion, +20% efficiency
-- UI/UX Designer at Finshots (2019–2021): 100k+ downloads, 4.9★, Google Play Best App 2020, 500k+ subscribers
-
-RESPONSE FORMAT — STRICT:
-Write 2-4 sentences as a friendly, conversational reply that adds context about what you're showing. Be enthusiastic and specific — mention actual numbers, project names, or highlights. Then on a NEW LINE output CARDS:[id1,id2,id3].
-
-CARD IDs TO CHOOSE FROM:
-STATS: stat:downloads, stat:conversion, stat:engagement, stat:efficiency, stat:rating, stat:subscribers, stat:dropoff, stat:devtime, stat:clients, stat:coursetime
-PROJECTS: project:finshots, project:falcon, project:crm, project:onboarding, project:booking, project:nesoi
-TIMELINE: timeline:wordsmith, timeline:nesoi, timeline:ditto-finshots
-SKILLS: skills:design, skills:research, skills:software
-QUOTES: quote:philosophy, quote:approach, quote:systems
-CHARTS: chart:impact, chart:downloads, chart:skills, chart:nesoi
-IMAGES: image:finshots, image:falcon, image:crm, image:ditto, image:nesoi, image:portrait
-INFO: info:education, info:bsc, info:award, info:cert:google, info:cert:ibm, info:location, info:contact
-
-MAPPING:
-- "metrics" / "impact" / "numbers" / "results" → stat cards + chart:impact
-- "projects" / "work" / "case studies" → project cards + image cards
-- "experience" / "career" / "history" / "roles" → timeline cards
-- "skills" / "tools" / "expertise" → skills cards + chart:skills
-- "philosophy" / "approach" / "beliefs" → quote cards
-- "education" / "degree" / "university" → info:education, info:bsc
-- "awards" / "certifications" → info:award, info:cert:google, info:cert:ibm
-- "contact" / "hire" / "location" → info:location, info:contact
-- "about" / "who" / "overview" → image:portrait, info:location, chart:impact
-- "everything" → chart:impact, project:finshots, timeline:ditto-finshots, image:falcon
-- "visuals" / "screenshots" / "designs" → image cards
-- "graphs" / "charts" / "data" → chart cards + stat cards
-- specific project name → that project card + its image + related stats
-
-ALWAYS end with CARDS: — never skip it. Use ONLY exact IDs from the list above. No brackets, no quotes, no spaces around commas.
-EXAMPLE:
-Dev has driven measurable impact across every role. At Finshots, the app hit 100k+ downloads and a 4.9-star rating. At Ditto, his booking portal redesign boosted conversions by 17%, and the CRM overhaul improved team efficiency by 20%. Here's a visual breakdown of his key metrics.
-CARDS:chart:impact,stat:downloads,stat:conversion,image:finshots`;
-
-         openAIMessages.unshift({
-           role: 'system',
-           content: systemPrompt
-         });
-         
-         openAIMessages.push({ role: 'user', content: command });
-
-        // user message was appended above (stale `messages` + 1), placeholder goes right after
         const placeholderIndex = messages.length + 1;
-        setMessages(prev => {
-          const withPlaceholder = [...prev, { role: 'agent' as const, content: 'Thinking...', isStreaming: true }];
-          return withPlaceholder;
-        });
+        setMessages((prev) => [
+          ...prev,
+          { role: 'agent' as const, content: 'Thinking...', isStreaming: true },
+        ]);
 
-        const response = await fetch('/api/chat', {
+        const sectionSnapshot = agent.getState().sections.map((s) => ({
+          id: s.id,
+          title: s.title,
+          visible: s.visible,
+          priority: s.priority,
+          order: s.order,
+        }));
+
+        const response = await fetch('/api/agent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: openAIMessages, stream: true }),
+          body: JSON.stringify({
+            messages: conversationHistory,
+            mode,
+            sections: sectionSnapshot,
+          }),
         });
 
-        if (!response.ok) throw new Error('Failed to get response');
-
-        const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
-        let fullResponse = '';
-
-        // ── STEP 1: Stream — just accumulate, show "Generating..." ──
-        if (reader) {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            const chunk = decoder.decode(value, { stream: true });
-            for (const line of chunk.split('\n')) {
-              if (!line.startsWith('data: ')) continue;
-              const data = line.slice(6).trim();
-              if (data === '[DONE]') break;
-              try {
-                const json = JSON.parse(data);
-                if (json.content) fullResponse += json.content;
-              } catch (_) { /* skip */ }
-            }
-          }
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error((err as { error?: string }).error || 'Agent request failed');
         }
 
-        // ── STEP 2: Parse CARDS from complete response ──
-        // The model is told to end with "CARDS:id1,id2" but frequently emits a
-        // variant ("CARD:", "CARS:", "CAR::", "Cards :", a stray bracket, …).
-        // Match the whole CARDS family tolerantly so the directive is always
-        // stripped instead of leaking into the chat bubble.
-        const MARKER = /\bCAR[DS]{0,3}\s*:{1,2}\s*\[?/i;
-        const markerMatch = MARKER.exec(fullResponse);
-        let chatText = fullResponse;
-        let cardIds: string[] = [];
+        const result = (await response.json()) as {
+          message: string;
+          cardIds: string[];
+          layoutCommands: LayoutActionCommand[];
+          steps: Array<{ tool: string; args: Record<string, unknown>; result: string }>;
+          iterations: number;
+        };
 
-        if (markerMatch) {
-          chatText = fullResponse.substring(0, markerMatch.index).trim();
-          const idsPart = fullResponse.substring(markerMatch.index + markerMatch[0].length);
-          const raw = idsPart.replace(/\].*/s, '').replace(/[\[\]]/g, '').trim();
-          cardIds = raw.split(',').map(s => s.trim().replace(/['"]/g, '').trim()).filter(Boolean);
+        const parsedItems = resolveCardIds(result.cardIds || []);
+        const stepNote =
+          result.steps?.length > 0
+            ? `\n\n_${result.steps.length} tool step${result.steps.length === 1 ? '' : 's'} · ${result.iterations} loop iteration${result.iterations === 1 ? '' : 's'}_`
+            : '';
+        const finalText = (result.message || "Here's what I found.").trim() + stepNote;
+
+        if (mode === 'agent' && result.layoutCommands?.length) {
+          const nextState = applyLayoutCommands(agent, result.layoutCommands);
+          setState(nextState);
+          onStateChange(nextState);
         }
 
-        // Safety net: strip any trailing card directive that slipped through —
-        // a malformed/fused "CARDS…" marker the model emitted without a clean
-        // colon (e.g. "CARDStimelinenesoi,stat:"), or a bare "id:id,id:id" list.
-        // The guard only removes a "CARDS…" tail when it clearly looks like a
-        // list (contains a comma or colon), so ordinary prose is left intact.
-        chatText = chatText
-          .replace(/\bCAR[DS]{1,3}[\s:]*[a-z0-9_:,\s-]*$/i, (m) => (/[,:]/.test(m) ? '' : m))
-          .replace(/\n?\s*(?:[a-z_]+:[a-z_]+)(?:\s*,\s*[a-z_]+(?::[a-z_]+)?)*\s*$/i, '')
-          .trim();
-
-        // ── STEP 3: Resolve card IDs to registry items ──
-        const allKeys = Object.keys(CARD_REGISTRY);
-        const resolvedItems = cardIds.map(id => {
-          if (CARD_REGISTRY[id]) return CARD_REGISTRY[id];
-          // "statengagement" → "stat:engagement"
-          const noColon = allKeys.find(k => k.replace(':', '') === id.replace(':', ''));
-          if (noColon) return CARD_REGISTRY[noColon];
-          // ":engagement" → "stat:engagement"
-          if (id.startsWith(':')) {
-            const found = allKeys.find(k => k.endsWith(':' + id.slice(1)));
-            if (found) return CARD_REGISTRY[found];
-          }
-          // "engagement" → "stat:engagement"
-          const byName = allKeys.find(k => k.split(':').pop() === id);
-          if (byName) return CARD_REGISTRY[byName];
-          // partial contains: id has "engagement" in it somewhere
-          const contains = allKeys.find(k => {
-            const suffix = k.split(':').pop() || '';
-            return suffix.length > 3 && id.includes(suffix);
-          });
-          if (contains) return CARD_REGISTRY[contains];
-          return null;
-        }).filter(Boolean) as GenUIItem[];
-
-        // Deduplicate
-        const seen = new Set<GenUIItem>();
-        const parsedItems = resolvedItems.filter(item => {
-          if (seen.has(item)) return false;
-          seen.add(item);
-          return true;
-        });
-
-        const finalText = chatText.trim() || 'Here\u2019s what I found:';
-
-        // ── STEP 4: Apply results ──
         if (mode === 'ask') {
-            setMessages(prev => {
-                const newM = [...prev];
-                if (newM[placeholderIndex]) {
-                    newM[placeholderIndex] = {
-                        role: 'agent',
-                        content: finalText,
-                        ui: parsedItems.length > 0 ? parsedItems : undefined,
-                        isStreaming: false
-                    };
-                }
-                return newM;
-            });
-            setIsLoading(false);
-            return;
-        }
-
-        // Agent mode
-        if (parsedItems.length > 0) {
-            onGenUI?.(parsedItems);
-        }
-
-        setMessages(prev => {
+          setMessages((prev) => {
             const newM = [...prev];
             if (newM[placeholderIndex]) {
-                newM[placeholderIndex] = {
-                    role: 'agent',
-                    content: finalText,
-                    isStreaming: false
-                };
+              newM[placeholderIndex] = {
+                role: 'agent',
+                content: finalText,
+                ui: parsedItems.length > 0 ? parsedItems : undefined,
+                isStreaming: false,
+              };
             }
             return newM;
+          });
+          return;
+        }
+
+        if (parsedItems.length > 0) {
+          onGenUI?.(parsedItems);
+        }
+
+        setMessages((prev) => {
+          const newM = [...prev];
+          if (newM[placeholderIndex]) {
+            newM[placeholderIndex] = {
+              role: 'agent',
+              content: finalText,
+              isStreaming: false,
+            };
+          }
+          return newM;
         });
 
         if (onExplanation) onExplanation(null);

@@ -9,6 +9,7 @@ import { AgentState, PortfolioAgent } from '@/lib/agent';
 import type { GenUIItem } from '@/components/side-agent';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useTranslations } from 'next-intl';
 
 // Lazy load heavy components to reduce initial bundle size
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
@@ -31,6 +32,7 @@ const LOADING_MESSAGES = [
 ];
 
 export default function Home() {
+  const t = useTranslations('home');
   const [agentState, setAgentState] = useState<AgentState>(() => createDefaultAgentState());
   const [genUIItems, setGenUIItems] = useState<GenUIItem[] | null>(null);
   const [isAgentWorking, setIsAgentWorking] = useState(false);
@@ -258,7 +260,7 @@ export default function Home() {
               <source src="/videos/Subtle_Typing_Video_Generation.mp4" type="video/mp4" />
             </video>
             <p className="text-base md:text-lg text-white font-normal font-mono animate-pulse">
-              Loading Dev&apos;s Portfolio
+              {t('loadingPortfolio')}
             </p>
           </div>
         </div>

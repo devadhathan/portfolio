@@ -5,7 +5,7 @@ import { WeatherWidget } from './widgets/weather-widget';
 import { NotesWidget } from './widgets/notes-widget';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Menu, Clock, ChevronRight, FolderKanban } from 'lucide-react';
-import { resumeData } from '@/lib/resume-data';
+import { useSiteContent } from '@/components/site-content-provider';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -15,6 +15,7 @@ interface MobileSidebarProps {
 }
 
 export function MobileSidebar({ onProjectSelect }: MobileSidebarProps) {
+  const { projects } = useSiteContent();
   const [time, setTime] = useState<Date | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -79,9 +80,7 @@ export function MobileSidebar({ onProjectSelect }: MobileSidebarProps) {
             <CardContent className="pt-0">
               <ScrollArea className="h-[200px]">
                 <div className="space-y-0.5 pr-4">
-                  {resumeData.projects
-                    .filter(project => project.title !== 'Sustainable Kiosk')
-                    .map((project, index) => {
+                  {projects.map((project, index) => {
                       const projectSlug = project.title.toLowerCase().replace(/\s+/g, '-');
                       return (
                         <div

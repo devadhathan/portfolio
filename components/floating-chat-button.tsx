@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface FloatingChatButtonProps {
   onClick: () => void;
@@ -10,6 +11,7 @@ interface FloatingChatButtonProps {
 }
 
 export function FloatingChatButton({ onClick, isCollapsed }: FloatingChatButtonProps) {
+  const t = useTranslations('home');
   const [isAnimating, setIsAnimating] = useState(false);
 
   // White ovals glance around in random directions.
@@ -151,7 +153,7 @@ export function FloatingChatButton({ onClick, isCollapsed }: FloatingChatButtonP
           </div>
 
           <span className="hidden md:inline text-[15px] font-medium text-foreground whitespace-nowrap select-none">
-            Talk to my agent
+            {t('talkToAgent')}
           </span>
         </button>
       </div>

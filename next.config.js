@@ -1,3 +1,7 @@
+const createNextIntlPlugin = require('next-intl/plugin')
+
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -8,15 +12,11 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     formats: ['image/webp'],
   },
-  // Exclude the three-js-scene-creation-2 directory from the build
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
-  // Experimental features for better performance
   experimental: {
     optimizeCss: false,
+    serverComponentsExternalPackages: ['@sanity/client'],
   },
-  // macOS without fsevents falls back to per-directory fs.watch, which
-  // exhausts file descriptors (EMFILE) and silently breaks HMR. Use polling
-  // (no per-file descriptors) and ignore heavy dirs to keep it light.
   webpack: (config, { dev }) => {
     if (dev) {
       config.watchOptions = {
@@ -30,6 +30,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
-
-
+module.exports = withNextIntl(nextConfig)
