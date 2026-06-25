@@ -23,7 +23,7 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "three-js-scene-creation-2"]
+  "exclude": ["node_modules", "three-js-scene-creation-2", "studio-devadhathan", "studio-portfolio-cms"]
 }
 
 
