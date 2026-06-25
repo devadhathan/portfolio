@@ -15,7 +15,14 @@ const nextConfig = {
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
   experimental: {
     optimizeCss: false,
-    serverComponentsExternalPackages: ['@sanity/client'],
+    serverComponentsExternalPackages: [
+      '@sanity/client',
+      '@formatjs/intl-localematcher',
+      '@formatjs/fast-memoize',
+      '@formatjs/icu-messageformat-parser',
+      '@formatjs/icu-skeleton-parser',
+      '@formatjs/ecma402-abstract',
+    ],
   },
   webpack: (config, { dev }) => {
     if (dev) {
@@ -25,6 +32,8 @@ const nextConfig = {
         aggregateTimeout: 300,
         ignored: ['**/node_modules/**', '**/.next/**', '**/.git/**'],
       };
+      // Avoid stale @formatjs vendor-chunk refs when the dev cache rebuilds mid-compile
+      config.cache = false;
     }
     return config;
   },

@@ -15,7 +15,6 @@ import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { useEffect, useState } from 'react';
 import { ContactChat } from './contact-chat';
-import { LocaleSwitcherCompact } from './locale-switcher';
 import {
   Sheet,
   SheetContent,
@@ -220,7 +219,6 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
           </nav>
 
           <div className="flex items-center gap-2 flex-shrink-0">
-            <LocaleSwitcherCompact />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <motion.div whileTap={{ scale: 0.91 }}>

@@ -1341,14 +1341,14 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                             <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
                               <div className="mb-3">
                                 <h4 className="font-medium text-sm mb-1">Product Designer</h4>
-                                <p className="text-sm text-primary mb-2">Ditto Insurance (by Finshots)</p>
+                                <p className="text-sm text-primary mb-2">Finshots & Ditto</p>
                                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                                   <Calendar className="h-3.5 w-3.5" />
                                   <span>August 2019 - December 2022</span>
                                 </div>
                               </div>
                               <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-                                Led redesign of booking portal achieving 17% conversion increase. Created Falcon Design System and redesigned internal CRM improving team efficiency by 20%. Designed award-winning Finshots mobile app, contributing to Google Play Best App of 2020 and 100k+ downloads.
+                                Joined Finshots in 2019 as a product designer on the financial news platform and designed the award-winning Finshots app (Google Play Best App 2020, 100k+ downloads). Stayed with the company as it founded Ditto Insurance in 2021 and rebranded under Ditto — Finshots remains a product of the parent company. Also led Ditto booking portal (+17% conversion), Falcon Design System, and CRM redesign (+20% efficiency).
                               </p>
                               <div className="flex flex-wrap gap-1.5">
                                 {['Design Systems', 'Mobile Design', 'UX Research', 'Prototyping'].map((tag) => (

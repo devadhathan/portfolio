@@ -1,5 +1,7 @@
 import type { AgentCommand, SectionPriority } from '@/lib/agent';
 import { CARD_ID_LIST, CARD_REGISTRY } from '@/lib/gen-ui-registry';
+import { CASE_STUDY_SLUGS } from '@/lib/build-case-study-cards';
+import { resumeData } from '@/lib/resume-data';
 
 export const MAX_AGENT_ITERATIONS = 5;
 
@@ -22,17 +24,21 @@ export type AgentLoopStep = {
 
 export type LayoutActionCommand = AgentCommand | { type: 'reset' };
 
+export const MAX_VIEWPORT_CARDS = 6;
+
 export type AgentLoopResult = {
   message: string;
   cardIds: string[];
   layoutCommands: LayoutActionCommand[];
   steps: AgentLoopStep[];
   iterations: number;
+  buildViewport: boolean;
 };
 
 type ToolContext = {
   mode: 'ask' | 'agent';
   cardIds: string[];
+  buildViewport: boolean;
   layoutCommands: LayoutActionCommand[];
   steps: AgentLoopStep[];
   sections: Array<{ id: string; title: string; visible: boolean; priority: string; order: number }>;
@@ -44,6 +50,17 @@ export function getAgentTools(mode: 'ask' | 'agent') {
     function: { name: string; description: string; parameters: Record<string, unknown> };
   }> = [
     {
+      type: 'function',
+      function: {
+        name: 'get_portfolio_sections',
+        description: 'Read the current portfolio bento layout — which sections exist, visibility, priority, and order.',
+        parameters: { type: 'object', properties: {} },
+      },
+    },
+  ];
+
+  if (mode === 'ask') {
+    tools.unshift({
       type: 'function',
       function: {
         name: 'show_cards',
@@ -62,18 +79,30 @@ export function getAgentTools(mode: 'ask' | 'agent') {
           required: ['card_ids'],
         },
       },
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'get_portfolio_sections',
-        description: 'Read the current portfolio bento layout — which sections exist, visibility, priority, and order.',
-        parameters: { type: 'object', properties: {} },
-      },
-    },
-  ];
+    });
+  }
 
   if (mode === 'agent') {
+    tools.push({
+      type: 'function',
+      function: {
+        name: 'build_gen_ui_view',
+        description:
+          'Create a Gen UI viewport in the center canvas. Call when the user\'s intent is clear (specific request OR they answered your clarifying questions). Pass 3-6 card IDs — one project deep-dive OR a multi-project overview.',
+        parameters: {
+          type: 'object',
+          properties: {
+            card_ids: {
+              type: 'array',
+              items: { type: 'string' },
+              description: `3-${MAX_VIEWPORT_CARDS} card IDs for this viewport. Valid IDs: ${CARD_ID_LIST.join(', ')}`,
+            },
+            reason: { type: 'string', description: 'Brief note on what this viewport covers' },
+          },
+          required: ['card_ids'],
+        },
+      },
+    });
     tools.push({
       type: 'function',
       function: {
@@ -121,8 +150,20 @@ function executeTool(name: string, args: Record<string, unknown>, ctx: ToolConte
 
   if (name === 'show_cards') {
     const raw = Array.isArray(args.card_ids) ? (args.card_ids as string[]) : [];
-    const valid = raw.filter((id) => CARD_REGISTRY[id]);
+    const valid = raw.filter((id) => CARD_REGISTRY[id]).slice(0, MAX_VIEWPORT_CARDS);
     const invalid = raw.filter((id) => !CARD_REGISTRY[id]);
+
+    if (ctx.mode === 'agent') {
+      ctx.cardIds = valid;
+      ctx.buildViewport = valid.length > 0;
+      return JSON.stringify({
+        ok: true,
+        built: valid,
+        skipped_invalid: invalid,
+        message: 'Gen UI viewport will be created with these cards',
+      });
+    }
+
     valid.forEach((id) => {
       if (!ctx.cardIds.includes(id)) ctx.cardIds.push(id);
     });
@@ -131,6 +172,21 @@ function executeTool(name: string, args: Record<string, unknown>, ctx: ToolConte
       displayed: valid,
       skipped_invalid: invalid,
       total_cards_now: ctx.cardIds.length,
+    });
+  }
+
+  if (name === 'build_gen_ui_view' && ctx.mode === 'agent') {
+    const raw = Array.isArray(args.card_ids) ? (args.card_ids as string[]) : [];
+    const valid = raw.filter((id) => CARD_REGISTRY[id]).slice(0, MAX_VIEWPORT_CARDS);
+    const invalid = raw.filter((id) => !CARD_REGISTRY[id]);
+    ctx.cardIds = valid;
+    ctx.buildViewport = valid.length > 0;
+    return JSON.stringify({
+      ok: true,
+      built: valid,
+      skipped_invalid: invalid,
+      capped_at: MAX_VIEWPORT_CARDS,
+      message: 'Gen UI viewport will be created with these cards',
     });
   }
 
@@ -187,32 +243,70 @@ export function buildAgentSystemPrompt(mode: 'ask' | 'agent'): string {
   const base = `You are Devadhathan's portfolio assistant — a Product Designer with 5+ years experience.
 
 EXPERIENCE HIGHLIGHTS:
-- Wordsmith AI (2026), Nesoi.ai (+92% engagement, -37% course time), Ditto Insurance (+17% conversion, Falcon Design System), Finshots (100k+ downloads, Google Play Best App 2020)
+- Wordsmith AI (2026, confidential), Nesoi.ai (+92% engagement, -37% course time), Finshots & Ditto (2019–2022), Finshots app (100k+ downloads, Google Play Best App 2020), Ditto Insurance (+17% conversion, Falcon Design System)
+
+COMPANY CONTEXT — FINSHOTS & DITTO:
+${resumeData.companyHistory.finshotsDitto}
+- Finshots (2019): financial news platform — Dev designed the mobile app as product designer.
+- Ditto Insurance (2021): insurance product launched by the same company; the group later rebranded under Ditto.
+- Finshots is still a product of the parent company. Ditto projects (CRM, onboarding, Falcon) are separate from but related to this company history.
+
+CASE STUDY CARDS (rich content from full case studies — images, videos, problem/impact/learning):
+- Per project slug (${CASE_STUDY_SLUGS.join(', ')}): case:{slug}:project, case:{slug}:impact, image:case:{slug}:{section}, video:case:{slug}:{section}
+- Prefer case:{slug}:* cards over legacy project:* / image:* duplicates for the same project.
+- Do NOT mix project:finshots AND case:finshots-news-app:project — use case study IDs only.
+- Pick 2-4 image:case:{slug}:* or video:case:{slug}:* media cards per project — each has a title and short description, no separate project card needed if media is included.
+- Do NOT add separate info:problem + info:approach + project card for the same project — case:{slug}:project + case:{slug}:impact + media is enough.
+
+WORDSITH AI — LOCKED:
+- If the user asks about Wordsmith, Wordsmith AI, or wordsmith.ai: ONLY use info:wordsmith-locked and feature:wordsmith-locked.
+- Do NOT use timeline:wordsmith or any other cards. Tell them to contact Dev for more.
 
 AVAILABLE CARD IDS (use only these exact strings in show_cards):
 ${CARD_ID_LIST.join(', ')}
 
 WORKFLOW — AGENTIC LOOP:
 1. Think about what the user wants.
-2. Call tools to gather state or take action (show_cards, get_portfolio_sections${mode === 'agent' ? ', layout_action' : ''}).
+2. Call tools to gather state or take action (${mode === 'agent' ? 'build_gen_ui_view, get_portfolio_sections, layout_action' : 'show_cards, get_portfolio_sections'}).
 3. You may call multiple tools across turns before replying.
-4. When done, respond with a friendly 2-4 sentence summary (no tool calls on the final turn).
+4. When done, respond with a friendly summary (no tool calls on the final turn).
 
 RULES:
-- Always use show_cards for metrics, projects, skills, charts, images — never invent data.
-- Pick 2-6 relevant card IDs per show_cards call.
-- For layout requests${mode === 'agent' ? ' (hide photos, prioritize experience, etc.) use layout_action. Call get_portfolio_sections first if unsure of current state' : ', explain that layout changes require Agent mode'}.`;
+${mode === 'ask' ? `- Always use show_cards for metrics, projects, skills, charts, images, videos, info, and feature cards — never invent data.
+- Pick 4-8 relevant card IDs per show_cards call.` : `- In Gen UI mode use build_gen_ui_view (NOT show_cards) when creating a viewport.
+- Pick 3-${MAX_VIEWPORT_CARDS} card IDs per build_gen_ui_view call.`}
+- Use a diverse mix: combine stats + projects + timeline and/or charts/images/videos/info as the question demands.
+- For project deep-dives, include case:{slug}:* cards plus image:case:{slug}:* and video:case:{slug}:* media from case studies.
+- Line-art feature cards (feature:*, feature_section) are optional accents — use at most ONE feature_section OR 1-2 feature cards alongside other card types, not as the only cards.
+- Match cards tightly to the user's question (e.g. Finshots question → project:finshots, stat:downloads, image:finshots).
+- For layout requests${mode === 'agent' ? ' (hide photos, prioritize experience, etc.) use layout_action. Call get_portfolio_sections first if unsure of current state' : ', explain that layout changes require Gen UI mode'}.`;
 
   if (mode === 'agent') {
     return `${base}
 
-AGENT MODE: Cards appear in the center of the portfolio page. You can also rearrange the bento grid with layout_action.
+GEN UI MODE — EXPLORE FIRST, THEN BUILD:
+
+PHASE 1 — CLARIFY (no tools except get_portfolio_sections for layout questions):
+- On vague first requests ("show projects", "tell me about his work"), ask ONE short clarifying question. Offer options: a specific project (Finshots, Nesoi, CRM, Falcon) OR an overview of all work.
+- Do NOT call build_gen_ui_view on the first vague message.
+- If the user is answering your clarifying question, move to Phase 2 immediately.
+- Skip clarification when the request is already specific (e.g. "Show Finshots", "All projects overview", "Impact metrics", layout changes, Wordsmith).
+
+PHASE 2 — BUILD:
+- When intent is clear, call build_gen_ui_view ONCE with 3-${MAX_VIEWPORT_CARDS} card IDs.
+- Single project: feature card + case:{slug}:project + case:{slug}:impact + 1-2 media cards.
+- Multi-project overview: feature:impact + case:{slug}:project cards from 2-3 different projects (e.g. Finshots + Nesoi + CRM).
+- If the user wants all projects or an overview, build that — do NOT say you can only show one project.
+- NEVER mention viewport limits, card limits, or system constraints in your chat reply.
+- After building, reply with 1 friendly sentence about what you created. No markdown.
+
+Layout changes: use layout_action (and get_portfolio_sections if needed). No build_gen_ui_view required for layout-only requests.
 Section IDs: ${PORTFOLIO_SECTION_IDS.join(', ')}`;
   }
 
   return `${base}
 
-ASK MODE: Cards appear inline in the chat. Do not use layout_action.`;
+ASK MODE: Cards appear inline in the chat. Mix stat, project, timeline, chart, image, and info cards — add one feature line-art card only when it helps. Do not use layout_action.`;
 }
 
 export async function runAgentLoop(options: {
@@ -224,6 +318,7 @@ export async function runAgentLoop(options: {
   const ctx: ToolContext = {
     mode: options.mode,
     cardIds: [],
+    buildViewport: false,
     layoutCommands: [],
     steps: [],
     sections: options.sections,
@@ -303,5 +398,6 @@ export async function runAgentLoop(options: {
     layoutCommands: ctx.layoutCommands,
     steps: ctx.steps,
     iterations,
+    buildViewport: ctx.buildViewport,
   };
 }

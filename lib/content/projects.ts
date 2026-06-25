@@ -19,12 +19,11 @@ export const projectsData = [
       title: "Finshots App",
       category: "Mobile App",
       fullDetails: `
-        Finshots is India's leading financial newsletter. I was tasked with converting their newsletter audience into app users.
-        The challenge was making boring financial news engaging. 
-        I introduced 'Infographic Mode' and 'Dark Mode' to improve readability.
-        I handled the end-to-end UX/UI using Adobe XD and prototyped interactions in Protopie.
-        The impact was massive: We hit 100k downloads in the first year and won Google Play's Best App of 2020.
-        Users specifically loved the "Daily Brief" gesture-based navigation.
+        Finshots launched in 2019 as a financial news platform. Dev joined as a product designer and redesigned the mobile app to convert newsletter readers into app users.
+        The challenge was making financial news engaging and easy to revisit outside of email.
+        I introduced infographic mode, dark mode, and gesture-based navigation to improve readability.
+        The company later founded Ditto Insurance in 2021 and rebranded under Ditto — Finshots remains a product of the parent company.
+        Impact: 100k downloads in the first year and Google Play's Best App of 2020.
       `,
       link: "https://devadhathan.com/finshots-new"
     }

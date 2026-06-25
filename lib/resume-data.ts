@@ -5,6 +5,11 @@ export const resumeData = {
   linkedin: "in/devadhathan/",
   phone: "+447388289392",
 
+  companyHistory: {
+    finshotsDitto:
+      "Finshots was founded in 2019 as a financial news platform. Dev joined as a product designer and designed the award-winning Finshots mobile app. The company launched Ditto Insurance in 2021 and later rebranded under the Ditto name — Finshots remains a product of the parent company.",
+  },
+
   experience: [
     {
       role: "Product Designer",
@@ -28,13 +33,12 @@ export const resumeData = {
     },
     {
       role: "Product Designer",
-      company: "Ditto Insurance (by Finshots)",
+      company: "Finshots & Ditto",
       period: "August 2019 - December 2022",
       achievements: [
-        "Led a full redesign of the Ditto booking portal, achieving a 17% increase in conversion.",
-        "Created and standardized the Falcon Design System, reducing design-to-development time by 30%.",
-        "Spearheaded the redesign of Ditto's internal CRM, improving team efficiency by 20%.",
-        "Designed the Finshots mobile app, contributing to Google Play Best App award (2020) and 100k+ downloads.",
+        "Joined Finshots in 2019 as a product designer on the financial news platform and designed the Finshots mobile app (Google Play Best App 2020, 100k+ downloads).",
+        "Stayed with the company as it founded Ditto Insurance in 2021 and later rebranded under Ditto — Finshots remains a core product of the parent company.",
+        "Led Ditto booking portal redesign (+17% conversion), created the Falcon Design System (-30% design-to-dev time), and redesigned internal CRM (+20% efficiency).",
       ]
     },
   ],
@@ -47,8 +51,8 @@ export const resumeData = {
       details: "Studied under an academic scholarship. Focus on design thinking, human-centred design, prototyping, resilience, design reiteration, and usability testing."
     },
     {
-      degree: "Bachelor of Computer Science Engineering",
-      institution: "APJ Abdul Kalam University",
+      degree: "B.Tech Computer Science",
+      institution: "APJ Abdul Kalam Technological University",
       period: "2015 - 2019",
       details: "Graduated with a focus on software development, algorithms, data structures, and system design. Final project - Simulation of a Quantum computer."
     }
@@ -194,8 +198,8 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       role: "Product Designer, UX Designer",
       tools: ["Adobe XD", "After Effects", "Illustrator", "Sketch", "Principle"],
       team: "Arif, Manoranjan, Lokesh",
-      cardSubtext: "Daily Financial News",
-      description: "Redesigned the Finshots mobile app to provide a centralized platform for accessing financial news and insights. The app addresses the challenge of fragmented content delivery across emails, social posts, and other channels.",
+      cardSubtext: "Financial news platform · founded 2019",
+      description: "Finshots launched in 2019 as a financial news platform. Dev worked as a product designer and redesigned the mobile app into a centralized hub for financial news and insights — addressing fragmented content delivery across emails, social posts, and other channels.",
       problem: "Frequent readers of our financial content struggle to revisit old stories due to inefficient navigation on our website and in our emails. Endless scrolling and scattered content make it difficult for users to locate previously engaged stories, leading to frustration and decreased engagement. Feedback from social media and surveys indicates a strong demand for a more accessible, centralized platform that simplifies content discovery",
       research: "The journey began with a simple yet crucial question: Why are users struggling to stay engaged with Finshots' content, despite its growing popularity? We conducted a thorough analysis using: Google Play Store reviews, Social media feedback, Direct user queries. A clear theme emerged: Users loved the content but felt overwhelmed by its fragmented delivery across emails, social posts, and other channels. Revisiting or following up on valuable financial news was cumbersome due to a lack of centralized access. The issue wasn't about the quality of the content—it was about making it more accessible and intuitive to navigate.",
       hmw: "How might we design a centralized platform that provides an intuitive and seamless navigation experience, enabling users to easily explore and revisit financial stories?",
@@ -223,7 +227,7 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       tools: ["Figma", "After effects", "Illustrator", "Amplitude", "Loom"],
       team: "Arif, Manoranjan, Lokesh",
       cardSubtext: "Ditto Customer Onboarding",
-      description: `In 2022, Ditto Insurance—an Indian startup launched in 2021—presented significant opportunities for improvement. Collaborating with my product manager, I reimagined the onboarding experience to reduce friction for new users. As a product designer, I leveraged data-driven insights and iterative design methods to pinpoint user pain points and develop tailored solutions that enhanced both functionality and user satisfaction.`,
+      description: `In 2022, Ditto Insurance — launched in 2021 as an insurance spin-off from Finshots — presented significant opportunities for improvement. Collaborating with my product manager, I reimagined the onboarding experience to reduce friction for new users. As a product designer, I leveraged data-driven insights and iterative design methods to pinpoint user pain points and develop tailored solutions that enhanced both functionality and user satisfaction.`,
       problem: `Users were dropping off before completing the slot booking process, resulting in low conversion rates. A major challenge was aligning our design solutions with the business goal of increasing conversions while maintaining a user-centric approach. Understanding the root causes of abandonment in a relatively new product required continuous collaboration across design, product, and technical teams.`,
       problemImage: {
         src: '/ditto insurance/image copy.png',

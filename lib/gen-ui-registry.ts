@@ -1,5 +1,12 @@
 export type GenUIStat = { type: 'stat'; label: string; value: string; context?: string };
-export type GenUIProject = { type: 'project'; title: string; description: string; tags?: string[]; link?: string };
+export type GenUIProject = {
+  type: 'project';
+  title: string;
+  description: string;
+  tags?: string[];
+  link?: string;
+  projectSlug?: string;
+};
 export type GenUITimeline = { type: 'timeline'; role: string; company: string; period: string; highlights?: string[] };
 export type GenUISkills = { type: 'skill_grid'; categories: { name: string; skills: string[] }[] };
 export type GenUIQuote = { type: 'quote'; text: string; author?: string };
@@ -8,8 +15,54 @@ export type GenUIChart = {
   title: string;
   bars: { label: string; value: number; displayValue: string; color?: string }[];
 };
-export type GenUIImage = { type: 'image'; src: string; alt: string; caption?: string; link?: string };
-export type GenUIInfo = { type: 'info'; title: string; subtitle?: string; body: string; icon?: string; link?: string };
+export type GenUIImage = {
+  type: 'image';
+  src: string;
+  alt: string;
+  caption?: string;
+  link?: string;
+  projectSlug?: string;
+};
+export type GenUIVideo = {
+  type: 'video';
+  src: string;
+  alt: string;
+  caption?: string;
+  poster?: string;
+  link?: string;
+  projectSlug?: string;
+};
+export type GenUIInfo = {
+  type: 'info';
+  title: string;
+  subtitle?: string;
+  body: string;
+  icon?: string;
+  link?: string;
+  projectSlug?: string;
+};
+export type LineIllustrationId =
+  | 'growth-curve'
+  | 'funnel'
+  | 'network'
+  | 'timeline'
+  | 'system'
+  | 'users'
+  | 'mobile'
+  | 'research'
+  | 'accessibility';
+export type GenUIFeature = {
+  type: 'feature';
+  illustration: LineIllustrationId;
+  title: string;
+  body: string;
+  link?: string;
+};
+export type GenUIFeatureSection = {
+  type: 'feature_section';
+  headline: string;
+  features: { illustration: LineIllustrationId; title: string; body: string; link?: string }[];
+};
 export type GenUIItem =
   | GenUIStat
   | GenUIProject
@@ -18,9 +71,14 @@ export type GenUIItem =
   | GenUIQuote
   | GenUIChart
   | GenUIImage
-  | GenUIInfo;
+  | GenUIVideo
+  | GenUIInfo
+  | GenUIFeature
+  | GenUIFeatureSection;
 
-export const CARD_REGISTRY: Record<string, GenUIItem> = {
+import { buildCaseStudyCards } from '@/lib/build-case-study-cards';
+
+const BASE_CARD_REGISTRY: Record<string, GenUIItem> = {
   'stat:downloads': { type: 'stat', value: '100k+', label: 'App Downloads', context: 'Finshots · first year' },
   'stat:conversion': { type: 'stat', value: '+17%', label: 'Conversion Rate', context: 'Ditto booking portal' },
   'stat:engagement': { type: 'stat', value: '+92%', label: 'User Engagement', context: 'Nesoi.ai dashboards' },
@@ -79,7 +137,7 @@ export const CARD_REGISTRY: Record<string, GenUIItem> = {
     role: 'Product Designer',
     company: 'Wordsmith AI',
     period: 'Apr 2026 – Jun 2026',
-    highlights: ['AI-powered writing and content platform'],
+    highlights: ['Confidential project — contact Dev for details'],
   },
   'timeline:nesoi': {
     type: 'timeline',
@@ -91,15 +149,13 @@ export const CARD_REGISTRY: Record<string, GenUIItem> = {
   'timeline:ditto-finshots': {
     type: 'timeline',
     role: 'Product Designer',
-    company: 'Ditto Insurance (by Finshots)',
+    company: 'Finshots & Ditto',
     period: 'Aug 2019 – Dec 2022',
     highlights: [
-      'Falcon Design System',
-      '+17% conversion',
-      '+20% efficiency',
-      'Google Play Best App 2020',
-      '100k+ downloads',
-      '4.9★',
+      '2019: Finshots financial news platform — app design',
+      '2021: Ditto Insurance founded; later rebranded as Ditto',
+      'Finshots remains a product of the parent company',
+      '100k+ downloads · Google Play Best App 2020 · 4.9★',
     ],
   },
 
@@ -225,6 +281,13 @@ export const CARD_REGISTRY: Record<string, GenUIItem> = {
     caption: 'Devadhathan M D — Product Designer',
   },
 
+  'info:finshots-ditto': {
+    type: 'info',
+    title: 'Finshots & Ditto',
+    subtitle: 'Same parent company',
+    body: 'Finshots was founded in 2019 as a financial news platform. Dev joined as a product designer and built the award-winning Finshots app. The company launched Ditto Insurance in 2021 and later rebranded under Ditto — Finshots remains a product of the parent company.',
+    icon: '🏢',
+  },
   'info:education': {
     type: 'info',
     title: 'MSc User Experience Design',
@@ -234,9 +297,9 @@ export const CARD_REGISTRY: Record<string, GenUIItem> = {
   },
   'info:bsc': {
     type: 'info',
-    title: 'BSc Computer Science Engineering',
-    subtitle: 'University of Kerala',
-    body: 'Foundation in software engineering, data structures, and algorithms.',
+    title: 'B.Tech Computer Science',
+    subtitle: 'APJ Abdul Kalam Technological University',
+    body: '2015–2019 · Foundation in software engineering, algorithms, data structures, and system design.',
     icon: '💻',
   },
   'info:award': {
@@ -275,6 +338,138 @@ export const CARD_REGISTRY: Record<string, GenUIItem> = {
     icon: '✉️',
     link: '/contact',
   },
+
+  'feature:education': {
+    type: 'feature_section',
+    headline: 'Design education grounded in engineering and human-centred research',
+    features: [
+      {
+        illustration: 'research',
+        title: 'MSc User Experience Design',
+        body: 'Edinburgh Napier University · UX research, interaction design, and usability testing under academic scholarship.',
+      },
+      {
+        illustration: 'system',
+        title: 'B.Tech Computer Science',
+        body: 'APJ Abdul Kalam Technological University · Software engineering, algorithms, and system design foundations.',
+      },
+      {
+        illustration: 'growth-curve',
+        title: 'Certified & recognised',
+        body: 'Google UX Design Professional, IBM Design Thinking Practitioner, and Google Play Best App 2020 for Finshots.',
+      },
+    ],
+  },
+
+  'feature:impact': {
+    type: 'feature_section',
+    headline: 'Product design work built to improve engagement, conversion, and team efficiency',
+    features: [
+      {
+        illustration: 'growth-curve',
+        title: 'Drive measurable engagement',
+        body: 'Nesoi.ai dashboards lifted engagement by 92% while cutting course creation time by 37% for enterprise clients.',
+      },
+      {
+        illustration: 'funnel',
+        title: 'Improve conversion across flows',
+        body: 'Ditto onboarding and booking redesigns increased conversion by 17% and reduced drop-off by 8%.',
+      },
+      {
+        illustration: 'network',
+        title: 'Increase team efficiency',
+        body: 'Falcon Design System and CRM redesign boosted design-to-dev speed by 30% and team efficiency by 20%.',
+      },
+    ],
+  },
+  'feature:skills': {
+    type: 'feature_section',
+    headline: 'End-to-end product design — from research to shipped UI',
+    features: [
+      {
+        illustration: 'research',
+        title: 'Research & validation',
+        body: 'User interviews, testing, journey mapping, and A/B experiments to ground decisions in real user behavior.',
+      },
+      {
+        illustration: 'system',
+        title: 'Systems & craft',
+        body: 'Design systems, prototyping, and visual design — from wireframes to polished, dev-ready interfaces.',
+      },
+      {
+        illustration: 'accessibility',
+        title: 'Accessible by default',
+        body: 'WCAG 2.1 AA compliance baked into flows across Nesoi, Ditto, and Finshots work.',
+      },
+    ],
+  },
+  'feature:finshots': {
+    type: 'feature',
+    illustration: 'mobile',
+    title: 'Finshots News App',
+    body: '100k+ downloads, 4.9★ rating, Google Play Best App 2020 — award-winning fintech mobile experience.',
+    link: '/work?project=finshots-news-app',
+  },
+  'feature:falcon': {
+    type: 'feature',
+    illustration: 'system',
+    title: 'Falcon Design System',
+    body: 'Shared language for Ditto Insurance — components, tokens, and patterns that cut design-to-dev time by 30%.',
+    link: '/work?project=falcon-design-system',
+  },
+  'feature:nesoi': {
+    type: 'feature',
+    illustration: 'users',
+    title: 'Nesoi.ai Enterprise Dashboards',
+    body: 'AI-powered learning experiences for 15+ enterprise clients with a 92% engagement lift.',
+  },
+  'feature:career': {
+    type: 'feature_section',
+    headline: 'Five years shipping product design across fintech, insurance, and AI',
+    features: [
+      {
+        illustration: 'timeline',
+        title: 'Finshots → Ditto',
+        body: 'Started on Finshots in 2019, then Ditto Insurance in 2021 — same parent company, Finshots still a product today.',
+      },
+      {
+        illustration: 'mobile',
+        title: 'Mobile & web at scale',
+        body: 'Finshots reached 100k+ downloads; Ditto portals and CRM tools served thousands of daily users.',
+      },
+      {
+        illustration: 'growth-curve',
+        title: 'Outcomes over output',
+        body: 'Every project tied to metrics — conversion, engagement, efficiency, and accessibility.',
+      },
+    ],
+  },
+
+  'info:wordsmith-locked': {
+    type: 'info',
+    title: 'Wordsmith AI',
+    subtitle: 'Locked case study',
+    body: 'This project is confidential and under NDA. Contact Dev at devadhathanmd18@gmail.com or via LinkedIn to learn more.',
+    icon: '🔒',
+    link: '/contact',
+  },
+  'feature:wordsmith-locked': {
+    type: 'feature_section',
+    headline: 'Wordsmith AI is a locked, confidential project',
+    features: [
+      {
+        illustration: 'system',
+        title: 'Contact Dev to learn more',
+        body: 'Details about this AI writing platform cannot be shared publicly. Reach out directly if you would like to discuss this work.',
+        link: '/contact',
+      },
+    ],
+  },
+};
+
+export const CARD_REGISTRY: Record<string, GenUIItem> = {
+  ...BASE_CARD_REGISTRY,
+  ...(buildCaseStudyCards() as Record<string, GenUIItem>),
 };
 
 export const CARD_ID_LIST = Object.keys(CARD_REGISTRY);

@@ -6,9 +6,9 @@ import { TopBar, MobileBottomNav } from '@/components/top-bar';
 import { AboutSection } from '@/components/about-section';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { AgentState, PortfolioAgent } from '@/lib/agent';
-import type { GenUIItem } from '@/components/side-agent';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import type { GenUIViewport } from '@/lib/gen-ui-viewport';
+import type { CardSkeletonType } from '@/lib/infer-skeleton';
+import { GenUIViewportStack } from '@/components/gen-ui-viewport-stack';
 import { useTranslations } from 'next-intl';
 
 // Lazy load heavy components to reduce initial bundle size
@@ -34,7 +34,9 @@ const LOADING_MESSAGES = [
 export default function Home() {
   const t = useTranslations('home');
   const [agentState, setAgentState] = useState<AgentState>(() => createDefaultAgentState());
-  const [genUIItems, setGenUIItems] = useState<GenUIItem[] | null>(null);
+  const [genUIViewports, setGenUIViewports] = useState<GenUIViewport[]>([]);
+  const [scrollToViewportId, setScrollToViewportId] = useState<string | null>(null);
+  const [skeletonTypes, setSkeletonTypes] = useState<CardSkeletonType[] | undefined>();
   const [isAgentWorking, setIsAgentWorking] = useState(false);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [isChatCollapsed, setIsChatCollapsed] = useState(true);
@@ -48,6 +50,7 @@ export default function Home() {
   const [chatMode, setChatMode] = useState<'ask' | 'agent'>('ask');
   const [showProjectsList, setShowProjectsList] = useState(false);
   const resetAgentRef = useRef<(() => void) | null>(null);
+  const genUIViewportsRef = useRef<GenUIViewport[]>([]);
   const explanationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showInitialLoading, setShowInitialLoading] = useState(false);
   const [fadingOut, setFadingOut] = useState(false);
@@ -60,17 +63,37 @@ export default function Home() {
     setAgentState(state);
   };
 
-  const handleAgentWorking = (working: boolean) => {
+  const handleAgentWorking = (working: boolean, hint?: { skeletonTypes?: CardSkeletonType[] }) => {
     setIsAgentWorking(working);
+    if (hint?.skeletonTypes) {
+      setSkeletonTypes(hint.skeletonTypes);
+    }
     if (working) {
       setLoadingStartTime(Date.now());
       setLoadingMessageIndex(0);
+      const prev = genUIViewportsRef.current;
+      if (prev.length > 0) {
+        setScrollToViewportId(prev[prev.length - 1].id);
+      }
     } else {
       setLoadingStartTime(null);
       setLoadingMessageIndex(0);
     }
-    // Don't reset explanation state immediately when agent stops
-    // Let explanation stay visible until new command starts
+  };
+
+  useEffect(() => {
+    genUIViewportsRef.current = genUIViewports;
+  }, [genUIViewports]);
+
+  const handleGenUIViewport = (viewport: GenUIViewport) => {
+    setGenUIViewports((prev) => [...prev, viewport]);
+    setScrollToViewportId(viewport.id);
+  };
+
+  const handleGenUIReset = () => {
+    setGenUIViewports([]);
+    setScrollToViewportId(null);
+    setSkeletonTypes(undefined);
   };
 
   useEffect(() => {
@@ -163,6 +186,9 @@ export default function Home() {
     if (resetAgentRef.current) {
       resetAgentRef.current();
     }
+    setGenUIViewports([]);
+    setScrollToViewportId(null);
+    setSkeletonTypes(undefined);
     // Clear explanation state
     setExplanation(null);
     setDisplayedExplanation('');
@@ -283,17 +309,7 @@ export default function Home() {
         {/* Main Content */}
         <div className={`flex-1 w-full px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8 relative z-10 transition-[margin-left] duration-500 ease-in-out ${isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-80'} pb-24 md:pb-28 lg:pb-8 overflow-x-hidden`}>
           <div className={`transition-[max-width,margin] duration-500 ease-in-out ${isSidebarCollapsed ? 'max-w-[1500px] mx-auto' : 'max-w-7xl mx-auto'}`}>
-            {isAgentWorking ? (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-              <div className="flex gap-2 mb-6">
-                <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-3 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-              </div>
-              <p className="text-lg text-foreground font-semibold mb-2">Agent is working...</p>
-              <p className="text-sm text-muted-foreground/70">{LOADING_MESSAGES[loadingMessageIndex]}</p>
-            </div>
-          ) : selectedProject ? (
+            {selectedProject ? (
             <div className="w-full">
               <ProjectDetailView 
                 projectId={selectedProject} 
@@ -316,134 +332,13 @@ export default function Home() {
                 selectedProjectId={selectedProject}
               />
             </div>
-          ) : genUIItems ? (
-            /* ── Agent Gen UI canvas ── */
-            <div className="animate-fade-in-blur pb-32">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-auto">
-                {genUIItems.map((item, i) => {
-                  if (item.type === 'stat') return (
-                    <Card key={i} className="bg-card/80 border-border/60 backdrop-blur-sm hover:border-border transition-colors">
-                      <CardContent className="pt-6">
-                        <p className="text-4xl font-bold text-foreground tabular-nums">{item.value}</p>
-                        <p className="text-sm font-medium text-foreground/80 mt-1">{item.label}</p>
-                        {item.context && <p className="text-xs text-muted-foreground mt-0.5">{item.context}</p>}
-                      </CardContent>
-                    </Card>
-                  );
-                  if (item.type === 'project') return (
-                    <Card key={i} className="bg-card/80 border-border/60 backdrop-blur-sm hover:border-border transition-colors group cursor-pointer" onClick={() => item.link && (window.location.href = item.link)}>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-semibold flex items-center justify-between">
-                          {item.title}
-                          {item.link && <span className="text-muted-foreground text-xs group-hover:text-primary transition-colors">View →</span>}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
-                        {item.tags && item.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-3">
-                            {item.tags.map((t, j) => <Badge key={j} variant="secondary" className="text-[10px]">{t}</Badge>)}
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  );
-                  if (item.type === 'timeline') return (
-                    <Card key={i} className="bg-card/80 border-border/60 backdrop-blur-sm hover:border-border transition-colors">
-                      <CardContent className="pt-6">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <p className="text-sm font-semibold text-foreground">{item.role}</p>
-                          <p className="text-xs text-muted-foreground whitespace-nowrap">{item.period}</p>
-                        </div>
-                        <p className="text-xs text-primary mb-2">{item.company}</p>
-                        {item.highlights && (
-                          <ul className="space-y-1">
-                            {item.highlights.map((h, j) => (
-                              <li key={j} className="text-xs text-muted-foreground flex gap-1.5"><span className="text-primary mt-0.5">·</span>{h}</li>
-                            ))}
-                          </ul>
-                        )}
-                      </CardContent>
-                    </Card>
-                  );
-                  if (item.type === 'skill_grid') return (
-                    <Card key={i} className="bg-card/80 border-border/60 backdrop-blur-sm hover:border-border transition-colors sm:col-span-2">
-                      <CardContent className="pt-6 space-y-4">
-                        {item.categories.map((cat, j) => (
-                          <div key={j}>
-                            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{cat.name}</p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {cat.skills.map((s, k) => <Badge key={k} variant="outline" className="text-[11px] font-normal">{s}</Badge>)}
-                            </div>
-                          </div>
-                        ))}
-                      </CardContent>
-                    </Card>
-                  );
-                  if (item.type === 'quote') return (
-                    <Card key={i} className="bg-card/80 border-border/60 backdrop-blur-sm hover:border-border transition-colors border-l-2 border-l-primary sm:col-span-2 lg:col-span-3">
-                      <CardContent className="pt-6">
-                        <p className="text-base text-foreground/90 italic leading-relaxed">{`\u201C${item.text}\u201D`}</p>
-                      </CardContent>
-                    </Card>
-                  );
-                  if (item.type === 'chart') {
-                    const maxVal = Math.max(...item.bars.map(b => b.value));
-                    return (
-                      <Card key={i} className="bg-card/80 border-border/60 backdrop-blur-sm hover:border-border transition-colors sm:col-span-2">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm font-semibold">{item.title}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                          {item.bars.map((bar, j) => (
-                            <div key={j} className="flex items-center gap-3">
-                              <span className="text-xs text-muted-foreground w-20 truncate flex-shrink-0">{bar.label}</span>
-                              <div className="flex-1 h-6 bg-secondary/50 rounded-full overflow-hidden">
-                                <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${(bar.value / maxVal) * 100}%`, background: bar.color || 'hsl(var(--primary))' }} />
-                              </div>
-                              <span className="text-xs font-semibold text-foreground w-14 text-right flex-shrink-0">{bar.displayValue}</span>
-                            </div>
-                          ))}
-                        </CardContent>
-                      </Card>
-                    );
-                  }
-                  if (item.type === 'image') {
-                    const imgCard = (
-                      <Card key={i} className="bg-card/80 border-border/60 backdrop-blur-sm hover:border-border transition-colors overflow-hidden group cursor-pointer">
-                        <div className="aspect-video overflow-hidden">
-                          <img src={item.src} alt={item.alt} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                        </div>
-                        {item.caption && (
-                          <CardContent className="pt-3 pb-4">
-                            <p className="text-xs text-muted-foreground">{item.caption}</p>
-                          </CardContent>
-                        )}
-                      </Card>
-                    );
-                    return item.link ? <a key={i} href={item.link} className="block no-underline">{imgCard}</a> : imgCard;
-                  }
-                  if (item.type === 'info') {
-                    const infoCard = (
-                      <Card key={i} className="bg-card/80 border-border/60 backdrop-blur-sm hover:border-border transition-colors">
-                        <CardContent className="pt-6">
-                          <div className="flex items-start gap-3">
-                            {item.icon && <span className="text-2xl mt-0.5">{item.icon}</span>}
-                            <div>
-                              <p className="text-sm font-semibold text-foreground">{item.title}</p>
-                              {item.subtitle && <p className="text-xs text-primary mt-0.5">{item.subtitle}</p>}
-                              <p className="text-xs text-muted-foreground leading-relaxed mt-1.5">{item.body}</p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                    return item.link ? <a key={i} href={item.link} className="block no-underline">{infoCard}</a> : infoCard;
-                  }
-                  return null;
-                })}
-              </div>
-            </div>
+          ) : genUIViewports.length > 0 || isAgentWorking ? (
+            <GenUIViewportStack
+              viewports={genUIViewports}
+              isBuilding={isAgentWorking}
+              skeletonTypes={skeletonTypes}
+              scrollToId={scrollToViewportId}
+            />
           ) : (
             /* ── Default home portfolio ── */
             <div className={`transition-all duration-600 animate-fade-in-blur ${contentGutterClass}`}>
@@ -470,7 +365,9 @@ export default function Home() {
             onCollapseChange={handleCollapseChange}
             onExplanation={handleExplanation}
             onExplanationComplete={handleExplanationComplete}
-            onGenUI={(items) => setGenUIItems(items)}
+            onGenUIViewport={handleGenUIViewport}
+            onGenUIReset={handleGenUIReset}
+            onModeChange={setChatMode}
             resetRef={resetAgentRef}
             externalCollapsed={isChatCollapsed}
             initialMode={chatMode}

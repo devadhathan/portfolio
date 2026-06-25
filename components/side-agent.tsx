@@ -21,11 +21,20 @@ import {
   type GenUIQuote,
   type GenUIChart,
   type GenUIImage,
+  type GenUIVideo,
   type GenUIInfo,
+  type GenUIFeature,
+  type GenUIFeatureSection,
 } from '@/lib/gen-ui-registry';
+import { FeatureCard, FeatureSection } from '@/components/line-illustrations';
+import { GenUIChatSkeleton } from '@/components/gen-ui-skeleton';
 import type { LayoutActionCommand } from '@/lib/agent-loop';
+import { inferSkeletonFromPrompt, type CardSkeletonType } from '@/lib/infer-skeleton';
+import { createGenUIViewport, type GenUIViewport } from '@/lib/gen-ui-viewport';
+import { enrichGenUIItems, isWordsmithQuery, stripAgentMeta, stripMarkdown, WORDSMITH_LOCKED_MESSAGE } from '@/lib/enrich-gen-ui';
+import { inferGenUIBuild, willLikelyBuildGenUI } from '@/lib/infer-gen-ui-build';
 
-export type { GenUIItem, GenUIStat, GenUIProject, GenUITimeline, GenUISkills, GenUIQuote, GenUIChart, GenUIImage, GenUIInfo };
+export type { GenUIItem, GenUIStat, GenUIProject, GenUITimeline, GenUISkills, GenUIQuote, GenUIChart, GenUIImage, GenUIVideo, GenUIInfo, GenUIFeature, GenUIFeatureSection };
 
 function StatCard({ label, value, context }: GenUIStat) {
   return (
@@ -132,6 +141,18 @@ function ImageCard({ src, alt, caption, link }: GenUIImage) {
   return link ? <a href={link} className="block no-underline hover:opacity-90 transition-opacity">{img}</a> : img;
 }
 
+function VideoCard({ src, alt, caption, poster, link }: GenUIVideo) {
+  const block = (
+    <div className="py-2 border-b border-border/30 last:border-0">
+      <div className="rounded-lg overflow-hidden border border-border/30 bg-black/20">
+        <video src={src} poster={poster} controls playsInline preload="metadata" className="w-full h-auto" aria-label={alt} />
+      </div>
+      {caption && <p className="text-[10px] text-muted-foreground mt-1.5">{caption}</p>}
+    </div>
+  );
+  return link ? <a href={link} className="block no-underline hover:opacity-90 transition-opacity">{block}</a> : block;
+}
+
 function InfoCard({ title, subtitle, body, icon }: GenUIInfo) {
   return (
     <div className="py-2 border-b border-border/30 last:border-0">
@@ -149,17 +170,35 @@ function InfoCard({ title, subtitle, body, icon }: GenUIInfo) {
 
 function GenUIBlock({ items }: { items: GenUIItem[] }) {
   return (
-    <div className="mt-2.5 rounded-xl bg-background/40 border border-border/40 px-3 py-1 divide-y-0">
+    <div className="mt-2.5 space-y-2.5">
       {items.map((item, i) => {
-        if (item.type === 'stat')       return <StatCard      key={i} {...item} />;
-        if (item.type === 'project')    return <ProjectCard   key={i} {...item} />;
-        if (item.type === 'timeline')   return <TimelineCard  key={i} {...item} />;
-        if (item.type === 'skill_grid') return <SkillsCard    key={i} {...item} />;
-        if (item.type === 'quote')      return <QuoteCard     key={i} {...item} />;
-        if (item.type === 'chart')      return <ChartCard     key={i} {...item} />;
-        if (item.type === 'image')      return <ImageCard     key={i} {...item} />;
-        if (item.type === 'info')       return <InfoCard      key={i} {...item} />;
-        return null;
+        if (item.type === 'feature_section') {
+          return (
+            <div key={i} className="rounded-xl bg-background/40 border border-border/40 overflow-hidden scale-[0.98] origin-top">
+              <FeatureSection headline={item.headline} features={item.features} />
+            </div>
+          );
+        }
+        if (item.type === 'feature') {
+          return (
+            <div key={i} className="rounded-xl bg-background/40 border border-border/40 px-3">
+              <FeatureCard {...item} variant="compact" />
+            </div>
+          );
+        }
+        return (
+          <div key={i} className="rounded-xl bg-background/40 border border-border/40 px-3 py-1">
+            {item.type === 'stat' && <StatCard {...item} />}
+            {item.type === 'project' && <ProjectCard {...item} />}
+            {item.type === 'timeline' && <TimelineCard {...item} />}
+            {item.type === 'skill_grid' && <SkillsCard {...item} />}
+            {item.type === 'quote' && <QuoteCard {...item} />}
+            {item.type === 'chart' && <ChartCard {...item} />}
+            {item.type === 'image' && <ImageCard {...item} />}
+            {item.type === 'video' && <VideoCard {...item} />}
+            {item.type === 'info' && <InfoCard {...item} />}
+          </div>
+        );
       })}
     </div>
   );
@@ -187,11 +226,13 @@ function applyLayoutCommands(
 
 interface SideAgentProps {
   onStateChange: (state: AgentState) => void;
-  onAgentWorking?: (working: boolean) => void;
+  onAgentWorking?: (working: boolean, hint?: { skeletonTypes?: CardSkeletonType[] }) => void;
   onCollapseChange?: (collapsed: boolean) => void;
   onExplanation?: (explanation: string | null) => void;
   onExplanationComplete?: (complete: boolean) => void;
-  onGenUI?: (items: GenUIItem[] | null) => void;
+  onGenUIViewport?: (viewport: GenUIViewport) => void;
+  onGenUIReset?: () => void;
+  onModeChange?: (mode: 'ask' | 'agent') => void;
   resetRef?: React.MutableRefObject<(() => void) | null>;
   externalCollapsed?: boolean;
   initialMode?: 'ask' | 'agent';
@@ -260,7 +301,16 @@ const CONTENT_DATABASE: Record<string, Partial<PortfolioSection> & { link?: stri
   }
 };
 
-export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onExplanation, onExplanationComplete, onGenUI, resetRef, externalCollapsed, initialMode }: SideAgentProps) {
+const WELCOME_MESSAGES = {
+  ask: 'Hi! Ask me anything about Dev\'s work — career, projects, skills, or impact. I\'ll answer here with cards and context. Try "What are his skills?" or "Tell me about Finshots."',
+  agent: 'Hi! Tell me what you\'d like to explore — a project, an overview of all work, skills, impact, or a layout change. I\'ll ask a quick question if needed, then build a view in the center. Try "Show Finshots" or "Give me an overview of all projects."',
+} as const;
+
+function getWelcomeMessage(mode: 'ask' | 'agent') {
+  return WELCOME_MESSAGES[mode];
+}
+
+export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onExplanation, onExplanationComplete, onGenUIViewport, onGenUIReset, onModeChange, resetRef, externalCollapsed, initialMode }: SideAgentProps) {
   const [agent] = useState(() => new PortfolioAgent());
   const [state, setState] = useState<AgentState>(agent.getState());
   const pendingSectionsRef = React.useRef<PortfolioSection[]>([]);
@@ -390,8 +440,8 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
     setIsCollapsed(newCollapsed);
     onCollapseChange?.(newCollapsed);
   };
-  const [messages, setMessages] = useState<Array<{ role: 'user' | 'agent' | 'assistant'; content: string; isStreaming?: boolean; ui?: GenUIItem[] }>>([
-    { role: 'agent', content: 'Hi! Ask me anything about Dev\'s work — try "Show me his impact metrics" or "What are his skills?" and I\'ll build a UI for you.' }
+  const [messages, setMessages] = useState<Array<{ role: 'user' | 'agent' | 'assistant'; content: string; isStreaming?: boolean; uiLoading?: boolean; ui?: GenUIItem[]; skeletonTypes?: CardSkeletonType[] }>>(() => [
+    { role: 'agent', content: getWelcomeMessage(initialMode || 'ask') },
   ]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -404,15 +454,19 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
   const handleModeChange = React.useCallback((newMode: 'agent' | 'ask') => {
     try {
       setMode(newMode);
+      onModeChange?.(newMode);
+      if (newMode === 'ask') {
+        onGenUIReset?.();
+      }
     } catch (error) {
       console.error('Error changing mode:', error);
     }
-  }, []);
+  }, [onGenUIReset, onModeChange]);
 
-  // Sync mode when initialMode changes (from floating button)
+  // Sync mode when parent changes initialMode — preserve chat history
   useEffect(() => {
     if (initialMode !== undefined && initialMode !== mode) {
-      handleModeChange(initialMode);
+      setMode(initialMode);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialMode]);
@@ -521,15 +575,24 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
-    
-    // Only show "agent working" in center section when in agent mode
-    if (mode === 'agent') {
-      onAgentWorking?.(true);
+
+    const skeletonTypes = inferSkeletonFromPrompt(command);
+    const priorForPredict = messages
+      .filter((msg) => !msg.isStreaming && (msg.role === 'user' || msg.role === 'agent'))
+      .map((msg) => ({
+        role: msg.role === 'agent' ? 'assistant' : 'user',
+        content: msg.content,
+      }));
+    const likelyBuild = willLikelyBuildGenUI(mode, command, priorForPredict);
+    let skeletonStartedAt: number | null = null;
+
+    if (mode === 'agent' && likelyBuild) {
+      skeletonStartedAt = Date.now();
+      onAgentWorking?.(true, { skeletonTypes });
     }
-    
-    // Reset state before each command
+
+    // Reset layout/explanation state before each command (keep chat + canvas history)
     if (mode === 'agent') {
-      onGenUI?.(null); // clear previous gen UI so home shows while loading
       if (onExplanation) onExplanation(null);
       if (onExplanationComplete) onExplanationComplete(false);
       pendingSectionsRef.current = [];
@@ -564,10 +627,15 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
 
         conversationHistory.push({ role: 'user', content: command });
 
-        const placeholderIndex = messages.length + 1;
         setMessages((prev) => [
           ...prev,
-          { role: 'agent' as const, content: 'Thinking...', isStreaming: true },
+          {
+            role: 'agent' as const,
+            content: mode === 'agent' ? (likelyBuild ? 'Building UI…' : 'Thinking…') : 'Thinking…',
+            isStreaming: true,
+            uiLoading: mode === 'ask',
+            skeletonTypes: mode === 'ask' ? skeletonTypes : undefined,
+          },
         ]);
 
         const sectionSnapshot = agent.getState().sections.map((s) => ({
@@ -599,14 +667,34 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
           layoutCommands: LayoutActionCommand[];
           steps: Array<{ tool: string; args: Record<string, unknown>; result: string }>;
           iterations: number;
+          buildViewport?: boolean;
         };
 
-        const parsedItems = resolveCardIds(result.cardIds || []);
+        const priorMessages = messages
+          .filter((msg) => !msg.isStreaming && (msg.role === 'user' || msg.role === 'agent'))
+          .map((msg) => ({
+            role: msg.role === 'agent' ? 'assistant' : 'user',
+            content: msg.content,
+          }));
+
+        const wordsmithQuery = isWordsmithQuery(command);
+        const shouldBuildViewport = inferGenUIBuild({
+          mode,
+          command,
+          result,
+          priorMessages,
+        });
+
+        const parsedItems = shouldBuildViewport
+          ? resolveCardIds(result.cardIds || [])
+          : [];
         const stepNote =
-          result.steps?.length > 0
+          result.steps?.length > 0 && !wordsmithQuery && shouldBuildViewport
             ? `\n\n_${result.steps.length} tool step${result.steps.length === 1 ? '' : 's'} · ${result.iterations} loop iteration${result.iterations === 1 ? '' : 's'}_`
             : '';
-        const finalText = (result.message || "Here's what I found.").trim() + stepNote;
+        const finalText = wordsmithQuery
+          ? WORDSMITH_LOCKED_MESSAGE
+          : (result.message || (shouldBuildViewport ? "Here's what I found." : '')).trim() + stepNote;
 
         if (mode === 'agent' && result.layoutCommands?.length) {
           const nextState = applyLayoutCommands(agent, result.layoutCommands);
@@ -614,50 +702,55 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
           onStateChange(nextState);
         }
 
-        if (mode === 'ask') {
-          setMessages((prev) => {
-            const newM = [...prev];
-            if (newM[placeholderIndex]) {
-              newM[placeholderIndex] = {
-                role: 'agent',
-                content: finalText,
-                ui: parsedItems.length > 0 ? parsedItems : undefined,
-                isStreaming: false,
-              };
+        const enrichedItems = shouldBuildViewport
+          ? enrichGenUIItems(parsedItems, command)
+          : [];
+
+        const agentMessage = {
+          role: 'agent' as const,
+          content: mode === 'agent' ? stripMarkdown(finalText) : finalText,
+          ui: mode === 'ask' && enrichedItems.length > 0 ? enrichedItems : undefined,
+          isStreaming: false,
+          uiLoading: false,
+        };
+
+        setMessages((prev) => {
+          const streamingIndex = prev.findIndex((m) => m.isStreaming);
+          if (streamingIndex === -1) return [...prev, agentMessage];
+          const next = [...prev];
+          next[streamingIndex] = agentMessage;
+          return next;
+        });
+
+        if (mode === 'agent') {
+          if (shouldBuildViewport && enrichedItems.length > 0) {
+            if (!skeletonStartedAt) {
+              skeletonStartedAt = Date.now();
+              onAgentWorking?.(true, { skeletonTypes });
             }
-            return newM;
-          });
+            const minSkeletonMs = 600;
+            const elapsed = Date.now() - skeletonStartedAt;
+            if (elapsed < minSkeletonMs) {
+              await new Promise((resolve) => setTimeout(resolve, minSkeletonMs - elapsed));
+            }
+            onGenUIViewport?.(createGenUIViewport(command, finalText, enrichedItems));
+          }
+          if (onExplanation) onExplanation(null);
+          if (onExplanationComplete) onExplanationComplete(shouldBuildViewport);
           return;
         }
 
-        if (parsedItems.length > 0) {
-          onGenUI?.(parsedItems);
-        }
-
-        setMessages((prev) => {
-          const newM = [...prev];
-          if (newM[placeholderIndex]) {
-            newM[placeholderIndex] = {
-              role: 'agent',
-              content: finalText,
-              isStreaming: false,
-            };
-          }
-          return newM;
-        });
-
-        if (onExplanation) onExplanation(null);
-        if (onExplanationComplete) onExplanationComplete(true);
-
     } catch (error) {
         console.error('Error:', error);
-        setMessages(prev => [...prev.filter(m => !m.isStreaming), { 
-            role: 'agent', 
-            content: 'I encountered a connection error. Please try again.' 
-        }]);
+        setMessages((prev) => {
+          const withoutStreaming = prev.filter((m) => !m.isStreaming);
+          return [
+            ...withoutStreaming,
+            { role: 'agent' as const, content: 'I encountered a connection error. Please try again.' },
+          ];
+        });
     } finally {
         setIsLoading(false);
-        // Only update agent working state in agent mode
         if (mode === 'agent') {
           onAgentWorking?.(false);
         }
@@ -665,8 +758,8 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
   };
 
   const handleReset = () => {
-    onGenUI?.(null);
-    setMessages([{ role: 'agent', content: 'Hi! Ask me anything — try "show me metrics" or "what projects have you done?"' }]);
+    onGenUIReset?.();
+    setMessages([{ role: 'agent', content: getWelcomeMessage(mode) }]);
   };
 
   // Expose reset function via ref
@@ -840,7 +933,7 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
                   </div>
                 </button>
 
-                {/* Ask / Agent toggle */}
+                {/* Ask / Gen UI toggle */}
                 <div className="flex items-center gap-0.5 p-0.5 rounded-full bg-secondary border border-border">
                   <button
                     onClick={() => handleModeChange('ask')}
@@ -858,7 +951,7 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
                       mode === 'agent' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                     } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    Agent
+                    Gen UI
                   </button>
                 </div>
 
@@ -878,9 +971,9 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
                       }`}>
                         <div className="prose prose-sm dark:prose-invert max-w-none break-words">
                           {(() => {
-                            const isThinking = message.content === 'Thinking...' || message.content.startsWith('Thinking...');
-                            const isGenerating = message.content === 'Generating...' || message.content.startsWith('Generating...');
-                            if (isThinking || isGenerating) {
+                            const isThinking = message.content === 'Thinking…' || message.content.startsWith('Thinking');
+                            const isBuilding = message.content === 'Building UI…' || message.content.startsWith('Building UI');
+                            if (isThinking || isBuilding) {
                               return <p className="mb-0 text-muted-foreground animate-pulse">{message.content}</p>;
                             }
                             return (
@@ -893,10 +986,13 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
                             );
                           })()}
                         </div>
-                        {message.isStreaming && message.role !== 'user' && message.content !== 'Thinking...' && message.content !== 'Generating...' && !message.content.startsWith('Thinking...') && !message.content.startsWith('Generating...') && (
+                        {message.isStreaming && message.role !== 'user' && message.content !== 'Thinking…' && message.content !== 'Building UI…' && !message.content.startsWith('Thinking') && !message.content.startsWith('Building UI') && (
                           <span className="inline-block w-1.5 h-3.5 ml-0.5 bg-muted-foreground animate-pulse rounded-sm" />
                         )}
-                        {!message.isStreaming && message.ui && message.ui.length > 0 && (
+                        {mode === 'ask' && message.uiLoading && message.isStreaming && (
+                          <GenUIChatSkeleton types={message.skeletonTypes} />
+                        )}
+                        {mode === 'ask' && !message.isStreaming && message.ui && message.ui.length > 0 && (
                           <GenUIBlock items={message.ui} />
                         )}
                       </div>
@@ -962,11 +1058,11 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
                                 <div className={`rounded-lg px-4 py-2 max-w-[85%] relative overflow-hidden ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                                   <div className="text-sm prose dark:prose-invert max-w-none break-words">
                                     {(() => {
-                                      const isThinking = message.content === 'Thinking...' || message.content.startsWith('Thinking...');
-                                      const isGenerating = message.content === 'Generating...' || message.content.startsWith('Generating...');
-                                      const shimmerClass = (isThinking || isGenerating) ? 'bg-gradient-to-r from-foreground/80 via-foreground/40 to-foreground/80 bg-[length:200%_100%] animate-[text-shimmer_2s_infinite] bg-clip-text text-transparent' : '';
+                                      const isThinking = message.content === 'Thinking…' || message.content.startsWith('Thinking');
+                                      const isBuilding = message.content === 'Building UI…' || message.content.startsWith('Building UI');
+                                      const shimmerClass = (isThinking || isBuilding) ? 'bg-gradient-to-r from-foreground/80 via-foreground/40 to-foreground/80 bg-[length:200%_100%] animate-[text-shimmer_2s_infinite] bg-clip-text text-transparent' : '';
                                       
-                                      if (isThinking || isGenerating) {
+                                      if (isThinking || isBuilding) {
                                         return <p className={`mb-2 last:mb-0 ${shimmerClass}`}>{message.content}</p>;
                                       }
                                       
@@ -980,10 +1076,13 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
                                       );
                                     })()}
                                   </div>
-                                  {message.isStreaming && message.role !== 'user' && message.content !== 'Thinking...' && message.content !== 'Generating...' && !message.content.startsWith('Thinking...') && !message.content.startsWith('Generating...') && (
+                                  {message.isStreaming && message.role !== 'user' && message.content !== 'Thinking…' && message.content !== 'Building UI…' && !message.content.startsWith('Thinking') && !message.content.startsWith('Building UI') && (
                                     <span className="inline-block w-1.5 h-4 ml-1 bg-foreground/50 animate-pulse" />
                                   )}
-                                  {!message.isStreaming && message.ui && message.ui.length > 0 && (
+                                  {mode === 'ask' && message.uiLoading && message.isStreaming && (
+                                    <GenUIChatSkeleton types={message.skeletonTypes} />
+                                  )}
+                                  {mode === 'ask' && !message.isStreaming && message.ui && message.ui.length > 0 && (
                                     <GenUIBlock items={message.ui} />
                                   )}
                                 </div>
@@ -1058,7 +1157,7 @@ export function SideAgent({ onStateChange, onAgentWorking, onCollapseChange, onE
                                 } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                               >
                                 <Sparkles className="h-3 w-3" />
-                                Agent
+                                Gen UI
                               </button>
                             </div>
                           </div>
