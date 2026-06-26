@@ -2,7 +2,12 @@ import type { GenUIItem } from '@/lib/gen-ui-registry';
 import { CARD_REGISTRY } from '@/lib/gen-ui-registry';
 import type { ResearchCardData } from '@/lib/gen-ui-research-cards';
 import { itemsToResearchCards } from '@/lib/gen-ui-research-cards';
-import { isOverviewQuery, getTopicSlugFromPrompt } from '@/lib/filter-relevant-gen-ui';
+import {
+  isCompaniesQuery,
+  isExperienceQuery,
+  isOverviewQuery,
+  getTopicSlugFromPrompt,
+} from '@/lib/filter-relevant-gen-ui';
 import { getItemSlug } from '@/lib/gen-ui-item-slug';
 
 export { GRID_CARD_COUNTS, MAX_GRID_CARDS } from '@/lib/gen-ui-constants';
@@ -35,7 +40,27 @@ const GENERIC_PAD_IDS = [
   'quote:philosophy',
 ] as const;
 
-function itemPriority(item: GenUIItem): number {
+const EXPERIENCE_PAD_IDS = ['feature:career'] as const;
+
+const COMPANIES_PAD_IDS = [
+  'timeline:ditto-finshots',
+  'timeline:nesoi',
+  'timeline:wordsmith',
+] as const;
+
+function itemPriority(item: GenUIItem, prompt: string): number {
+  if (isExperienceQuery(prompt)) {
+    if (item.type === 'feature_section') return 0;
+    if (item.type === 'quote') return 1;
+    if (item.type === 'timeline') return 4;
+    if (item.type === 'project' || item.type === 'chart' || item.type === 'stat') return 5;
+    return 3;
+  }
+  if (isCompaniesQuery(prompt)) {
+    if (item.type === 'timeline') return 0;
+    if (item.type === 'info') return 1;
+    return 4;
+  }
   if (item.type === 'project') return 0;
   if (item.type === 'image' || item.type === 'video') return 1;
   if (item.type === 'feature') return 2;
@@ -43,13 +68,15 @@ function itemPriority(item: GenUIItem): number {
   return 4;
 }
 
-function trimItemsToCount(items: GenUIItem[], target: number): GenUIItem[] {
+function trimItemsToCount(items: GenUIItem[], target: number, prompt: string): GenUIItem[] {
   return [...items]
-    .sort((a, b) => itemPriority(a) - itemPriority(b))
+    .sort((a, b) => itemPriority(a, prompt) - itemPriority(b, prompt))
     .slice(0, target);
 }
 
 function padItemIds(prompt: string): readonly string[] {
+  if (isExperienceQuery(prompt)) return EXPERIENCE_PAD_IDS;
+  if (isCompaniesQuery(prompt)) return COMPANIES_PAD_IDS;
   if (isOverviewQuery(prompt)) return OVERVIEW_PAD_IDS;
   const slug = getTopicSlugFromPrompt(prompt);
   if (slug) {
@@ -85,7 +112,7 @@ export function normalizeGenUIItemsForGrid(items: GenUIItem[], prompt: string): 
   if (items.length === 0) return items;
   const target = targetGridCardCount(items.length);
   if (items.length === target) return items;
-  if (items.length > target) return trimItemsToCount(items, target);
+  if (items.length > target) return trimItemsToCount(items, target, prompt);
   return padItemsToCount(items, target, prompt);
 }
 

@@ -1,6 +1,14 @@
 import type { GenUIItem } from '@/lib/gen-ui-registry';
 import { CARD_REGISTRY } from '@/lib/gen-ui-registry';
-import { filterRelevantItems, getTopicSlugFromPrompt, isOverviewQuery, isSpecificTopicQuery, itemMatchesSlug } from '@/lib/filter-relevant-gen-ui';
+import {
+  filterRelevantItems,
+  getTopicSlugFromPrompt,
+  isCompaniesQuery,
+  isExperienceQuery,
+  isOverviewQuery,
+  isSpecificTopicQuery,
+  itemMatchesSlug,
+} from '@/lib/filter-relevant-gen-ui';
 import { getItemSlug } from '@/lib/gen-ui-item-slug';
 import { MAX_VIEWPORT_CARDS } from '@/lib/gen-ui-constants';
 import { normalizeGenUIItemsForGrid } from '@/lib/gen-ui-grid';
@@ -28,10 +36,46 @@ function applyWordsmithLocked(items: GenUIItem[]): GenUIItem[] {
   return locked.length > 0 ? locked : items;
 }
 
+const EXPERIENCE_CARD_IDS = ['feature:career'] as const;
+
+const COMPANIES_CARD_IDS = [
+  'timeline:ditto-finshots',
+  'timeline:nesoi',
+  'timeline:wordsmith',
+] as const;
+
+function resolveRegistryCards(ids: readonly string[]): GenUIItem[] {
+  return ids.map((id) => CARD_REGISTRY[id]).filter(Boolean) as GenUIItem[];
+}
+
+function isCareerFeatureSection(item: GenUIItem): boolean {
+  return (
+    item.type === 'feature_section' &&
+    /fintech|five years|shipping product design/i.test(item.headline)
+  );
+}
+
+function ensureCareerCards(items: GenUIItem[], prompt: string): GenUIItem[] {
+  if (isExperienceQuery(prompt)) {
+    const kept = items.filter((i) => isCareerFeatureSection(i) || i.type === 'quote');
+    if (kept.length > 0) return kept.slice(0, MAX_VIEWPORT_CARDS);
+    return resolveRegistryCards(EXPERIENCE_CARD_IDS);
+  }
+
+  if (isCompaniesQuery(prompt)) {
+    const timelines = items.filter((i) => i.type === 'timeline');
+    if (timelines.length >= 2) return timelines.slice(0, MAX_VIEWPORT_CARDS);
+    return resolveRegistryCards(COMPANIES_CARD_IDS);
+  }
+
+  return items;
+}
+
 export function enrichGenUIItems(items: GenUIItem[], prompt: string): GenUIItem[] {
   if (isWordsmithQuery(prompt)) return applyWordsmithLocked([]);
 
   let next = filterRelevantItems(items, prompt);
+  next = ensureCareerCards(next, prompt);
   next = ensureTopicItems(next, prompt);
   next = ensureOverviewProjects(next, prompt);
   next = supplementProjectViewport(next, prompt);
@@ -205,6 +249,7 @@ const OVERVIEW_INTERACTIVE_IDS = ['chart:impact', 'feature:impact', 'stat:engage
 
 function supplementInteractiveCards(items: GenUIItem[], prompt: string): GenUIItem[] {
   if (isWordsmithQuery(prompt)) return items;
+  if (isExperienceQuery(prompt) || isCompaniesQuery(prompt)) return items;
 
   const next = [...items];
   const hasType = (type: GenUIItem['type']) => next.some((i) => i.type === type);
@@ -269,7 +314,8 @@ export function deriveShortTitle(prompt: string): string {
     [/\b(skill|tools?)\b/, 'Skills & Expertise'],
     [/\b(latest|recent)\b/, 'Recent Work'],
     [/\b(impact|metrics?|numbers?|results?)\b/, 'Impact at a Glance'],
-    [/\b(experience|career|timeline|background|journey)\b/, 'Career Journey'],
+    [/\b(compan(y|ies)|employer|employers|where\s+(?:did|has)\s+he\s+work)\b/i, 'Companies'],
+    [/\b(experience|career|timeline|background|journey|progression)\b/, 'Career Journey'],
     [/\b(education|degree|university)\b/, 'Education & Credentials'],
     [/\b(certifications?|certs?|awards?)\b/, 'Awards & Certifications'],
     [/\b(contact|reach|email|touch)\b/, 'Get in Touch'],

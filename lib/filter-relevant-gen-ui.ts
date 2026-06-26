@@ -48,6 +48,24 @@ export function getTopicSlugFromPrompt(prompt: string): string | null {
   return TOPIC_SLUGS.find(({ test }) => test.test(prompt))?.slug ?? null;
 }
 
+/** Employers / where he worked — distinct from role-and-responsibility experience asks. */
+export function isCompaniesQuery(prompt: string): boolean {
+  return /\b(compan(y|ies)|employer|employers|where\s+(?:did|has)\s+he\s+work|who\s+did\s+he\s+work|worked\s+(?:at|for)|places?\s+he\s+worked|organizations?\s+he\s+worked)\b/i.test(
+    prompt,
+  );
+}
+
+/** Roles, responsibilities, and career arc — not a company-name listing. */
+export function isExperienceQuery(prompt: string): boolean {
+  if (isCompaniesQuery(prompt)) return false;
+  return /\b(experience|career|progression|roles?|responsibilit|background|journey|work\s+history|professional\s+(?:path|journey)|what\s+(?:did|has)\s+he\s+do|his\s+work\s+as)\b/i.test(
+    prompt,
+  );
+}
+
+export function isCareerQuery(prompt: string): boolean {
+  return isExperienceQuery(prompt) || isCompaniesQuery(prompt);
+}
 
 /** Cap unique project slugs on overview so one merged card per project. */
 function capUniqueProjects(items: GenUIItem[], maxProjects: number): GenUIItem[] {
@@ -76,8 +94,32 @@ function capUniqueProjects(items: GenUIItem[], maxProjects: number): GenUIItem[]
   return [...kept, ...rest];
 }
 
+function isGenericImpactItem(item: GenUIItem): boolean {
+  if (item.type === 'chart') return true;
+  if (item.type === 'stat' && !getItemSlug(item)) return true;
+  if (item.type === 'project') return true;
+  if (
+    item.type === 'feature_section' &&
+    /engagement|conversion|team efficiency/i.test(item.headline)
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export function filterRelevantItems(items: GenUIItem[], prompt: string): GenUIItem[] {
   let next = dedupeGenUIItems(items);
+
+  if (isExperienceQuery(prompt)) {
+    next = next.filter(
+      (i) =>
+        !isGenericImpactItem(i) &&
+        i.type !== 'timeline' &&
+        !(i.type === 'info' && /finshots|ditto/i.test(`${i.title} ${i.body}`)),
+    );
+  } else if (isCompaniesQuery(prompt)) {
+    next = next.filter((i) => !isGenericImpactItem(i) && i.type !== 'project');
+  }
 
   // Topic deep-dives: only drop cards explicitly scoped to a different project.
   // Keep charts, stats, features, etc. the agent chose as supporting context.

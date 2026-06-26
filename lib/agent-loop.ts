@@ -281,6 +281,8 @@ ${mode === 'ask' ? `- Always use show_cards for metrics, projects, skills, chart
 - For project deep-dives, include case:{slug}:* cards plus image:case:{slug}:* and video:case:{slug}:* media from case studies.
 - ALL PROJECTS / OVERVIEW ("show all projects", "his work", "selected work"): build with case:{slug}:project for EACH project — Finshots (finshots-news-app), Nesoi (nesoi-ai-dashboard), Falcon (falcon-design-system), CRM (crm-redesign), Onboarding (onboarding-redesign). Optional: one chart:impact at the end. NEVER use stat:downloads, stat:conversion, stat:engagement instead of project cards.
 - Match cards tightly to the user's question (e.g. Finshots question → case:finshots-news-app:project + 1-2 Finshots media, NOT feature:impact).
+- EXPERIENCE / ROLES / CAREER ("his experience", "career progression", "what did he do"): use feature:career ONLY (1 card ID → 3-card grid). Do NOT use timeline:*, project:*, chart:impact, feature:impact, or loose stat:* — those read as companies/metrics, not role experience.
+- COMPANIES / EMPLOYERS ("companies he worked", "where did he work"): use timeline:ditto-finshots + timeline:nesoi + timeline:wordsmith (3 cards). Do NOT use project:*, chart:impact, or feature:impact.
 - For layout requests${mode === 'agent' ? ' (hide photos, prioritize experience, etc.) use layout_action. Call get_portfolio_sections first if unsure of current state' : ', explain that layout changes require Gen UI mode'}.`;
 
   if (mode === 'agent') {
