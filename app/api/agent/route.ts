@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runAgentLoop } from '@/lib/agent-loop';
+import { MAX_GEN_UI_PROMPT_LENGTH } from '@/lib/gen-ui-prompt';
+import { consumePromptQuota, getClientIP } from '@/lib/prompt-limit';
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,6 +25,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'messages array required' }, { status: 400 });
     }
 
+    const lastUser = [...messages].reverse().find((m) => m.role === 'user');
+    if (lastUser && lastUser.content.length > MAX_GEN_UI_PROMPT_LENGTH) {
+      return NextResponse.json(
+        { error: `Prompt must be ${MAX_GEN_UI_PROMPT_LENGTH} characters or fewer.` },
+        { status: 400 },
+      );
+    }
+
+    const ip = getClientIP(request);
+    let promptRemaining: number | undefined;
+
+    if (ip !== 'unknown') {
+      const quota = await consumePromptQuota(ip);
+      if (!quota.allowed) {
+        return NextResponse.json(
+          {
+            error: 'Prompt limit reached',
+            count: quota.count,
+            limit: quota.limit,
+            remaining: 0,
+          },
+          { status: 429 },
+        );
+      }
+      promptRemaining = quota.remaining;
+    }
+
     const result = await runAgentLoop({
       apiKey,
       messages,
@@ -30,7 +59,10 @@ export async function POST(request: NextRequest) {
       sections,
     });
 
-    return NextResponse.json(result);
+    return NextResponse.json({
+      ...result,
+      promptRemaining,
+    });
   } catch (error) {
     console.error('[agent loop]', error);
     return NextResponse.json(

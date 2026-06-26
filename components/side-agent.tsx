@@ -451,43 +451,16 @@ export function SideAgent({ onStateChange, onCollapseChange, onExplanation, onEx
 
   const handleCommand = async (command: string) => {
     if (!command.trim()) return;
-    
-    // Check IP-based prompt limit via API
-    try {
-      const limitCheck = await fetch('/api/check-prompt-limit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      
-      const limitData = await limitCheck.json();
-      
-      if (!limitData.allowed) {
-        setMessages(prev => [...prev, { 
-          role: 'agent', 
-          content: `You've reached the prompt limit (${limitData.count}/${limitData.limit}). Please contact me at **${resumeData.email}** or connect on [LinkedIn](https://linkedin.com/${resumeData.linkedin}) to continue using the portfolio agent.` 
-        }]);
-        setPromptCount(0); // Update UI to show 0 remaining
-        return;
-      }
-      
-      // Update prompt count from API response
-      if (limitData.remaining !== undefined) {
-        setPromptCount(limitData.remaining);
-      } else {
-        // Fallback: decrement local count
-        setPromptCount(prev => Math.max(0, prev - 1));
-      }
-    } catch (error) {
-      console.error('Error checking prompt limit:', error);
-      // Continue with local count check as fallback
-      if (promptCount <= 0) {
-        setMessages(prev => [...prev, { 
-          role: 'agent', 
-          content: 'You have reached the prompt limit. Please contact me to continue.' 
-        }]);
-        return;
-      }
-      setPromptCount(prev => Math.max(0, prev - 1));
+
+    if (promptCount <= 0) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'agent',
+          content: `You've reached the prompt limit. Please contact me at **${resumeData.email}** or connect on [LinkedIn](https://linkedin.com/${resumeData.linkedin}) to continue using the portfolio agent.`,
+        },
+      ]);
+      return;
     }
 
     // Add user message
@@ -557,6 +530,21 @@ export function SideAgent({ onStateChange, onCollapseChange, onExplanation, onEx
         });
 
         if (!response.ok) {
+          if (response.status === 429) {
+            setPromptCount(0);
+            setMessages((prev) => {
+              const withoutThinking = prev.filter((m) => m.content !== 'Thinking…' && !m.isStreaming);
+              return [
+                ...withoutThinking,
+                {
+                  role: 'agent' as const,
+                  content: `You've reached the prompt limit. Please contact me at **${resumeData.email}** to continue.`,
+                },
+              ];
+            });
+            setIsLoading(false);
+            return;
+          }
           const err = await response.json().catch(() => ({}));
           throw new Error((err as { error?: string }).error || 'Agent request failed');
         }
@@ -568,7 +556,12 @@ export function SideAgent({ onStateChange, onCollapseChange, onExplanation, onEx
           steps: Array<{ tool: string; args: Record<string, unknown>; result: string }>;
           iterations: number;
           buildViewport?: boolean;
+          promptRemaining?: number;
         };
+
+        if (typeof result.promptRemaining === 'number') {
+          setPromptCount(result.promptRemaining);
+        }
 
         const priorMessages = messages
           .filter((msg) => !msg.isStreaming && (msg.role === 'user' || msg.role === 'agent'))
@@ -670,9 +663,9 @@ export function SideAgent({ onStateChange, onCollapseChange, onExplanation, onEx
 
   return (
     <>
-      {/* Desktop Chat - Centered bottom floating panel */}
+      {/* Desktop Chat - Bottom-right floating panel */}
       {mounted && !isCollapsed && (
-        <div className="fixed z-40 hidden lg:block bottom-8 left-1/2 -translate-x-1/2">
+        <div className="fixed z-40 hidden lg:block bottom-8 right-6">
           <style>{`
             @keyframes corb1 {
               0%   { transform: translate(0px,  0px)  scale(1);    }
@@ -723,11 +716,11 @@ export function SideAgent({ onStateChange, onCollapseChange, onExplanation, onEx
               100% { transform: translateX(160%)  rotate(-15deg); }
             }
             @keyframes cpanel {
-              0%   { clip-path: inset(100% 0% 0% 0% round 24px); opacity: 0; }
-              100% { clip-path: inset(0%   0% 0% 0% round 24px); opacity: 1; }
+              0%   { transform: scale(0.82); transform-origin: bottom right; opacity: 0; }
+              100% { transform: scale(1);    transform-origin: bottom right; opacity: 1; }
             }
             .cpanel-enter {
-              animation: cpanel 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+              animation: cpanel 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
             }
           `}</style>
 
@@ -740,8 +733,8 @@ export function SideAgent({ onStateChange, onCollapseChange, onExplanation, onEx
             </defs>
           </svg>
 
-          {/* Panel — grows from bottom center via clip-path */}
-          <div className="cpanel-enter" style={{ willChange: 'clip-path, opacity' }}>
+          {/* Panel — grows from bottom-right */}
+          <div className="cpanel-enter" style={{ willChange: 'transform, opacity' }}>
             <div className="w-[400px] flex flex-col bg-card border border-border rounded-3xl shadow-2xl overflow-hidden" style={{ height: '560px' }}>
 
               {/* Header */}

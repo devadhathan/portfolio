@@ -228,8 +228,8 @@ export function TopBar({ onProjectSelect, onHomeClick, genUIMode = false, onGenU
                 aria-label="Portfolio view mode"
               >
                 {([
-                  { id: false, label: 'Static' },
-                  { id: true, label: 'Gen UI' },
+                  { id: false, label: 'Portfolio', shortLabel: 'Port' },
+                  { id: true, label: 'Gen UI', shortLabel: 'Gen' },
                 ] as const).map((option) => {
                   const active = genUIMode === option.id;
                   return (
@@ -252,7 +252,7 @@ export function TopBar({ onProjectSelect, onHomeClick, genUIMode = false, onGenU
                       <span className="relative z-10 inline-flex items-center gap-1.5">
                         {option.id && <Sparkles className="h-3 w-3" />}
                         <span className="hidden sm:inline">{option.label}</span>
-                        <span className="sm:hidden">{option.id ? 'Gen' : 'Static'}</span>
+                        <span className="sm:hidden">{option.shortLabel}</span>
                       </span>
                     </button>
                   );

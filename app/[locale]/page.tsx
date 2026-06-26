@@ -341,8 +341,18 @@ export default function Home() {
         </div>
         
         {/* Main Content */}
-        <div className={`flex-1 w-full px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8 relative z-10 transition-[margin-left] duration-500 ease-in-out ${isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-80'} pb-24 md:pb-28 lg:pb-8 overflow-x-hidden`}>
-          <div className={`transition-[max-width,margin] duration-500 ease-in-out ${isSidebarCollapsed ? 'max-w-[1500px] mx-auto' : 'max-w-7xl mx-auto'}`}>
+        <div
+          className={`flex-1 w-full relative z-10 transition-[margin-left] duration-500 ease-in-out overflow-x-hidden ${
+            isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-80'
+          } ${
+            genUIMode
+              ? 'h-[calc(100vh-3.5rem)] overflow-hidden p-0'
+              : 'px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8 pb-24 md:pb-28 lg:pb-8'
+          }`}
+        >
+          <div
+            className={`transition-[max-width,margin] duration-500 ease-in-out ${isSidebarCollapsed ? 'max-w-[1500px] mx-auto' : 'max-w-7xl mx-auto'}${genUIMode ? ' h-full' : ''}`}
+          >
             {selectedProject ? (
             <div className="w-full">
               <ProjectDetailView 
@@ -374,6 +384,7 @@ export default function Home() {
               isAgentWorking={isAgentWorking}
               hasPrompted={genUIPrompt.hasPrompted}
               isLoading={genUIPrompt.isLoading}
+              promptCount={genUIPrompt.promptCount}
               onSubmit={genUIPrompt.submitPrompt}
               onActiveChange={setActiveViewportId}
             />

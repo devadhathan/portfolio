@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { PortfolioAgent, type AgentState } from '@/lib/agent';
 import type { LayoutActionCommand } from '@/lib/agent-loop';
 import { resolveCardIds } from '@/lib/gen-ui-registry';
 import { enrichGenUIItems, isWordsmithQuery, stripMarkdown, WORDSMITH_LOCKED_MESSAGE } from '@/lib/enrich-gen-ui';
 import { inferGenUIBuild } from '@/lib/infer-gen-ui-build';
 import { createGenUIViewport, type GenUIViewport } from '@/lib/gen-ui-viewport';
+import { genUIPromptLengthError, MAX_GEN_UI_PROMPT_LENGTH } from '@/lib/gen-ui-prompt';
 import { resumeData } from '@/lib/resume-data';
 
 function applyLayoutCommands(agent: PortfolioAgent, commands: LayoutActionCommand[]): AgentState {
@@ -39,10 +40,29 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
   const [promptCount, setPromptCount] = useState(10);
   const [conversationHistory, setConversationHistory] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
 
+  useEffect(() => {
+    fetch('/api/check-prompt-limit')
+      .then((res) => res.json())
+      .then((data: { remaining?: number }) => {
+        if (typeof data.remaining === 'number') {
+          setPromptCount(data.remaining);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const submitPrompt = useCallback(
     async (command: string) => {
       const trimmed = command.trim();
       if (!trimmed || isLoading) return;
+
+      if (trimmed.length > MAX_GEN_UI_PROMPT_LENGTH) {
+        setHasPrompted(true);
+        onGenUIViewport?.(
+          createGenUIViewport(trimmed, genUIPromptLengthError(), []),
+        );
+        return;
+      }
 
       setIsLoading(true);
       setHasPrompted(true);
@@ -52,23 +72,6 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
       const nextHistory = [...conversationHistory, { role: 'user' as const, content: trimmed }];
 
       try {
-        try {
-          const limitCheck = await fetch('/api/check-prompt-limit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-          });
-          const limitData = await limitCheck.json();
-          if (!limitData.allowed) {
-            throw new Error(`Prompt limit reached (${limitData.count}/${limitData.limit}). Contact ${resumeData.email}.`);
-          }
-          if (limitData.remaining !== undefined) setPromptCount(limitData.remaining);
-          else setPromptCount((n) => Math.max(0, n - 1));
-        } catch (err) {
-          if (err instanceof Error && err.message.includes('Prompt limit')) throw err;
-          if (promptCount <= 0) throw new Error('Prompt limit reached.');
-          setPromptCount((n) => Math.max(0, n - 1));
-        }
-
         const sectionSnapshot = agentRef.current.getState().sections.map((s) => ({
           id: s.id,
           title: s.title,
@@ -88,6 +91,10 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
         });
 
         if (!response.ok) {
+          if (response.status === 429) {
+            setPromptCount(0);
+            throw new Error(`Prompt limit reached. Contact ${resumeData.email}.`);
+          }
           const err = await response.json().catch(() => ({}));
           throw new Error((err as { error?: string }).error || 'Agent request failed');
         }
@@ -98,7 +105,12 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
           layoutCommands: LayoutActionCommand[];
           steps: Array<{ tool: string; args: Record<string, unknown>; result: string }>;
           iterations: number;
+          promptRemaining?: number;
         };
+
+        if (typeof result.promptRemaining === 'number') {
+          setPromptCount(result.promptRemaining);
+        }
 
         const shouldBuildViewport = inferGenUIBuild({
           mode: 'agent',

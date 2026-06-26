@@ -13,6 +13,7 @@ type GenUIModeShellProps = {
   isAgentWorking: boolean;
   hasPrompted: boolean;
   isLoading: boolean;
+  promptCount: number;
   onSubmit: (prompt: string) => void | Promise<void>;
   onActiveChange: (id: string) => void;
 };
@@ -24,21 +25,39 @@ export function GenUIModeShell({
   isAgentWorking,
   hasPrompted,
   isLoading,
+  promptCount,
   onSubmit,
   onActiveChange,
 }: GenUIModeShellProps) {
+  const limitReached = promptCount <= 0;
   const showCenterSearch = !hasPrompted && viewports.length === 0 && !isAgentWorking && !isLoading;
   const showBottomSearch = hasPrompted || viewports.length > 0 || isAgentWorking || isLoading;
 
   return (
-    <div className="relative min-h-[calc(100vh-3.5rem)] w-full">
+    <div className={cn('relative w-full', showCenterSearch ? 'h-full overflow-hidden' : 'min-h-[calc(100vh-3.5rem)]')}>
+      <div className="pointer-events-none fixed bottom-3 left-1/2 z-30 -translate-x-1/2">
+        <p className="text-xs text-muted-foreground/50 tabular-nums text-center">
+          {limitReached
+            ? 'No prompts remaining'
+            : `${promptCount} prompt${promptCount === 1 ? '' : 's'} remaining`}
+        </p>
+      </div>
+
       {showCenterSearch ? (
-        <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 pb-24">
-          <GenUISearchBar variant="center" onSubmit={onSubmit} isLoading={isLoading} />
+        <div className="grid h-full place-items-center overflow-hidden px-4">
+          <div className="-translate-y-6 md:-translate-y-8 w-full max-w-2xl">
+            <GenUISearchBar
+              variant="center"
+              onSubmit={onSubmit}
+              isLoading={isLoading}
+              promptCount={promptCount}
+              disabled={limitReached}
+            />
+          </div>
         </div>
       ) : (
         <>
-          <div className={cn(showBottomSearch && 'pb-28')}>
+          <div className={cn(showBottomSearch && 'pb-32')}>
             {viewports.length > 0 ? (
               <GenUIViewportStack
                 viewports={viewports}
@@ -55,9 +74,15 @@ export function GenUIModeShell({
           </div>
 
           {showBottomSearch && (
-            <div className="fixed bottom-6 left-1/2 z-40 w-full -translate-x-1/2 px-4 pointer-events-none">
+            <div className="fixed bottom-10 left-1/2 z-40 w-full -translate-x-1/2 px-4 pointer-events-none">
               <div className="pointer-events-auto mx-auto max-w-3xl">
-                <GenUISearchBar variant="bottom" onSubmit={onSubmit} isLoading={isLoading} />
+                <GenUISearchBar
+                  variant="bottom"
+                  onSubmit={onSubmit}
+                  isLoading={isLoading}
+                  promptCount={promptCount}
+                  disabled={limitReached}
+                />
               </div>
             </div>
           )}

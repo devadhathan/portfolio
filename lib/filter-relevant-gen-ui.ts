@@ -1,5 +1,5 @@
 import type { GenUIItem } from '@/lib/gen-ui-registry';
-import { MAX_VIEWPORT_CARDS } from '@/lib/enrich-gen-ui';
+import { MAX_VIEWPORT_CARDS } from '@/lib/gen-ui-constants';
 import { dedupeGenUIItems } from '@/lib/organize-gen-ui';
 import { getItemSlug } from '@/lib/gen-ui-item-slug';
 
@@ -12,7 +12,7 @@ const TOPIC_SLUGS: Array<{ test: RegExp; slug: string }> = [
   { test: /\bwordsmith\b/i, slug: 'wordsmith' },
 ];
 
-function itemMatchesSlug(item: GenUIItem, slug: string): boolean {
+export function itemMatchesSlug(item: GenUIItem, slug: string): boolean {
   if (getItemSlug(item) === slug) return true;
 
   const haystack = [
@@ -29,7 +29,7 @@ function itemMatchesSlug(item: GenUIItem, slug: string): boolean {
   return tokens.some((t) => haystack.includes(t));
 }
 
-function isOverviewQuery(prompt: string): boolean {
+export function isOverviewQuery(prompt: string): boolean {
   // "Show me his finshots projects" is a specific project ask, not a portfolio overview.
   if (TOPIC_SLUGS.some(({ test }) => test.test(prompt))) {
     return false;
@@ -48,11 +48,6 @@ export function getTopicSlugFromPrompt(prompt: string): string | null {
   return TOPIC_SLUGS.find(({ test }) => test.test(prompt))?.slug ?? null;
 }
 
-function hasConcreteCards(items: GenUIItem[]): boolean {
-  return items.some((i) =>
-    ['project', 'stat', 'timeline', 'image', 'video', 'chart', 'info'].includes(i.type),
-  );
-}
 
 /** Cap unique project slugs on overview so one merged card per project. */
 function capUniqueProjects(items: GenUIItem[], maxProjects: number): GenUIItem[] {
@@ -84,26 +79,21 @@ function capUniqueProjects(items: GenUIItem[], maxProjects: number): GenUIItem[]
 export function filterRelevantItems(items: GenUIItem[], prompt: string): GenUIItem[] {
   let next = dedupeGenUIItems(items);
 
-  if (hasConcreteCards(next) && !isSpecificTopicQuery(prompt)) {
-    next = next.filter((i) => i.type !== 'feature_section');
-  }
-
-  if (isOverviewQuery(prompt)) {
-    next = next.filter((i) => i.type !== 'feature_section' && i.type !== 'feature');
-    next = capUniqueProjects(next, MAX_VIEWPORT_CARDS);
-  }
-
+  // Topic deep-dives: only drop cards explicitly scoped to a different project.
+  // Keep charts, stats, features, etc. the agent chose as supporting context.
   if (isSpecificTopicQuery(prompt)) {
     const topic = TOPIC_SLUGS.find(({ test }) => test.test(prompt));
     if (topic) {
-      next = next.filter(
-        (i) =>
-          itemMatchesSlug(i, topic.slug) ||
-          i.type === 'skill_grid' ||
-          i.type === 'feature' ||
-          i.type === 'feature_section',
-      );
+      next = next.filter((i) => {
+        const slug = getItemSlug(i);
+        if (!slug) return true;
+        return slug === topic.slug || itemMatchesSlug(i, topic.slug);
+      });
     }
+  }
+
+  if (isOverviewQuery(prompt)) {
+    next = capUniqueProjects(next, MAX_VIEWPORT_CARDS);
   }
 
   return next;

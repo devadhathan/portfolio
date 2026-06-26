@@ -15,6 +15,8 @@ export type ResearchCardData = {
   illustration?: LineIllustrationId;
   statValue?: string;
   icon?: string;
+  chartBars?: { label: string; value: number; displayValue: string; color?: string }[];
+  skills?: string[];
 };
 
 function joinMeta(parts: (string | undefined)[]): string | undefined {
@@ -209,7 +211,8 @@ function singleItemCard(item: GenUIItem, index: number, allItems: GenUIItem[]): 
         key: `chart-${index}-${item.title}`,
         title: item.title,
         description: richCardDescription(item, allItems),
-        meta: 'Metrics',
+        meta: 'Interactive metrics',
+        chartBars: item.bars,
         cover: resolveItemCover(item, allItems),
       }];
 
@@ -217,8 +220,9 @@ function singleItemCard(item: GenUIItem, index: number, allItems: GenUIItem[]): 
       return item.categories.map((cat, j) => ({
         key: `skill-${index}-${j}-${cat.name}`,
         title: cat.name,
-        description: cat.skills.slice(0, 8).join(', '),
+        description: richCardDescription(item, allItems),
         meta: 'Skills',
+        skills: cat.skills,
         cover: resolveItemCover(item, allItems),
       }));
 

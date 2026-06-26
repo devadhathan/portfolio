@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { whiteButtonClass } from '@/components/gen-ui-action-button';
 import { GenUIAssistantReply } from '@/components/gen-ui-assistant-reply';
 import { capitalizePrompt, enrichGenUIItems } from '@/lib/enrich-gen-ui';
+import { normalizeResearchCardsForGrid, researchGridClass } from '@/lib/gen-ui-grid';
 import { organizeGenUIByProject, type ProjectGroup, type ProjectMediaItem } from '@/lib/organize-gen-ui';
 import { itemsToResearchCards } from '@/lib/gen-ui-research-cards';
 import { GenUIResearchCard } from '@/components/gen-ui-research-card';
@@ -184,40 +185,23 @@ function renderResearchCards(cards: ReturnType<typeof itemsToResearchCards>) {
       illustration={card.illustration}
       statValue={card.statValue}
       icon={card.icon}
+      chartBars={card.chartBars}
+      skills={card.skills}
       className="animate-fade-in-blur w-full max-w-[380px]"
     />
   ));
 }
 
-function researchGridClass(count: number): string {
-  if (count === 1) {
-    return 'flex w-full justify-center';
-  }
-  return 'grid w-full gap-4 md:gap-5 lg:gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 auto-rows-fr justify-items-center';
-}
-
 export function GenUICardGrid({ prompt, items }: { prompt: string; items: GenUIItem[] }) {
   const enriched = enrichGenUIItems(items, prompt);
-  const illustrationItems = enriched.filter((i) => i.type === 'feature' || i.type === 'feature_section');
-  const contentItems = enriched.filter((i) => i.type !== 'feature' && i.type !== 'feature_section');
+  const rawCards = itemsToResearchCards(enriched, prompt);
+  const cards = normalizeResearchCardsForGrid(rawCards, enriched, prompt);
 
-  const illustrationCards = itemsToResearchCards(illustrationItems, prompt);
-  const contentCards = itemsToResearchCards(contentItems, prompt);
-
-  if (illustrationCards.length === 0 && contentCards.length === 0) return null;
+  if (cards.length === 0) return null;
 
   return (
-    <div className="w-full space-y-10 md:space-y-12">
-      {illustrationCards.length > 0 && (
-        <div className={researchGridClass(illustrationCards.length)}>
-          {renderResearchCards(illustrationCards)}
-        </div>
-      )}
-      {contentCards.length > 0 && (
-        <div className={researchGridClass(contentCards.length)}>
-          {renderResearchCards(contentCards)}
-        </div>
-      )}
+    <div className={researchGridClass(cards.length)}>
+      {renderResearchCards(cards)}
     </div>
   );
 }

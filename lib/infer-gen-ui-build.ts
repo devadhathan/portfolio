@@ -8,6 +8,8 @@ const VAGUE_REQUEST =
 
 export function isSpecificGenUIRequest(command: string): boolean {
   if (isWordsmithQuery(command)) return true;
+  if (/\b(all|every)\b.*\b(projects?|works?)\b/i.test(command)) return true;
+  if (/\b(show|tell)\s+me\b.*\b(projects?|works?)\b/i.test(command)) return true;
   if (SPECIFIC_REQUEST.test(command)) return true;
   // Short answers after clarification: "Finshots", "the CRM one", "impact"
   if (command.trim().split(/\s+/).length <= 6 && !VAGUE_REQUEST.test(command)) {

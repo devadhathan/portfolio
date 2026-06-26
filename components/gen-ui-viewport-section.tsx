@@ -59,7 +59,7 @@ export function GenUIViewportSection({ viewport: vp }: GenUIViewportSectionProps
   return (
     <section
       id={`gen-ui-viewport-${vp.id}`}
-      className="min-h-[calc(100vh-5.5rem)] snap-start snap-always flex flex-col border-b border-border/10"
+      className="min-h-[min(100%,calc(100vh-5.5rem))] flex flex-col border-b border-border/10"
     >
       <div className="w-full flex-1 pt-20 md:pt-24 pb-12">
         <div className="mx-auto max-w-3xl px-4 md:px-6 flex flex-col gap-7 md:gap-8">
@@ -86,8 +86,10 @@ export function GenUIViewportSection({ viewport: vp }: GenUIViewportSectionProps
         )}
 
         {showCards && (
-          <div className="mt-12 md:mt-14 w-full px-4 sm:px-6 md:px-10 lg:px-16 xl:px-[90px] animate-fade-in-blur">
-            <GenUICardGrid prompt={vp.prompt} items={vp.items} />
+          <div className="mt-12 md:mt-14 w-full px-4 md:px-6 animate-fade-in-blur">
+            <div className="mx-auto w-full max-w-[1200px]">
+              <GenUICardGrid prompt={vp.prompt} items={vp.items} />
+            </div>
           </div>
         )}
       </div>

@@ -1,10 +1,12 @@
 import type { GenUIItem } from '@/lib/gen-ui-registry';
 import { CARD_REGISTRY } from '@/lib/gen-ui-registry';
-import { filterRelevantItems, getTopicSlugFromPrompt, isSpecificTopicQuery } from '@/lib/filter-relevant-gen-ui';
+import { filterRelevantItems, getTopicSlugFromPrompt, isOverviewQuery, isSpecificTopicQuery, itemMatchesSlug } from '@/lib/filter-relevant-gen-ui';
 import { getItemSlug } from '@/lib/gen-ui-item-slug';
+import { MAX_VIEWPORT_CARDS } from '@/lib/gen-ui-constants';
+import { normalizeGenUIItemsForGrid } from '@/lib/gen-ui-grid';
 import { resumeData } from '@/lib/resume-data';
 
-export const MAX_VIEWPORT_CARDS = 8;
+export { MAX_VIEWPORT_CARDS };
 
 export const WORDSMITH_LOCKED_MESSAGE = `Wordsmith AI is a locked, confidential project. Please contact Dev at ${resumeData.email} or via LinkedIn to learn more.`;
 
@@ -31,7 +33,10 @@ export function enrichGenUIItems(items: GenUIItem[], prompt: string): GenUIItem[
 
   let next = filterRelevantItems(items, prompt);
   next = ensureTopicItems(next, prompt);
-  return supplementProjectViewport(next, prompt);
+  next = ensureOverviewProjects(next, prompt);
+  next = supplementProjectViewport(next, prompt);
+  next = supplementInteractiveCards(next, prompt);
+  return normalizeGenUIItemsForGrid(next, prompt);
 }
 
 const PROJECT_DEFAULT_CARD_IDS: Record<string, string[]> = {
@@ -39,31 +44,89 @@ const PROJECT_DEFAULT_CARD_IDS: Record<string, string[]> = {
     'case:finshots-news-app:project',
     'case:finshots-news-app:impact',
     'image:case:finshots-news-app:hero',
-    'image:case:finshots-news-app:navigation',
     'video:case:finshots-news-app:walkthrough',
+    'chart:downloads',
     'feature:finshots',
   ],
   'nesoi-ai-dashboard': [
     'case:nesoi-ai-dashboard:project',
     'case:nesoi-ai-dashboard:impact',
+    'chart:nesoi',
     'feature:nesoi',
   ],
   'falcon-design-system': [
     'case:falcon-design-system:project',
     'case:falcon-design-system:impact',
+    'stat:devtime',
     'feature:falcon',
   ],
   'crm-redesign': [
     'case:crm-redesign:project',
     'case:crm-redesign:impact',
-    'feature:impact',
+    'stat:efficiency',
+    'image:crm',
   ],
   'onboarding-redesign': [
     'case:onboarding-redesign:project',
     'case:onboarding-redesign:impact',
-    'feature:impact',
+    'stat:conversion',
+    'stat:dropoff',
   ],
 };
+
+const OVERVIEW_PROJECT_CARD_IDS = [
+  'case:finshots-news-app:project',
+  'case:nesoi-ai-dashboard:project',
+  'case:falcon-design-system:project',
+  'case:crm-redesign:project',
+  'case:onboarding-redesign:project',
+] as const;
+
+function uniqueProjectSlugs(items: GenUIItem[]): Set<string> {
+  const slugs = new Set<string>();
+  for (const item of items) {
+    const slug = getItemSlug(item);
+    if (!slug) continue;
+    if (item.type === 'project' || item.type === 'image' || item.type === 'video') {
+      slugs.add(slug);
+    }
+  }
+  return slugs;
+}
+
+function resolveOverviewProjectCards(): GenUIItem[] {
+  return OVERVIEW_PROJECT_CARD_IDS.map((id) => CARD_REGISTRY[id]).filter(Boolean) as GenUIItem[];
+}
+
+function ensureOverviewProjects(items: GenUIItem[], prompt: string): GenUIItem[] {
+  if (!isOverviewQuery(prompt)) return items;
+
+  const slugs = uniqueProjectSlugs(items);
+  const looseMetrics = items.filter((i) => (i.type === 'stat' || i.type === 'chart') && !getItemSlug(i));
+  const dominatedByMetrics = looseMetrics.length >= 2 && slugs.size < 2;
+
+  if (slugs.size === 0 || dominatedByMetrics) {
+    const projects = resolveOverviewProjectCards();
+    const chart = CARD_REGISTRY['chart:impact'] as GenUIItem | undefined;
+    const result = chart ? [...projects, chart] : projects;
+    return result.slice(0, MAX_VIEWPORT_CARDS);
+  }
+
+  let next = items.filter((i) => !(i.type === 'stat' && !getItemSlug(i)));
+
+  const present = uniqueProjectSlugs(next);
+  for (const id of OVERVIEW_PROJECT_CARD_IDS) {
+    if (next.length >= MAX_VIEWPORT_CARDS) break;
+    const card = CARD_REGISTRY[id] as GenUIItem | undefined;
+    const slug = card ? getItemSlug(card) : null;
+    if (card && slug && !present.has(slug)) {
+      next.push(card);
+      present.add(slug);
+    }
+  }
+
+  return next.slice(0, MAX_VIEWPORT_CARDS);
+}
 
 function ensureTopicItems(items: GenUIItem[], prompt: string): GenUIItem[] {
   if (!isSpecificTopicQuery(prompt)) return items;
@@ -71,8 +134,9 @@ function ensureTopicItems(items: GenUIItem[], prompt: string): GenUIItem[] {
   const slug = getTopicSlugFromPrompt(prompt);
   if (!slug) return items;
 
-  const hasTopicMatch = items.some((i) => getItemSlug(i) === slug);
-  if (hasTopicMatch) return items;
+  const hasTopicMatch = items.some(
+    (i) => getItemSlug(i) === slug || itemMatchesSlug(i, slug),
+  );
 
   const ids =
     PROJECT_DEFAULT_CARD_IDS[slug] ??
@@ -80,8 +144,25 @@ function ensureTopicItems(items: GenUIItem[], prompt: string): GenUIItem[] {
       (id): id is string => Boolean(id),
     );
 
-  const fallback = ids.map((id) => CARD_REGISTRY[id]).filter(Boolean) as GenUIItem[];
-  return fallback.length > 0 ? fallback : items;
+  const defaults = ids.map((id) => CARD_REGISTRY[id]).filter(Boolean) as GenUIItem[];
+  if (defaults.length === 0) return items;
+
+  // Agent picked relevant cards — keep them and only fill gaps.
+  if (hasTopicMatch) return items;
+
+  // Agent missed the topic entirely — use defaults, but preserve any extras it did pick.
+  if (items.length === 0) return defaults.slice(0, MAX_VIEWPORT_CARDS);
+
+  const merged = [...items];
+  for (const card of defaults) {
+    if (merged.length >= MAX_VIEWPORT_CARDS) break;
+    const cardSlug = getItemSlug(card);
+    const alreadyCovered =
+      cardSlug &&
+      merged.some((i) => getItemSlug(i) === cardSlug && i.type === card.type);
+    if (!alreadyCovered) merged.push(card);
+  }
+  return merged.slice(0, MAX_VIEWPORT_CARDS);
 }
 
 const PROJECT_FEATURE_IDS: Record<string, string> = {
@@ -110,6 +191,53 @@ function supplementProjectViewport(items: GenUIItem[], prompt: string): GenUIIte
   }
 
   return items;
+}
+
+const TOPIC_CHART_IDS: Record<string, string> = {
+  'finshots-news-app': 'chart:downloads',
+  'nesoi-ai-dashboard': 'chart:nesoi',
+  'falcon-design-system': 'chart:skills',
+  'crm-redesign': 'chart:impact',
+  'onboarding-redesign': 'chart:impact',
+};
+
+const OVERVIEW_INTERACTIVE_IDS = ['chart:impact', 'feature:impact', 'stat:engagement', 'stat:conversion'] as const;
+
+function supplementInteractiveCards(items: GenUIItem[], prompt: string): GenUIItem[] {
+  if (isWordsmithQuery(prompt)) return items;
+
+  const next = [...items];
+  const hasType = (type: GenUIItem['type']) => next.some((i) => i.type === type);
+  const slug = getTopicSlugFromPrompt(prompt);
+
+  const pushId = (id: string) => {
+    if (next.length >= MAX_VIEWPORT_CARDS) return;
+    if (CARD_REGISTRY[id] && !items.some((i) => JSON.stringify(i) === JSON.stringify(CARD_REGISTRY[id]))) {
+      const card = CARD_REGISTRY[id] as GenUIItem;
+      if (!next.some((i) => i.type === card.type && JSON.stringify(i).slice(0, 80) === JSON.stringify(card).slice(0, 80))) {
+        next.push(card);
+      }
+    }
+  };
+
+  if (slug) {
+    if (!hasType('chart') && TOPIC_CHART_IDS[slug]) pushId(TOPIC_CHART_IDS[slug]);
+    if (!hasType('video') && slug === 'finshots-news-app') pushId('video:case:finshots-news-app:walkthrough');
+    if (!hasType('stat')) {
+      if (slug === 'onboarding-redesign') pushId('stat:conversion');
+      else if (slug === 'nesoi-ai-dashboard') pushId('stat:engagement');
+      else if (slug === 'falcon-design-system') pushId('stat:devtime');
+    }
+  } else if (isOverviewQuery(prompt)) {
+    const hasProjects = uniqueProjectSlugs(next).size >= 2;
+    if (hasProjects && !hasType('chart')) pushId('chart:impact');
+  } else if (!isSpecificTopicQuery(prompt)) {
+    if (!hasType('chart')) pushId(OVERVIEW_INTERACTIVE_IDS[0]);
+    if (!hasType('feature') && !hasType('feature_section')) pushId(OVERVIEW_INTERACTIVE_IDS[1]);
+    if (!hasType('stat')) pushId(OVERVIEW_INTERACTIVE_IDS[2]);
+  }
+
+  return next.slice(0, MAX_VIEWPORT_CARDS);
 }
 
 export function stripAgentMeta(text: string): string {

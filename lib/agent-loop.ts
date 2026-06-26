@@ -1,6 +1,7 @@
 import type { AgentCommand, SectionPriority } from '@/lib/agent';
 import { CARD_ID_LIST, CARD_REGISTRY } from '@/lib/gen-ui-registry';
 import { CASE_STUDY_SLUGS } from '@/lib/build-case-study-cards';
+import { MAX_VIEWPORT_CARDS } from '@/lib/gen-ui-constants';
 import { resumeData } from '@/lib/resume-data';
 
 export const MAX_AGENT_ITERATIONS = 5;
@@ -24,7 +25,7 @@ export type AgentLoopStep = {
 
 export type LayoutActionCommand = AgentCommand | { type: 'reset' };
 
-export const MAX_VIEWPORT_CARDS = 6;
+export { MAX_VIEWPORT_CARDS };
 
 export type AgentLoopResult = {
   message: string;
@@ -88,14 +89,14 @@ export function getAgentTools(mode: 'ask' | 'agent') {
       function: {
         name: 'build_gen_ui_view',
         description:
-          'Create a Gen UI viewport in the center canvas. Call when the user\'s intent is clear (specific request OR they answered your clarifying questions). Pass 3-6 card IDs — one project deep-dive OR a multi-project overview.',
+          'Create a Gen UI viewport in the center canvas. Call when the user\'s intent is clear. Pick exactly 1, 3, 6, or 9 card IDs (grid layouts: 1×1, 1×3, 2×3, or 3×3) — match cards intelligently to the request.',
         parameters: {
           type: 'object',
           properties: {
             card_ids: {
               type: 'array',
               items: { type: 'string' },
-              description: `3-${MAX_VIEWPORT_CARDS} card IDs for this viewport. Valid IDs: ${CARD_ID_LIST.join(', ')}`,
+              description: `Exactly 1, 3, 6, or 9 card IDs for a balanced grid. Valid IDs: ${CARD_ID_LIST.join(', ')}`,
             },
             reason: { type: 'string', description: 'Brief note on what this viewport covers' },
           },
@@ -273,11 +274,12 @@ WORKFLOW — AGENTIC LOOP:
 
 RULES:
 ${mode === 'ask' ? `- Always use show_cards for metrics, projects, skills, charts, images, videos, info, and feature cards — never invent data.
-- Pick 4-8 relevant card IDs per show_cards call.` : `- In Gen UI mode use build_gen_ui_view (NOT show_cards) when creating a viewport.
-- Pick 3-${MAX_VIEWPORT_CARDS} card IDs per build_gen_ui_view call.`}
+- Pick exactly 1, 3, 6, or 9 card IDs per show_cards call (grid-friendly counts).` : `- In Gen UI mode use build_gen_ui_view (NOT show_cards) when creating a viewport.
+- Pick exactly 1, 3, 6, or 9 card IDs per build_gen_ui_view call (1, 3, 6, or 9 cards fill a clean grid).`}
 - Use a diverse mix: combine stats + projects + timeline and/or charts/images/videos/info as the question demands.
+- INTERACTIVE CARDS (deep-dives only) — for single-project views include chart:*, stat:*, feature:*, or video:case:{slug}:* alongside case cards. Do NOT use loose stat:* cards (no project slug) when the user asked for projects or an overview.
 - For project deep-dives, include case:{slug}:* cards plus image:case:{slug}:* and video:case:{slug}:* media from case studies.
-- Line-art feature cards (feature:*, feature_section) are optional accents — use at most ONE feature card for single-topic deep-dives only. Never combine feature_section with project overview cards.
+- ALL PROJECTS / OVERVIEW ("show all projects", "his work", "selected work"): build with case:{slug}:project for EACH project — Finshots (finshots-news-app), Nesoi (nesoi-ai-dashboard), Falcon (falcon-design-system), CRM (crm-redesign), Onboarding (onboarding-redesign). Optional: one chart:impact at the end. NEVER use stat:downloads, stat:conversion, stat:engagement instead of project cards.
 - Match cards tightly to the user's question (e.g. Finshots question → case:finshots-news-app:project + 1-2 Finshots media, NOT feature:impact).
 - For layout requests${mode === 'agent' ? ' (hide photos, prioritize experience, etc.) use layout_action. Call get_portfolio_sections first if unsure of current state' : ', explain that layout changes require Gen UI mode'}.`;
 
@@ -290,12 +292,12 @@ PHASE 1 — CLARIFY (no tools except get_portfolio_sections for layout questions
 - On vague first requests ("show projects", "tell me about his work"), ask ONE short clarifying question. Offer options: a specific project (Finshots, Nesoi, CRM, Falcon) OR an overview of all work.
 - Do NOT call build_gen_ui_view on the first vague message.
 - If the user is answering your clarifying question, move to Phase 2 immediately.
-- Skip clarification when the request is already specific (e.g. "Show Finshots", "All projects overview", "Impact metrics", layout changes, Wordsmith).
+- Skip clarification when the request is already specific (e.g. "Show Finshots", "all projects", "show me his projects", "All projects overview", "Impact metrics", layout changes, Wordsmith).
 
 PHASE 2 — BUILD:
-- When intent is clear, call build_gen_ui_view ONCE with 3-${MAX_VIEWPORT_CARDS} card IDs.
-- Single project: case:{slug}:project + case:{slug}:impact + 1-2 image/video media cards. No feature_section.
-- Multi-project overview: one case:{slug}:project card per project (3-5 different slugs — Finshots, Nesoi, Falcon, CRM, Onboarding). Never repeat the same project twice. Do NOT add feature:impact or extra media/info cards for the same slug.
+- When intent is clear, call build_gen_ui_view ONCE with exactly 1, 3, 6, or 9 card IDs.
+- Single project: case:{slug}:project + case:{slug}:impact + 1 chart or stat + 1 video or feature card + optional image media.
+- Multi-project overview: case:finshots-news-app:project + case:nesoi-ai-dashboard:project + case:falcon-design-system:project + case:crm-redesign:project + case:onboarding-redesign:project + chart:impact = 6 cards (2×3 grid). For fewer projects use 3 cards; never 4, 5, 7, or 8.
 - If the user wants all projects or an overview, build that — do NOT say you can only show one project.
 - NEVER mention viewport limits, card limits, or system constraints in your chat reply.
 - After building, reply with a short storytelling narrative (2–4 sentences): warm, editorial tone — set context, hint at what they'll discover in the cards, end naturally. No bullet points, no markdown, no headings.

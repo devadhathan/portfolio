@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, type CSSProperties } from 'react';
+import { useState, useEffect, type CSSProperties } from 'react';
 import { useTranslations } from 'next-intl';
 
 interface FloatingChatButtonProps {
@@ -15,7 +15,6 @@ export function FloatingChatButton({ onClick, isCollapsed }: FloatingChatButtonP
   const [isAnimating, setIsAnimating] = useState(false);
 
   // White ovals glance around in random directions.
-  const orbRef = useRef<HTMLDivElement>(null);
   const [pupil, setPupil] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -113,12 +112,12 @@ export function FloatingChatButton({ onClick, isCollapsed }: FloatingChatButtonP
         </defs>
       </svg>
 
-      <div className="fixed bottom-20 right-6 md:bottom-8 md:right-auto md:left-1/2 md:-translate-x-1/2 z-50">
+      <div className="fixed bottom-20 right-6 md:bottom-8 z-50 group">
         <button
           onClick={handleClick}
-          className="relative flex items-center gap-3 h-12 w-12 md:w-auto md:h-auto md:pl-2 md:pr-6 md:py-2 justify-center rounded-full bg-card border border-border shadow-lg hover:shadow-xl hover:scale-[1.08] md:hover:scale-[1.04] active:scale-[0.95] md:active:scale-[0.98] transition-all duration-200"
+          aria-label={t('talkToAgent')}
+          className="relative h-12 w-12 md:h-11 md:w-11 rounded-full overflow-hidden flex-shrink-0 origin-bottom-right hover:scale-110 active:scale-95 transition-transform duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
-          <div ref={orbRef} className="relative h-10 w-10 md:h-11 md:w-11 rounded-full overflow-hidden flex-shrink-0">
             <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 38% 36%, #9a9a9a 0%, #454545 40%, #101010 72%, #000000 100%)' }} />
             <div className="absolute rounded-full" style={{ width: '72%', height: '72%', top: '2%', left: '2%', opacity: 0.55, background: 'radial-gradient(circle, #ffffff 0%, transparent 68%)', ...orbAnim('corb1', '9s') }} />
             <div className="absolute rounded-full" style={{ width: '68%', height: '68%', bottom: '-6%', right: '-6%', opacity: 0.72, background: 'radial-gradient(circle, #000000 0%, transparent 68%)', ...orbAnim('corb2', '12s') }} />
@@ -150,12 +149,14 @@ export function FloatingChatButton({ onClick, isCollapsed }: FloatingChatButtonP
                 />
               ))}
             </div>
-          </div>
-
-          <span className="hidden md:inline text-[15px] font-medium text-foreground whitespace-nowrap select-none">
-            {t('talkToAgent')}
-          </span>
         </button>
+
+        <span
+          role="tooltip"
+          className="pointer-events-none absolute right-full top-1/2 mr-3 -translate-y-1/2 hidden md:block rounded-lg border border-border/60 bg-popover px-3 py-1.5 text-xs font-medium text-popover-foreground shadow-md opacity-0 translate-x-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0 whitespace-nowrap select-none"
+        >
+          {t('talkToAgent')}
+        </span>
       </div>
     </>
   );

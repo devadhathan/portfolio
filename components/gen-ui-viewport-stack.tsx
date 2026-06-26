@@ -14,7 +14,7 @@ type GenUIViewportStackProps = {
 };
 
 function scrollToViewport(id: string) {
-  document.getElementById(`gen-ui-viewport-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById(`gen-ui-viewport-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 export function GenUIViewportStack({
@@ -25,10 +25,12 @@ export function GenUIViewportStack({
   onActiveChange,
 }: GenUIViewportStackProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastScrolledIdRef = useRef<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(Math.max(0, viewports.length - 1));
 
   useEffect(() => {
-    if (!scrollToId) return;
+    if (!scrollToId || scrollToId === lastScrolledIdRef.current) return;
+    lastScrolledIdRef.current = scrollToId;
     scrollToViewport(scrollToId);
     const idx = viewports.findIndex((v) => v.id === scrollToId);
     if (idx >= 0) setActiveIndex(idx);
@@ -73,7 +75,7 @@ export function GenUIViewportStack({
     <div className="relative pb-24">
       <div
         ref={containerRef}
-        className="h-[calc(100vh-5.5rem)] overflow-y-auto snap-y snap-mandatory scroll-smooth overscroll-y-contain scroll-pt-6"
+        className="h-[calc(100vh-5.5rem)] overflow-y-auto overscroll-y-contain scroll-pt-6"
       >
         {viewports.map((vp) => (
           <GenUIViewportSection key={vp.id} viewport={vp} />

@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Send } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 import { AgentOrb } from '@/components/agent-orb';
 import { GEN_UI_PROMPT_HINTS } from '@/lib/gen-ui-prompt-placeholders';
+import { MAX_GEN_UI_PROMPT_LENGTH } from '@/lib/gen-ui-prompt';
 import { cn } from '@/lib/utils';
 
 const INPUT_SHELL_CLASS =
@@ -14,6 +15,7 @@ type GenUISearchBarProps = {
   onSubmit: (prompt: string) => void | Promise<void>;
   isLoading?: boolean;
   disabled?: boolean;
+  promptCount?: number;
   className?: string;
 };
 
@@ -22,6 +24,7 @@ export function GenUISearchBar({
   onSubmit,
   isLoading = false,
   disabled = false,
+  promptCount,
   className,
 }: GenUISearchBarProps) {
   const [value, setValue] = useState('');
@@ -35,22 +38,31 @@ export function GenUISearchBar({
     return () => clearInterval(interval);
   }, []);
 
+  const hint = GEN_UI_PROMPT_HINTS[hintIndex];
+  const isCenter = variant === 'center';
+  const limitReached = disabled || (promptCount !== undefined && promptCount <= 0);
+  const placeholder =
+    limitReached && promptCount !== undefined && promptCount <= 0
+      ? 'Prompt limit reached'
+      : 'Ask anything';
+
   const handleSubmit = async () => {
     const trimmed = value.trim();
-    if (!trimmed || isLoading || disabled) return;
+    if (!trimmed || isLoading || limitReached) return;
+    if (trimmed.length > MAX_GEN_UI_PROMPT_LENGTH) {
+      await onSubmit(trimmed);
+      return;
+    }
     setValue('');
     await onSubmit(trimmed);
   };
-
-  const hint = GEN_UI_PROMPT_HINTS[hintIndex];
-  const isCenter = variant === 'center';
 
   if (isCenter) {
     return (
       <div className={cn('flex w-full max-w-2xl flex-col items-center gap-7', className)}>
         <AgentOrb size="lg" />
 
-        <p className="text-center text-lg md:text-xl font-light text-foreground/90 tracking-tight max-w-md animate-fade-in-blur">
+        <p className="text-center text-[20px] sm:text-[26px] md:text-[32px] font-light text-foreground/90 tracking-tight max-w-lg animate-fade-in-blur">
           What would you like to explore?
         </p>
 
@@ -66,8 +78,8 @@ export function GenUISearchBar({
                   void handleSubmit();
                 }
               }}
-              placeholder="Ask anything"
-              disabled={isLoading || disabled}
+              placeholder={placeholder}
+              disabled={isLoading || limitReached}
               rows={1}
               className="flex-1 resize-none bg-transparent outline-none text-[15px] md:text-base text-foreground placeholder:text-muted-foreground/55 min-h-[28px] max-h-[120px] py-0.5"
             />
@@ -75,11 +87,11 @@ export function GenUISearchBar({
             <button
               type="button"
               onClick={() => void handleSubmit()}
-              disabled={isLoading || disabled || !value.trim()}
+              disabled={isLoading || limitReached || !value.trim()}
               className="flex-shrink-0 flex h-9 w-9 items-center justify-center rounded-full bg-white text-black disabled:opacity-25 hover:opacity-90 transition-opacity"
               aria-label="Send prompt"
             >
-              <Send className="h-4 w-4" />
+              <ArrowUp className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -95,7 +107,7 @@ export function GenUISearchBar({
   }
 
   return (
-    <div className={cn('flex w-full flex-col items-center', className)}>
+    <div className={cn('flex w-full flex-col items-center gap-1.5', className)}>
       <div className={cn('flex w-full max-w-2xl items-center gap-3 px-4 py-2.5', INPUT_SHELL_CLASS)}>
         <textarea
           ref={inputRef}
@@ -107,8 +119,8 @@ export function GenUISearchBar({
               void handleSubmit();
             }
           }}
-          placeholder="Ask anything"
-          disabled={isLoading || disabled}
+          placeholder={placeholder}
+          disabled={isLoading || limitReached}
           rows={1}
           className="flex-1 resize-none bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground/55 min-h-[24px] max-h-[120px] py-1.5"
         />
@@ -116,11 +128,11 @@ export function GenUISearchBar({
         <button
           type="button"
           onClick={() => void handleSubmit()}
-          disabled={isLoading || disabled || !value.trim()}
+          disabled={isLoading || limitReached || !value.trim()}
           className="flex-shrink-0 flex h-8 w-8 items-center justify-center rounded-full bg-white text-black disabled:opacity-25 hover:opacity-90 transition-opacity"
           aria-label="Send prompt"
         >
-          <Send className="h-3.5 w-3.5" />
+          <ArrowUp className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>
