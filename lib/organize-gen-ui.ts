@@ -98,10 +98,14 @@ export function dedupeGenUIItems(items: GenUIItem[]): GenUIItem[] {
   return [...projects, ...result];
 }
 
-export function organizeGenUIByProject(items: GenUIItem[]): {
+export function organizeGenUIByProject(
+  items: GenUIItem[],
+  options?: { maxMedia?: number },
+): {
   projectGroups: ProjectGroup[];
   otherItems: GenUIItem[];
 } {
+  const maxMedia = options?.maxMedia ?? 4;
   const groups = new Map<string, ProjectGroup>();
   const otherItems: GenUIItem[] = [];
 
@@ -152,7 +156,7 @@ export function organizeGenUIByProject(items: GenUIItem[]): {
     .filter((g) => g.media.length > 0 || g.description)
     .map((g) => ({
       ...g,
-      media: g.media.slice(0, 4),
+      media: g.media.slice(0, maxMedia),
     }));
 
   const groupedSlugs = new Set(projectGroups.map((g) => g.slug));

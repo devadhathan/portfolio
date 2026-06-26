@@ -13,10 +13,12 @@ const nextConfig = {
     formats: ['image/webp'],
   },
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
+  transpilePackages: ['next-intl'],
   experimental: {
     optimizeCss: false,
     serverComponentsExternalPackages: [
       '@sanity/client',
+      '@vercel/kv',
       '@formatjs/intl-localematcher',
       '@formatjs/fast-memoize',
       '@formatjs/icu-messageformat-parser',

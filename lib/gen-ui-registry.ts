@@ -130,6 +130,7 @@ const BASE_CARD_REGISTRY: Record<string, GenUIItem> = {
     title: 'Nesoi.ai Dashboard',
     description: 'AI-powered learning dashboards for 15+ enterprise clients. Engagement up 92%.',
     tags: ['AI', 'Dashboard', 'B2B'],
+    link: '/work?project=nesoi-ai-dashboard',
   },
 
   'timeline:wordsmith': {

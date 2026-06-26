@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Sun, List, User, Briefcase, Mail, Gamepad2 } from 'lucide-react';
+import { Sun, List, User, Briefcase, Mail, Gamepad2, Sparkles } from 'lucide-react';
 import { useTheme, allThemes } from '@/contexts/theme-context';
 import {
   DropdownMenu,
@@ -40,9 +40,11 @@ const NAV_TAB_KEYS = [
 interface TopBarProps {
   onProjectSelect?: (projectSlug: string) => void;
   onHomeClick?: () => void;
+  genUIMode?: boolean;
+  onGenUIModeChange?: (enabled: boolean) => void;
 }
 
-export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
+export function TopBar({ onProjectSelect, onHomeClick, genUIMode = false, onGenUIModeChange }: TopBarProps) {
   const t = useTranslations('nav');
   const { theme, setTheme } = useTheme();
   const { projects } = useSiteContent();
@@ -219,6 +221,44 @@ export function TopBar({ onProjectSelect, onHomeClick }: TopBarProps) {
           </nav>
 
           <div className="flex items-center gap-2 flex-shrink-0">
+            {onGenUIModeChange && (
+              <div
+                className="flex items-center rounded-full bg-white/[0.05] border border-white/[0.08] p-0.5 shadow-[0_2px_8px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.06)]"
+                role="group"
+                aria-label="Portfolio view mode"
+              >
+                {([
+                  { id: false, label: 'Static' },
+                  { id: true, label: 'Gen UI' },
+                ] as const).map((option) => {
+                  const active = genUIMode === option.id;
+                  return (
+                    <button
+                      key={option.label}
+                      type="button"
+                      onClick={() => onGenUIModeChange(option.id)}
+                      aria-pressed={active}
+                      className={`relative px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-200 ${
+                        active ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {active && (
+                        <motion.div
+                          layoutId="gen-ui-mode-toggle"
+                          className="absolute inset-0 rounded-full bg-primary/90 shadow-[0_2px_12px_hsl(var(--primary)/0.25)] border border-primary/40"
+                          transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                        />
+                      )}
+                      <span className="relative z-10 inline-flex items-center gap-1.5">
+                        {option.id && <Sparkles className="h-3 w-3" />}
+                        <span className="hidden sm:inline">{option.label}</span>
+                        <span className="sm:hidden">{option.id ? 'Gen' : 'Static'}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <motion.div whileTap={{ scale: 0.91 }}>

@@ -75,6 +75,7 @@ export function buildCaseStudyCards(projects: Project[] = resumeData.projects as
       description: truncate(project.description || project.cardSubtext || ''),
       tags: project.tools?.slice(0, 4) || (project.type ? [project.type] : []),
       projectSlug: slug,
+      link: `/work?project=${slug}`,
     };
 
     if (project.problem) {

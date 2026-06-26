@@ -344,6 +344,72 @@ html {
   }
 }
 
+@keyframes thinking-matrix-dot {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(0.7);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-thinking-matrix-dot {
+  animation: thinking-matrix-dot 1.35s ease-in-out infinite;
+}
+
+@keyframes agent-orb-blob-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(8%, 6%) scale(1.05); }
+  66% { transform: translate(-4%, 8%) scale(0.95); }
+}
+
+@keyframes agent-orb-blob-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-10%, -8%) scale(1.08); }
+}
+
+@keyframes agent-orb-blob-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40% { transform: translate(6%, -6%) scale(0.92); }
+  80% { transform: translate(-6%, 4%) scale(1.04); }
+}
+
+.agent-orb-blob-1 { animation: agent-orb-blob-1 9s ease-in-out infinite; }
+.agent-orb-blob-2 { animation: agent-orb-blob-2 12s ease-in-out infinite; }
+.agent-orb-blob-3 { animation: agent-orb-blob-3 15s ease-in-out infinite; }
+
+.agent-orb-noise {
+  animation: agent-orb-noise 6s ease-in-out infinite;
+}
+
+@keyframes agent-orb-noise {
+  0%, 100% { transform: translate(0, 0); opacity: 0.3; }
+  50% { transform: translate(2%, -2%); opacity: 0.22; }
+}
+
+@keyframes agent-orb-breathe {
+  0%, 100% {
+    transform: scale(0.94);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+.agent-orb-creating {
+  transform-origin: center center;
+  will-change: transform;
+  animation: agent-orb-breathe 2.4s ease-in-out infinite;
+}
+
+/* Case study body copy — matches design spec */
+.case-study-body {
+  line-height: 28px;
+  letter-spacing: -0.17px;
+}
+
 /* Dynamic background gradient based on theme */
 html.dark body {
   background: radial-gradient(ellipse at top, hsl(var(--background)) 0%, hsl(0 0% 1%) 100%);
@@ -408,6 +474,22 @@ html.red body {
     100% {
       background-position: 200% 0;
     }
+  }
+
+  .animate-text-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted-foreground) / 0.45) 0%,
+      hsl(var(--muted-foreground) / 0.75) 35%,
+      hsl(var(--foreground) / 0.95) 50%,
+      hsl(var(--muted-foreground) / 0.75) 65%,
+      hsl(var(--muted-foreground) / 0.45) 100%
+    );
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: text-shimmer 2.2s linear infinite;
   }
 
   @keyframes fade-in-blur {

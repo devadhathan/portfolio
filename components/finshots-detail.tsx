@@ -126,10 +126,10 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-12">
         {/* Left Content - Description */}
         <div className="lg:col-span-2 space-y-6">
-          <p className="text-lg leading-relaxed text-muted-foreground">
+          <p className="text-lg case-study-body text-muted-foreground">
             {t('finshotsIntro1')}
           </p>
-          <p className="text-lg leading-relaxed text-muted-foreground">
+          <p className="text-lg case-study-body text-muted-foreground">
             {t('finshotsIntro2')}
           </p>
           {project.url && (
@@ -229,7 +229,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
         <div id={`${projectId}-problem`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
           <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('problem')}</h2>
           <div className="lg:col-span-3">
-            <p className="text-lg leading-relaxed text-muted-foreground">
+            <p className="text-lg case-study-body text-muted-foreground">
               {project.problem}
             </p>
             <div className="mt-6">
@@ -260,7 +260,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
         <div id={`${projectId}-research`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
           <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('research')}</h2>
           <div className="lg:col-span-3">
-            <p className="text-lg leading-relaxed text-muted-foreground">
+            <p className="text-lg case-study-body text-muted-foreground">
               {project.research}
             </p>
           </div>
@@ -272,7 +272,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
         <div id={`${projectId}-hmw`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
           <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('hmw')}</h2>
           <div className="lg:col-span-3">
-            <p className="text-lg leading-relaxed text-muted-foreground font-medium">
+            <p className="text-lg case-study-body text-muted-foreground font-medium">
               {project.hmw}
             </p>
           </div>
@@ -283,7 +283,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       <div id={`${projectId}-possible-solutions`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
         <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('possibleSolutions')}</h2>
         <div className="lg:col-span-3">
-          <p className="text-lg leading-relaxed text-muted-foreground">
+          <p className="text-lg case-study-body text-muted-foreground">
             {t('finshotsPossibleSolutions')}
           </p>
         </div>
@@ -308,7 +308,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
                   <div>
                     <h3 className="text-2xl font-medium text-foreground mb-2">{featureName}</h3>
                     {featureDesc && (
-                      <p className="text-lg leading-relaxed text-muted-foreground">
+                      <p className="text-lg case-study-body text-muted-foreground">
                         {featureDesc}
                       </p>
                     )}
@@ -371,14 +371,14 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
         <div id={`${projectId}-stats`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
           <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('result')}</h2>
           <div className="lg:col-span-3">
-            <p className="text-lg leading-relaxed text-muted-foreground mb-6">
+            <p className="text-lg case-study-body text-muted-foreground mb-6">
               {t('finshotsResultsIntro')}
             </p>
             <div className="space-y-3">
               {project.results.map((result, idx) => (
                 <div key={idx} className="flex items-start gap-3">
                   <span className="text-primary mt-1">→</span>
-                  <p className="text-lg text-muted-foreground">{result}</p>
+                  <p className="text-lg case-study-body text-muted-foreground">{result}</p>
                 </div>
               ))}
             </div>
@@ -394,13 +394,13 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
             {Array.isArray(project.learnings) ? (
               <div className="space-y-4">
                 {project.learnings.map((learning, idx) => (
-                  <p key={idx} className="text-lg leading-relaxed text-muted-foreground">
+                  <p key={idx} className="text-lg case-study-body text-muted-foreground">
                     {learning}
                   </p>
                 ))}
               </div>
             ) : (
-              <p className="text-lg leading-relaxed text-muted-foreground">
+              <p className="text-lg case-study-body text-muted-foreground">
                 {project.learnings}
               </p>
             )}

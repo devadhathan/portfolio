@@ -1,38 +1,24 @@
 import type { GenUIItem } from '@/lib/gen-ui-registry';
 import { CARD_REGISTRY } from '@/lib/gen-ui-registry';
-import { CASE_STUDY_SLUGS } from '@/lib/build-case-study-cards';
-import { dedupeGenUIItems } from '@/lib/organize-gen-ui';
+import { filterRelevantItems, getTopicSlugFromPrompt, isSpecificTopicQuery } from '@/lib/filter-relevant-gen-ui';
+import { getItemSlug } from '@/lib/gen-ui-item-slug';
 import { resumeData } from '@/lib/resume-data';
 
-export const MAX_VIEWPORT_CARDS = 6;
+export const MAX_VIEWPORT_CARDS = 8;
 
 export const WORDSMITH_LOCKED_MESSAGE = `Wordsmith AI is a locked, confidential project. Please contact Dev at ${resumeData.email} or via LinkedIn to learn more.`;
-
-const FEATURE_BY_PROMPT: Array<{ test: RegExp; cardId: string }> = [
-  { test: /\bwordsmith\b/i, cardId: 'feature:wordsmith-locked' },
-  { test: /\b(resume|cv|education|degree|university|qualification|certification|cert)\b/i, cardId: 'feature:education' },
-  { test: /\b(skill|tools?|design skill|research skill|where.*skill)\b/i, cardId: 'feature:skills' },
-  { test: /\b(impact|metric|conversion|engagement|number|result)\b/i, cardId: 'feature:impact' },
-  { test: /\b(career|experience|timeline|background|journey|work history)\b/i, cardId: 'feature:career' },
-  { test: /\bfinshots\b/i, cardId: 'feature:finshots' },
-  { test: /\b(falcon|design system)\b/i, cardId: 'feature:falcon' },
-  { test: /\bnesoi\b/i, cardId: 'feature:nesoi' },
-  { test: /\b(projects?|works?|latest|recent|portfolio)\b/i, cardId: 'feature:impact' },
-];
-
-const PROJECT_SLUG_BY_PROMPT: Array<{ test: RegExp; slug: string }> = [
-  { test: /\bfinshots\b/i, slug: 'finshots-news-app' },
-  { test: /\b(falcon|design system)\b/i, slug: 'falcon-design-system' },
-  { test: /\b(crm)\b/i, slug: 'crm-redesign' },
-  { test: /\b(onboarding|ditto insurance|booking portal)\b/i, slug: 'onboarding-redesign' },
-  { test: /\bnesoi\b/i, slug: 'nesoi-ai-dashboard' },
-];
 
 export function isWordsmithQuery(prompt: string): boolean {
   return /\bwordsmith\b/i.test(prompt);
 }
 
-export function applyWordsmithLocked(items: GenUIItem[]): GenUIItem[] {
+export function isCaseStudyQuery(prompt: string): boolean {
+  return /\b(case stud(y|ies)|deep dive|project breakdown|tell me about (?:the )?(?:finshots|nesoi|falcon|crm|onboarding|ditto))\b/i.test(
+    prompt,
+  );
+}
+
+function applyWordsmithLocked(items: GenUIItem[]): GenUIItem[] {
   const locked = [
     CARD_REGISTRY['feature:wordsmith-locked'],
     CARD_REGISTRY['info:wordsmith-locked'],
@@ -40,81 +26,90 @@ export function applyWordsmithLocked(items: GenUIItem[]): GenUIItem[] {
   return locked.length > 0 ? locked : items;
 }
 
-function uniqueCards(cards: GenUIItem[]): GenUIItem[] {
-  const seen = new Set<GenUIItem>();
-  return cards.filter((item) => {
-    if (seen.has(item)) return false;
-    seen.add(item);
-    return true;
-  });
-}
-
-function cardsForSlug(slug: string): GenUIItem[] {
-  const ids = [`case:${slug}:project`, `case:${slug}:impact`];
-  const mediaIds = Object.keys(CARD_REGISTRY)
-    .filter((id) => id.startsWith(`image:case:${slug}:`) || id.startsWith(`video:case:${slug}:`))
-    .slice(0, 2);
-
-  return uniqueCards(
-    [...ids, ...mediaIds]
-      .map((id) => CARD_REGISTRY[id])
-      .filter(Boolean) as GenUIItem[],
-  );
-}
-
-export function capViewportItems(items: GenUIItem[]): GenUIItem[] {
-  if (items.length <= MAX_VIEWPORT_CARDS) return items;
-
-  const features = items.filter((i) => i.type === 'feature' || i.type === 'feature_section');
-  const rest = items.filter((i) => i.type !== 'feature' && i.type !== 'feature_section');
-  return [...features, ...rest].slice(0, MAX_VIEWPORT_CARDS);
-}
-
-export function enrichCaseStudyMedia(items: GenUIItem[], prompt: string): GenUIItem[] {
-  if (isWordsmithQuery(prompt)) return items;
-
-  const projectMatch = PROJECT_SLUG_BY_PROMPT.find(({ test }) => test.test(prompt));
-  if (projectMatch) {
-    const additions = cardsForSlug(projectMatch.slug);
-    const existing = new Set(items);
-    return uniqueCards([...items, ...additions.filter((card) => !existing.has(card))]);
-  }
-
-  if (/\b(all|every|overview|multiple|projects?|works?|portfolio)\b/i.test(prompt)) {
-    const additions = CASE_STUDY_SLUGS.slice(0, 3).flatMap((slug) => {
-      const project = CARD_REGISTRY[`case:${slug}:project`];
-      const media = Object.keys(CARD_REGISTRY)
-        .filter((id) => id.startsWith(`image:case:${slug}:`))
-        .slice(0, 1)
-        .map((id) => CARD_REGISTRY[id])
-        .filter(Boolean);
-      return [project, ...media].filter(Boolean) as GenUIItem[];
-    });
-    const existing = new Set(items);
-    return uniqueCards([...items, ...additions.filter((card) => !existing.has(card))]);
-  }
-
-  return items;
-}
-
 export function enrichGenUIItems(items: GenUIItem[], prompt: string): GenUIItem[] {
   if (isWordsmithQuery(prompt)) return applyWordsmithLocked([]);
 
-  const hasLineArt = items.some((item) => item.type === 'feature' || item.type === 'feature_section');
-  let next = items;
+  let next = filterRelevantItems(items, prompt);
+  next = ensureTopicItems(next, prompt);
+  return supplementProjectViewport(next, prompt);
+}
 
-  if (!hasLineArt) {
-    const match = FEATURE_BY_PROMPT.find(({ test }) => test.test(prompt));
-    if (!match) {
-      const fallback = CARD_REGISTRY['feature:impact'];
-      next = fallback ? [fallback, ...items] : items;
-    } else {
-      const feature = CARD_REGISTRY[match.cardId];
-      next = feature ? [feature, ...items] : items;
-    }
+const PROJECT_DEFAULT_CARD_IDS: Record<string, string[]> = {
+  'finshots-news-app': [
+    'case:finshots-news-app:project',
+    'case:finshots-news-app:impact',
+    'image:case:finshots-news-app:hero',
+    'image:case:finshots-news-app:navigation',
+    'video:case:finshots-news-app:walkthrough',
+    'feature:finshots',
+  ],
+  'nesoi-ai-dashboard': [
+    'case:nesoi-ai-dashboard:project',
+    'case:nesoi-ai-dashboard:impact',
+    'feature:nesoi',
+  ],
+  'falcon-design-system': [
+    'case:falcon-design-system:project',
+    'case:falcon-design-system:impact',
+    'feature:falcon',
+  ],
+  'crm-redesign': [
+    'case:crm-redesign:project',
+    'case:crm-redesign:impact',
+    'feature:impact',
+  ],
+  'onboarding-redesign': [
+    'case:onboarding-redesign:project',
+    'case:onboarding-redesign:impact',
+    'feature:impact',
+  ],
+};
+
+function ensureTopicItems(items: GenUIItem[], prompt: string): GenUIItem[] {
+  if (!isSpecificTopicQuery(prompt)) return items;
+
+  const slug = getTopicSlugFromPrompt(prompt);
+  if (!slug) return items;
+
+  const hasTopicMatch = items.some((i) => getItemSlug(i) === slug);
+  if (hasTopicMatch) return items;
+
+  const ids =
+    PROJECT_DEFAULT_CARD_IDS[slug] ??
+    [`case:${slug}:project`, `case:${slug}:impact`, PROJECT_FEATURE_IDS[slug]].filter(
+      (id): id is string => Boolean(id),
+    );
+
+  const fallback = ids.map((id) => CARD_REGISTRY[id]).filter(Boolean) as GenUIItem[];
+  return fallback.length > 0 ? fallback : items;
+}
+
+const PROJECT_FEATURE_IDS: Record<string, string> = {
+  'finshots-news-app': 'feature:finshots',
+  'falcon-design-system': 'feature:falcon',
+  'nesoi-ai-dashboard': 'feature:nesoi',
+  'crm-redesign': 'feature:impact',
+  'onboarding-redesign': 'feature:impact',
+};
+
+function supplementProjectViewport(items: GenUIItem[], prompt: string): GenUIItem[] {
+  if (!isSpecificTopicQuery(prompt)) return items;
+
+  const primarySlug = getTopicSlugFromPrompt(prompt) ?? getItemSlug(items[0] ?? { type: 'info', title: '', body: '' });
+  if (!primarySlug) return items;
+
+  const featureId = PROJECT_FEATURE_IDS[primarySlug];
+  if (!featureId) return items;
+
+  const hasIllustration = items.some((i) => i.type === 'feature' || i.type === 'feature_section');
+  if (hasIllustration) return items;
+
+  const feature = CARD_REGISTRY[featureId] as GenUIItem | undefined;
+  if (feature && feature.type === 'feature') {
+    return [...items, feature];
   }
 
-  return capViewportItems(dedupeGenUIItems(enrichCaseStudyMedia(next, prompt)));
+  return items;
 }
 
 export function stripAgentMeta(text: string): string {
@@ -129,20 +124,28 @@ export function capitalizePrompt(prompt: string): string {
 
 export function deriveShortTitle(prompt: string): string {
   const p = prompt.toLowerCase().trim();
+
   const rules: Array<[RegExp, string]> = [
+    [/\b(gen ui|gen-ui)\b/i, 'Gen UI'],
+    [/\b(what is|what'?s|explain|how does|how do)\b.*\b(this|here|mode|feature|viewport)\b/i, 'Gen UI'],
     [/\b(resume|cv)\b/, "Dev's Resume"],
+    [/\bfinshots\b/, 'Finshots'],
+    [/\b(falcon|design system)\b/, 'Falcon Design System'],
+    [/\bnesoi\b/, 'Nesoi.ai'],
+    [/\bcrm\b/, 'CRM Redesign'],
+    [/\b(onboarding|ditto insurance|ditto)\b/, 'Ditto Onboarding'],
+    [/\b(all|every|overview of)\b.*\b(projects?|works?|case studies?)\b/i, 'Selected Work'],
+    [/\b(show|tell).*\b(all|every|each)\b.*\b(projects?|works?)\b/i, 'Selected Work'],
     [/\b(projects?|works?|case studies?|portfolio)\b/, 'Selected Work'],
+    [/\bcase stud(y|ies)\b/, 'Case Studies'],
     [/\b(skill|tools?)\b/, 'Skills & Expertise'],
     [/\b(latest|recent)\b/, 'Recent Work'],
     [/\b(impact|metrics?|numbers?|results?)\b/, 'Impact at a Glance'],
     [/\b(experience|career|timeline|background|journey)\b/, 'Career Journey'],
     [/\b(education|degree|university)\b/, 'Education & Credentials'],
     [/\b(certifications?|certs?|awards?)\b/, 'Awards & Certifications'],
-    [/\bfinshots\b/, 'Finshots'],
-    [/\b(falcon|design system)\b/, 'Falcon Design System'],
-    [/\bnesoi\b/, 'Nesoi.ai'],
     [/\b(contact|reach|email|touch)\b/, 'Get in Touch'],
-    [/\b(about|who is)\b/, 'About Dev'],
+    [/\b(about|who is)\b.*\b(dev|him|he|designer)\b/i, 'About Dev'],
     [/\bwordsmith\b/, 'Wordsmith AI'],
     [/\b(arrange|reorder|prioriti[sz]e|layout|hide\s|show\s+(?:photos|experience|sections?))\b/, 'Portfolio Layout'],
   ];
@@ -151,7 +154,26 @@ export function deriveShortTitle(prompt: string): string {
     if (re.test(p)) return title;
   }
 
-  return 'Overview';
+  return titleFromPrompt(prompt);
+}
+
+function titleFromPrompt(prompt: string): string {
+  let t = prompt.trim().replace(/\?+$/, '').trim();
+  t = t.replace(
+    /^(what is|what are|what's|how does|how do|tell me about|show me|can you|could you|who is|who are)\s+/i,
+    '',
+  );
+  t = t.replace(/^(his|her|the|a|an)\s+/i, '');
+
+  if (!t) return 'Your question';
+
+  if (t.length > 52) {
+    const cut = t.slice(0, 52);
+    const lastSpace = cut.lastIndexOf(' ');
+    t = `${(lastSpace > 24 ? cut.slice(0, lastSpace) : cut).trim()}…`;
+  }
+
+  return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
 export function stripMarkdown(text: string): string {
@@ -177,22 +199,73 @@ export function formatLeadSummary(text: string, prompt?: string): string {
   const s = stripMarkdown(text);
 
   if (!s || s.includes('###') || s.includes('**') || s.includes('__')) {
-    return prompt ? fallbackLeadSummary(prompt) : '';
+    return prompt ? fallbackStorySummary(prompt) : '';
+  }
+
+  if (prompt && isCaseStudyQuery(prompt) && s.length < 180) {
+    return fallbackStorySummary(prompt);
   }
 
   return s;
 }
 
+/** Split agent narrative into readable story paragraphs for the viewport header. */
+export function formatStoryParagraphs(text: string): string[] {
+  const s = stripMarkdown(text).trim();
+  if (!s) return [];
+
+  const byBreak = s.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
+  if (byBreak.length > 1) return byBreak;
+
+  const sentences = s.match(/[^.!?]+[.!?]+(?:\s|$)/g)?.map((x) => x.trim()) ?? [s];
+  if (sentences.length <= 2) return [s];
+
+  const paragraphs: string[] = [];
+  for (let i = 0; i < sentences.length; i += 2) {
+    paragraphs.push(sentences.slice(i, i + 2).join(' ').trim());
+  }
+  return paragraphs.filter(Boolean);
+}
+
 export function fallbackLeadSummary(prompt: string): string {
+  return fallbackStorySummary(prompt);
+}
+
+export function fallbackStorySummary(prompt: string): string {
+  const p = prompt.toLowerCase();
+
+  if (isCaseStudyQuery(prompt)) {
+    if (/\bfinshots\b/.test(p)) {
+      return "Finshots is Dev's award-winning fintech news app — his first major product design role at Finshots & Ditto in Bangalore, where he shaped the mobile experience from early UI explorations through shipped flows.\n\nThe core challenge was making financial news feel approachable on a phone: dense topics, scattered archives, and readers who wanted to revisit stories without endless scrolling.\n\nBelow you'll find the project overview, impact metrics, and screen recordings that show how the product evolved.";
+    }
+    if (/\bnesoi\b/.test(p)) {
+      return "Nesoi.ai is an AI-powered learning platform used by enterprise teams — Dev led dashboard and creation-flow design so educators could build interactive modules without manual assembly.\n\nThe challenge was trust and speed: creators needed to upload raw materials and turn them into structured learning experiences through conversation, not rigid wizards.\n\nExplore the cards below for the product story, key outcomes, and prototype work from that engagement.";
+    }
+    if (/\b(falcon|design system)\b/.test(p)) {
+      return "Falcon is the design system Dev built for Ditto Insurance — a shared language for shipping consistent, accessible flows across CRM, onboarding, and adviser-facing products.\n\nThe challenge was fragmentation: teams were reinventing components, slowing delivery, and drifting from accessible patterns as the product surface grew.\n\nThe cards below cover the system scope, efficiency gains, and the components that scaled across the org.";
+    }
+    if (/\b(crm)\b/.test(p)) {
+      return "The CRM redesign replaced manual Excel tracking with role-specific workflows for insurance advisers — one of Dev's highest-impact enterprise projects at Ditto.\n\nManual lead tracking couldn't scale with volume, and the existing tooling lacked real-time insight and a cohesive interface tailored to how advisers actually work.\n\nBelow are the project summary, measurable outcomes, and interface highlights from the redesign.";
+    }
+    if (/\b(onboarding|ditto|booking)\b/.test(p)) {
+      return "Ditto's onboarding redesign focused on slot booking and trust — reducing drop-off in a flow where users hesitated at phone-number entry and abandoned when preferred times weren't available.\n\nDev led research-backed iterations across WhatsApp support, spam-trust treatments, and autosave patterns so progress wasn't lost on accidental exits.\n\nThe cards below walk through the problem framing, solutions shipped, and the conversion impact that followed.";
+    }
+    return "Each case study in Dev's portfolio follows the same arc: a product context, a concrete design challenge, and the measurable outcome that followed.\n\nDev's work spans fintech news, insurance onboarding, enterprise CRM, AI learning dashboards, and design systems — always grounded in research, iteration, and shipped results.\n\nPick a project card below to dive into the problem, approach, and impact for that engagement.";
+  }
+
   const short = deriveShortTitle(prompt).toLowerCase();
   const map: Record<string, string> = {
-    "dev's resume": "Education, degrees, certifications, and awards pulled from Dev's portfolio.",
-    'skills & expertise': "Design, research, and tool skills from five years of product design work.",
-    'selected work': "Highlighted projects with outcomes from Dev's product design career.",
-    'impact at a glance': "Key metrics and results across Dev's roles in fintech, insurance, and AI.",
-    'career journey': "Roles across Finshots & Ditto (2019–2022), Nesoi, and Wordsmith AI.",
-    'wordsmith ai': 'Confidential AI writing platform work — contact Dev directly to learn more.',
-    'education & credentials': "Degrees and certifications that shaped Dev's design practice.",
+    "dev's resume": "Every credential here tells part of the story — from formal education to the certifications that sharpened Dev's craft. Browse the highlights below to see how training and recognition shaped the designer behind these projects.",
+    'skills & expertise': "Five years of product design across fintech, insurance, and AI left a distinct toolkit in its wake. The skills below aren't a laundry list — they're the instruments Dev reaches for when turning research into shipped work.",
+    'selected work': "These projects trace a line from early mobile news design to enterprise dashboards and design systems. Each one carries a problem, a bet, and an outcome — explore the cards below to follow that thread.",
+    'impact at a glance': "Numbers only matter when they sit inside a story. What follows are the metrics that moved — conversion lifts, user growth, and efficiency gains from work Dev led or shaped directly.",
+    'career journey': "Dev's path runs through Finshots and Ditto in Bangalore, then Nesoi in San Francisco, and onward into AI product work. The timeline below maps roles to the moments that defined each chapter.",
+    'wordsmith ai': "Wordsmith sits behind a closed door — confidential AI writing infrastructure Dev helped shape. What can be shared is here; for the rest, reach out directly.",
+    'education & credentials': "Before the shipped products came the foundations — degrees, certifications, and awards that grounded Dev's practice in research and craft.",
+    finshots: "Finshots began as a question: how do you make financial news feel alive on a phone? What follows is the story of that mobile product — the design choices, the impact, and the work that still echoes in Dev's portfolio.",
+    'falcon design system': "Falcon grew out of a familiar pain — teams shipping insurance flows without a shared language. Below is how a design system took root and scaled across products.",
+    'nesoi.ai': "At Nesoi, dashboards had to earn trust fast — educators and operators making high-stakes calls from a single screen. Explore how that constraint shaped the work.",
+    'gen ui': "Gen UI turns your question into a living viewport — narrative up top, then cards pulled from Dev's portfolio. Ask about a project, skill, or career thread and it assembles a focused view just for that.",
   };
-  return map[short] || "Curated from Dev's portfolio based on your question.";
+  return map[short] || "Here's a curated slice of Dev's portfolio — shaped by your question and ready to explore below.";
 }
