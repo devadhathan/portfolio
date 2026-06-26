@@ -20,9 +20,16 @@ export function middleware(request: NextRequest) {
     return new NextResponse(null, { status: 403 })
   }
 
+  const { pathname } = request.nextUrl
+  if (pathname === '/ml' || pathname.startsWith('/ml/')) {
+    const url = request.nextUrl.clone()
+    url.pathname = pathname.replace(/^\/ml/, '') || '/'
+    return NextResponse.redirect(url)
+  }
+
   return intlMiddleware(request)
 }
 
 export const config = {
-  matcher: ['/', '/(ml|en)/:path*', '/((?!api|_next|_vercel|.*\\..*).*)'],
+  matcher: ['/', '/(en)/:path*', '/((?!api|_next|_vercel|.*\\..*).*)'],
 }

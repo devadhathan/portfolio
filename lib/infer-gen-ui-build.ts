@@ -1,13 +1,15 @@
 import { isWordsmithQuery } from '@/lib/enrich-gen-ui';
+import { isStarterChipQuery } from '@/lib/gen-ui-starter-chips';
 
 const SPECIFIC_REQUEST =
-  /\b(finshots|nesoi|crm|falcon|onboarding|ditto|wordsmith|impact|metrics?|skills?|career|education|resume|timeline|downloads|conversion|design system)\b/i;
+  /\b(finshots|nesoi|crm|falcon|onboarding|ditto|wordsmith|impact|metrics?|skills?|career|education|resume|timeline|downloads|conversion|design system|strongest work|ship code|hire him|why hire|why should i hire)\b/i;
 
 const VAGUE_REQUEST =
   /\b(projects?|works?|portfolio|case studies?|show me|tell me about|what has he|everything|all of)\b/i;
 
 export function isSpecificGenUIRequest(command: string): boolean {
   if (isWordsmithQuery(command)) return true;
+  if (isStarterChipQuery(command)) return true;
   if (/\b(all|every)\b.*\b(projects?|works?)\b/i.test(command)) return true;
   if (/\b(show|tell)\s+me\b.*\b(projects?|works?)\b/i.test(command)) return true;
   if (SPECIFIC_REQUEST.test(command)) return true;

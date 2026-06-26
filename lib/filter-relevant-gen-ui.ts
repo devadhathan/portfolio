@@ -3,6 +3,8 @@ import { MAX_VIEWPORT_CARDS } from '@/lib/gen-ui-constants';
 import { dedupeGenUIItems } from '@/lib/organize-gen-ui';
 import { getItemSlug } from '@/lib/gen-ui-item-slug';
 
+import { isStarterChipQuery } from '@/lib/gen-ui-starter-chips';
+
 const TOPIC_SLUGS: Array<{ test: RegExp; slug: string }> = [
   { test: /\bfinshots\b/i, slug: 'finshots-news-app' },
   { test: /\bnesoi\b/i, slug: 'nesoi-ai-dashboard' },
@@ -30,6 +32,7 @@ export function itemMatchesSlug(item: GenUIItem, slug: string): boolean {
 }
 
 export function isOverviewQuery(prompt: string): boolean {
+  if (isStarterChipQuery(prompt)) return false;
   // "Show me his finshots projects" is a specific project ask, not a portfolio overview.
   if (TOPIC_SLUGS.some(({ test }) => test.test(prompt))) {
     return false;
@@ -62,6 +65,8 @@ export function isExperienceQuery(prompt: string): boolean {
     prompt,
   );
 }
+
+export { isStarterChipQuery } from '@/lib/gen-ui-starter-chips';
 
 export function isCareerQuery(prompt: string): boolean {
   return isExperienceQuery(prompt) || isCompaniesQuery(prompt);

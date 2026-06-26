@@ -12,7 +12,7 @@ import { HighlightedText } from './highlighted-text';
 import { PreferenceGraph } from './preference-graph';
 import { useSiteContent } from '@/components/site-content-provider';
 import { useTheme } from '@/contexts/theme-context';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 const SECTION_ICON_MAP: Record<string, LucideIcon> = {
   hero: User,
@@ -65,7 +65,6 @@ const PHILOSOPHY_CARD_ITEMS = [
 
 export function PortfolioSections({ agentState, hideHeaderText = false, onProjectSelect, onShowProjectsList }: PortfolioSectionsProps) {
   const t = useTranslations('home');
-  const locale = useLocale();
   const { theme } = useTheme();
   const { settings, experience, projects } = useSiteContent();
   // Track image errors for photo sections
@@ -468,7 +467,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
               <CardContent className="flex flex-col flex-1 gap-4 relative z-10">
                 <HighlightedText
                   text={
-                    locale === 'en' && settings.experienceIntro
+                    settings.experienceIntro
                       ? settings.experienceIntro
                       : t('experienceIntro')
                   }

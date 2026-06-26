@@ -6,6 +6,7 @@ import {
   isCompaniesQuery,
   isExperienceQuery,
   isOverviewQuery,
+  isStarterChipQuery,
   getTopicSlugFromPrompt,
 } from '@/lib/filter-relevant-gen-ui';
 import { getItemSlug } from '@/lib/gen-ui-item-slug';
@@ -75,6 +76,7 @@ function trimItemsToCount(items: GenUIItem[], target: number, prompt: string): G
 }
 
 function padItemIds(prompt: string): readonly string[] {
+  if (isStarterChipQuery(prompt)) return [];
   if (isExperienceQuery(prompt)) return EXPERIENCE_PAD_IDS;
   if (isCompaniesQuery(prompt)) return COMPANIES_PAD_IDS;
   if (isOverviewQuery(prompt)) return OVERVIEW_PAD_IDS;

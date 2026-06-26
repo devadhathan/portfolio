@@ -72,10 +72,10 @@ export function GenUIViewportStack({
   const showRail = viewports.length > 1;
 
   return (
-    <div className="relative pb-24">
+    <div className="relative pb-[calc(3.5rem+env(safe-area-inset-bottom,0px)+1.5rem)] lg:pb-24">
       <div
         ref={containerRef}
-        className="h-[calc(100vh-5.5rem)] overflow-y-auto overscroll-y-contain scroll-pt-6"
+        className="h-[calc(100vh-3.5rem-3.5rem-env(safe-area-inset-bottom,0px)-4.5rem)] lg:h-[calc(100vh-5.5rem)] overflow-y-auto overscroll-y-contain scroll-pt-6"
       >
         {viewports.map((vp) => (
           <GenUIViewportSection key={vp.id} viewport={vp} />

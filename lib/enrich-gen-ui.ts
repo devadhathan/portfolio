@@ -7,11 +7,13 @@ import {
   isExperienceQuery,
   isOverviewQuery,
   isSpecificTopicQuery,
+  isStarterChipQuery,
   itemMatchesSlug,
 } from '@/lib/filter-relevant-gen-ui';
 import { getItemSlug } from '@/lib/gen-ui-item-slug';
 import { MAX_VIEWPORT_CARDS } from '@/lib/gen-ui-constants';
 import { normalizeGenUIItemsForGrid } from '@/lib/gen-ui-grid';
+import { getStarterChipId, STARTER_CHIP_CARD_IDS } from '@/lib/gen-ui-starter-chips';
 import { resumeData } from '@/lib/resume-data';
 
 export { MAX_VIEWPORT_CARDS };
@@ -71,10 +73,20 @@ function ensureCareerCards(items: GenUIItem[], prompt: string): GenUIItem[] {
   return items;
 }
 
+function ensureStarterChipCards(items: GenUIItem[], prompt: string): GenUIItem[] {
+  const chipId = getStarterChipId(prompt);
+  if (!chipId) return items;
+  return resolveRegistryCards(STARTER_CHIP_CARD_IDS[chipId]);
+}
+
 export function enrichGenUIItems(items: GenUIItem[], prompt: string): GenUIItem[] {
   if (isWordsmithQuery(prompt)) return applyWordsmithLocked([]);
 
   let next = filterRelevantItems(items, prompt);
+  if (isStarterChipQuery(prompt)) {
+    next = ensureStarterChipCards(next, prompt);
+    return normalizeGenUIItemsForGrid(next, prompt);
+  }
   next = ensureCareerCards(next, prompt);
   next = ensureTopicItems(next, prompt);
   next = ensureOverviewProjects(next, prompt);
@@ -249,7 +261,7 @@ const OVERVIEW_INTERACTIVE_IDS = ['chart:impact', 'feature:impact', 'stat:engage
 
 function supplementInteractiveCards(items: GenUIItem[], prompt: string): GenUIItem[] {
   if (isWordsmithQuery(prompt)) return items;
-  if (isExperienceQuery(prompt) || isCompaniesQuery(prompt)) return items;
+  if (isExperienceQuery(prompt) || isCompaniesQuery(prompt) || isStarterChipQuery(prompt)) return items;
 
   const next = [...items];
   const hasType = (type: GenUIItem['type']) => next.some((i) => i.type === type);
@@ -298,6 +310,12 @@ export function capitalizePrompt(prompt: string): string {
 export function deriveShortTitle(prompt: string): string {
   const p = prompt.toLowerCase().trim();
 
+  const chipTitle = getStarterChipId(prompt);
+  if (chipTitle === 'impact') return 'Impact at a Glance';
+  if (chipTitle === 'strongest') return 'Strongest Work';
+  if (chipTitle === 'ship-code') return 'Designer + Engineer';
+  if (chipTitle === 'hire') return 'Why Hire Dev';
+
   const rules: Array<[RegExp, string]> = [
     [/\b(gen ui|gen-ui)\b/i, 'Gen UI'],
     [/\b(what is|what'?s|explain|how does|how do)\b.*\b(this|here|mode|feature|viewport)\b/i, 'Gen UI'],
@@ -314,6 +332,9 @@ export function deriveShortTitle(prompt: string): string {
     [/\b(skill|tools?)\b/, 'Skills & Expertise'],
     [/\b(latest|recent)\b/, 'Recent Work'],
     [/\b(impact|metrics?|numbers?|results?)\b/, 'Impact at a Glance'],
+    [/\b(strongest work|best work|top work)\b/i, 'Strongest Work'],
+    [/\b(ship code|write code|developer)\b/i, 'Shipping Code'],
+    [/\b(why hire|hire him)\b/i, 'Why Hire Dev'],
     [/\b(compan(y|ies)|employer|employers|where\s+(?:did|has)\s+he\s+work)\b/i, 'Companies'],
     [/\b(experience|career|timeline|background|journey|progression)\b/, 'Career Journey'],
     [/\b(education|degree|university)\b/, 'Education & Credentials'],

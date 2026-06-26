@@ -346,7 +346,7 @@ export default function Home() {
             isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-80'
           } ${
             genUIMode
-              ? 'h-[calc(100vh-3.5rem)] overflow-hidden p-0'
+              ? 'h-[calc(100vh-3.5rem)] min-h-0 overflow-hidden p-0'
               : 'px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8 pb-24 md:pb-28 lg:pb-8'
           }`}
         >

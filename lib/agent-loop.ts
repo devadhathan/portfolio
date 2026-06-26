@@ -1,6 +1,7 @@
 import type { AgentCommand, SectionPriority } from '@/lib/agent';
 import { CARD_ID_LIST, CARD_REGISTRY } from '@/lib/gen-ui-registry';
 import { CASE_STUDY_SLUGS } from '@/lib/build-case-study-cards';
+import { STARTER_CHIP_CARD_IDS } from '@/lib/gen-ui-starter-chips';
 import { MAX_VIEWPORT_CARDS } from '@/lib/gen-ui-constants';
 import { resumeData } from '@/lib/resume-data';
 
@@ -294,7 +295,7 @@ PHASE 1 — CLARIFY (no tools except get_portfolio_sections for layout questions
 - On vague first requests ("show projects", "tell me about his work"), ask ONE short clarifying question. Offer options: a specific project (Finshots, Nesoi, CRM, Falcon) OR an overview of all work.
 - Do NOT call build_gen_ui_view on the first vague message.
 - If the user is answering your clarifying question, move to Phase 2 immediately.
-- Skip clarification when the request is already specific (e.g. "Show Finshots", "all projects", "show me his projects", "All projects overview", "Impact metrics", layout changes, Wordsmith).
+- Skip clarification when the request is already specific (e.g. "Show Finshots", "all projects", "show me his projects", "All projects overview", "Impact metrics", "His impact", "Strongest work", "Can he ship code?", "Why hire him?", layout changes, Wordsmith).
 
 PHASE 2 — BUILD:
 - When intent is clear, call build_gen_ui_view ONCE with exactly 1, 3, 6, or 9 card IDs.
@@ -302,9 +303,14 @@ PHASE 2 — BUILD:
 - Multi-project overview: case:finshots-news-app:project + case:nesoi-ai-dashboard:project + case:falcon-design-system:project + case:crm-redesign:project + case:onboarding-redesign:project + chart:impact = 6 cards (2×3 grid). For fewer projects use 3 cards; never 4, 5, 7, or 8.
 - If the user wants all projects or an overview, build that — do NOT say you can only show one project.
 - NEVER mention viewport limits, card limits, or system constraints in your chat reply.
-- After building, reply with a short storytelling narrative (2–4 sentences): warm, editorial tone — set context, hint at what they'll discover in the cards, end naturally. No bullet points, no markdown, no headings.
-- For case study or project deep-dive requests, use exactly three paragraphs separated by blank lines: (1) Context — the product and Dev's role, (2) Challenge — the core problem or constraint, (3) Teaser — what the cards below reveal (impact, screens, learnings). Flowing prose only — do not write "Context:" or "Challenge:" as labels.
-- When listing multiple items (metrics, projects, skills), you may use a short bullet list (3–5 lines starting with "- ") after the opening paragraph — keep the overall reply conversational, not a wall of bullets.
+- After build_gen_ui_view, keep your final reply EMPTY or one line under 12 words. No paragraphs, teasers, or "explore the cards below" — the viewport shows cards; do not repeat their content in prose.
+- STARTER CHIPS (designer-engineer — use these EXACT 3 card IDs, no substitutes):
+  - "His impact" / measurable impact: ${STARTER_CHIP_CARD_IDS.impact.join(' + ')}
+  - "Strongest work": ${STARTER_CHIP_CARD_IDS.strongest.join(' + ')}
+  - "Can he ship code?" / designer-engineer stack: ${STARTER_CHIP_CARD_IDS['ship-code'].join(' + ')}
+  - "Why hire him?": ${STARTER_CHIP_CARD_IDS.hire.join(' + ')}
+- For chip prompts, call build_gen_ui_view immediately with the exact IDs above — do NOT use feature:impact, loose stat:*, or generic feature:skills.
+- For case study deep-dives only (not chip prompts), you may use three short paragraphs if the user explicitly asked for a narrative case study.
 - For clarification-only replies (Phase 1), keep it to one friendly question — still prose, not lists.
 
 Layout changes: use layout_action (and get_portfolio_sections if needed). No build_gen_ui_view required for layout-only requests.

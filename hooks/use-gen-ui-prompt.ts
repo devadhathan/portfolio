@@ -144,7 +144,7 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
         }
 
         if (enrichedItems.length > 0) {
-          onGenUIViewport?.(createGenUIViewport(trimmed, finalText, enrichedItems));
+          onGenUIViewport?.(createGenUIViewport(trimmed, '', enrichedItems));
         } else if (finalText) {
           onGenUIViewport?.(createGenUIViewport(trimmed, finalText, []));
         } else {

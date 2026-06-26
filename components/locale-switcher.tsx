@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button'
 
 const LOCALE_LABELS: Record<Locale, string> = {
   en: 'EN',
-  ml: 'ML',
 }
 
 export function LocaleSwitcher() {
