@@ -7,6 +7,7 @@ export type GenUIViewport = {
   title: string;
   summary: string;
   items: GenUIItem[];
+  status?: 'loading' | 'ready';
 };
 
 export function createGenUIViewport(prompt: string, summary: string, items: GenUIItem[]): GenUIViewport {
@@ -17,5 +18,18 @@ export function createGenUIViewport(prompt: string, summary: string, items: GenU
     title: deriveShortTitle(trimmedPrompt),
     summary: formatLeadSummary(summary, trimmedPrompt),
     items,
+    status: 'ready',
+  };
+}
+
+export function createLoadingViewport(prompt: string): GenUIViewport {
+  const trimmedPrompt = prompt.trim();
+  return {
+    id: `pending-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    prompt: trimmedPrompt,
+    title: deriveShortTitle(trimmedPrompt),
+    summary: '',
+    items: [],
+    status: 'loading',
   };
 }

@@ -11,6 +11,10 @@ export function inferSkeletonFromPrompt(prompt: string): CardSkeletonType[] {
   }
   if (/project|work|case|finshots|falcon|nesoi|ditto|crm|booking|onboarding/.test(p)) {
     types.add('project');
+    types.add('image');
+  }
+  if (/finshots|falcon|nesoi|ditto|crm|onboarding/.test(p)) {
+    types.add('feature');
   }
   if (/skill|tool|figma|design system|software|research method/.test(p)) {
     types.add('skill_grid');

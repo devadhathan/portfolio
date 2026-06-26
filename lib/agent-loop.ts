@@ -277,8 +277,8 @@ ${mode === 'ask' ? `- Always use show_cards for metrics, projects, skills, chart
 - Pick 3-${MAX_VIEWPORT_CARDS} card IDs per build_gen_ui_view call.`}
 - Use a diverse mix: combine stats + projects + timeline and/or charts/images/videos/info as the question demands.
 - For project deep-dives, include case:{slug}:* cards plus image:case:{slug}:* and video:case:{slug}:* media from case studies.
-- Line-art feature cards (feature:*, feature_section) are optional accents — use at most ONE feature_section OR 1-2 feature cards alongside other card types, not as the only cards.
-- Match cards tightly to the user's question (e.g. Finshots question → project:finshots, stat:downloads, image:finshots).
+- Line-art feature cards (feature:*, feature_section) are optional accents — use at most ONE feature card for single-topic deep-dives only. Never combine feature_section with project overview cards.
+- Match cards tightly to the user's question (e.g. Finshots question → case:finshots-news-app:project + 1-2 Finshots media, NOT feature:impact).
 - For layout requests${mode === 'agent' ? ' (hide photos, prioritize experience, etc.) use layout_action. Call get_portfolio_sections first if unsure of current state' : ', explain that layout changes require Gen UI mode'}.`;
 
   if (mode === 'agent') {
@@ -294,11 +294,14 @@ PHASE 1 — CLARIFY (no tools except get_portfolio_sections for layout questions
 
 PHASE 2 — BUILD:
 - When intent is clear, call build_gen_ui_view ONCE with 3-${MAX_VIEWPORT_CARDS} card IDs.
-- Single project: feature card + case:{slug}:project + case:{slug}:impact + 1-2 media cards.
-- Multi-project overview: feature:impact + case:{slug}:project cards from 2-3 different projects (e.g. Finshots + Nesoi + CRM).
+- Single project: case:{slug}:project + case:{slug}:impact + 1-2 image/video media cards. No feature_section.
+- Multi-project overview: one case:{slug}:project card per project (3-5 different slugs — Finshots, Nesoi, Falcon, CRM, Onboarding). Never repeat the same project twice. Do NOT add feature:impact or extra media/info cards for the same slug.
 - If the user wants all projects or an overview, build that — do NOT say you can only show one project.
 - NEVER mention viewport limits, card limits, or system constraints in your chat reply.
-- After building, reply with 1 friendly sentence about what you created. No markdown.
+- After building, reply with a short storytelling narrative (2–4 sentences): warm, editorial tone — set context, hint at what they'll discover in the cards, end naturally. No bullet points, no markdown, no headings.
+- For case study or project deep-dive requests, use exactly three paragraphs separated by blank lines: (1) Context — the product and Dev's role, (2) Challenge — the core problem or constraint, (3) Teaser — what the cards below reveal (impact, screens, learnings). Flowing prose only — do not write "Context:" or "Challenge:" as labels.
+- When listing multiple items (metrics, projects, skills), you may use a short bullet list (3–5 lines starting with "- ") after the opening paragraph — keep the overall reply conversational, not a wall of bullets.
+- For clarification-only replies (Phase 1), keep it to one friendly question — still prose, not lists.
 
 Layout changes: use layout_action (and get_portfolio_sections if needed). No build_gen_ui_view required for layout-only requests.
 Section IDs: ${PORTFOLIO_SECTION_IDS.join(', ')}`;

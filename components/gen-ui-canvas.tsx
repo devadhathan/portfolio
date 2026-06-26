@@ -7,8 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { whiteButtonClass } from '@/components/gen-ui-action-button';
-import { capitalizePrompt } from '@/lib/enrich-gen-ui';
+import { GenUIAssistantReply } from '@/components/gen-ui-assistant-reply';
+import { capitalizePrompt, enrichGenUIItems } from '@/lib/enrich-gen-ui';
 import { organizeGenUIByProject, type ProjectGroup, type ProjectMediaItem } from '@/lib/organize-gen-ui';
+import { itemsToResearchCards } from '@/lib/gen-ui-research-cards';
+import { GenUIResearchCard } from '@/components/gen-ui-research-card';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +20,7 @@ type GenUILandingPageProps = {
   title: string;
   summary?: string;
   items: GenUIItem[];
+  variant?: 'default' | 'viewport';
 };
 
 function groupMiscItems(items: GenUIItem[]) {
@@ -70,9 +74,10 @@ function ProjectBlock({ title, description, tags }: Extract<GenUIItem, { type: '
   );
 }
 
-function TimelineBlock({ role, company, period, highlights }: Extract<GenUIItem, { type: 'timeline' }>) {
+function TimelineBlock({ compact, ...props }: Extract<GenUIItem, { type: 'timeline' }> & { compact?: boolean }) {
+  const { role, company, period, highlights } = props;
   return (
-    <div className="border border-border/50 rounded-xl bg-card/50 p-5 md:p-6 h-full">
+    <div className={cn('border border-border/50 rounded-xl bg-card/50 p-5 md:p-6 h-full', compact && 'p-4 md:p-5')}>
       <div className="flex items-start justify-between gap-2 mb-1">
         <p className="text-sm font-semibold text-foreground">{role}</p>
         <p className="text-[10px] text-muted-foreground whitespace-nowrap">{period}</p>
@@ -80,7 +85,7 @@ function TimelineBlock({ role, company, period, highlights }: Extract<GenUIItem,
       <p className="text-xs text-primary mb-2">{company}</p>
       {highlights && (
         <ul className="space-y-1">
-          {highlights.slice(0, 3).map((h) => (
+          {highlights.slice(0, compact ? 2 : 3).map((h) => (
             <li key={h} className="text-[11px] text-muted-foreground flex gap-1.5">
               <span className="text-primary">·</span>{h}
             </li>
@@ -91,10 +96,10 @@ function TimelineBlock({ role, company, period, highlights }: Extract<GenUIItem,
   );
 }
 
-function MediaCard({ item }: { item: ProjectMediaItem }) {
+function MediaCard({ item, compact }: { item: ProjectMediaItem; compact?: boolean }) {
   return (
     <div className="border border-border/50 rounded-xl bg-card/50 overflow-hidden h-full flex flex-col">
-      <div className="aspect-[4/3] overflow-hidden bg-black/10">
+      <div className={cn('aspect-[4/3] overflow-hidden bg-black/10', compact && 'aspect-[16/10] max-h-36')}>
         {item.type === 'video' ? (
           <video
             src={item.src}
@@ -124,13 +129,13 @@ function MediaCard({ item }: { item: ProjectMediaItem }) {
   );
 }
 
-function ProjectGroupSection({ group }: { group: ProjectGroup }) {
+function ProjectGroupSection({ group, compact }: { group: ProjectGroup; compact?: boolean }) {
   return (
-    <section className="space-y-4 md:space-y-5">
+    <section className={cn('space-y-4 md:space-y-5', compact && 'space-y-3')}>
       <div className="max-w-3xl">
-        <h2 className="text-lg md:text-xl font-medium text-foreground tracking-tight">{group.title}</h2>
+        <h2 className={cn('text-lg md:text-xl font-medium text-foreground tracking-tight', compact && 'text-base md:text-lg')}>{group.title}</h2>
         {group.description && (
-          <p className="text-sm text-muted-foreground leading-relaxed mt-2">{group.description}</p>
+          <p className={cn('text-sm text-muted-foreground leading-relaxed mt-2', compact && 'text-xs line-clamp-3 mt-1.5')}>{group.description}</p>
         )}
         {group.tags && group.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-3">
@@ -151,9 +156,9 @@ function ProjectGroupSection({ group }: { group: ProjectGroup }) {
       </div>
 
       {group.media.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className={cn('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4', compact && 'grid-cols-1 sm:grid-cols-2 gap-3')}>
           {group.media.map((item) => (
-            <MediaCard key={item.src} item={item} />
+            <MediaCard key={item.src} item={item} compact={compact} />
           ))}
         </div>
       )}
@@ -167,8 +172,69 @@ function ProjectGroupSection({ group }: { group: ProjectGroup }) {
   );
 }
 
-export function GenUILandingPage({ prompt, title, summary, items }: GenUILandingPageProps) {
-  const { projectGroups, otherItems } = organizeGenUIByProject(items);
+function renderResearchCards(cards: ReturnType<typeof itemsToResearchCards>) {
+  return cards.map((card) => (
+    <GenUIResearchCard
+      key={card.key}
+      title={card.title}
+      description={card.description}
+      meta={card.meta}
+      href={card.href}
+      cover={card.cover}
+      illustration={card.illustration}
+      statValue={card.statValue}
+      icon={card.icon}
+      className="animate-fade-in-blur w-full max-w-[380px]"
+    />
+  ));
+}
+
+function researchGridClass(count: number): string {
+  if (count === 1) {
+    return 'flex w-full justify-center';
+  }
+  return 'grid w-full gap-4 md:gap-5 lg:gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 auto-rows-fr justify-items-center';
+}
+
+export function GenUICardGrid({ prompt, items }: { prompt: string; items: GenUIItem[] }) {
+  const enriched = enrichGenUIItems(items, prompt);
+  const illustrationItems = enriched.filter((i) => i.type === 'feature' || i.type === 'feature_section');
+  const contentItems = enriched.filter((i) => i.type !== 'feature' && i.type !== 'feature_section');
+
+  const illustrationCards = itemsToResearchCards(illustrationItems, prompt);
+  const contentCards = itemsToResearchCards(contentItems, prompt);
+
+  if (illustrationCards.length === 0 && contentCards.length === 0) return null;
+
+  return (
+    <div className="w-full space-y-10 md:space-y-12">
+      {illustrationCards.length > 0 && (
+        <div className={researchGridClass(illustrationCards.length)}>
+          {renderResearchCards(illustrationCards)}
+        </div>
+      )}
+      {contentCards.length > 0 && (
+        <div className={researchGridClass(contentCards.length)}>
+          {renderResearchCards(contentCards)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function GenUILandingPage({ prompt, title, summary, items, variant = 'default' }: GenUILandingPageProps) {
+  const compact = variant === 'viewport';
+
+  if (compact) {
+    return (
+      <article className="space-y-10 md:space-y-12">
+        <GenUIAssistantReply title={title} summary={summary} />
+        <GenUICardGrid prompt={prompt} items={items} />
+      </article>
+    );
+  }
+
+  const { projectGroups, otherItems } = organizeGenUIByProject(items, { maxMedia: 4 });
   const groups = groupMiscItems(otherItems);
 
   const gridItems: ReactNode[] = [

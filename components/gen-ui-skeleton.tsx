@@ -17,18 +17,21 @@ function StatSkeleton() {
   );
 }
 
-function ProjectSkeleton() {
+function ResearchCardSkeleton() {
   return (
-    <div className="border border-border/40 rounded-xl bg-card/30 p-6 space-y-3">
-      <Shimmer className="h-4 w-2/3" />
-      <Shimmer className="h-3 w-full" />
-      <Shimmer className="h-3 w-5/6" />
-      <div className="flex gap-1.5 pt-1">
-        <Shimmer className="h-5 w-12 rounded-full" />
-        <Shimmer className="h-5 w-14 rounded-full" />
+    <div className="flex h-full flex-col rounded-2xl border border-border/45 bg-card/25 p-4 md:p-5">
+      <Shimmer className="aspect-[4/3] w-full rounded-xl" />
+      <div className="flex flex-1 flex-col gap-2 pt-4">
+        <Shimmer className="h-5 w-2/3" />
+        <Shimmer className="h-3 w-full" />
+        <Shimmer className="h-3 w-5/6" />
       </div>
     </div>
   );
+}
+
+function ProjectSkeleton() {
+  return <ResearchCardSkeleton />;
 }
 
 function TimelineSkeleton() {
@@ -61,14 +64,7 @@ function ChartSkeleton() {
 }
 
 function ImageSkeleton() {
-  return (
-    <div className="border border-border/40 rounded-xl bg-card/30 overflow-hidden">
-      <Shimmer className="aspect-video w-full rounded-none" />
-      <div className="p-3">
-        <Shimmer className="h-3 w-2/3" />
-      </div>
-    </div>
-  );
+  return <ResearchCardSkeleton />;
 }
 
 function InfoSkeleton() {
@@ -106,10 +102,14 @@ function FeatureSectionSkeleton() {
 
 function FeatureSkeleton() {
   return (
-    <div className="border border-border/40 rounded-xl bg-card/30 p-6 space-y-3">
-      <Shimmer className="h-24 w-full rounded-lg" />
-      <Shimmer className="h-4 w-2/3" />
-      <Shimmer className="h-3 w-full" />
+    <div className="flex h-full flex-col rounded-2xl border border-border/45 bg-card/25 p-4 md:p-5">
+      <div className="flex aspect-[4/3] w-full items-center justify-center rounded-xl bg-muted/20">
+        <Shimmer className="h-28 w-28 rounded-full" />
+      </div>
+      <div className="flex flex-1 flex-col gap-2 pt-4">
+        <Shimmer className="h-5 w-1/2" />
+        <Shimmer className="h-3 w-full" />
+      </div>
     </div>
   );
 }
@@ -173,18 +173,32 @@ export function GenUIChatSkeleton({ types }: { types?: CardSkeletonType[] }) {
   );
 }
 
+function skeletonGridClass(count: number): string {
+  const base = 'grid w-full gap-5 md:gap-6 lg:gap-8';
+  if (count <= 1) return `${base} grid-cols-1`;
+  if (count === 2) return `${base} grid-cols-1 md:grid-cols-2`;
+  return `${base} grid-cols-1 sm:grid-cols-2 xl:grid-cols-3`;
+}
+
 export function GenUICanvasSkeleton({ types }: { types?: CardSkeletonType[] }) {
   const skeletonTypes = types?.length ? types : DEFAULT_TYPES;
-  const hasFeatureSection = skeletonTypes.includes('feature_section');
-  const gridTypes = skeletonTypes.filter((t) => t !== 'feature_section');
+  const illustrationTypes = skeletonTypes.filter((t) => t === 'feature' || t === 'feature_section');
+  const contentTypes = skeletonTypes.filter((t) => t !== 'feature' && t !== 'feature_section');
+  const gridTypes = contentTypes.length > 0 ? contentTypes : DEFAULT_TYPES;
 
   return (
-    <div className="animate-fade-in-blur pb-8 space-y-6 w-full">
-      {hasFeatureSection && <FeatureSectionSkeleton />}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {(gridTypes.length > 0 ? gridTypes : DEFAULT_TYPES).map((type, i) => renderSkeleton(type, i))}
+    <div className="animate-fade-in-blur w-full space-y-10 md:space-y-12">
+      {illustrationTypes.length > 0 && (
+        <div className={skeletonGridClass(illustrationTypes.length)}>
+          {illustrationTypes.map((type, i) => renderSkeleton(type, i))}
+        </div>
+      )}
+      <div className={skeletonGridClass(gridTypes.length)}>
+        {gridTypes.map((type, i) => renderSkeleton(type, i + illustrationTypes.length))}
       </div>
-      <p className="text-center text-sm text-muted-foreground animate-pulse">Building your UI…</p>
+      <p className="text-center text-xs uppercase tracking-[0.22em] text-muted-foreground/70 animate-pulse">
+        Building view…
+      </p>
     </div>
   );
 }

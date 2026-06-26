@@ -7,8 +7,9 @@ import { AboutSection } from '@/components/about-section';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { AgentState, PortfolioAgent } from '@/lib/agent';
 import type { GenUIViewport } from '@/lib/gen-ui-viewport';
-import type { CardSkeletonType } from '@/lib/infer-skeleton';
-import { GenUIViewportStack } from '@/components/gen-ui-viewport-stack';
+import { createLoadingViewport } from '@/lib/gen-ui-viewport';
+import { GenUIModeShell } from '@/components/gen-ui-mode-shell';
+import { useGenUIPrompt } from '@/hooks/use-gen-ui-prompt';
 import { useTranslations } from 'next-intl';
 
 // Lazy load heavy components to reduce initial bundle size
@@ -35,8 +36,8 @@ export default function Home() {
   const t = useTranslations('home');
   const [agentState, setAgentState] = useState<AgentState>(() => createDefaultAgentState());
   const [genUIViewports, setGenUIViewports] = useState<GenUIViewport[]>([]);
+  const [activeViewportId, setActiveViewportId] = useState<string | null>(null);
   const [scrollToViewportId, setScrollToViewportId] = useState<string | null>(null);
-  const [skeletonTypes, setSkeletonTypes] = useState<CardSkeletonType[] | undefined>();
   const [isAgentWorking, setIsAgentWorking] = useState(false);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [isChatCollapsed, setIsChatCollapsed] = useState(true);
@@ -47,10 +48,9 @@ export default function Home() {
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
-  const [chatMode, setChatMode] = useState<'ask' | 'agent'>('ask');
+  const [genUIMode, setGenUIMode] = useState(false);
   const [showProjectsList, setShowProjectsList] = useState(false);
   const resetAgentRef = useRef<(() => void) | null>(null);
-  const genUIViewportsRef = useRef<GenUIViewport[]>([]);
   const explanationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showInitialLoading, setShowInitialLoading] = useState(false);
   const [fadingOut, setFadingOut] = useState(false);
@@ -63,37 +63,64 @@ export default function Home() {
     setAgentState(state);
   };
 
-  const handleAgentWorking = (working: boolean, hint?: { skeletonTypes?: CardSkeletonType[] }) => {
-    setIsAgentWorking(working);
-    if (hint?.skeletonTypes) {
-      setSkeletonTypes(hint.skeletonTypes);
+  const handleAgentWorking = (working: boolean, hint?: { prompt?: string }) => {
+    if (working) {
+      setIsChatCollapsed(true);
+      if (hint?.prompt) {
+        const pending = createLoadingViewport(hint.prompt);
+        setGenUIViewports((prev) => [...prev, pending]);
+        setActiveViewportId(pending.id);
+        setScrollToViewportId(pending.id);
+      }
     }
+    setIsAgentWorking(working);
     if (working) {
       setLoadingStartTime(Date.now());
       setLoadingMessageIndex(0);
-      const prev = genUIViewportsRef.current;
-      if (prev.length > 0) {
-        setScrollToViewportId(prev[prev.length - 1].id);
-      }
     } else {
       setLoadingStartTime(null);
       setLoadingMessageIndex(0);
     }
   };
 
-  useEffect(() => {
-    genUIViewportsRef.current = genUIViewports;
-  }, [genUIViewports]);
-
   const handleGenUIViewport = (viewport: GenUIViewport) => {
-    setGenUIViewports((prev) => [...prev, viewport]);
-    setScrollToViewportId(viewport.id);
+    setGenUIViewports((prev) => {
+      let loadingIdx = -1;
+      for (let i = prev.length - 1; i >= 0; i--) {
+        if (prev[i].status === 'loading') {
+          loadingIdx = i;
+          break;
+        }
+      }
+      if (loadingIdx >= 0) {
+        const preservedId = prev[loadingIdx].id;
+        const next = [...prev];
+        next[loadingIdx] = { ...viewport, id: preservedId, status: 'ready' };
+        setActiveViewportId(preservedId);
+        setScrollToViewportId(preservedId);
+        return next;
+      }
+      setActiveViewportId(viewport.id);
+      setScrollToViewportId(viewport.id);
+      return [...prev, { ...viewport, status: 'ready' as const }];
+    });
   };
+
+  const genUIPrompt = useGenUIPrompt({
+    onAgentWorking: handleAgentWorking,
+    onGenUIViewport: handleGenUIViewport,
+    onStateChange: handleStateChange,
+  });
 
   const handleGenUIReset = () => {
     setGenUIViewports([]);
+    setActiveViewportId(null);
     setScrollToViewportId(null);
-    setSkeletonTypes(undefined);
+    genUIPrompt.reset();
+  };
+
+  const handleGenUIModeChange = (enabled: boolean) => {
+    setGenUIMode(enabled);
   };
 
   useEffect(() => {
@@ -187,8 +214,10 @@ export default function Home() {
       resetAgentRef.current();
     }
     setGenUIViewports([]);
+    setActiveViewportId(null);
     setScrollToViewportId(null);
-    setSkeletonTypes(undefined);
+    setGenUIMode(false);
+    genUIPrompt.reset();
     // Clear explanation state
     setExplanation(null);
     setDisplayedExplanation('');
@@ -292,7 +321,12 @@ export default function Home() {
         </div>
       )}
       <div className={showInitialLoading ? 'invisible' : 'visible'}>
-          <TopBar onProjectSelect={setSelectedProject} onHomeClick={handleHomeClick} />
+          <TopBar
+            onProjectSelect={setSelectedProject}
+            onHomeClick={handleHomeClick}
+            genUIMode={genUIMode}
+            onGenUIModeChange={handleGenUIModeChange}
+          />
           
           <div className="flex pt-14 relative z-10">
         {/* Desktop Sidebar - Fixed */}
@@ -332,12 +366,16 @@ export default function Home() {
                 selectedProjectId={selectedProject}
               />
             </div>
-          ) : genUIViewports.length > 0 || isAgentWorking ? (
-            <GenUIViewportStack
+          ) : genUIMode ? (
+            <GenUIModeShell
               viewports={genUIViewports}
-              isBuilding={isAgentWorking}
-              skeletonTypes={skeletonTypes}
-              scrollToId={scrollToViewportId}
+              activeViewportId={activeViewportId}
+              scrollToViewportId={scrollToViewportId}
+              isAgentWorking={isAgentWorking}
+              hasPrompted={genUIPrompt.hasPrompted}
+              isLoading={genUIPrompt.isLoading}
+              onSubmit={genUIPrompt.submitPrompt}
+              onActiveChange={setActiveViewportId}
             />
           ) : (
             /* ── Default home portfolio ── */
@@ -359,27 +397,24 @@ export default function Home() {
         </div>
       </div>
           
+          {!genUIMode && (
+            <>
           <SideAgent
             onStateChange={handleStateChange}
-            onAgentWorking={handleAgentWorking}
             onCollapseChange={handleCollapseChange}
             onExplanation={handleExplanation}
             onExplanationComplete={handleExplanationComplete}
-            onGenUIViewport={handleGenUIViewport}
-            onGenUIReset={handleGenUIReset}
-            onModeChange={setChatMode}
             resetRef={resetAgentRef}
             externalCollapsed={isChatCollapsed}
-            initialMode={chatMode}
           />
           <FloatingChatButton 
             onClick={() => {
               setIsChatCollapsed(false);
             }} 
             isCollapsed={isChatCollapsed}
-            mode={chatMode}
-            onModeChange={setChatMode}
           />
+            </>
+          )}
       </div>
       <MobileBottomNav />
     </div>
