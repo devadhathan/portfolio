@@ -4,8 +4,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { PortfolioAgent, type AgentState } from '@/lib/agent';
 import type { LayoutActionCommand } from '@/lib/agent-loop';
 import { resolveCardIds } from '@/lib/gen-ui-registry';
+import type { GenUIItem } from '@/lib/gen-ui-registry';
 import { enrichGenUIItems, isWordsmithQuery, stripMarkdown, WORDSMITH_LOCKED_MESSAGE } from '@/lib/enrich-gen-ui';
 import { inferGenUIBuild } from '@/lib/infer-gen-ui-build';
+import {
+  isOffTopicGenUIPrompt,
+  isInsufficientContextQuery,
+  offTopicGenUIMessage,
+  offTopicGenUITitle,
+  insufficientContextMessage,
+  insufficientContextTitle,
+} from '@/lib/gen-ui-on-topic';
 import { createGenUIViewport, type GenUIViewport } from '@/lib/gen-ui-viewport';
 import { genUIPromptLengthError, MAX_GEN_UI_PROMPT_LENGTH } from '@/lib/gen-ui-prompt';
 import { resumeData } from '@/lib/resume-data';
@@ -28,7 +37,7 @@ function applyLayoutCommands(agent: PortfolioAgent, commands: LayoutActionComman
 }
 
 type UseGenUIPromptOptions = {
-  onAgentWorking?: (working: boolean, hint?: { prompt?: string }) => void;
+  onAgentWorking?: (working: boolean, hint?: { prompt?: string; pendingId?: string }) => void;
   onGenUIViewport?: (viewport: GenUIViewport) => void;
   onStateChange?: (state: AgentState) => void;
 };
@@ -37,7 +46,8 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
   const agentRef = useRef(new PortfolioAgent());
   const [isLoading, setIsLoading] = useState(false);
   const [hasPrompted, setHasPrompted] = useState(false);
-  const [promptCount, setPromptCount] = useState(10);
+  const [promptCount, setPromptCount] = useState(0);
+  const [promptLimitLoaded, setPromptLimitLoaded] = useState(false);
   const [conversationHistory, setConversationHistory] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
 
   useEffect(() => {
@@ -47,14 +57,26 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
         if (typeof data.remaining === 'number') {
           setPromptCount(data.remaining);
         }
+        setPromptLimitLoaded(true);
       })
-      .catch(() => {});
+      .catch(() => {
+        setPromptCount(0);
+        setPromptLimitLoaded(true);
+      });
   }, []);
 
   const submitPrompt = useCallback(
     async (command: string) => {
       const trimmed = command.trim();
-      if (!trimmed || isLoading) return;
+      if (!trimmed || isLoading || !promptLimitLoaded) return;
+
+      if (promptCount <= 0) {
+        setHasPrompted(true);
+        onGenUIViewport?.(
+          createGenUIViewport(trimmed, `Prompt limit reached. Contact ${resumeData.email}.`, []),
+        );
+        return;
+      }
 
       if (trimmed.length > MAX_GEN_UI_PROMPT_LENGTH) {
         setHasPrompted(true);
@@ -64,14 +86,55 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
         return;
       }
 
+      const pendingId = `pending-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+
       setIsLoading(true);
       setHasPrompted(true);
       const skeletonStartedAt = Date.now();
-      onAgentWorking?.(true, { prompt: trimmed });
+      onAgentWorking?.(true, { prompt: trimmed, pendingId });
 
       const nextHistory = [...conversationHistory, { role: 'user' as const, content: trimmed }];
 
+      const finishViewport = async (
+        summary: string,
+        items: GenUIItem[],
+        options?: { title?: string; rawSummary?: boolean },
+      ) => {
+        const minSkeletonMs = 200;
+        const elapsed = Date.now() - skeletonStartedAt;
+        if (elapsed < minSkeletonMs) {
+          await new Promise((resolve) => setTimeout(resolve, minSkeletonMs - elapsed));
+        }
+        onGenUIViewport?.(
+          createGenUIViewport(trimmed, summary, items, { ...options, id: pendingId }),
+        );
+      };
+
       try {
+        if (isOffTopicGenUIPrompt(trimmed)) {
+          const redirect = offTopicGenUIMessage(trimmed);
+          setConversationHistory([
+            ...nextHistory,
+            { role: 'assistant', content: stripMarkdown(redirect) },
+          ]);
+          await finishViewport(redirect, [], { title: offTopicGenUITitle(), rawSummary: true });
+          return;
+        }
+
+        if (isInsufficientContextQuery(trimmed)) {
+          const reply = insufficientContextMessage(trimmed);
+          const contactCards = resolveCardIds(['feature:connect']);
+          setConversationHistory([
+            ...nextHistory,
+            { role: 'assistant', content: stripMarkdown(reply) },
+          ]);
+          await finishViewport(reply, contactCards, {
+            title: insufficientContextTitle(),
+            rawSummary: true,
+          });
+          return;
+        }
+
         const sectionSnapshot = agentRef.current.getState().sections.map((s) => ({
           id: s.id,
           title: s.title,
@@ -135,33 +198,25 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
         ]);
 
         const parsedItems = resolveCardIds(result.cardIds || []);
-        const enrichedItems = enrichGenUIItems(parsedItems, trimmed);
-
-        const minSkeletonMs = 200;
-        const elapsed = Date.now() - skeletonStartedAt;
-        if (elapsed < minSkeletonMs) {
-          await new Promise((resolve) => setTimeout(resolve, minSkeletonMs - elapsed));
-        }
+        const enrichedItems = isOffTopicGenUIPrompt(trimmed) ? [] : enrichGenUIItems(parsedItems, trimmed);
 
         if (enrichedItems.length > 0) {
-          onGenUIViewport?.(createGenUIViewport(trimmed, '', enrichedItems));
+          await finishViewport('', enrichedItems);
         } else if (finalText) {
-          onGenUIViewport?.(createGenUIViewport(trimmed, finalText, []));
+          await finishViewport(finalText, []);
         } else {
-          onGenUIViewport?.(
-            createGenUIViewport(trimmed, 'Something went wrong. Please try again.', []),
-          );
+          await finishViewport('Something went wrong. Please try again.', []);
         }
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'Something went wrong. Please try again.';
-        onGenUIViewport?.(createGenUIViewport(trimmed, message, []));
+        onGenUIViewport?.(createGenUIViewport(trimmed, message, [], { id: pendingId }));
       } finally {
         setIsLoading(false);
         onAgentWorking?.(false);
       }
     },
-    [conversationHistory, isLoading, onAgentWorking, onGenUIViewport, onStateChange, promptCount],
+    [conversationHistory, isLoading, onAgentWorking, onGenUIViewport, onStateChange, promptCount, promptLimitLoaded],
   );
 
   const reset = useCallback(() => {
@@ -170,5 +225,5 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
     setIsLoading(false);
   }, []);
 
-  return { submitPrompt, isLoading, hasPrompted, promptCount, reset };
+  return { submitPrompt, isLoading, hasPrompted, promptCount, promptLimitLoaded, conversationHistory, reset };
 }

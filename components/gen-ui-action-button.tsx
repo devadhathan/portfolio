@@ -11,8 +11,8 @@ type GenUIActionButtonProps = {
   variant?: 'default' | 'outline' | 'secondary';
 };
 
-const whiteButtonClass =
-  'bg-white text-neutral-900 border-white/40 hover:bg-white/90 hover:text-neutral-900 shadow-sm';
+const actionButtonClass =
+  'bg-primary text-primary-foreground border border-primary/20 hover:bg-primary/90 shadow-sm';
 
 export function GenUIActionButton({
   href,
@@ -27,7 +27,7 @@ export function GenUIActionButton({
       size="sm"
       className={cn(
         'mt-4 h-8 w-auto self-start rounded-full px-4 text-xs font-medium',
-        whiteButtonClass,
+        actionButtonClass,
         className,
       )}
     >
@@ -39,4 +39,4 @@ export function GenUIActionButton({
   );
 }
 
-export { whiteButtonClass };
+export { actionButtonClass };

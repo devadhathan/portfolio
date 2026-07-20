@@ -4,6 +4,8 @@ import {
   filterRelevantItems,
   getTopicSlugFromPrompt,
   isCompaniesQuery,
+  isContactQuery,
+  isEducationQuery,
   isExperienceQuery,
   isOverviewQuery,
   isSpecificTopicQuery,
@@ -13,7 +15,12 @@ import {
 import { getItemSlug } from '@/lib/gen-ui-item-slug';
 import { MAX_VIEWPORT_CARDS } from '@/lib/gen-ui-constants';
 import { normalizeGenUIItemsForGrid } from '@/lib/gen-ui-grid';
-import { getStarterChipId, STARTER_CHIP_CARD_IDS } from '@/lib/gen-ui-starter-chips';
+import {
+  getStarterChipId,
+  STARTER_CHIP_CARD_IDS,
+  STARTER_CHIP_SUMMARIES,
+} from '@/lib/gen-ui-starter-chips';
+import { isOffTopicGenUIPrompt, isInsufficientContextQuery } from '@/lib/gen-ui-on-topic';
 import { resumeData } from '@/lib/resume-data';
 
 export { MAX_VIEWPORT_CARDS };
@@ -45,6 +52,10 @@ const COMPANIES_CARD_IDS = [
   'timeline:nesoi',
   'timeline:wordsmith',
 ] as const;
+
+const CONTACT_CARD_IDS = ['feature:connect'] as const;
+
+const EDUCATION_CARD_IDS = ['feature:education', 'info:cert:google', 'info:cert:ibm'] as const;
 
 function resolveRegistryCards(ids: readonly string[]): GenUIItem[] {
   return ids.map((id) => CARD_REGISTRY[id]).filter(Boolean) as GenUIItem[];
@@ -79,12 +90,26 @@ function ensureStarterChipCards(items: GenUIItem[], prompt: string): GenUIItem[]
   return resolveRegistryCards(STARTER_CHIP_CARD_IDS[chipId]);
 }
 
+function ensureIntentCards(items: GenUIItem[], prompt: string): GenUIItem[] {
+  if (isContactQuery(prompt)) return resolveRegistryCards(CONTACT_CARD_IDS);
+  if (isEducationQuery(prompt)) return resolveRegistryCards(EDUCATION_CARD_IDS);
+  return items;
+}
+
 export function enrichGenUIItems(items: GenUIItem[], prompt: string): GenUIItem[] {
+  if (isOffTopicGenUIPrompt(prompt)) return [];
+  if (isInsufficientContextQuery(prompt)) {
+    return normalizeGenUIItemsForGrid(resolveRegistryCards(CONTACT_CARD_IDS), prompt);
+  }
   if (isWordsmithQuery(prompt)) return applyWordsmithLocked([]);
 
   let next = filterRelevantItems(items, prompt);
   if (isStarterChipQuery(prompt)) {
     next = ensureStarterChipCards(next, prompt);
+    return normalizeGenUIItemsForGrid(next, prompt);
+  }
+  if (isContactQuery(prompt) || isEducationQuery(prompt)) {
+    next = ensureIntentCards(next, prompt);
     return normalizeGenUIItemsForGrid(next, prompt);
   }
   next = ensureCareerCards(next, prompt);
@@ -261,7 +286,15 @@ const OVERVIEW_INTERACTIVE_IDS = ['chart:impact', 'feature:impact', 'stat:engage
 
 function supplementInteractiveCards(items: GenUIItem[], prompt: string): GenUIItem[] {
   if (isWordsmithQuery(prompt)) return items;
-  if (isExperienceQuery(prompt) || isCompaniesQuery(prompt) || isStarterChipQuery(prompt)) return items;
+  if (
+    isExperienceQuery(prompt) ||
+    isCompaniesQuery(prompt) ||
+    isStarterChipQuery(prompt) ||
+    isContactQuery(prompt) ||
+    isEducationQuery(prompt)
+  ) {
+    return items;
+  }
 
   const next = [...items];
   const hasType = (type: GenUIItem['type']) => next.some((i) => i.type === type);
@@ -391,13 +424,26 @@ export function stripMarkdown(text: string): string {
 }
 
 export function formatLeadSummary(text: string, prompt?: string): string {
+  if (prompt) {
+    const chipId = getStarterChipId(prompt);
+    if (chipId) return STARTER_CHIP_SUMMARIES[chipId];
+  }
+
   const s = stripMarkdown(text);
 
-  if (!s || s.includes('###') || s.includes('**') || s.includes('__')) {
+  if (!s || s.length < 80 || s.includes('###') || s.includes('**') || s.includes('__')) {
     return prompt ? fallbackStorySummary(prompt) : '';
   }
 
   if (prompt && isCaseStudyQuery(prompt) && s.length < 180) {
+    return fallbackStorySummary(prompt);
+  }
+
+  if (
+    prompt &&
+    (/^(here'?s what i found|explore the cards|see below|take a look)/i.test(s) ||
+      s.split(/\s+/).length < 12)
+  ) {
     return fallbackStorySummary(prompt);
   }
 
@@ -427,6 +473,9 @@ export function fallbackLeadSummary(prompt: string): string {
 }
 
 export function fallbackStorySummary(prompt: string): string {
+  const chipId = getStarterChipId(prompt);
+  if (chipId) return STARTER_CHIP_SUMMARIES[chipId];
+
   const p = prompt.toLowerCase();
 
   if (isCaseStudyQuery(prompt)) {
@@ -461,6 +510,45 @@ export function fallbackStorySummary(prompt: string): string {
     'falcon design system': "Falcon grew out of a familiar pain — teams shipping insurance flows without a shared language. Below is how a design system took root and scaled across products.",
     'nesoi.ai': "At Nesoi, dashboards had to earn trust fast — educators and operators making high-stakes calls from a single screen. Explore how that constraint shaped the work.",
     'gen ui': "Gen UI turns your question into a living viewport — narrative up top, then cards pulled from Dev's portfolio. Ask about a project, skill, or career thread and it assembles a focused view just for that.",
+    'why hire dev':
+      "Hiring Dev means getting a product designer who ships — not someone who stops at mockups. Five years across fintech, insurance, and AI, with a CS degree and the ability to take ideas through to production.\n\nThe cards below spell out shipped products, measurable impact, and the designer-engineer range that sets his work apart.",
+    'designer + engineer':
+      "Dev prototypes in Claude Code and Cursor, then ships the result himself — a B.Tech in CS plus production React/Next.js work.\n\nThe cards below show his engineering foundation, AI-assisted prototyping workflow, and path from idea to shipped interface.",
+    'get in touch': contactStorySummary(),
   };
-  return map[short] || "Here's a curated slice of Dev's portfolio — shaped by your question and ready to explore below.";
+  return map[short] || fallbackFromPromptIntent(prompt);
+}
+
+function contactStorySummary(): string {
+  return `Dev is open to full-time product design roles — remote or hybrid across the UK and Europe.\n\nEmail: ${resumeData.email}\nLinkedIn: linkedin.com/${resumeData.linkedin}\nPhone: ${resumeData.phone}\n\nUse the cards below to reach out directly or visit the contact page.`;
+}
+
+function fallbackFromPromptIntent(prompt: string): string {
+  const p = prompt.toLowerCase();
+  if (/\b(why hire|why should|hire (?:him|dev|as))\b/i.test(p)) {
+    return STARTER_CHIP_SUMMARIES.hire;
+  }
+  if (/\b(ship code|production code|designer.?engineer|engineer.*design)\b/i.test(p)) {
+    return STARTER_CHIP_SUMMARIES['ship-code'];
+  }
+  if (/\b(impact|metrics?|numbers?|results?|measurable)\b/i.test(p)) {
+    return STARTER_CHIP_SUMMARIES.impact;
+  }
+  if (/\b(strongest|best work|award|flagship)\b/i.test(p)) {
+    return STARTER_CHIP_SUMMARIES.strongest;
+  }
+  if (/\b(skill|tools?|expertise|stack)\b/i.test(p)) {
+    return "Five years of product design across fintech, insurance, and AI left a distinct toolkit — research methods, design systems, prototyping, and front-end fluency.\n\nThe cards below map the skills and tools Dev reaches for when turning research into shipped work.";
+  }
+  if (/\b(experience|career|background|journey)\b/i.test(p)) {
+    return "Dev's path runs through Finshots and Ditto in Bangalore, then Nesoi in San Francisco, and onward into AI product work.\n\nThe cards below map roles to the projects and outcomes that defined each chapter.";
+  }
+  if (isContactQuery(prompt)) return contactStorySummary();
+  if (isEducationQuery(prompt)) {
+    return "Dev's foundation pairs a B.Tech in Computer Science with an MSc in User Experience Design from Edinburgh Napier University — plus Google and IBM certifications.\n\nThe cards below cover his degrees, certifications, and design education.";
+  }
+  if (isInsufficientContextQuery(prompt)) {
+    return `I don't have much context about that in Dev's portfolio — it's built around his work, projects, skills, and career.\n\nReach out to Dev directly using the contact card below.`;
+  }
+  return "Here's a focused view built from your question — narrative up top, then cards with the projects, metrics, and context that answer it.";
 }

@@ -1,8 +1,12 @@
-import { isWordsmithQuery } from '@/lib/enrich-gen-ui';
+import { isOffTopicGenUIPrompt } from '@/lib/gen-ui-on-topic';
 import { isStarterChipQuery } from '@/lib/gen-ui-starter-chips';
 
+function isWordsmithQuery(prompt: string): boolean {
+  return /\bwordsmith\b/i.test(prompt);
+}
+
 const SPECIFIC_REQUEST =
-  /\b(finshots|nesoi|crm|falcon|onboarding|ditto|wordsmith|impact|metrics?|skills?|career|education|resume|timeline|downloads|conversion|design system|strongest work|ship code|hire him|why hire|why should i hire)\b/i;
+  /\b(finshots|nesoi|crm|falcon|onboarding|ditto|wordsmith|impact|metrics?|skills?|career|education|resume|timeline|downloads|conversion|design system|strongest work|ship code|hire him|why hire|why should i hire|contact|email|linkedin|phone)\b/i;
 
 const VAGUE_REQUEST =
   /\b(projects?|works?|portfolio|case studies?|show me|tell me about|what has he|everything|all of)\b/i;
@@ -52,6 +56,7 @@ export function inferGenUIBuild(options: {
 }): boolean {
   const { mode, command, result, priorMessages } = options;
   if (mode !== 'agent') return false;
+  if (isOffTopicGenUIPrompt(command)) return false;
   if (isWordsmithQuery(command)) return true;
 
   const hasCardIds = result.cardIds.length > 0;

@@ -14,9 +14,20 @@ type GenUIModeShellProps = {
   hasPrompted: boolean;
   isLoading: boolean;
   promptCount: number;
+  promptLimitLoaded?: boolean;
+  hideMobileNav?: boolean;
   onSubmit: (prompt: string) => void | Promise<void>;
   onActiveChange: (id: string) => void;
+  onCaseStudySelect?: (projectSlug: string) => void;
+  headline?: string;
+  subhead?: string;
 };
+
+function promptLimitLabel(promptLimitLoaded: boolean, limitReached: boolean, promptCount: number) {
+  if (!promptLimitLoaded) return 'Checking prompt limit…';
+  if (limitReached) return 'No prompts remaining';
+  return `${promptCount} prompt${promptCount === 1 ? '' : 's'} remaining`;
+}
 
 export function GenUIModeShell({
   viewports,
@@ -26,39 +37,33 @@ export function GenUIModeShell({
   hasPrompted,
   isLoading,
   promptCount,
+  promptLimitLoaded = true,
+  hideMobileNav = false,
   onSubmit,
   onActiveChange,
+  onCaseStudySelect,
+  headline,
+  subhead,
 }: GenUIModeShellProps) {
-  const limitReached = promptCount <= 0;
+  const limitReached = promptLimitLoaded && promptCount <= 0;
   const showCenterSearch = !hasPrompted && viewports.length === 0 && !isAgentWorking && !isLoading;
   const showBottomSearch = hasPrompted || viewports.length > 0 || isAgentWorking || isLoading;
+  const limitText = promptLimitLabel(promptLimitLoaded, limitReached, promptCount);
 
   return (
     <div className={cn('relative w-full', showCenterSearch ? 'h-full min-h-0' : 'min-h-[calc(100vh-3.5rem)]')}>
-      <div
-        className={cn(
-          'pointer-events-none fixed left-1/2 z-30 -translate-x-1/2',
-          showBottomSearch
-            ? 'bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px)+4.25rem)] lg:bottom-3'
-            : 'bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px)+0.75rem)] lg:bottom-3',
-        )}
-      >
-        <p className="text-xs text-muted-foreground/50 tabular-nums text-center">
-          {limitReached
-            ? 'No prompts remaining'
-            : `${promptCount} prompt${promptCount === 1 ? '' : 's'} remaining`}
-        </p>
-      </div>
-
       {showCenterSearch ? (
         <div className="flex h-full min-h-0 flex-col items-center justify-center overflow-y-auto px-4 py-6 md:py-10">
-          <div className="w-full max-w-2xl my-auto">
+          <div className="my-auto w-full max-w-2xl">
             <GenUISearchBar
               variant="center"
               onSubmit={onSubmit}
               isLoading={isLoading}
               promptCount={promptCount}
-              disabled={limitReached}
+              disabled={limitReached || !promptLimitLoaded}
+              headline={headline}
+              subhead={subhead}
+              limitLabel={limitText}
             />
           </div>
         </div>
@@ -66,8 +71,7 @@ export function GenUIModeShell({
         <>
           <div
             className={cn(
-              showBottomSearch &&
-                'pb-[calc(3.5rem+env(safe-area-inset-bottom,0px)+5.5rem)] lg:pb-32',
+              showBottomSearch && 'pb-[calc(env(safe-area-inset-bottom,0px)+5.5rem)] lg:pb-32',
             )}
           >
             {viewports.length > 0 ? (
@@ -76,7 +80,9 @@ export function GenUIModeShell({
                 activeId={activeViewportId}
                 isBuilding={isAgentWorking}
                 scrollToId={scrollToViewportId}
+                hideMobileNav={hideMobileNav}
                 onActiveChange={onActiveChange}
+                onCaseStudySelect={onCaseStudySelect}
               />
             ) : isLoading ? (
               <div className="mx-auto w-full max-w-3xl px-4 md:px-6 pt-20 md:pt-24">
@@ -89,22 +95,26 @@ export function GenUIModeShell({
                   onSubmit={onSubmit}
                   isLoading={isLoading}
                   promptCount={promptCount}
-                  disabled={limitReached}
+                  disabled={limitReached || !promptLimitLoaded}
+                  headline={headline}
+                  subhead={subhead}
+                  limitLabel={limitText}
                 />
               </div>
             )}
           </div>
 
           {showBottomSearch && (
-            <div className="fixed left-1/2 z-40 w-full -translate-x-1/2 px-4 pointer-events-none bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px)+0.75rem)] lg:bottom-10">
-              <div className="pointer-events-auto mx-auto max-w-3xl">
+            <div className="pointer-events-none fixed bottom-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] left-1/2 z-40 w-full -translate-x-1/2 px-4 lg:bottom-10">
+              <div className="pointer-events-auto mx-auto flex max-w-3xl flex-col items-center gap-1.5">
                 <GenUISearchBar
                   variant="bottom"
                   onSubmit={onSubmit}
                   isLoading={isLoading}
                   promptCount={promptCount}
-                  disabled={limitReached}
+                  disabled={limitReached || !promptLimitLoaded}
                 />
+                <p className="text-xs text-muted-foreground/50 tabular-nums">{limitText}</p>
               </div>
             </div>
           )}

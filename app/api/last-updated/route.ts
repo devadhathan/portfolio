@@ -13,6 +13,6 @@ export async function GET() {
     const lastUpdatedDate = output.trim();
     return NextResponse.json({ lastUpdatedDate });
   } catch (error) {
-    return NextResponse.json({ lastUpdatedDate: null });
+    return NextResponse.json({ lastUpdatedDate: '2026-06-24' });
   }
 }

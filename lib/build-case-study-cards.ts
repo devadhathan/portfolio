@@ -3,8 +3,11 @@ import { getProjectId, type Project, type ProjectImage } from '@/lib/types/proje
 
 const EXCLUDED_TITLES = new Set(['Sustainable Kiosk', 'Booking Portal Redesign']);
 
+/** Primary Finshots UI shot — used for hero covers and video posters (not the marketing landscape). */
+export const FINSHOTS_APP_SCREEN = '/finshots/n3pGQMdpISBs8GNixqX0HtgFg.png.webp';
+
 const FINSHOTS_GALLERY = [
-  { src: '/finshots/n3pGQMdpISBs8GNixqX0HtgFg.png.webp', title: 'Highlights', description: 'Article view with engagement features' },
+  { src: FINSHOTS_APP_SCREEN, title: 'Highlights', description: 'Article view with engagement features' },
   { src: '/finshots/Bm0PeueVjQrfNc6ZGLBrN2V3wM.png.webp', title: 'Categories', description: 'Category filters and navigation' },
   { src: '/finshots/E4DFBuj0Koz7GYv9xXNlfGQxGtI.png.webp', title: 'Infographics', description: 'Data visualization and charts' },
   { src: '/finshots/0xqsjn29l4LoZolS3dyyR2tY.png.webp', title: 'Best App 2021', description: 'Google Play award recognition' },
@@ -209,7 +212,7 @@ export function buildCaseStudyCards(projects: Project[] = resumeData.projects as
     });
 
     if (slug === 'finshots-news-app') {
-      addImage(cards, 'image:case:finshots-news-app:hero', '/finshots/image.png', 'Finshots News App', 'Award-winning fintech news app', slug);
+      addImage(cards, 'image:case:finshots-news-app:hero', FINSHOTS_APP_SCREEN, 'Finshots News App', 'Award-winning fintech news app', slug);
       addImage(cards, 'image:case:finshots-news-app:navigation', '/finshots/navigation.png', 'Navigation', 'Categories, filters, and search', slug);
       addImage(cards, 'image:case:finshots-news-app:infographics', encodeURI('/finshots/Info graphics.png'), 'Infographics', 'Illustrated data visualization', slug);
       addImage(cards, 'image:case:finshots-news-app:notifications', '/finshots/Notifications.png', 'Custom Notifications', 'Personalized alert preferences', slug);
@@ -218,8 +221,8 @@ export function buildCaseStudyCards(projects: Project[] = resumeData.projects as
         addImage(cards, `image:case:finshots-news-app:screen-${i}`, img.src, img.title, img.description, slug);
       });
 
-      addVideo(cards, 'video:case:finshots-news-app:accessibility', '/finshots/acess.mp4', 'Accessibility', 'Dark mode and font size controls', '/finshots/Bg.png', slug);
-      addVideo(cards, 'video:case:finshots-news-app:walkthrough', '/finshots/first.mp4', 'App walkthrough', 'Finshots mobile experience', '/finshots/Bg.png', slug);
+      addVideo(cards, 'video:case:finshots-news-app:accessibility', '/finshots/acess.mp4', 'Accessibility', 'Dark mode and font size controls', FINSHOTS_APP_SCREEN, slug);
+      addVideo(cards, 'video:case:finshots-news-app:walkthrough', '/finshots/first.mp4', 'App walkthrough', 'Finshots mobile experience', FINSHOTS_APP_SCREEN, slug);
     }
   }
 

@@ -6,7 +6,7 @@ import { FeatureCard, FeatureSection } from '@/components/line-illustrations';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { whiteButtonClass } from '@/components/gen-ui-action-button';
+import { actionButtonClass } from '@/components/gen-ui-action-button';
 import { GenUIAssistantReply } from '@/components/gen-ui-assistant-reply';
 import { capitalizePrompt, enrichGenUIItems } from '@/lib/enrich-gen-ui';
 import { normalizeResearchCardsForGrid, researchGridClass } from '@/lib/gen-ui-grid';
@@ -173,26 +173,49 @@ function ProjectGroupSection({ group, compact }: { group: ProjectGroup; compact?
   );
 }
 
-function renderResearchCards(cards: ReturnType<typeof itemsToResearchCards>) {
-  return cards.map((card) => (
-    <GenUIResearchCard
-      key={card.key}
-      title={card.title}
-      description={card.description}
-      meta={card.meta}
-      href={card.href}
-      cover={card.cover}
-      illustration={card.illustration}
-      statValue={card.statValue}
-      icon={card.icon}
-      chartBars={card.chartBars}
-      skills={card.skills}
-      className="animate-fade-in-blur w-full max-w-[380px]"
-    />
-  ));
+function slugFromProjectHref(href?: string): string | null {
+  if (!href) return null;
+  const match = href.match(/[?&]project=([^&]+)/);
+  return match?.[1] ?? null;
 }
 
-export function GenUICardGrid({ prompt, items }: { prompt: string; items: GenUIItem[] }) {
+function renderResearchCards(
+  cards: ReturnType<typeof itemsToResearchCards>,
+  onCaseStudySelect?: (projectSlug: string) => void,
+) {
+  return cards.map((card) => {
+    const slug = slugFromProjectHref(card.href);
+    const useInlineCaseStudy = Boolean(onCaseStudySelect && slug);
+
+    return (
+      <GenUIResearchCard
+        key={card.key}
+        title={card.title}
+        description={card.description}
+        meta={card.meta}
+        href={useInlineCaseStudy ? undefined : card.href}
+        onCaseStudyClick={useInlineCaseStudy ? () => onCaseStudySelect?.(slug!) : undefined}
+        cover={card.cover}
+        illustration={card.illustration}
+        statValue={card.statValue}
+        icon={card.icon}
+        chartBars={card.chartBars}
+        skills={card.skills}
+        className="animate-fade-in-blur w-full max-w-[380px]"
+      />
+    );
+  });
+}
+
+export function GenUICardGrid({
+  prompt,
+  items,
+  onCaseStudySelect,
+}: {
+  prompt: string;
+  items: GenUIItem[];
+  onCaseStudySelect?: (projectSlug: string) => void;
+}) {
   const enriched = enrichGenUIItems(items, prompt);
   const rawCards = itemsToResearchCards(enriched, prompt);
   const cards = normalizeResearchCardsForGrid(rawCards, enriched, prompt);
@@ -201,7 +224,7 @@ export function GenUICardGrid({ prompt, items }: { prompt: string; items: GenUII
 
   return (
     <div className={researchGridClass(cards.length)}>
-      {renderResearchCards(cards)}
+      {renderResearchCards(cards, onCaseStudySelect)}
     </div>
   );
 }
@@ -316,7 +339,7 @@ export function GenUILandingPage({ prompt, title, summary, items, variant = 'def
             asChild
             variant="outline"
             size="sm"
-            className={cn('h-9 w-auto rounded-full px-6 text-xs font-medium', whiteButtonClass)}
+            className={cn('h-9 w-auto rounded-full px-6 text-xs font-medium', actionButtonClass)}
           >
             <a href="/work" className="inline-flex items-center">
               View all projects

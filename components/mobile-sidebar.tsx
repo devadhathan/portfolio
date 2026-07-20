@@ -6,6 +6,7 @@ import { NotesWidget } from './widgets/notes-widget';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Menu, Clock, ChevronRight, FolderKanban } from 'lucide-react';
 import { useSiteContent } from '@/components/site-content-provider';
+import { getProjectId } from '@/lib/types/project';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -81,7 +82,7 @@ export function MobileSidebar({ onProjectSelect }: MobileSidebarProps) {
               <ScrollArea className="h-[200px]">
                 <div className="space-y-0.5 pr-4">
                   {projects.map((project, index) => {
-                      const projectSlug = project.title.toLowerCase().replace(/\s+/g, '-');
+                      const projectSlug = getProjectId(project.title);
                       return (
                         <div
                           key={index}

@@ -13,9 +13,19 @@ const RADIUS = 1.3;
 const CYCLE = 3.2;
 const RING_WIDTH = 0.18;
 
-function getDotRgb() {
+function themeColorToRgb(): string {
   if (typeof document === 'undefined') return '255, 255, 255';
-  return document.documentElement.classList.contains('dark') ? '255, 255, 255' : '0, 0, 0';
+
+  const color = getComputedStyle(document.documentElement).getPropertyValue('--theme-color').trim();
+  if (!color.startsWith('#') || color.length < 7) return '255, 255, 255';
+
+  const hex = color.slice(1);
+  const r = Number.parseInt(hex.slice(0, 2), 16);
+  const g = Number.parseInt(hex.slice(2, 4), 16);
+  const b = Number.parseInt(hex.slice(4, 6), 16);
+
+  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) return '255, 255, 255';
+  return `${r}, ${g}, ${b}`;
 }
 
 function ringBrightness(dist: number, wavePos: number): number {
@@ -39,8 +49,19 @@ export function GenUIWaveLoader({ className, label = 'Building…' }: GenUIWaveL
     if (!ctx) return;
 
     let raf = 0;
+    let dotRgb = themeColorToRgb();
     let time = 0;
     let running = true;
+
+    const refreshDotColor = () => {
+      dotRgb = themeColorToRgb();
+    };
+
+    const themeObserver = new MutationObserver(refreshDotColor);
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -61,7 +82,7 @@ export function GenUIWaveLoader({ className, label = 'Building…' }: GenUIWaveL
       const cx = w / 2;
       const cy = h / 2;
       const maxDist = Math.hypot(cx, cy);
-      const rgb = getDotRgb();
+      const rgb = dotRgb;
       const wavePos = (time % CYCLE) / CYCLE;
 
       ctx.clearRect(0, 0, w, h);
@@ -101,6 +122,7 @@ export function GenUIWaveLoader({ className, label = 'Building…' }: GenUIWaveL
       running = false;
       cancelAnimationFrame(raf);
       observer.disconnect();
+      themeObserver.disconnect();
     };
   }, []);
 

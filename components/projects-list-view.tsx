@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, ExternalLink } from 'lucide-react';
 import { useSiteContent } from '@/components/site-content-provider';
+import { getProjectId } from '@/lib/types/project';
 import { ProjectDetailView } from './project-detail-view';
 
 interface ProjectsListViewProps {
@@ -13,10 +14,6 @@ interface ProjectsListViewProps {
 
 export function ProjectsListView({ onBack, onProjectSelect, selectedProjectId }: ProjectsListViewProps) {
   const { projects } = useSiteContent();
-
-  const getProjectId = (title: string): string => {
-    return title.toLowerCase().replace(/\s+/g, '-');
-  };
 
   return (
     <div className="flex h-full w-full gap-6">

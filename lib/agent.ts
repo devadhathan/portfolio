@@ -41,25 +41,37 @@ export interface AgentState {
 
 const defaultSections: PortfolioSection[] = [
   { id: 'hero', title: 'Hero Section', priority: 'high', order: 1, visible: true },
-  { id: 'preferences', title: 'Design Preferences', priority: 'high', order: 2, visible: true },
-  { id: 'photos', title: 'Camera Roll', priority: 'medium', order: 4, visible: true, type: 'photos' },
-  { id: 'experience', title: 'Experience', priority: 'high', order: 5, visible: true },
-  { id: 'video', title: 'Dew - AI Character', priority: 'medium', order: 6, visible: true, type: 'video', content: '/videos/2tUv4Phgglg0Cvb9dLfZYDnN1k.mp4', links: [{ label: 'Read on Medium', url: 'https://medium.com/@devadhathanmd18/why-ai-needs-a-face-building-dew-my-duolingo-inspired-ai-character-2d4e56f94772' }] },
-  { id: 'philosophy', title: 'Design Philosophy', priority: 'medium', order: 7, visible: true },
-  { id: 'connect', title: 'Connect', priority: 'medium', order: 8, visible: true, type: 'contact' },
+  { id: 'projects', title: 'Projects & Case Studies', priority: 'high', order: 2, visible: true, type: 'projects' },
   {
-    id: 'last-portfolio-version',
-    title: 'Last portfolio version',
-    priority: 'low',
-    order: 9,
+    id: 'side-project',
+    title: 'Pixl',
+    priority: 'high',
+    order: 3,
     visible: true,
     type: 'custom',
-    description: 'Revisit the previous Framer-hosted portfolio experience.',
-    image: '/Old design/Old portfolio.png',
-    links: [
-      { label: 'Launch last version', url: 'https://devadhathan.framer.website' }
-    ],
+    links: [{ label: 'Pixl', url: 'https://pixlanimations.vercel.app' }],
   },
+  { id: 'photos', title: 'Camera Roll', priority: 'medium', order: 4, visible: true, type: 'photos' },
+  {
+    id: 'music-notch',
+    title: 'MusicNotch',
+    priority: 'high',
+    order: 5,
+    visible: true,
+    type: 'custom',
+  },
+  {
+    id: 'gen-ui-orb',
+    title: 'Gen UI',
+    priority: 'high',
+    order: 6,
+    visible: true,
+    type: 'custom',
+  },
+  { id: 'video', title: 'Dew - AI Character', priority: 'medium', order: 7, visible: true, type: 'video', content: '/videos/2tUv4Phgglg0Cvb9dLfZYDnN1k_compressed.mp4', links: [{ label: 'Read on Medium', url: 'https://medium.com/@devadhathanmd18/why-ai-needs-a-face-building-dew-my-duolingo-inspired-ai-character-2d4e56f94772' }] },
+  { id: 'experience', title: 'Experience', priority: 'high', order: 8, visible: true },
+  { id: 'connect', title: 'Connect', priority: 'medium', order: 9, visible: true, type: 'contact' },
+  { id: 'finshots-award', title: 'Google Play Best App 2020', priority: 'low', order: 8, visible: false, type: 'custom' },
 ];
 
 export class PortfolioAgent {

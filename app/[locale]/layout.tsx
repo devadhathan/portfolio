@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { DM_Mono } from 'next/font/google'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
@@ -7,19 +6,19 @@ import '../globals.css'
 import { ThemeProvider } from 'next-themes'
 import { ClientThemeProvider } from '@/components/client-theme-provider'
 import { SiteContentProvider } from '@/components/site-content-provider'
+import { AskAIProvider } from '@/components/ask-ai-provider'
+import { AppChrome } from '@/components/app-chrome'
+import { NavActionsProvider } from '@/contexts/nav-actions-context'
 import { SuppressCleanupErrors } from '@/components/suppress-cleanup-errors'
 import { SANITY_REVALIDATE_SECONDS } from '@/lib/sanity/cache'
 import { getProjects } from '@/lib/sanity/projects'
 import { getSiteContent } from '@/lib/sanity/site-content'
 import { localizeProjects } from '@/lib/i18n/localize-projects'
 import { routing, type Locale } from '@/i18n/routing'
+import { DEFAULT_CARD_PLACEHOLDER } from '@/lib/default-media'
+import { HERO_VIDEO_POSTER } from '@/lib/hero-media'
+import { fontVariables, geistSans } from '@/lib/fonts'
 import { Analytics } from '@vercel/analytics/next'
-
-const dmMono = DM_Mono({
-  subsets: ['latin'],
-  weight: ['300', '400', '500'],
-  variable: '--font-dm-mono',
-})
 
 export const revalidate = SANITY_REVALIDATE_SECONDS
 
@@ -62,7 +61,11 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className="dark" suppressHydrationWarning>
-      <body className={dmMono.variable}>
+      <head>
+        <link rel="preload" href={HERO_VIDEO_POSTER} as="image" fetchPriority="high" />
+        <link rel="preload" href={DEFAULT_CARD_PLACEHOLDER} as="image" />
+      </head>
+      <body className={`${fontVariables} ${geistSans.className}`}>
         <NextIntlClientProvider messages={messages}>
           <SuppressCleanupErrors />
           <ThemeProvider
@@ -73,7 +76,11 @@ export default async function LocaleLayout({
           >
             <ClientThemeProvider>
               <SiteContentProvider settings={settings} experience={experience} projects={projects}>
-                {children}
+                <AskAIProvider>
+                  <NavActionsProvider>
+                    <AppChrome>{children}</AppChrome>
+                  </NavActionsProvider>
+                </AskAIProvider>
               </SiteContentProvider>
             </ClientThemeProvider>
           </ThemeProvider>

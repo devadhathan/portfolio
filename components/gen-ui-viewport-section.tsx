@@ -15,15 +15,17 @@ const BUILDING_MS = 2000;
 
 type GenUIViewportSectionProps = {
   viewport: GenUIViewport;
+  onCaseStudySelect?: (projectSlug: string) => void;
 };
 
-export function GenUIViewportSection({ viewport: vp }: GenUIViewportSectionProps) {
+export function GenUIViewportSection({ viewport: vp, onCaseStudySelect }: GenUIViewportSectionProps) {
   const playedRef = useRef(false);
   const willBuildUI = vp.items.length > 0;
+  const textOnlyReply = !willBuildUI && Boolean(vp.summary?.trim());
   const skipStory = willBuildUI && !vp.summary?.trim();
   const [phase, setPhase] = useState<ViewPhase>(() => {
     if (vp.status === 'loading') return 'awaiting';
-    if (skipStory) return 'content';
+    if (textOnlyReply || skipStory) return 'content';
     return vp.status === 'ready' ? 'story' : 'content';
   });
 
@@ -35,6 +37,12 @@ export function GenUIViewportSection({ viewport: vp }: GenUIViewportSectionProps
     }
 
     if (vp.status === 'ready') {
+      if (textOnlyReply) {
+        playedRef.current = false;
+        setPhase('content');
+        return;
+      }
+
       const directToContent = vp.items.length > 0 && !vp.summary?.trim();
       if (directToContent) {
         playedRef.current = false;
@@ -48,7 +56,7 @@ export function GenUIViewportSection({ viewport: vp }: GenUIViewportSectionProps
         setPhase('content');
       }
     }
-  }, [vp.status, vp.id, vp.items.length, vp.summary]);
+  }, [vp.status, vp.id, vp.items.length, vp.summary, textOnlyReply]);
 
   const handleStoryComplete = useCallback(() => {
     if (!willBuildUI) {
@@ -89,7 +97,7 @@ export function GenUIViewportSection({ viewport: vp }: GenUIViewportSectionProps
             <GenUIAssistantReply
               title={vp.title}
               summary={vp.summary}
-              animate={phase === 'story'}
+              animate={phase === 'story' && !textOnlyReply}
               onAnimationComplete={handleStoryComplete}
             />
           )}
@@ -108,7 +116,7 @@ export function GenUIViewportSection({ viewport: vp }: GenUIViewportSectionProps
         {showCards && (
           <div className="mt-12 md:mt-14 w-full px-4 md:px-6 animate-fade-in-blur">
             <div className="mx-auto w-full max-w-[1200px]">
-              <GenUICardGrid prompt={vp.prompt} items={vp.items} />
+              <GenUICardGrid prompt={vp.prompt} items={vp.items} onCaseStudySelect={onCaseStudySelect} />
             </div>
           </div>
         )}

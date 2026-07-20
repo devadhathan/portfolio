@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { AgentOrb } from '@/components/agent-orb';
 import { GEN_UI_STARTER_CHIPS } from '@/lib/gen-ui-prompt-placeholders';
@@ -8,7 +8,13 @@ import { MAX_GEN_UI_PROMPT_LENGTH } from '@/lib/gen-ui-prompt';
 import { cn } from '@/lib/utils';
 
 const INPUT_SHELL_CLASS =
-  'rounded-full border border-white/[0.10] bg-[#1e1e1e] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]';
+  'rounded-full border border-border/60 bg-card shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:border-white/[0.10] dark:bg-[#1B1917] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]';
+
+const CHIP_CLASS =
+  'rounded-full border border-border/55 bg-secondary/80 px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-40 transition-colors dark:border-white/[0.12] dark:bg-white/[0.04] dark:text-foreground/75 dark:hover:bg-white/[0.08] dark:hover:text-foreground';
+
+const SEND_BUTTON_CLASS =
+  'flex-shrink-0 flex items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-25 hover:opacity-90 transition-opacity';
 
 type GenUISearchBarProps = {
   variant: 'center' | 'bottom';
@@ -17,6 +23,9 @@ type GenUISearchBarProps = {
   disabled?: boolean;
   promptCount?: number;
   className?: string;
+  headline?: string;
+  subhead?: string;
+  limitLabel?: string;
 };
 
 export function GenUISearchBar({
@@ -26,6 +35,9 @@ export function GenUISearchBar({
   disabled = false,
   promptCount,
   className,
+  headline = 'What would you like to explore?',
+  subhead = "Ask about my work — I'll build a custom view.",
+  limitLabel,
 }: GenUISearchBarProps) {
   const [value, setValue] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -35,7 +47,7 @@ export function GenUISearchBar({
   const placeholder =
     limitReached && promptCount !== undefined && promptCount <= 0
       ? 'Prompt limit reached'
-      : 'Ask anything';
+      : 'Ask anything about Dev’s work…';
 
   const handleSubmit = async () => {
     const trimmed = value.trim();
@@ -56,12 +68,15 @@ export function GenUISearchBar({
 
   if (isCenter) {
     return (
-      <div className={cn('flex w-full max-w-2xl flex-col items-center gap-5 md:gap-6', className)}>
-        <AgentOrb size="lg" />
+      <div className={cn('flex w-full max-w-2xl flex-col items-center gap-4 md:gap-5', className)}>
+        <AgentOrb size="sm" />
 
-        <p className="text-center text-[20px] sm:text-[26px] md:text-[32px] font-light text-foreground/90 tracking-tight max-w-lg">
-          What would you like to explore?
-        </p>
+        <div className="space-y-2 text-center max-w-lg">
+          <p className="text-[20px] sm:text-[26px] md:text-[30px] font-light text-foreground/90 tracking-tight">
+            {headline}
+          </p>
+          <p className="text-[13px] sm:text-sm leading-relaxed text-muted-foreground/80">{subhead}</p>
+        </div>
 
         <div className={cn('w-full', INPUT_SHELL_CLASS)}>
           <div className="flex items-center gap-3 px-5 py-3.5 md:px-6 md:py-4">
@@ -85,7 +100,7 @@ export function GenUISearchBar({
               type="button"
               onClick={() => void handleSubmit()}
               disabled={isLoading || limitReached || !value.trim()}
-              className="flex-shrink-0 flex h-9 w-9 items-center justify-center rounded-full bg-white text-black disabled:opacity-25 hover:opacity-90 transition-opacity"
+              className={cn('flex-shrink-0 flex h-9 w-9', SEND_BUTTON_CLASS)}
               aria-label="Send prompt"
             >
               <ArrowUp className="h-4 w-4" />
@@ -100,12 +115,16 @@ export function GenUISearchBar({
               type="button"
               onClick={() => void handleChipClick(chip.prompt)}
               disabled={isLoading || limitReached}
-              className="rounded-full border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-foreground/75 hover:bg-white/[0.08] hover:text-foreground disabled:opacity-40 transition-colors"
+              className={cn(CHIP_CLASS)}
             >
               {chip.label}
             </button>
           ))}
         </div>
+
+        {limitLabel ? (
+          <p className="text-xs text-muted-foreground/50 tabular-nums">{limitLabel}</p>
+        ) : null}
       </div>
     );
   }
@@ -133,7 +152,7 @@ export function GenUISearchBar({
           type="button"
           onClick={() => void handleSubmit()}
           disabled={isLoading || limitReached || !value.trim()}
-          className="flex-shrink-0 flex h-8 w-8 items-center justify-center rounded-full bg-white text-black disabled:opacity-25 hover:opacity-90 transition-opacity"
+          className={cn('flex-shrink-0 flex h-8 w-8', SEND_BUTTON_CLASS)}
           aria-label="Send prompt"
         >
           <ArrowUp className="h-3.5 w-3.5" />

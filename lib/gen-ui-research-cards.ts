@@ -1,6 +1,7 @@
 import type { GenUIItem } from '@/lib/gen-ui-registry';
 import type { LineIllustrationId } from '@/lib/gen-ui-registry';
 import { isSpecificTopicQuery } from '@/lib/filter-relevant-gen-ui';
+import { getStarterChipId } from '@/lib/gen-ui-starter-chips';
 import { richCardDescription, richFeatureDescription } from '@/lib/gen-ui-card-copy';
 import { resolveItemCover, getProjectCover, type CoverMedia } from '@/lib/gen-ui-covers';
 import { getItemSlug, isProjectScopedItem, projectHref, resolveItemHref } from '@/lib/gen-ui-item-slug';
@@ -104,6 +105,7 @@ function expandProjectGroup(
       title: project.title,
       description: richCardDescription(project, allItems),
       meta: joinMeta(project.tags?.slice(0, 3) ?? []),
+      href: project.link ?? projectHref(slug),
       cover: dedupeCoverSrc(
         withCoverFallback(
           resolveItemCover(project, allItems),
@@ -232,7 +234,9 @@ function singleItemCard(item: GenUIItem, index: number, allItems: GenUIItem[]): 
 }
 
 export function itemsToResearchCards(items: GenUIItem[], prompt?: string): ResearchCardData[] {
-  const expandProjects = prompt ? isSpecificTopicQuery(prompt) : false;
+  const expandProjects =
+    (prompt ? isSpecificTopicQuery(prompt) : false) ||
+    (prompt ? getStarterChipId(prompt) === 'strongest' : false);
   const slugGroups = new Map<string, GenUIItem[]>();
   const other: GenUIItem[] = [];
 

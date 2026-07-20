@@ -417,8 +417,5 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
     "Google Play's Best App of 2020 - Finshots"
   ],
 
-  certifications: [
-    "Google UX Design Professional Certificate",
-    "IBM Design Thinking Practitioner"
-  ]
+  certifications: []
 };

@@ -1,95 +1,106 @@
 'use client';
-import { TopBar, MobileBottomNav } from '@/components/top-bar';
+
+import { useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
-
-const videoFiles = [
-  {
-    src: '/playground/videos/2tUv4Phgglg0Cvb9dLfZYDnN1k.mp4',
-    alt: 'Video explorations 1',
-  },
-  {
-    src: '/playground/videos/fg4QJdetrVJSbCHrLYVUQRIslDY.mp4',
-    alt: 'Video explorations 2',
-  },
-  {
-    src: '/playground/videos/maZXnm2ux8JggjeO4tsKhqrm3N8.mp4',
-    alt: 'Video explorations 3',
-  },
-  {
-    src: '/playground/videos/yJt7alfhHy2jaubTL6fRxMwNBcA.mp4',
-    alt: 'Video explorations 4',
-  },
-];
-
-const imageFiles = [
-  {
-    src: '/playground/images/LrzylaRRhfx7AzdCGc1bxBKOlHU.png.webp',
-    alt: 'Still frame 1',
-  },
-  {
-    src: '/playground/images/U5hgOhXxKvYc1nt3YV72QvZY.png.webp',
-    alt: 'Still frame 2',
-  },
-  {
-    src: '/playground/images/onp7iUn9nQjsWz8wBNQRTZKBbk.png.webp',
-    alt: 'Still frame 3',
-  },
-  {
-    src: '/playground/images/tw5Wd8XWuFR8yA2PPUoIHs47X8.png.webp',
-    alt: 'Still frame 4',
-  },
-];
+import { useRegisterNavActions } from '@/contexts/nav-actions-context';
+import {
+  PlaygroundClipCard,
+  PlaygroundDetailOverlay,
+  type PlaygroundSelection,
+} from '@/components/playground-detail-overlay';
+import { PlaygroundMediaContent, PlaygroundPhoneFrame } from '@/components/playground-phone-frame';
+import { PLAYGROUND_ITEMS } from '@/lib/playground-items';
 
 export default function PlaygroundPage() {
   const router = useRouter();
   const t = useTranslations('playground');
+  const [selection, setSelection] = useState<PlaygroundSelection | null>(null);
+
+  const handleHomeClick = useCallback(() => {
+    router.push('/');
+  }, [router]);
+
+  useRegisterNavActions({ onHomeClick: handleHomeClick });
+
+  const getCopy = useCallback(
+    (id: string) => ({
+      title: t(`items.${id}.title`),
+      question: t(`items.${id}.question`),
+      tags: t.raw(`items.${id}.tags`) as string[],
+      accessibilityLabel: t(`items.${id}.accessibilityLabel`),
+    }),
+    [t],
+  );
+
+  const openItem = useCallback(
+    (id: string) => {
+      const item = PLAYGROUND_ITEMS.find((entry) => entry.id === id);
+      if (!item) return;
+      const copy = getCopy(id);
+      setSelection({
+        kind: 'item',
+        id,
+        title: copy.title,
+        question: copy.question,
+        tags: copy.tags,
+        item,
+        accessibilityLabel: copy.accessibilityLabel,
+      });
+    },
+    [getCopy],
+  );
+
+  const goToRelative = useCallback(
+    (delta: number) => {
+      if (!selection) return;
+      const currentIndex = PLAYGROUND_ITEMS.findIndex((entry) => entry.id === selection.id);
+      if (currentIndex < 0) return;
+      const nextIndex = (currentIndex + delta + PLAYGROUND_ITEMS.length) % PLAYGROUND_ITEMS.length;
+      openItem(PLAYGROUND_ITEMS[nextIndex].id);
+    },
+    [selection, openItem],
+  );
 
   return (
-    <div className="min-h-screen bg-card text-foreground">
-      <TopBar onHomeClick={() => router.push('/')} />
-      <main className="pt-14 pb-24 px-2 md:px-6 lg:px-8 animate-fade-in-blur">
-        <div className="mx-auto max-w-7xl space-y-10 mt-6 md:mt-8">
-          <div className="text-center">
-            <p className="text-sm uppercase tracking-[0.36em] text-muted-foreground">{t('label')}</p>
-          </div>
-          <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 auto-rows-[minmax(0,1fr)]">
-            {videoFiles.map((video) => (
-              <div
-                key={video.src}
-                className="flex h-full w-full overflow-hidden rounded-3xl border border-border/60 bg-black/60 shadow-[0_25px_65px_-30px_rgba(0,0,0,0.9)] backdrop-blur"
-              >
-                <video
-                  className="h-full w-full object-cover"
-                  src={video.src}
-                  aria-label={video.alt}
-                  controls
-                  loop
-                  playsInline
-                  muted
-                />
-              </div>
-            ))}
-          </section>
+    <>
+      <div className="min-h-screen overflow-x-hidden bg-[#f3f3f3] text-neutral-900 dark:bg-background dark:text-foreground">
+        <main className="px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-14 sm:px-6 md:px-10">
+          <div className="mx-auto w-full max-w-2xl md:max-w-3xl">
+            <div className="mb-8 pt-2 text-center md:mb-10">
+              <p className="text-xs uppercase tracking-[0.36em] text-neutral-500 dark:text-muted-foreground">
+                {t('label')}
+              </p>
+            </div>
 
-          <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 auto-rows-[minmax(0,1fr)]">
-            {imageFiles.map((image) => (
-              <div
-                key={image.src}
-                className="flex h-full w-full overflow-hidden rounded-3xl border border-border/60 bg-secondary/10 shadow-[0_25px_65px_-30px_rgba(0,0,0,0.9)]"
-              >
-                <img
-                  className="h-full w-full object-cover"
-                  src={image.src}
-                  alt={image.alt}
-                  loading="lazy"
-                />
-              </div>
-            ))}
-          </section>
-        </div>
-      </main>
-      <MobileBottomNav />
-    </div>
+            <section className="flex flex-col gap-5 md:gap-6">
+              {PLAYGROUND_ITEMS.map((item) => {
+                const copy = getCopy(item.id);
+                return (
+                  <PlaygroundClipCard
+                    key={item.id}
+                    title={copy.title}
+                    icon="◆"
+                    onOpen={() => openItem(item.id)}
+                  >
+                    <PlaygroundPhoneFrame size="preview">
+                      <PlaygroundMediaContent item={item} accessibilityLabel={copy.accessibilityLabel} />
+                    </PlaygroundPhoneFrame>
+                  </PlaygroundClipCard>
+                );
+              })}
+            </section>
+          </div>
+        </main>
+      </div>
+
+      <PlaygroundDetailOverlay
+        selection={selection}
+        onClose={() => setSelection(null)}
+        onPrevious={() => goToRelative(-1)}
+        onNext={() => goToRelative(1)}
+        escLabel={t('esc')}
+      />
+    </>
   );
 }

@@ -10,7 +10,9 @@ type GenUIViewportStackProps = {
   activeId: string | null;
   isBuilding: boolean;
   scrollToId?: string | null;
+  hideMobileNav?: boolean;
   onActiveChange?: (id: string) => void;
+  onCaseStudySelect?: (projectSlug: string) => void;
 };
 
 function scrollToViewport(id: string) {
@@ -22,7 +24,9 @@ export function GenUIViewportStack({
   activeId,
   isBuilding,
   scrollToId,
+  hideMobileNav = false,
   onActiveChange,
+  onCaseStudySelect,
 }: GenUIViewportStackProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const lastScrolledIdRef = useRef<string | null>(null);
@@ -69,47 +73,20 @@ export function GenUIViewportStack({
     return () => observer.disconnect();
   }, [viewports, isBuilding]);
 
-  const showRail = viewports.length > 1;
+  const viewportHeightClass = hideMobileNav
+    ? 'h-[calc(100vh-3.5rem-env(safe-area-inset-bottom,0px)-4.5rem)] lg:h-[calc(100vh-5.5rem)]'
+    : 'h-[calc(100vh-3.5rem-3.5rem-env(safe-area-inset-bottom,0px)-4.5rem)] lg:h-[calc(100vh-5.5rem)]';
 
   return (
-    <div className="relative pb-[calc(3.5rem+env(safe-area-inset-bottom,0px)+1.5rem)] lg:pb-24">
+    <div className={cn('relative', hideMobileNav ? 'pb-6 lg:pb-24' : 'pb-[calc(3.5rem+env(safe-area-inset-bottom,0px)+1.5rem)] lg:pb-24')}>
       <div
         ref={containerRef}
-        className="h-[calc(100vh-3.5rem-3.5rem-env(safe-area-inset-bottom,0px)-4.5rem)] lg:h-[calc(100vh-5.5rem)] overflow-y-auto overscroll-y-contain scroll-pt-6"
+        className={cn(viewportHeightClass, 'overflow-y-auto overscroll-y-contain scroll-pt-6')}
       >
         {viewports.map((vp) => (
-          <GenUIViewportSection key={vp.id} viewport={vp} />
+          <GenUIViewportSection key={vp.id} viewport={vp} onCaseStudySelect={onCaseStudySelect} />
         ))}
       </div>
-
-      {showRail && (
-        <div
-          className="flex fixed right-3 sm:right-4 xl:right-8 top-1/2 -translate-y-1/2 flex-col items-center gap-1.5 z-30"
-          aria-label="Scroll between views"
-        >
-          {viewports.map((vp, i) => (
-            <button
-              key={vp.id}
-              type="button"
-              aria-label={`Go to view ${i + 1}`}
-              aria-current={activeIndex === i ? 'true' : undefined}
-              onClick={() => {
-                scrollToViewport(vp.id);
-                setActiveIndex(i);
-                onActiveChange?.(vp.id);
-              }}
-              className={cn(
-                'w-1 rounded-full transition-all duration-300',
-                activeIndex === i
-                  ? 'h-10 bg-primary'
-                  : vp.status === 'loading'
-                    ? 'h-5 bg-primary/35 animate-pulse'
-                    : 'h-3 bg-border/80 hover:bg-muted-foreground/60',
-              )}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

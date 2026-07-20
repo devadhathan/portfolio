@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
@@ -9,9 +9,9 @@ import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
-import { TopBar, MobileBottomNav } from '@/components/top-bar';
+import { useRegisterNavActions } from '@/contexts/nav-actions-context';
 import type { Project } from '@/lib/types/project';
-import { getProjectId } from '@/lib/types/project';
+import { getProjectId, normalizeProjectSlug } from '@/lib/types/project';
 
 const ProjectDetailView = dynamic(
   () => import('@/components/project-detail-view').then(mod => ({ default: mod.ProjectDetailView })),
@@ -58,16 +58,22 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
     return words.length === 0 ? t('viewCaseStudy') : words.join(' ');
   };
 
-  const normalizeProjectId = (id: string): string => id.toLowerCase().trim().replace(/\s+/g, '-');
+  const handleHomeClick = useCallback(() => {
+    router.push('/');
+  }, [router]);
+
+  useRegisterNavActions({
+    onHomeClick: handleHomeClick,
+    onProjectSelect: setSelectedProject,
+  });
 
   useEffect(() => {
     const projectParam = searchParams.get('project');
     if (projectParam) {
-      const normalizedParam = normalizeProjectId(projectParam);
-      const matchingProject = projects.find((project) => {
-        const projectId = getProjectId(project.title);
-        return normalizeProjectId(projectId) === normalizedParam;
-      });
+      const normalizedParam = normalizeProjectSlug(projectParam);
+      const matchingProject = projects.find(
+        (project) => getProjectId(project.title) === normalizedParam,
+      );
 
       if (matchingProject) {
         setSelectedProject(getProjectId(matchingProject.title));
@@ -77,9 +83,8 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
   }, [searchParams, router, projects]);
 
   return (
-    <div className="min-h-screen bg-card">
-      <TopBar onHomeClick={() => router.push('/')} onProjectSelect={setSelectedProject} />
-      <div className="pt-14 pb-24 px-4 md:px-6 lg:px-8 overflow-visible animate-fade-in-blur">
+    <div className="min-h-screen bg-background overflow-x-hidden">
+      <div className="pt-14 pb-24 px-4 md:px-6 lg:px-8 overflow-x-hidden">
         {selectedProject ? (
           <div className="flex flex-col lg:flex-row gap-6 max-w-[1600px] mx-auto relative">
             <div className="lg:fixed lg:left-8 lg:top-0 lg:w-64 lg:pr-4 w-full pr-0 bg-card h-auto z-40 hidden lg:block">
@@ -98,7 +103,7 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                   <div className="space-y-1 max-h-[calc(100vh-300px)] overflow-y-auto">
                     {projects.map((project) => {
                       const projectId = getProjectId(project.title);
-                      const normalizedSelected = selectedProject ? normalizeProjectId(selectedProject) : null;
+                      const normalizedSelected = selectedProject ? normalizeProjectSlug(selectedProject) : null;
                       const isSelected = normalizedSelected === projectId;
                       const isExpanded = expandedProjects.has(projectId);
 
@@ -181,6 +186,17 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
             </div>
 
             <div className="flex-1 min-w-0 lg:ml-72 ml-0">
+              <div className="lg:hidden mb-4">
+                <Button
+                  onClick={() => setSelectedProject(null)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-foreground -ml-2"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-2" />
+                  {t('back')}
+                </Button>
+              </div>
               <ProjectDetailView
                 projectId={selectedProject}
                 projects={projects}
@@ -190,7 +206,7 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
             </div>
           </div>
         ) : (
-          <div className="max-w-[1300px] mx-auto px-4 md:px-6 lg:px-8">
+          <div className="max-w-[1300px] mx-auto">
             <div className="mb-8 text-center">
               <h1 className="text-3xl md:text-4xl font-bold mb-2">{t('title')}</h1>
               <p className="text-muted-foreground">{t('subtitle')}</p>
@@ -208,7 +224,7 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                       return (
                         <Card
                           key={`other-${index}`}
-                          className="col-span-1 rounded-2xl border-2 border-border/70 bg-[#171717] text-white cursor-pointer hover:border-primary/60 transition-all group overflow-hidden h-full flex flex-col"
+                          className="col-span-1 rounded-2xl border-2 border-border/70 bg-[#1B1917] text-white cursor-pointer hover:border-primary/60 transition-all group overflow-hidden h-full flex flex-col"
                           onClick={() => setSelectedProject(projectId)}
                         >
                           <div className="flex flex-col h-full">
@@ -252,11 +268,11 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                     {finshotsProject && (
                       <Card
                         key="finshots"
-                        className="col-span-1 lg:col-start-3 lg:col-span-1 lg:row-start-1 lg:row-span-2 rounded-2xl border-2 border-border/70 bg-[#171717] text-white cursor-pointer hover:border-primary/60 transition-all group overflow-hidden h-full flex flex-col"
+                        className="col-span-1 lg:col-start-3 lg:col-span-1 lg:row-start-1 lg:row-span-2 rounded-2xl border-2 border-border/70 bg-[#1B1917] text-white cursor-pointer hover:border-primary/60 transition-all group overflow-hidden h-full flex flex-col"
                         onClick={() => setSelectedProject(getProjectId(finshotsProject.title))}
                       >
                         <div className="flex flex-col h-full">
-                          <div className="relative w-full h-96 md:h-112 lg:h-[700px] bg-secondary/30 border-b border-border/40 overflow-hidden flex-shrink-0">
+                          <div className="relative w-full h-64 sm:h-80 md:h-96 lg:h-[700px] bg-secondary/30 border-b border-border/40 overflow-hidden flex-shrink-0">
                             <Image
                               src={getProjectThumbnail(finshotsProject)}
                               alt={finshotsProject.title}
@@ -298,7 +314,6 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
           </div>
         )}
       </div>
-      <MobileBottomNav />
     </div>
   );
 }
@@ -306,7 +321,7 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
 function WorkPageFallback() {
   const t = useTranslations('work');
   return (
-    <div className="min-h-screen bg-card flex items-center justify-center">
+    <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="animate-pulse text-muted-foreground">{t('loading')}</div>
     </div>
   );

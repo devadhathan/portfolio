@@ -9,7 +9,8 @@
     "contact": "Contact",
     "playground": "Playground",
     "projects": "Projects",
-    "openProjectList": "Open project list"
+    "openProjectList": "Open project list",
+    "askAI": "Ask AI"
   },
   "locale": {
     "label": "Language",
@@ -17,10 +18,10 @@
   },
   "home": {
     "digitalHome": "Dev's digital home",
-    "heroLine1": "Designer bringing interaction,",
-    "heroLine2": "technology, and people together.",
-    "devBio": "Building meaningful digital experiences through **thoughtful design and user-centric solutions.**",
-    "location": "Currently in Edinburgh",
+    "heroLine1": "Designer building experiences for humans.",
+    "devBio": "Product designer who builds, most recently at <wordsmith>Wordsmith AI</wordsmith>. Before that, <nesoi>Nesoi</nesoi> and <ditto>Ditto Insurance</ditto> by <finshots>Finshots</finshots>, where I worked on the app that became Google Play's Best of 2020. Based in Edinburgh, shipping small Mac apps on the side.",
+    "devBioHero": "Product designer who builds, most recently at <wordsmith>Wordsmith AI</wordsmith>. Before that, <nesoi>Nesoi</nesoi> and <ditto>Ditto Insurance</ditto> by <finshots>Finshots</finshots>, shipping small Mac apps on the side.",
+    "location": "Based in Edinburgh",
     "available": "Available for work",
     "availableOpportunities": "Available for opportunities",
     "loadingPortfolio": "Loading Dev's Portfolio",
@@ -36,10 +37,52 @@
     "lastPortfolioDesc": "Revisit the previous Framer-hosted portfolio experience.",
     "launchLastVersion": "Launch last version",
     "talkToAgent": "Talk to my agent",
+    "genUiCard": {
+      "title": "Gen UI",
+      "description": "Ask anything — I'll build a custom view.",
+      "button": "Open Gen UI"
+    },
     "readOnMedium": "Read on Medium",
     "dewTitle": "Dew - AI Character",
     "preferenceIntro": "I like prototyping and **bringing ideas to life quickly.**",
     "experienceIntro": "Product Designer crafting **thoughtful, user-centric products** across AI startups and fintech.",
+    "finshotsAward": {
+      "title": "Google Play Best App 2020",
+      "badge": "Finshots · Award-winning mobile app",
+      "story": "Dev designed the Finshots mobile app end-to-end — turning newsletter readers into daily app users with a centralized hub for financial news.",
+      "detail": "The app hit **100k+ downloads**, earned a **4.9★** Play Store rating, and was named **Google Play's Best App of 2020** — the project that launched Dev's product design career.",
+      "viewCaseStudy": "View Finshots case study"
+    },
+    "projectTreeLabel": "Case studies",
+    "latestProjects": {
+      "label": "Latest projects",
+      "photosTitle": "Camera roll",
+      "agentDog": {
+        "title": "AgentDog",
+        "description": "A design critique agent with a personality — teaching the agent to read layouts and spot hierarchy issues.",
+        "status": "Building",
+        "tags": ["Agent", "Design critique"]
+      }
+    },
+    "musicNotch": {
+      "title": "MusicNotch",
+      "comingSoon": "Coming soon",
+      "tagline": "Your notch, fully alive."
+    },
+    "sideProject": {
+      "label": "Side project",
+      "title": "Pixl",
+      "url": "pixlanimations.vercel.app",
+      "description": "Pixel grid sequencer for motion and animation. Sketch below — AI recognizes your drawing and generates an SVG.",
+      "startDraw": "Draw",
+      "createIcon": "Generate",
+      "retry": "Retry",
+      "cancel": "Cancel",
+      "downloadSvg": "Download SVG",
+      "generating": "Recognizing…",
+      "errorEmpty": "Draw something on the grid first.",
+      "apiError": "Could not reach the icon API. Try again."
+    },
     "philosophy": {
       "userCenteredTitle": "User-Centered Design",
       "userCenteredDesc": "I design with care, always keeping **the user at the center of every decision.**",
@@ -95,19 +138,82 @@
     }
   },
   "contact": {
-    "title": "Contact",
-    "subtitle": "Get in touch with me",
-    "emailCard": "Contact",
-    "linksCard": "Links",
-    "sendEmail": "Send me an email",
-    "connectLinkedIn": "Connect with me",
-    "resume": "Resume",
-    "downloadPdf": "Download PDF",
-    "github": "GitHub",
-    "viewWork": "View my work"
+    "subtitle": "Say hi, or talk about what's next",
+    "copyEmail": "Copy email",
+    "copied": "Copied",
+    "website": "Website"
   },
   "playground": {
-    "label": "playground"
+    "label": "playground",
+    "esc": "Esc",
+    "buildingAgent": {
+      "title": "Which Design and Agent analyzer",
+      "description": "A design critique agent with a personality — currently teaching the dog to read layouts, spot hierarchy issues, and explain what to fix.",
+      "status": "Building",
+      "tags": ["Agent", "Design critique", "In progress"]
+    },
+    "groups": {
+      "luxbrew": {
+        "title": "LuxBrew",
+        "question": "Two product storytelling studies around a premium coffee machine: the slow reveal, then the lightweight setup flow.",
+        "tags": ["3D", "Art direction", "Onboarding"]
+      },
+      "perplexity": {
+        "title": "Perplexity studies",
+        "question": "Two recreation studies exploring how Perplexity turns empty states and upgrade moments into calmer invitations.",
+        "tags": ["Motion", "Illustration", "Recreation study"]
+      }
+    },
+    "items": {
+      "voiceCoach": {
+        "title": "Voice-first fitness coach",
+        "question": "Does giving a voice assistant a face make it feel more accountable?",
+        "tags": ["Character animation", "Voice UI"],
+        "accessibilityLabel": "Voice fitness coach demo — animated character speaking on a green screen"
+      },
+      "coachingThread": {
+        "title": "Coaching in a thread",
+        "question": "Can an entire training plan live inside one conversation?",
+        "tags": ["Conversational UX", "Claude API"],
+        "accessibilityLabel": "Fitness coach chat interface demo"
+      },
+      "albumArt": {
+        "title": "Audio-reactive album art",
+        "question": "What if cover art moved to the waveform? A Spotify study.",
+        "tags": ["Metal shaders", "Recreation study"],
+        "accessibilityLabel": "Audio-reactive album artwork glitching to music, Spotify study"
+      },
+      "monthsDial": {
+        "title": "The months dial",
+        "question": "Why does Airbnb's dial feel faster than a date picker?",
+        "tags": ["Gestures + haptics", "Recreation study"],
+        "accessibilityLabel": "Trip length dial being dragged to six months, Airbnb study"
+      },
+      "luxbrewReveal": {
+        "title": "LuxBrew — the reveal",
+        "question": "How slowly can a product page move and still feel premium?",
+        "tags": ["3D", "Art direction"],
+        "accessibilityLabel": "LuxBrew coffee machine product page, hand reaching for the cup"
+      },
+      "perplexityHome": {
+        "title": "Where knowledge begins",
+        "question": "What makes Perplexity's blank state feel like an invitation?",
+        "tags": ["Motion", "Recreation study"],
+        "accessibilityLabel": "Perplexity home screen recreation with line-art animation"
+      },
+      "gentlePaywall": {
+        "title": "The gentle paywall",
+        "question": "Can an upgrade screen persuade without pressuring?",
+        "tags": ["Illustration", "Recreation study"],
+        "accessibilityLabel": "Perplexity Pro upgrade screen"
+      },
+      "luxbrewSetup": {
+        "title": "LuxBrew — guided setup",
+        "question": "How little UI does hardware onboarding actually need?",
+        "tags": ["Onboarding", "UX writing"],
+        "accessibilityLabel": "LuxBrew machine setup walkthrough"
+      }
+    }
   },
   "caseStudy": {
     "back": "Back",

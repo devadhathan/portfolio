@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import { kv } from '@vercel/kv';
 
 const RESET_INTERVAL = 24 * 60 * 60 * 1000;
-export const PROMPT_LIMIT = 10;
+export const PROMPT_LIMIT = 20;
 
 const ipPromptCounts = new Map<string, { count: number; lastReset?: number }>();
 

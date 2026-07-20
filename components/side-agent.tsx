@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, User, RotateCcw, ChevronDown, Smile } from 'lucide-react';
+import { Send, User, RotateCcw, ChevronDown, Smile, ChevronsRight } from 'lucide-react';
+import { AskAIPanel } from '@/components/ask-ai-panel';
 import { Sheet, SheetContent, SheetClose } from '@/components/ui/sheet';
 import { PortfolioAgent, AgentState, PortfolioSection } from '@/lib/agent';
 import { resumeData } from '@/lib/resume-data';
@@ -29,8 +30,11 @@ import {
 import { FeatureCard, FeatureSection } from '@/components/line-illustrations';
 import { AgentThinkingIndicator } from '@/components/agent-thinking-indicator';
 import type { LayoutActionCommand } from '@/lib/agent-loop';
-import { inferSkeletonFromPrompt, type CardSkeletonType } from '@/lib/infer-skeleton';import { enrichGenUIItems, isWordsmithQuery, WORDSMITH_LOCKED_MESSAGE } from '@/lib/enrich-gen-ui';
+import { inferSkeletonFromPrompt, type CardSkeletonType } from '@/lib/infer-skeleton';
+import { enrichGenUIItems, isWordsmithQuery, WORDSMITH_LOCKED_MESSAGE } from '@/lib/enrich-gen-ui';
 import { inferGenUIBuild } from '@/lib/infer-gen-ui-build';
+import { ASK_AI_OFF_TOPIC_STRIKE_LIMIT } from '@/lib/ask-ai-conversational';
+import { MAX_GEN_UI_PROMPT_LENGTH } from '@/lib/gen-ui-prompt';
 
 export type { GenUIItem, GenUIStat, GenUIProject, GenUITimeline, GenUISkills, GenUIQuote, GenUIChart, GenUIImage, GenUIVideo, GenUIInfo, GenUIFeature, GenUIFeatureSection };
 
@@ -213,6 +217,7 @@ interface SideAgentProps {
   onExplanationComplete?: (complete: boolean) => void;
   resetRef?: React.MutableRefObject<(() => void) | null>;
   externalCollapsed?: boolean;
+  variant?: 'floating' | 'sidebar';
 }
 
 // --- 1. RICH CONTENT DATABASE (Source of Truth) ---
@@ -279,15 +284,80 @@ const CONTENT_DATABASE: Record<string, Partial<PortfolioSection> & { link?: stri
 };
 
 const ASK_WELCOME =
-  'Hi! Ask me anything about Dev\'s work — career, projects, skills, or impact. I\'ll answer here with cards and context. Try "What are his skills?" or "Tell me about Finshots."';
+  'Hi! Ask me anything about Dev\'s work — career, projects, skills, or impact. Off-topic questions won\'t be answered. Try "What are his skills?" or "Tell me about Finshots."';
 
-export function SideAgent({ onStateChange, onCollapseChange, onExplanation, onExplanationComplete, resetRef, externalCollapsed }: SideAgentProps) {
+function MessageBubble({
+  message,
+}: {
+  message: {
+    role: 'user' | 'agent' | 'assistant';
+    content: string;
+    isStreaming?: boolean;
+    ui?: GenUIItem[];
+  };
+}) {
+  return (
+    <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+      <div
+        className={`rounded-2xl px-4 py-3 max-w-[92%] text-[14px] leading-relaxed ${
+          message.role === 'user'
+            ? 'bg-black/[0.06] text-foreground dark:bg-white/[0.08]'
+            : 'bg-black/[0.04] text-foreground dark:bg-white/[0.05]'
+        }`}
+      >
+        <div className="prose prose-sm dark:prose-invert max-w-none break-words">
+          {(() => {
+            const isThinking = message.content === 'Thinking…' || message.content.startsWith('Thinking');
+            const isBuilding = message.content === 'Building UI…' || message.content.startsWith('Building UI');
+            if (isThinking || isBuilding) {
+              return <AgentThinkingIndicator label={message.content} />;
+            }
+            return (
+              <ReactMarkdown
+                components={{
+                  p: ({ node: _node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                  ul: ({ node: _node, ...props }) => <ul className="list-disc pl-4 mb-2" {...props} />,
+                  a: ({ node: _node, ...props }) => (
+                    <a className="text-primary hover:underline" target="_blank" rel="noopener noreferrer" {...props} />
+                  ),
+                  strong: ({ node: _node, ...props }) => <strong className="font-semibold" {...props} />,
+                }}
+              >
+                {message.content}
+              </ReactMarkdown>
+            );
+          })()}
+        </div>
+        {message.isStreaming &&
+          message.role !== 'user' &&
+          message.content !== 'Thinking…' &&
+          message.content !== 'Building UI…' &&
+          !message.content.startsWith('Thinking') &&
+          !message.content.startsWith('Building UI') && (
+            <span className="inline-block w-1.5 h-3.5 ml-0.5 bg-muted-foreground animate-pulse rounded-sm" />
+          )}
+        {!message.isStreaming && message.ui && message.ui.length > 0 && <GenUIBlock items={message.ui} />}
+      </div>
+    </div>
+  );
+}
+
+export function SideAgent({
+  onStateChange,
+  onCollapseChange,
+  onExplanation,
+  onExplanationComplete,
+  resetRef,
+  externalCollapsed,
+  variant = 'floating',
+}: SideAgentProps) {
   const [agent] = useState(() => new PortfolioAgent());
   const [state, setState] = useState<AgentState>(agent.getState());
   const pendingSectionsRef = React.useRef<PortfolioSection[]>([]);
   const [input, setInput] = useState('');
   const [isMobile, setIsMobile] = useState(false);
-  const [promptCount, setPromptCount] = useState(10); // Start with 10 prompts
+  const [promptCount, setPromptCount] = useState(0);
+  const [promptLimitLoaded, setPromptLimitLoaded] = useState(false);
 
   // ─── Orb: white ovals (random gaze + blink) and click-to-grow ───
   const orbRef = useRef<HTMLButtonElement>(null);
@@ -411,14 +481,31 @@ export function SideAgent({ onStateChange, onCollapseChange, onExplanation, onEx
     setIsCollapsed(newCollapsed);
     onCollapseChange?.(newCollapsed);
   };
-  const [messages, setMessages] = useState<Array<{ role: 'user' | 'agent' | 'assistant'; content: string; isStreaming?: boolean; uiLoading?: boolean; ui?: GenUIItem[]; skeletonTypes?: CardSkeletonType[] }>>(() => [
-    { role: 'agent', content: ASK_WELCOME },
-  ]);
+  const [messages, setMessages] = useState<
+    Array<{ role: 'user' | 'agent' | 'assistant'; content: string; isStreaming?: boolean; uiLoading?: boolean; ui?: GenUIItem[]; skeletonTypes?: CardSkeletonType[] }>
+  >(() => (variant === 'sidebar' ? [] : [{ role: 'agent', content: ASK_WELCOME }]));
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
   const [isLoading, setIsLoading] = useState(false);
+  const consecutiveOffTopicRef = useRef(0);
+  const [offTopicBlocked, setOffTopicBlocked] = useState(false);
+  const prevCollapsedRef = useRef(externalCollapsed);
+
+  const resetOffTopicStrikes = () => {
+    consecutiveOffTopicRef.current = 0;
+    setOffTopicBlocked(false);
+  };
+
+  useEffect(() => {
+    if (variant !== 'sidebar') return;
+    const wasCollapsed = prevCollapsedRef.current;
+    prevCollapsedRef.current = externalCollapsed;
+    if (wasCollapsed && !externalCollapsed) {
+      resetOffTopicStrikes();
+    }
+  }, [externalCollapsed, variant]);
 
   useEffect(() => {
     onStateChange(state);
@@ -441,37 +528,26 @@ export function SideAgent({ onStateChange, onCollapseChange, onExplanation, onEx
         if (data.remaining !== undefined) {
           setPromptCount(data.remaining);
         }
+        setPromptLimitLoaded(true);
       } catch (error) {
         console.error('Error fetching prompt count:', error);
-        // Keep default value if API fails
+        setPromptCount(0);
+        setPromptLimitLoaded(true);
       }
     };
     fetchPromptCount();
   }, []);
 
   const handleCommand = async (command: string) => {
-    if (!command.trim()) return;
+    const trimmed = command.trim();
+    if (!trimmed || !promptLimitLoaded) return;
 
-    if (promptCount <= 0) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'agent',
-          content: `You've reached the prompt limit. Please contact me at **${resumeData.email}** or connect on [LinkedIn](https://linkedin.com/${resumeData.linkedin}) to continue using the portfolio agent.`,
-        },
-      ]);
-      return;
-    }
-
-    // Add user message
-    const userMessage = { role: 'user' as const, content: command };
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, { role: 'user', content: trimmed }]);
     setInput('');
     setIsLoading(true);
 
-    const skeletonTypes = inferSkeletonFromPrompt(command);
+    const skeletonTypes = inferSkeletonFromPrompt(trimmed);
 
-    // Reset layout/explanation state before each ask command
     try {
       if (agent && typeof agent.reset === 'function') {
         agent.reset();
@@ -490,141 +566,194 @@ export function SideAgent({ onStateChange, onCollapseChange, onExplanation, onEx
       console.error('Error resetting in ask mode:', error);
     }
 
-     try {
-        const conversationHistory = messages
-          .filter((msg) => !msg.isStreaming && (msg.role === 'user' || msg.role === 'agent'))
-          .map((msg) => ({
-            role: (msg.role === 'agent' ? 'assistant' : 'user') as 'user' | 'assistant',
-            content: msg.content,
-          }));
-
-        conversationHistory.push({ role: 'user', content: command });
-
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: 'agent' as const,
-            content: 'Thinking…',
-            isStreaming: true,
-            uiLoading: true,
-            skeletonTypes,
-          },
-        ]);
-
-        const sectionSnapshot = agent.getState().sections.map((s) => ({
-          id: s.id,
-          title: s.title,
-          visible: s.visible,
-          priority: s.priority,
-          order: s.order,
+    try {
+      const conversationHistory = messages
+        .filter((msg) => !msg.isStreaming && (msg.role === 'user' || msg.role === 'agent'))
+        .map((msg) => ({
+          role: (msg.role === 'agent' ? 'assistant' : 'user') as 'user' | 'assistant',
+          content: msg.content,
         }));
 
-        const response = await fetch('/api/agent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: conversationHistory,
-            mode: 'ask',
-            sections: sectionSnapshot,
-          }),
-        });
+      conversationHistory.push({ role: 'user', content: trimmed });
 
-        if (!response.ok) {
-          if (response.status === 429) {
-            setPromptCount(0);
-            setMessages((prev) => {
-              const withoutThinking = prev.filter((m) => m.content !== 'Thinking…' && !m.isStreaming);
-              return [
-                ...withoutThinking,
-                {
-                  role: 'agent' as const,
-                  content: `You've reached the prompt limit. Please contact me at **${resumeData.email}** to continue.`,
-                },
-              ];
-            });
-            setIsLoading(false);
-            return;
-          }
-          const err = await response.json().catch(() => ({}));
-          throw new Error((err as { error?: string }).error || 'Agent request failed');
-        }
-
-        const result = (await response.json()) as {
-          message: string;
-          cardIds: string[];
-          layoutCommands: LayoutActionCommand[];
-          steps: Array<{ tool: string; args: Record<string, unknown>; result: string }>;
-          iterations: number;
-          buildViewport?: boolean;
-          promptRemaining?: number;
-        };
-
-        if (typeof result.promptRemaining === 'number') {
-          setPromptCount(result.promptRemaining);
-        }
-
-        const priorMessages = messages
-          .filter((msg) => !msg.isStreaming && (msg.role === 'user' || msg.role === 'agent'))
-          .map((msg) => ({
-            role: msg.role === 'agent' ? 'assistant' : 'user',
-            content: msg.content,
-          }));
-
-        const wordsmithQuery = isWordsmithQuery(command);
-        const shouldBuildViewport = inferGenUIBuild({
-          mode: 'ask',
-          command,
-          result,
-          priorMessages,
-        });
-
-        const parsedItems = shouldBuildViewport
-          ? resolveCardIds(result.cardIds || [])
-          : [];
-        const stepNote =
-          result.steps?.length > 0 && !wordsmithQuery && shouldBuildViewport
-            ? `\n\n_${result.steps.length} tool step${result.steps.length === 1 ? '' : 's'} · ${result.iterations} loop iteration${result.iterations === 1 ? '' : 's'}_`
-            : '';
-        const finalText = wordsmithQuery
-          ? WORDSMITH_LOCKED_MESSAGE
-          : (result.message || (shouldBuildViewport ? "Here's what I found." : '')).trim() + stepNote;
-
-        const enrichedItems = shouldBuildViewport
-          ? enrichGenUIItems(parsedItems, command)
-          : [];
-
-        const agentMessage = {
+      setMessages((prev) => [
+        ...prev,
+        {
           role: 'agent' as const,
-          content: finalText,
-          ui: enrichedItems.length > 0 ? enrichedItems : undefined,
-          isStreaming: false,
-          uiLoading: false,
-        };
+          content: 'Thinking…',
+          isStreaming: true,
+          uiLoading: true,
+          skeletonTypes,
+        },
+      ]);
 
-        setMessages((prev) => {
-          const streamingIndex = prev.findIndex((m) => m.isStreaming);
-          if (streamingIndex === -1) return [...prev, agentMessage];
-          const next = [...prev];
-          next[streamingIndex] = agentMessage;
-          return next;
-        });
+      const sectionSnapshot = agent.getState().sections.map((s) => ({
+        id: s.id,
+        title: s.title,
+        visible: s.visible,
+        priority: s.priority,
+        order: s.order,
+      }));
 
-    } catch (error) {
-        console.error('Error:', error);
+      const response = await fetch('/api/agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: conversationHistory,
+          mode: 'ask',
+          sections: sectionSnapshot,
+        }),
+      });
+
+      if (!response.ok) {
+        const err = (await response.json().catch(() => ({}))) as { error?: string };
+        if (response.status === 429) {
+          setPromptCount(0);
+          setMessages((prev) => {
+            const withoutThinking = prev.filter((m) => m.content !== 'Thinking…' && !m.isStreaming);
+            return [
+              ...withoutThinking,
+              {
+                role: 'agent' as const,
+                content: `You've reached the prompt limit. Please contact me at **${resumeData.email}** to continue.`,
+              },
+            ];
+          });
+          setIsLoading(false);
+          return;
+        }
+        throw new Error(err.error || 'Agent request failed');
+      }
+
+      const result = (await response.json()) as {
+        message: string;
+        cardIds: string[];
+        layoutCommands: LayoutActionCommand[];
+        steps: Array<{ tool: string; args: Record<string, unknown>; result: string }>;
+        iterations: number;
+        buildViewport?: boolean;
+        promptRemaining?: number;
+        offTopic?: boolean;
+        offTopicBlocked?: boolean;
+        offTopicStrikes?: number;
+        conversational?: boolean;
+        insufficientContext?: boolean;
+      };
+
+      if (variant === 'sidebar') {
+        if (result.offTopic) {
+          if (result.offTopicBlocked) {
+            consecutiveOffTopicRef.current = ASK_AI_OFF_TOPIC_STRIKE_LIMIT;
+            setOffTopicBlocked(true);
+          } else if (typeof result.offTopicStrikes === 'number') {
+            consecutiveOffTopicRef.current = result.offTopicStrikes;
+          }
+        } else {
+          resetOffTopicStrikes();
+        }
+      }
+
+      if (result.offTopic || result.conversational) {
         setMessages((prev) => {
-          const withoutStreaming = prev.filter((m) => !m.isStreaming);
+          const withoutThinking = prev.filter((m) => m.content !== 'Thinking…' && !m.isStreaming);
           return [
-            ...withoutStreaming,
-            { role: 'agent' as const, content: 'I encountered a connection error. Please try again.' },
+            ...withoutThinking,
+            { role: 'agent' as const, content: result.message },
           ];
         });
-    } finally {
         setIsLoading(false);
+        return;
+      }
+
+      if (result.insufficientContext) {
+        const contactCards = resolveCardIds(result.cardIds?.length ? result.cardIds : ['feature:connect']);
+        setMessages((prev) => {
+          const withoutThinking = prev.filter((m) => m.content !== 'Thinking…' && !m.isStreaming);
+          return [
+            ...withoutThinking,
+            {
+              role: 'agent' as const,
+              content: result.message,
+              ui: contactCards.length > 0 ? contactCards : undefined,
+            },
+          ];
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (typeof result.promptRemaining === 'number') {
+        setPromptCount(result.promptRemaining);
+      }
+
+      const priorMessages = messages
+        .filter((msg) => !msg.isStreaming && (msg.role === 'user' || msg.role === 'agent'))
+        .map((msg) => ({
+          role: msg.role === 'agent' ? 'assistant' : 'user',
+          content: msg.content,
+        }));
+
+      const wordsmithQuery = isWordsmithQuery(trimmed);
+      const shouldBuildViewport = inferGenUIBuild({
+        mode: 'ask',
+        command: trimmed,
+        result,
+        priorMessages,
+      });
+
+      const parsedItems = shouldBuildViewport
+        ? resolveCardIds(result.cardIds || [])
+        : [];
+      const stepNote =
+        result.steps?.length > 0 && !wordsmithQuery && shouldBuildViewport
+          ? `\n\n_${result.steps.length} tool step${result.steps.length === 1 ? '' : 's'} · ${result.iterations} loop iteration${result.iterations === 1 ? '' : 's'}_`
+          : '';
+      const finalText = wordsmithQuery
+        ? WORDSMITH_LOCKED_MESSAGE
+        : (result.message || (shouldBuildViewport ? "Here's what I found." : '')).trim() + stepNote;
+
+      const enrichedItems = shouldBuildViewport
+        ? enrichGenUIItems(parsedItems, trimmed)
+        : [];
+
+      const agentMessage = {
+        role: 'agent' as const,
+        content: finalText,
+        ui: enrichedItems.length > 0 ? enrichedItems : undefined,
+        isStreaming: false,
+        uiLoading: false,
+      };
+
+      setMessages((prev) => {
+        const streamingIndex = prev.findIndex((m) => m.isStreaming);
+        if (streamingIndex === -1) return [...prev, agentMessage];
+        const next = [...prev];
+        next[streamingIndex] = agentMessage;
+        return next;
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      setMessages((prev) => {
+        const withoutStreaming = prev.filter((m) => !m.isStreaming);
+        return [
+          ...withoutStreaming,
+          {
+            role: 'agent' as const,
+            content:
+              error instanceof Error && error.message.includes('characters or fewer')
+                ? error.message
+                : 'I encountered a connection error. Please try again.',
+          },
+        ];
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleReset = () => {
-    setMessages([{ role: 'agent', content: ASK_WELCOME }]);
+    setMessages(variant === 'sidebar' ? [] : [{ role: 'agent', content: ASK_WELCOME }]);
+    if (variant === 'sidebar') resetOffTopicStrikes();
   };
 
   // Expose reset function via ref
@@ -661,10 +790,56 @@ export function SideAgent({ onStateChange, onCollapseChange, onExplanation, onEx
     setInput(e.target.value);
   };
 
+  const composeDisabled =
+    isLoading || !promptLimitLoaded || (variant === 'sidebar' && offTopicBlocked);
+  const suggestionsDisabled = isLoading || !promptLimitLoaded;
+  const inputDisabled = composeDisabled;
+  const sendDisabled = composeDisabled;
+  const inputPlaceholder = !promptLimitLoaded
+    ? 'Loading…'
+    : variant === 'sidebar' && offTopicBlocked
+      ? 'Too many off-topic questions — try a suggestion below'
+      : isLoading
+        ? 'Thinking...'
+        : 'Ask a question…';
+  const promptLimitLabel = !promptLimitLoaded
+    ? 'Checking prompt limit…'
+    : variant === 'sidebar' && offTopicBlocked
+      ? 'Off-topic limit reached'
+      : promptCount <= 0
+        ? 'No prompts remaining'
+        : `${promptCount} prompt${promptCount === 1 ? '' : 's'} remaining`;
+  const emptyState = variant === 'sidebar' && messages.length === 0 && !isLoading;
+  const showSuggestionChips =
+    emptyState || (variant === 'sidebar' && offTopicBlocked && !isLoading);
+
   return (
     <>
-      {/* Desktop Chat - Bottom-right floating panel */}
+      {/* Desktop chat */}
       {mounted && !isCollapsed && (
+        variant === 'sidebar' ? (
+          <AskAIPanel
+            onClose={handleCollapseToggle}
+            promptLimitLabel={promptLimitLabel}
+            input={input}
+            inputDisabled={inputDisabled}
+            sendDisabled={sendDisabled}
+            suggestionsDisabled={suggestionsDisabled}
+            inputPlaceholder={inputPlaceholder}
+            onInputChange={setInput}
+            onSubmit={() => handleCommand(input)}
+            onKeyDown={handleKeyPress}
+            inputRef={inputRef}
+            onSuggestionClick={handleCommand}
+            emptyState={emptyState}
+            showSuggestionChips={showSuggestionChips}
+            messagesEndRef={messagesEndRef}
+          >
+            {messages.map((message, index) => (
+              <MessageBubble key={index} message={message} />
+            ))}
+          </AskAIPanel>
+        ) : (
         <div className="fixed z-40 hidden lg:block bottom-8 right-6">
           <style>{`
             @keyframes corb1 {
@@ -852,14 +1027,15 @@ export function SideAgent({ onStateChange, onCollapseChange, onExplanation, onEx
                     value={input}
                     onChange={handleTextareaChange}
                     onKeyDown={handleKeyPress}
-                    placeholder={isLoading ? 'Thinking...' : promptCount > 0 ? 'Or send a message...' : 'Prompt limit reached'}
-                    disabled={isLoading || promptCount <= 0}
+                    placeholder={inputPlaceholder}
+                    disabled={inputDisabled}
                     rows={1}
+                    maxLength={MAX_GEN_UI_PROMPT_LENGTH}
                     className="flex-1 bg-transparent resize-none outline-none text-sm text-foreground placeholder:text-muted-foreground min-h-[20px] max-h-[120px] overflow-y-auto"
                   />
                   <button
                     onClick={() => handleCommand(input)}
-                    disabled={isLoading || !input.trim()}
+                    disabled={sendDisabled || !input.trim()}
                     className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-30 hover:opacity-80 transition-opacity"
                   >
                     <Send className="h-3.5 w-3.5" />
@@ -870,16 +1046,17 @@ export function SideAgent({ onStateChange, onCollapseChange, onExplanation, onEx
             </div>
           </div>
         </div>
+        )
       )}
       
-      {/* Mobile Chat - Bottom Sheet */}
-      {isMobile && (
+      {/* Mobile Chat - Bottom Sheet (floating variant only; Ask AI sidebar is desktop-only) */}
+      {isMobile && variant !== 'sidebar' && (
           <Sheet open={!isCollapsed} onOpenChange={handleSheetOpenChange}>
           <SheetContent side="bottom" hideClose className="h-[85vh] p-0 flex flex-col">
               <div className="h-full p-4 flex flex-col">
                 <Card className="h-full flex flex-col bg-card/80 backdrop-blur-xl border-2 border-border/70 shadow-2xl">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 flex-shrink-0">
-                    <CardTitle className="flex items-center gap-2"><Smile className="h-5 w-5" /> Portfolio Agent</CardTitle>
+                    <CardTitle className="flex items-center gap-2 text-sm font-medium">Ask AI</CardTitle>
                     <div className="flex items-center gap-1">
                       <Button variant="ghost" size="icon" onClick={handleReset} className="h-8 w-8" title="Reset Layout"><RotateCcw className="h-4 w-4" /></Button>
                       <SheetClose asChild>
@@ -942,9 +1119,10 @@ export function SideAgent({ onStateChange, onCollapseChange, onExplanation, onEx
                             value={input}
                             onChange={handleTextareaChange}
                             onKeyDown={handleKeyPress}
-                            placeholder={isLoading ? "Thinking..." : promptCount > 0 ? `Type a command... (${promptCount} prompts left)` : "Prompt limit reached"}
-                            disabled={isLoading || promptCount <= 0}
+                            placeholder={inputPlaceholder}
+                            disabled={inputDisabled}
                             rows={1}
+                            maxLength={MAX_GEN_UI_PROMPT_LENGTH}
                             className="w-full resize-none bg-transparent border-none outline-none text-sm placeholder:text-muted-foreground/60 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 font-mono min-h-[24px] max-h-[200px] overflow-y-auto"
                             style={{
                               scrollbarWidth: 'thin',
@@ -968,7 +1146,7 @@ export function SideAgent({ onStateChange, onCollapseChange, onExplanation, onEx
                           <Button 
                             onClick={() => handleCommand(input)} 
                             size="sm"
-                            disabled={isLoading || !input.trim()}
+                            disabled={sendDisabled || !input.trim()}
                             className="h-7 px-3 text-xs font-medium rounded-full"
                           >
                             <Send className="h-3 w-3 mr-1" />

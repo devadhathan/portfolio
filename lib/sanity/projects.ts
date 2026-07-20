@@ -1,5 +1,6 @@
 import { resumeData } from '@/lib/resume-data'
 import type { Project } from '@/lib/types/project'
+import { findProjectBySlug } from '@/lib/types/project'
 import { sanityClient } from './client'
 import { projectsQuery } from './queries'
 
@@ -28,8 +29,5 @@ export async function getProjects(): Promise<Project[]> {
 
 export async function getProjectBySlug(slug: string): Promise<Project | null> {
   const projects = await getProjects()
-  const normalized = slug.toLowerCase().replace(/\s+/g, '-')
-  return (
-    projects.find((p) => p.title.toLowerCase().replace(/\s+/g, '-') === normalized) ?? null
-  )
+  return findProjectBySlug(projects, slug) ?? null
 }

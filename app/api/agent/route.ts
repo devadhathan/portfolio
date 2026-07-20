@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runAgentLoop } from '@/lib/agent-loop';
+import {
+  askAIConversationalReply,
+  ASK_AI_OFF_TOPIC_STRIKE_LIMIT,
+  countConsecutiveOffTopicAskAI,
+  isAskAIConversationalPrompt,
+  isOffTopicAskAI,
+  offTopicAskAIStrikeError,
+  resolveOffTopicAskAIResponse,
+} from '@/lib/ask-ai-conversational';
 import { MAX_GEN_UI_PROMPT_LENGTH } from '@/lib/gen-ui-prompt';
+import {
+  isInsufficientContextQuery,
+  insufficientContextMessage,
+  isOffTopicGenUIPrompt,
+  offTopicGenUIMessage,
+} from '@/lib/gen-ui-on-topic';
 import { consumePromptQuota, getClientIP } from '@/lib/prompt-limit';
 
 export async function POST(request: NextRequest) {
@@ -33,24 +48,80 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const lastPrompt = lastUser?.content.trim() ?? '';
+    const askMode = mode === 'ask';
+
+    if (lastPrompt && isAskAIConversationalPrompt(lastPrompt)) {
+      return NextResponse.json({
+        message: askAIConversationalReply(lastPrompt),
+        cardIds: [],
+        layoutCommands: [],
+        steps: [],
+        iterations: 0,
+        conversational: true,
+      });
+    }
+
+    if (lastPrompt && askMode && isOffTopicAskAI(lastPrompt)) {
+      const userPrompts = messages
+        .filter((m) => m.role === 'user')
+        .map((m) => m.content.trim());
+      const strikes = countConsecutiveOffTopicAskAI(userPrompts);
+      const blocked = strikes >= ASK_AI_OFF_TOPIC_STRIKE_LIMIT;
+      const { reply } = blocked
+        ? { reply: offTopicAskAIStrikeError() }
+        : resolveOffTopicAskAIResponse(strikes - 1, lastPrompt);
+
+      return NextResponse.json({
+        message: reply,
+        cardIds: [],
+        layoutCommands: [],
+        steps: [],
+        iterations: 0,
+        offTopic: true,
+        offTopicBlocked: blocked,
+        offTopicStrikes: strikes,
+      });
+    }
+
+    if (lastPrompt && askMode && isInsufficientContextQuery(lastPrompt)) {
+      return NextResponse.json({
+        message: insufficientContextMessage(lastPrompt),
+        cardIds: ['feature:connect'],
+        layoutCommands: [],
+        steps: [],
+        iterations: 0,
+        insufficientContext: true,
+      });
+    }
+
+    if (lastPrompt && !askMode && isOffTopicGenUIPrompt(lastPrompt)) {
+      return NextResponse.json({
+        message: offTopicGenUIMessage(lastPrompt),
+        cardIds: [],
+        layoutCommands: [],
+        steps: [],
+        iterations: 0,
+        offTopic: true,
+      });
+    }
+
     const ip = getClientIP(request);
     let promptRemaining: number | undefined;
 
-    if (ip !== 'unknown') {
-      const quota = await consumePromptQuota(ip);
-      if (!quota.allowed) {
-        return NextResponse.json(
-          {
-            error: 'Prompt limit reached',
-            count: quota.count,
-            limit: quota.limit,
-            remaining: 0,
-          },
-          { status: 429 },
-        );
-      }
-      promptRemaining = quota.remaining;
+    const quota = await consumePromptQuota(ip);
+    if (!quota.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Prompt limit reached',
+          count: quota.count,
+          limit: quota.limit,
+          remaining: 0,
+        },
+        { status: 429 },
+      );
     }
+    promptRemaining = quota.remaining;
 
     const result = await runAgentLoop({
       apiKey,

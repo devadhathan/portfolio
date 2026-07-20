@@ -50,7 +50,8 @@ export type LineIllustrationId =
   | 'users'
   | 'mobile'
   | 'research'
-  | 'accessibility';
+  | 'accessibility'
+  | 'code';
 export type GenUIFeature = {
   type: 'feature';
   illustration: LineIllustrationId;
@@ -243,7 +244,7 @@ const BASE_CARD_REGISTRY: Record<string, GenUIItem> = {
 
   'image:finshots': {
     type: 'image',
-    src: '/finshots/image.png',
+    src: '/finshots/n3pGQMdpISBs8GNixqX0HtgFg.png.webp',
     alt: 'Finshots News App',
     caption: 'Finshots — Award-winning fintech news app',
     link: '/work?project=finshots-news-app',
@@ -335,7 +336,7 @@ const BASE_CARD_REGISTRY: Record<string, GenUIItem> = {
     type: 'info',
     title: 'Get in Touch',
     subtitle: 'Open to opportunities',
-    body: 'Email: hello@devadhathan.com · LinkedIn: devadhathan · Portfolio: devadhathan.com',
+    body: 'Email: devadhathanmd18@gmail.com · LinkedIn: linkedin.com/in/devadhathan · Phone: +447388289392',
     icon: '✉️',
     link: '/contact',
   },
@@ -442,6 +443,76 @@ const BASE_CARD_REGISTRY: Record<string, GenUIItem> = {
         illustration: 'growth-curve',
         title: 'Outcomes over output',
         body: 'Every project tied to metrics — conversion, engagement, efficiency, and accessibility.',
+      },
+    ],
+  },
+
+  'feature:hire': {
+    type: 'feature_section',
+    headline: 'Why teams hire Dev',
+    features: [
+      {
+        illustration: 'mobile',
+        title: 'Ships real products',
+        body: 'Led Finshots to 100k+ downloads and Google Play Best App 2020 — award-winning mobile apps in production, not concept work.',
+        link: '/work?project=finshots-news-app',
+      },
+      {
+        illustration: 'growth-curve',
+        title: 'Moves metrics that matter',
+        body: '+92% engagement at Nesoi, +17% conversion at Ditto, -30% design-to-dev time with Falcon — outcomes tied to business goals.',
+      },
+      {
+        illustration: 'code',
+        title: 'Designer who engineers',
+        body: 'Prototypes in Claude Code and Cursor, then ships in React/Next.js — B.Tech CS plus hands-on production work, not handoffs.',
+      },
+    ],
+  },
+
+  'feature:ship-code': {
+    type: 'feature_section',
+    headline: 'Prototype in AI, ship to production',
+    features: [
+      {
+        illustration: 'system',
+        title: 'Computer Science foundation',
+        body: 'B.Tech from APJ Abdul Kalam Technological University — algorithms, data structures, and system design fundamentals.',
+      },
+      {
+        illustration: 'network',
+        title: 'Prototype with Claude Code & Cursor',
+        body: 'Builds interactive prototypes and working UI in AI-assisted IDEs — fast iteration from layout to logic without waiting on a dev queue.',
+      },
+      {
+        illustration: 'code',
+        title: 'Ship what you build',
+        body: 'Takes prototypes through to production in React/Next.js — this portfolio and Gen UI mode included.',
+      },
+    ],
+  },
+
+  'feature:connect': {
+    type: 'feature_section',
+    headline: 'Reach Dev directly',
+    features: [
+      {
+        illustration: 'network',
+        title: 'Email',
+        body: 'devadhathanmd18@gmail.com — best for job opportunities, freelance work, and collaboration inquiries.',
+        link: 'mailto:devadhathanmd18@gmail.com',
+      },
+      {
+        illustration: 'users',
+        title: 'LinkedIn',
+        body: 'linkedin.com/in/devadhathan — connect for professional updates, referrals, and portfolio deep-dives.',
+        link: 'https://linkedin.com/in/devadhathan/',
+      },
+      {
+        illustration: 'timeline',
+        title: 'Location & availability',
+        body: 'Based in Edinburgh, UK. Open to full-time product design roles — remote or hybrid across the UK and Europe.',
+        link: '/contact',
       },
     ],
   },

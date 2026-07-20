@@ -12,6 +12,7 @@ export type GenUIResearchCardProps = {
   description?: string;
   meta?: string;
   href?: string;
+  onCaseStudyClick?: () => void;
   cover: CoverMedia;
   illustration?: LineIllustrationId;
   statValue?: string;
@@ -214,6 +215,7 @@ export function GenUIResearchCard({
   description,
   meta,
   href,
+  onCaseStudyClick,
   cover,
   illustration,
   statValue,
@@ -222,7 +224,7 @@ export function GenUIResearchCard({
   skills,
   className,
 }: GenUIResearchCardProps) {
-  const interactive = true;
+  const interactive = Boolean(href || onCaseStudyClick);
   const [hovered, setHovered] = useState(false);
   const [revealed, setRevealed] = useState(false);
 
@@ -251,11 +253,11 @@ export function GenUIResearchCard({
           <h3 className="text-base md:text-lg font-medium leading-snug text-foreground transition-colors group-hover:text-primary">
             {title}
           </h3>
-          {href && (
+          {href || onCaseStudyClick ? (
             <span className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-border/50 bg-background/50 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:border-primary/40 group-hover:bg-primary/10">
               <ArrowUpRight className="h-4 w-4 text-foreground group-hover:text-primary" />
             </span>
-          )}
+          ) : null}
         </div>
         {description && (
           <p className="text-sm md:text-base text-muted-foreground leading-relaxed line-clamp-4 whitespace-pre-line">{description}</p>
@@ -272,6 +274,7 @@ export function GenUIResearchCard({
     'transition-all duration-300 ease-out',
     'hover:border-border/70 hover:bg-card/40 hover:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.35)] hover:-translate-y-1',
     href && 'cursor-pointer',
+    onCaseStudyClick && 'cursor-pointer',
     className,
   );
 
@@ -279,6 +282,14 @@ export function GenUIResearchCard({
     onMouseEnter: () => setHovered(true),
     onMouseLeave: () => setHovered(false),
   };
+
+  if (onCaseStudyClick) {
+    return (
+      <button type="button" onClick={onCaseStudyClick} className={cn(shellClass, 'text-left')} {...hoverHandlers}>
+        {inner}
+      </button>
+    );
+  }
 
   if (href) {
     return (

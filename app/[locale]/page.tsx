@@ -1,25 +1,29 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { TopBar, MobileBottomNav } from '@/components/top-bar';
-import { AboutSection } from '@/components/about-section';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { useRegisterNavActions } from '@/contexts/nav-actions-context';
+import { useAskAI } from '@/components/ask-ai-provider';
+import { preloadHeroVideos } from '@/lib/hero-media';
 import { AgentState, PortfolioAgent } from '@/lib/agent';
 import type { GenUIViewport } from '@/lib/gen-ui-viewport';
 import { createLoadingViewport } from '@/lib/gen-ui-viewport';
-import { GenUIModeShell } from '@/components/gen-ui-mode-shell';
 import { useGenUIPrompt } from '@/hooks/use-gen-ui-prompt';
-import { useTranslations } from 'next-intl';
+import { scrollPageToTop } from '@/lib/scroll-page';
 
-// Lazy load heavy components to reduce initial bundle size
-const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
-const SideAgent = dynamic(() => import('@/components/side-agent').then(mod => ({ default: mod.SideAgent })), { ssr: false });
+const GenUIModeShell = dynamic(
+  () => import('@/components/gen-ui-mode-shell').then((mod) => ({ default: mod.GenUIModeShell })),
+  { ssr: false },
+);
 const PortfolioSections = dynamic(() => import('@/components/portfolio-sections').then(mod => ({ default: mod.PortfolioSections })), { ssr: false });
 const DesktopSidebar = dynamic(() => import('@/components/desktop-sidebar').then(mod => ({ default: mod.DesktopSidebar })), { ssr: false });
 const ProjectDetailView = dynamic(() => import('@/components/project-detail-view').then(mod => ({ default: mod.ProjectDetailView })), { ssr: false });
 const ProjectsListView = dynamic(() => import('@/components/projects-list-view').then(mod => ({ default: mod.ProjectsListView })), { ssr: false });
-const FloatingChatButton = dynamic(() => import('@/components/floating-chat-button').then(mod => ({ default: mod.FloatingChatButton })), { ssr: false });
+const GenUIChatWidget = dynamic(
+  () => import('@/components/gen-ui-chat-widget').then((mod) => ({ default: mod.GenUIChatWidget })),
+  { ssr: false },
+);
 
 function createDefaultAgentState(): AgentState {
   return new PortfolioAgent().getState();
@@ -33,41 +37,39 @@ const LOADING_MESSAGES = [
 ];
 
 export default function Home() {
-  const t = useTranslations('home');
+  const { close: closeAskAI, resetAgent, registerStateChange } = useAskAI();
+
+  useLayoutEffect(() => {
+    preloadHeroVideos();
+  }, []);
+
   const [agentState, setAgentState] = useState<AgentState>(() => createDefaultAgentState());
   const [genUIViewports, setGenUIViewports] = useState<GenUIViewport[]>([]);
   const [activeViewportId, setActiveViewportId] = useState<string | null>(null);
   const [scrollToViewportId, setScrollToViewportId] = useState<string | null>(null);
   const [isAgentWorking, setIsAgentWorking] = useState(false);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
-  const [isChatCollapsed, setIsChatCollapsed] = useState(true);
-  const [explanation, setExplanation] = useState<string | null>(null);
-  const [displayedExplanation, setDisplayedExplanation] = useState<string>('');
-  const [isExplanationComplete, setIsExplanationComplete] = useState(false);
-  const [shouldShowCards, setShouldShowCards] = useState(false);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [genUIMode, setGenUIMode] = useState(false);
   const [showProjectsList, setShowProjectsList] = useState(false);
-  const resetAgentRef = useRef<(() => void) | null>(null);
-  const explanationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [showInitialLoading, setShowInitialLoading] = useState(false);
-  const [fadingOut, setFadingOut] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const contentGutterClass = isSidebarCollapsed
     ? 'mx-0 px-4 sm:mx-4 sm:px-5 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-[70px] xl:px-[90px]'
     : 'mx-0 px-4 sm:mx-3 sm:px-4 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-8 xl:px-10';
 
-  const handleStateChange = (state: AgentState) => {
+  const handleStateChange = useCallback((state: AgentState) => {
     setAgentState(state);
-  };
+  }, []);
 
-  const handleAgentWorking = (working: boolean, hint?: { prompt?: string }) => {
+  useEffect(() => {
+    registerStateChange(handleStateChange);
+  }, [handleStateChange, registerStateChange]);
+
+  const handleAgentWorking = (working: boolean, hint?: { prompt?: string; pendingId?: string }) => {
     if (working) {
-      setIsChatCollapsed(true);
       if (hint?.prompt) {
-        const pending = createLoadingViewport(hint.prompt);
+        const pending = createLoadingViewport(hint.prompt, hint.pendingId);
         setGenUIViewports((prev) => [...prev, pending]);
         setActiveViewportId(pending.id);
         setScrollToViewportId(pending.id);
@@ -85,12 +87,21 @@ export default function Home() {
 
   const handleGenUIViewport = (viewport: GenUIViewport) => {
     setGenUIViewports((prev) => {
-      let loadingIdx = -1;
-      for (let i = prev.length - 1; i >= 0; i--) {
-        if (prev[i].status === 'loading') {
-          loadingIdx = i;
-          break;
+      let loadingIdx = prev.findIndex(
+        (v) => v.id === viewport.id && v.status === 'loading',
+      );
+      if (loadingIdx < 0) {
+        for (let i = prev.length - 1; i >= 0; i--) {
+          if (prev[i].status === 'loading') {
+            loadingIdx = i;
+            break;
+          }
         }
+      }
+      if (loadingIdx < 0) {
+        loadingIdx = prev.findIndex(
+          (v) => v.status === 'loading' && v.prompt.trim() === viewport.prompt.trim(),
+        );
       }
       if (loadingIdx >= 0) {
         const preservedId = prev[loadingIdx].id;
@@ -98,7 +109,11 @@ export default function Home() {
         next[loadingIdx] = { ...viewport, id: preservedId, status: 'ready' };
         setActiveViewportId(preservedId);
         setScrollToViewportId(preservedId);
-        return next;
+        return next.filter(
+          (v, i) =>
+            i === loadingIdx ||
+            !(v.status === 'loading' && v.prompt.trim() === viewport.prompt.trim()),
+        );
       }
       setActiveViewportId(viewport.id);
       setScrollToViewportId(viewport.id);
@@ -111,17 +126,6 @@ export default function Home() {
     onGenUIViewport: handleGenUIViewport,
     onStateChange: handleStateChange,
   });
-
-  const handleGenUIReset = () => {
-    setGenUIViewports([]);
-    setActiveViewportId(null);
-    setScrollToViewportId(null);
-    genUIPrompt.reset();
-  };
-
-  const handleGenUIModeChange = (enabled: boolean) => {
-    setGenUIMode(enabled);
-  };
 
   useEffect(() => {
     if (!isAgentWorking || loadingStartTime === null) return;
@@ -140,196 +144,31 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [isAgentWorking, loadingStartTime, loadingMessageIndex]);
 
-  const handleExplanationComplete = (complete: boolean) => {
-    // Set explanation as complete and trigger card display
-    setIsExplanationComplete(complete);
-    if (complete) {
-      // Delay briefly to let the explanation settle before revealing cards
-      setTimeout(() => {
-        setShouldShowCards(true);
-      }, 350);
-    } else {
-      setShouldShowCards(false);
-    }
-  };
-
-  const handleCollapseChange = (collapsed: boolean) => {
-    setIsChatCollapsed(collapsed);
-  };
-
-  const handleExplanation = (text: string | null) => {
-    if (text === null) {
-      setExplanation(null);
-      setDisplayedExplanation('');
-      setIsExplanationComplete(false);
-      setShouldShowCards(false);
-      if (explanationTimeoutRef.current) {
-        clearTimeout(explanationTimeoutRef.current);
-        explanationTimeoutRef.current = null;
-      }
-      return;
-    }
-    
-    setExplanation(text);
-    
-    const targetWords = text.split(' ');
-    const currentWords = displayedExplanation.split(' ').filter(w => w.length > 0);
-    
-    if (targetWords.length > currentWords.length) {
-      if (explanationTimeoutRef.current) {
-        clearTimeout(explanationTimeoutRef.current);
-      }
-      
-      let wordIndex = currentWords.length;
-      const animateNextWord = () => {
-        if (wordIndex < targetWords.length) {
-          const newText = targetWords.slice(0, wordIndex + 1).join(' ');
-          setDisplayedExplanation(newText);
-          wordIndex++;
-          
-          if (wordIndex < targetWords.length) {
-            explanationTimeoutRef.current = setTimeout(animateNextWord, 30);
-          } else {
-            setIsExplanationComplete(true);
-            explanationTimeoutRef.current = null;
-          }
-        } else {
-          setIsExplanationComplete(true);
-          explanationTimeoutRef.current = null;
-        }
-      };
-      
-      animateNextWord();
-    } else if (text.trim().length > 0) {
-      if (displayedExplanation !== text) {
-        setDisplayedExplanation(text);
-      }
-      setIsExplanationComplete(true);
-    }
-  };
-
-  const handleHomeClick = () => {
-    // Reset portfolio state when logo is clicked
-    if (resetAgentRef.current) {
-      resetAgentRef.current();
-    }
+  const handleHomeClick = useCallback(() => {
+    resetAgent();
+    closeAskAI();
     setGenUIViewports([]);
     setActiveViewportId(null);
     setScrollToViewportId(null);
     setGenUIMode(false);
     genUIPrompt.reset();
-    // Clear explanation state
-    setExplanation(null);
-    setDisplayedExplanation('');
-    setIsExplanationComplete(false);
-    setShouldShowCards(false);
     setSelectedProject(null);
+  }, [resetAgent, closeAskAI, genUIPrompt.reset]);
+
+  useRegisterNavActions({
+    onProjectSelect: setSelectedProject,
+    onHomeClick: handleHomeClick,
+    hideMobileNav: genUIMode,
+  });
+
+  const handleEnterGenUI = () => {
+    scrollPageToTop();
+    setGenUIMode(true);
   };
 
-  const explanationParagraphs = useMemo(() => {
-    const text = displayedExplanation || explanation || '';
-    if (!text) return [text];
-    let paragraphs = text
-      .split(/\n\n+/)
-      .filter(p => p.trim().length > 0)
-      .map(p => p.trim());
-    
-    if (paragraphs.length === 1 && text.length > 150) {
-      const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-      const grouped: string[] = [];
-      for (let i = 0; i < sentences.length; i += 2) {
-        const group = sentences.slice(i, Math.min(i + 2, sentences.length)).join(' ').trim();
-        if (group) grouped.push(group);
-      }
-      paragraphs = grouped.length > 0 ? grouped : paragraphs;
-    }
-    
-    return paragraphs.length > 0 ? paragraphs : [text];
-  }, [displayedExplanation, explanation]);
-
-  useEffect(() => {
-    setMounted(true);
-
-    // Show the intro loader only once per browser session — navigating back to
-    // the home view (e.g. pressing "About") should not replay it.
-    let alreadyLoaded = false;
-    try {
-      alreadyLoaded = sessionStorage.getItem('portfolioLoaded') === '1';
-    } catch {}
-
-    if (alreadyLoaded) {
-      setShowInitialLoading(false);
-      return;
-    }
-
-    setShowInitialLoading(true);
-
-    let finished = false;
-    const finish = () => {
-      if (finished) return;
-      finished = true;
-      try {
-        sessionStorage.setItem('portfolioLoaded', '1');
-      } catch {}
-      setFadingOut(true);
-      setTimeout(() => {
-        setShowInitialLoading(false);
-        setFadingOut(false);
-      }, 700);
-    };
-
-    // Keep a short minimum so the intro doesn't flash, then dismiss only once
-    // the page's content (videos/images) has fully loaded.
-    const minTimer = setTimeout(() => {
-      if (document.readyState === 'complete') {
-        finish();
-      } else {
-        window.addEventListener('load', finish, { once: true });
-      }
-    }, 1200);
-
-    // Safety cap so a slow/stalled asset can never leave the loader stuck.
-    const maxTimer = setTimeout(finish, 5000);
-
-    return () => {
-      clearTimeout(minTimer);
-      clearTimeout(maxTimer);
-      window.removeEventListener('load', finish);
-    };
-  }, []);
-
   return (
-    <div className="min-h-screen bg-card relative overflow-x-hidden overflow-y-auto">
-      {/* Initial Loading Screen - Only shows first time */}
-      {mounted && showInitialLoading && (
-        <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-black transition-opacity duration-700 ${fadingOut ? 'opacity-0' : 'opacity-100'}`}>
-          <div className="flex flex-col items-center gap-4">
-            <video
-              autoPlay
-              muted
-              loop={false}
-              playsInline
-              preload="auto"
-              className="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 object-contain"
-            >
-              <source src="/videos/Subtle_Typing_Video_Generation.mp4" type="video/mp4" />
-            </video>
-            <p className="text-base md:text-lg text-white font-normal font-mono animate-pulse">
-              {t('loadingPortfolio')}
-            </p>
-          </div>
-        </div>
-      )}
-      <div className={showInitialLoading ? 'invisible' : 'visible'}>
-          <TopBar
-            onProjectSelect={setSelectedProject}
-            onHomeClick={handleHomeClick}
-            genUIMode={genUIMode}
-            onGenUIModeChange={handleGenUIModeChange}
-          />
-          
-          <div className="flex pt-14 relative z-10">
-        {/* Desktop Sidebar - Fixed */}
+    <div className="min-h-screen bg-background relative overflow-x-hidden">
+      <div className="flex pt-14 relative z-10">
         <div className={`hidden lg:block fixed left-0 top-14 h-[calc(100vh-3.5rem)] z-20 transition-all duration-300 ${isSidebarCollapsed ? 'w-16' : 'w-80'}`}>
           <ErrorBoundary>
             <DesktopSidebar 
@@ -340,20 +179,19 @@ export default function Home() {
           </ErrorBoundary>
         </div>
         
-        {/* Main Content */}
         <div
           className={`flex-1 w-full relative z-10 transition-[margin-left] duration-500 ease-in-out overflow-x-hidden ${
             isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-80'
           } ${
             genUIMode
               ? 'h-[calc(100vh-3.5rem)] min-h-0 overflow-hidden p-0'
-              : 'px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8 pb-24 md:pb-28 lg:pb-8'
+              : 'py-4 md:py-6 lg:py-8 pb-32 md:pb-28 lg:pb-8'
           }`}
         >
           <div
             className={`transition-[max-width,margin] duration-500 ease-in-out ${isSidebarCollapsed ? 'max-w-[1500px] mx-auto' : 'max-w-7xl mx-auto'}${genUIMode ? ' h-full' : ''}`}
           >
-            {selectedProject ? (
+            {selectedProject && !genUIMode ? (
             <div className="w-full">
               <ProjectDetailView 
                 projectId={selectedProject} 
@@ -361,6 +199,26 @@ export default function Home() {
                   setSelectedProject(null);
                   setShowProjectsList(false);
                 }} 
+              />
+            </div>
+          ) : genUIMode && selectedProject ? (
+            <div className="relative h-full min-h-0 overflow-hidden">
+              <div className="h-full overflow-y-auto pb-24 lg:pb-8">
+                <ProjectDetailView
+                  projectId={selectedProject}
+                  onBack={() => {
+                    setSelectedProject(null);
+                    scrollPageToTop();
+                  }}
+                />
+              </div>
+              <GenUIChatWidget
+                messages={genUIPrompt.conversationHistory}
+                isLoading={genUIPrompt.isLoading || isAgentWorking}
+                onBackToChat={() => {
+                  setSelectedProject(null);
+                  scrollPageToTop();
+                }}
               />
             </div>
           ) : showProjectsList ? (
@@ -385,49 +243,34 @@ export default function Home() {
               hasPrompted={genUIPrompt.hasPrompted}
               isLoading={genUIPrompt.isLoading}
               promptCount={genUIPrompt.promptCount}
+              promptLimitLoaded={genUIPrompt.promptLimitLoaded}
+              hideMobileNav={genUIMode}
+              headline="What would you like to explore?"
+              subhead="Ask about my work — I'll build a custom view."
               onSubmit={genUIPrompt.submitPrompt}
               onActiveChange={setActiveViewportId}
+              onCaseStudySelect={(projectSlug) => {
+                setSelectedProject(projectSlug);
+                scrollPageToTop();
+              }}
             />
           ) : (
-            /* ── Default home portfolio ── */
-            <div className={`transition-all duration-600 animate-fade-in-blur ${contentGutterClass}`}>
+            <div className={contentGutterClass}>
               <ErrorBoundary>
                 <PortfolioSections
                   agentState={agentState}
                   hideHeaderText={false}
                   onProjectSelect={setSelectedProject}
                   onShowProjectsList={() => setShowProjectsList(true)}
+                  onEnterGenUI={handleEnterGenUI}
+                  selectedProjectId={selectedProject}
                 />
               </ErrorBoundary>
-              <div className="mt-10">
-                <AboutSection />
-              </div>
             </div>
           )}
           </div>
         </div>
       </div>
-          
-          {!genUIMode && (
-            <>
-          <SideAgent
-            onStateChange={handleStateChange}
-            onCollapseChange={handleCollapseChange}
-            onExplanation={handleExplanation}
-            onExplanationComplete={handleExplanationComplete}
-            resetRef={resetAgentRef}
-            externalCollapsed={isChatCollapsed}
-          />
-          <FloatingChatButton 
-            onClick={() => {
-              setIsChatCollapsed(false);
-            }} 
-            isCollapsed={isChatCollapsed}
-          />
-            </>
-          )}
-      </div>
-      <MobileBottomNav />
     </div>
   );
 }

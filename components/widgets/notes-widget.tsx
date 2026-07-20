@@ -65,18 +65,18 @@ This isn't just a static portfolio; it's an interactive experience where you can
 I wanted to demonstrate how AI can enhance the way we present our work and make portfolios more engaging and personalized. Whether you're here to learn about my design process, explore specific projects, or just curious about the tech behind this - feel free to interact with the agent and see what happens!
 
 Hope you enjoy exploring! 🚀`,
-      lastUpdated: new Date('2024-12-19T10:30:00'),
+      lastUpdated: new Date('2026-06-24T10:30:00'),
       isIntent: true,
     },
     {
       id: '2',
       content: deploymentDate ? `Deployment date: ${deploymentDate}` : 'Deployment date: ...',
-      lastUpdated: deploymentTimestamp ?? new Date(),
+      lastUpdated: deploymentTimestamp ?? new Date('2026-06-24T12:00:00'),
     },
     {
       id: '3',
       content: 'Currently working from Edinburgh',
-      lastUpdated: new Date('2024-12-19T08:00:00'),
+      lastUpdated: new Date('2026-06-24T08:00:00'),
     },
   ], [deploymentDate, deploymentTimestamp]);
 
@@ -90,7 +90,7 @@ Hope you enjoy exploring! 🚀`,
 
   return (
     <>
-      <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#171717] dark:shadow-md flex flex-col max-h-[300px]">
+      <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#1B1917] dark:shadow-md flex flex-col max-h-[300px]">
         <CardHeader className="pb-3 flex-shrink-0">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <FileText className="h-4 w-4 text-primary" />

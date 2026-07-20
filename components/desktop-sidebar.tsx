@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSiteContent } from '@/components/site-content-provider';
+import { getProjectId } from '@/lib/types/project';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AnimateIcon } from './animate-icon';
 
@@ -62,7 +63,7 @@ export function DesktopSidebar({ onProjectSelect, isCollapsed = false, onCollaps
   };
 
   const clockCard = (
-    <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#171717] dark:shadow-md">
+    <Card className="border border-border/55 bg-card shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)] dark:border-2 dark:border-border/70 dark:bg-[#1B1917] dark:shadow-md">
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <Clock className="h-4 w-4 text-primary shrink-0" />
@@ -224,7 +225,7 @@ export function DesktopSidebar({ onProjectSelect, isCollapsed = false, onCollaps
         <>
           {/* Projects */}
           <div className="px-4 pt-4 pb-2 flex-1 min-h-0 flex flex-col overflow-hidden">
-            <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#171717] dark:shadow-md h-full flex flex-col">
+            <Card className="border border-border/55 bg-card shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)] dark:border-2 dark:border-border/70 dark:bg-[#1B1917] dark:shadow-md h-full flex flex-col">
               <CardHeader className="pb-3 flex-shrink-0">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <FolderKanban className="h-4 w-4 text-primary shrink-0" />
@@ -235,7 +236,7 @@ export function DesktopSidebar({ onProjectSelect, isCollapsed = false, onCollaps
                 <ScrollArea className="h-full px-4 pb-4">
                   <div className="space-y-0.5">
                     {projects.map((project, index) => {
-                        const projectSlug = project.title.toLowerCase().replace(/\s+/g, '-');
+                        const projectSlug = getProjectId(project.title);
                         return (
                           <div key={index} className="group relative">
                             <div

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, Users, ExternalLink, Smartphone, X, ZoomIn } from 'lucide-react';
 import type { Project } from '@/lib/types/project';
+import { findProjectBySlug, getProjectId, normalizeProjectSlug } from '@/lib/types/project';
 import { useSiteContent } from '@/components/site-content-provider';
 import { FinshotsDetail } from './finshots-detail';
 import Image from 'next/image';
@@ -42,9 +43,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false, p
 
   const allProjects = projects ?? cmsProjects;
 
-  const project = projectId ? allProjects.find(
-    p => p.title.toLowerCase().replace(/\s+/g, '-') === projectId.toLowerCase().replace(/\s+/g, '-')
-  ) : null;
+  const project = projectId ? findProjectBySlug(allProjects, projectId) ?? null : null;
 
   // Check if this is Nesoi project for increased spacing
   const isNesoi = project ? (project.title.toLowerCase().includes('nesoi') || projectId.toLowerCase().includes('nesoi')) : false;
@@ -58,8 +57,8 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false, p
   }, [projectId]);
 
   // Use custom Finshots detail page
-  const normalizedProjectId = projectId ? projectId.toLowerCase().replace(/\s+/g, '-') : '';
-  const normalizedTitle = project?.title ? project.title.toLowerCase().replace(/\s+/g, '-') : '';
+  const normalizedProjectId = projectId ? normalizeProjectSlug(projectId) : '';
+  const normalizedTitle = project ? getProjectId(project.title) : '';
   
   if (normalizedProjectId.includes('finshots') || normalizedTitle.includes('finshots') || 
       projectId.toLowerCase() === 'finshots-news-app' || normalizedTitle === 'finshots-news-app') {
@@ -81,7 +80,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false, p
         <p className="text-sm text-muted-foreground mb-4">Available projects:</p>
         <ul className="text-sm text-left max-w-md mx-auto space-y-1">
           {allProjects.map((p, i) => (
-            <li key={i}>{p.title} → {p.title.toLowerCase().replace(/\s+/g, '-')}</li>
+            <li key={i}>{p.title} → {getProjectId(p.title)}</li>
           ))}
         </ul>
         <Button onClick={onBack} variant="ghost" className="mt-4">

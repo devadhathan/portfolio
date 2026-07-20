@@ -74,3 +74,17 @@ export function getProjectId(title: string): string {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
 }
+
+export function normalizeProjectSlug(slug: string): string {
+  return slug
+    .toLowerCase()
+    .trim()
+    .replace(/\./g, '-')
+    .replace(/[^a-z0-9-_]/g, '')
+    .replace(/-+/g, '-')
+}
+
+export function findProjectBySlug(projects: Project[], slug: string): Project | undefined {
+  const normalized = normalizeProjectSlug(slug)
+  return projects.find((project) => getProjectId(project.title) === normalized)
+}

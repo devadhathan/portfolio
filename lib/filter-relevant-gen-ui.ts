@@ -66,6 +66,18 @@ export function isExperienceQuery(prompt: string): boolean {
   );
 }
 
+/** Contact details, email, LinkedIn, or how to reach Dev. */
+export function isContactQuery(prompt: string): boolean {
+  return /\b(contact details?|contact info(?:rmation)?|email|linkedin|phone|reach out|get in touch|how (?:to|can i) (?:reach|contact)|connect with|message him|send (?:a|an) (?:message|email)|his contact)\b/i.test(
+    prompt,
+  );
+}
+
+/** Education, degrees, certifications — not work experience. */
+export function isEducationQuery(prompt: string): boolean {
+  return /\b(education|degree|university|msc|b\.?tech|certification|certified|credentials?)\b/i.test(prompt);
+}
+
 export { isStarterChipQuery } from '@/lib/gen-ui-starter-chips';
 
 export function isCareerQuery(prompt: string): boolean {

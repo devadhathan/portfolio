@@ -4,6 +4,8 @@ import type { ResearchCardData } from '@/lib/gen-ui-research-cards';
 import { itemsToResearchCards } from '@/lib/gen-ui-research-cards';
 import {
   isCompaniesQuery,
+  isContactQuery,
+  isEducationQuery,
   isExperienceQuery,
   isOverviewQuery,
   isStarterChipQuery,
@@ -49,6 +51,10 @@ const COMPANIES_PAD_IDS = [
   'timeline:wordsmith',
 ] as const;
 
+const CONTACT_PAD_IDS = ['feature:connect'] as const;
+
+const EDUCATION_PAD_IDS = ['feature:education', 'info:cert:google', 'info:cert:ibm'] as const;
+
 function itemPriority(item: GenUIItem, prompt: string): number {
   if (isExperienceQuery(prompt)) {
     if (item.type === 'feature_section') return 0;
@@ -77,6 +83,8 @@ function trimItemsToCount(items: GenUIItem[], target: number, prompt: string): G
 
 function padItemIds(prompt: string): readonly string[] {
   if (isStarterChipQuery(prompt)) return [];
+  if (isContactQuery(prompt)) return CONTACT_PAD_IDS;
+  if (isEducationQuery(prompt)) return EDUCATION_PAD_IDS;
   if (isExperienceQuery(prompt)) return EXPERIENCE_PAD_IDS;
   if (isCompaniesQuery(prompt)) return COMPANIES_PAD_IDS;
   if (isOverviewQuery(prompt)) return OVERVIEW_PAD_IDS;

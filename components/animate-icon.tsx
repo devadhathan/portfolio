@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 
 interface AnimateIconProps {
   children: ReactNode;
@@ -10,48 +10,29 @@ interface AnimateIconProps {
   animateOnHover?: boolean;
 }
 
-const animationVariants = {
-  pointing: {
-    hover: {
-      x: 4,
-      transition: { duration: 0.2, ease: 'easeOut' as const }
-    }
-  },
-  bounce: {
-    hover: {
-      y: -4,
-      transition: { duration: 0.2, ease: 'easeOut' as const }
-    }
-  },
-  pulse: {
-    hover: {
-      scale: 1.1,
-      transition: { duration: 0.2, ease: 'easeOut' as const }
-    }
-  },
-  shake: {
-    hover: {
-      x: [0, -2, 2, -2, 2, 0],
-      transition: { duration: 0.3 }
-    }
-  },
-  rotate: {
-    hover: {
-      rotate: 15,
-      transition: { duration: 0.2, ease: 'easeOut' as const }
-    }
-  }
+const animationClass: Record<NonNullable<AnimateIconProps['animation']>, string> = {
+  pointing: 'transition-transform duration-200 ease-out group-hover/icon:translate-x-1',
+  bounce: 'transition-transform duration-200 ease-out group-hover/icon:-translate-y-1',
+  pulse: 'transition-transform duration-200 ease-out group-hover/icon:scale-110',
+  shake: 'group-hover/icon:animate-[shake_0.3s_ease-in-out]',
+  rotate: 'transition-transform duration-200 ease-out group-hover/icon:rotate-[15deg]',
 };
 
-export function AnimateIcon({ children, animation = 'pointing', className = '', animateOnHover = true }: AnimateIconProps) {
+export function AnimateIcon({
+  children,
+  animation = 'pointing',
+  className = '',
+  animateOnHover = true,
+}: AnimateIconProps) {
   return (
-    <motion.div
-      className={className}
-      whileHover={animateOnHover ? animationVariants[animation].hover : {}}
-      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+    <span
+      className={cn(
+        'group/icon inline-flex items-center justify-center',
+        animateOnHover && animationClass[animation],
+        className,
+      )}
     >
       {children}
-    </motion.div>
+    </span>
   );
 }
-

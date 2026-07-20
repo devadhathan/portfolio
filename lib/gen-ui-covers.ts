@@ -11,7 +11,7 @@ export const CARD_GRADIENTS = [
 
 export function getProjectCover(title: string): string | undefined {
   const t = title.toLowerCase();
-  if (t.includes('finshots')) return '/finshots/image.png';
+  if (t.includes('finshots')) return '/finshots/n3pGQMdpISBs8GNixqX0HtgFg.png.webp';
   if (t.includes('nesoi')) return '/nesoi/final-prototype.png';
   if (t.includes('falcon')) return '/falcon design system/image.png';
   if (t.includes('onboarding') || t.includes('ditto') || t.includes('booking')) return '/ditto insurance/1.png';

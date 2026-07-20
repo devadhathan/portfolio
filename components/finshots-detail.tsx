@@ -4,6 +4,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, Users, ExternalLink, X, ZoomIn, Smartphone } from 'lucide-react';
+import { findProjectBySlug } from '@/lib/types/project';
 import { useSiteContent } from '@/components/site-content-provider';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -57,9 +58,7 @@ const finshotsFeatureMedia: Record<string, FeatureMedia> = {
 export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: FinshotsDetailProps) {
   const t = useTranslations('caseStudy');
   const { projects } = useSiteContent();
-  const project = projects.find(
-    p => p.title.toLowerCase().replace(/\s+/g, '-') === projectId.toLowerCase().replace(/\s+/g, '-')
-  );
+  const project = findProjectBySlug(projects, projectId);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
   const handleImageClick = (src: string) => {
@@ -84,7 +83,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
   }
 
   return (
-    <div className="animate-in fade-in duration-300 w-full text-foreground pb-20 lg:pb-0 max-w-6xl mx-auto mt-24">
+    <div className="animate-in fade-in duration-300 w-full text-foreground pb-20 lg:pb-0 max-w-6xl mx-auto mt-8 lg:mt-24 px-4 md:px-6 lg:px-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
         <div>

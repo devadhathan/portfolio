@@ -10,22 +10,35 @@ export type GenUIViewport = {
   status?: 'loading' | 'ready';
 };
 
-export function createGenUIViewport(prompt: string, summary: string, items: GenUIItem[]): GenUIViewport {
+type CreateGenUIViewportOptions = {
+  title?: string;
+  /** When true, summary is shown as-is (no fallback rewriting). */
+  rawSummary?: boolean;
+  /** Reuse a loading viewport id so ready state replaces the skeleton in place. */
+  id?: string;
+};
+
+export function createGenUIViewport(
+  prompt: string,
+  summary: string,
+  items: GenUIItem[],
+  options?: CreateGenUIViewportOptions,
+): GenUIViewport {
   const trimmedPrompt = prompt.trim();
   return {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    id: options?.id ?? `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     prompt: trimmedPrompt,
-    title: deriveShortTitle(trimmedPrompt),
-    summary: formatLeadSummary(summary, trimmedPrompt),
+    title: options?.title ?? deriveShortTitle(trimmedPrompt),
+    summary: options?.rawSummary ? summary : formatLeadSummary(summary, trimmedPrompt),
     items,
     status: 'ready',
   };
 }
 
-export function createLoadingViewport(prompt: string): GenUIViewport {
+export function createLoadingViewport(prompt: string, id?: string): GenUIViewport {
   const trimmedPrompt = prompt.trim();
   return {
-    id: `pending-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    id: id ?? `pending-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     prompt: trimmedPrompt,
     title: deriveShortTitle(trimmedPrompt),
     summary: '',

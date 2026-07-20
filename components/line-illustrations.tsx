@@ -13,7 +13,8 @@ export type LineIllustrationId =
   | 'users'
   | 'mobile'
   | 'research'
-  | 'accessibility';
+  | 'accessibility'
+  | 'code';
 
 const stroke = 'currentColor';
 
@@ -133,6 +134,22 @@ function AccessibilityIllustration() {
   );
 }
 
+function CodeIllustration() {
+  return (
+    <svg viewBox="0 0 200 120" fill="none" className="w-full h-full" aria-hidden>
+      <rect x="48" y="28" width="104" height="64" rx="4" stroke={stroke} strokeWidth="1.2" />
+      <line x1="48" y1="42" x2="152" y2="42" stroke={stroke} strokeWidth="1" opacity="0.35" />
+      <circle cx="58" cy="35" r="2" fill={stroke} opacity="0.5" />
+      <circle cx="66" cy="35" r="2" fill={stroke} opacity="0.35" />
+      <circle cx="74" cy="35" r="2" fill={stroke} opacity="0.35" />
+      <path d="M78 58 L68 68 L78 78" stroke={stroke} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M122 58 L132 68 L122 78" stroke={stroke} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+      <line x1="96" y1="54" x2="104" y2="82" stroke={stroke} strokeWidth="1.2" strokeLinecap="round" />
+      <line x1="62" y1="88" x2="118" y2="88" stroke={stroke} strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
+    </svg>
+  );
+}
+
 const ILLUSTRATIONS: Record<LineIllustrationId, React.FC> = {
   'growth-curve': GrowthCurveIllustration,
   funnel: FunnelIllustration,
@@ -143,6 +160,7 @@ const ILLUSTRATIONS: Record<LineIllustrationId, React.FC> = {
   mobile: MobileIllustration,
   research: ResearchIllustration,
   accessibility: AccessibilityIllustration,
+  code: CodeIllustration,
 };
 
 export function LineIllustration({ id, className }: { id: LineIllustrationId; className?: string }) {

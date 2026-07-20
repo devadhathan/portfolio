@@ -13,9 +13,10 @@ const nextConfig = {
     formats: ['image/webp'],
   },
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
-  transpilePackages: ['next-intl'],
+  transpilePackages: ['next-intl', 'use-intl'],
   experimental: {
     optimizeCss: false,
+    optimizePackageImports: ['lucide-react'],
     serverComponentsExternalPackages: [
       '@sanity/client',
       '@vercel/kv',
@@ -26,16 +27,22 @@ const nextConfig = {
       '@formatjs/ecma402-abstract',
     ],
   },
-  webpack: (config, { dev }) => {
+  webpack: (config, { dev, isServer }) => {
     if (dev) {
+      // Filesystem cache can leave page.js pointing at vendor chunks that no longer exist.
+      config.cache = { type: 'memory' };
       config.watchOptions = {
         ...config.watchOptions,
-        poll: 800,
         aggregateTimeout: 300,
-        ignored: ['**/node_modules/**', '**/.next/**', '**/.git/**'],
+        ignored: ['**/node_modules/**', '**/.git/**', '**/.next/**'],
+        poll: Number(process.env.WATCHPACK_POLLING_INTERVAL || 1000),
       };
-      // Avoid stale @formatjs vendor-chunk refs when the dev cache rebuilds mid-compile
-      config.cache = false;
+
+      // Server dev bundles (incl. static-paths-worker) must not split vendors into
+      // separate files — hot reload often leaves orphan ./vendor-chunks/*.js refs.
+      if (isServer && config.optimization) {
+        config.optimization.splitChunks = false;
+      }
     }
     return config;
   },
