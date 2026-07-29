@@ -1,9 +1,10 @@
 'use client';
 
 import { useCallback, useEffect } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, ArrowRight, X } from 'lucide-react';
 import { CardTag } from '@/components/card-tag';
-import { PlaygroundMediaContent, PlaygroundPhoneFrame } from '@/components/playground-phone-frame';
+import { PlaygroundItemMedia } from '@/components/playground-phone-frame';
+import { PlaygroundStackLogos } from '@/components/playground-stack-logos';
 import type { PlaygroundItem } from '@/lib/playground-items';
 import { cn } from '@/lib/utils';
 
@@ -22,7 +23,7 @@ type PlaygroundDetailOverlayProps = {
   onClose: () => void;
   onPrevious?: () => void;
   onNext?: () => void;
-  escLabel?: string;
+  builtWithLabel?: string;
 };
 
 export function PlaygroundDetailOverlay({
@@ -30,7 +31,7 @@ export function PlaygroundDetailOverlay({
   onClose,
   onPrevious,
   onNext,
-  escLabel = 'Esc',
+  builtWithLabel = 'Built with',
 }: PlaygroundDetailOverlayProps) {
   const handlePrevious = useCallback(() => {
     onPrevious?.();
@@ -65,135 +66,117 @@ export function PlaygroundDetailOverlay({
 
   if (!selection) return null;
 
+  const category = selection.tags[0] ?? 'Playground';
+
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col overflow-hidden bg-[#f3f3f3] text-neutral-900 dark:bg-[#151110] dark:text-foreground">
-      <header className="shrink-0 flex items-center justify-between px-4 py-4 sm:px-8">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-violet-500/15 text-[11px]">
-            ◆
-          </span>
-          <span className="truncate text-sm font-medium tracking-tight sm:text-[15px]">{selection.title}</span>
+    <div className="fixed inset-0 z-[100] flex flex-col bg-black/50 text-foreground backdrop-blur-md md:flex-row">
+      {/* Left info panel */}
+      <aside className="flex max-h-[42vh] w-full shrink-0 flex-col overflow-y-auto border-b border-border/60 bg-card md:max-h-none md:h-full md:w-[min(340px,36vw)] md:border-b-0 md:border-r">
+        <div className="flex items-center gap-1 px-3 py-3 sm:px-4">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
+          >
+            <X className="h-4 w-4" strokeWidth={1.75} />
+          </button>
+          <button
+            type="button"
+            onClick={handlePrevious}
+            aria-label="Previous"
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" strokeWidth={1.75} />
+          </button>
+          <button
+            type="button"
+            onClick={handleNext}
+            aria-label="Next"
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
+          >
+            <ArrowRight className="h-4 w-4" strokeWidth={1.75} />
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-md px-2.5 py-1.5 text-sm text-neutral-500 transition-colors hover:bg-black/[0.05] hover:text-neutral-900 dark:text-muted-foreground dark:hover:bg-white/[0.06]"
-        >
-          {escLabel}
-        </button>
-      </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
-        <div className="mx-auto flex min-h-full w-full max-w-5xl items-center justify-center px-4 py-6 sm:px-8 sm:py-8">
-          <div className="grid w-full grid-cols-1 items-center gap-6 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-8 lg:gap-12">
-          <div className="order-1 w-full max-w-sm justify-self-center space-y-3 text-center md:order-none md:max-w-[240px] md:justify-self-start md:self-center md:text-left lg:max-w-[260px]">
-            <p className="text-[13px] leading-relaxed text-neutral-600 sm:text-sm dark:text-muted-foreground">
-              {selection.question}
-            </p>
-            {selection.tags.length > 0 ? (
-              <div className="flex flex-wrap justify-center gap-1.5 md:justify-start">
-                {selection.tags.map((tag) => (
-                  <CardTag key={tag}>{tag}</CardTag>
-                ))}
+        <div className="flex flex-1 flex-col gap-5 px-5 pb-8 pt-2 sm:px-6">
+          <div className="space-y-2">
+            <p className="text-[12px] font-medium text-muted-foreground">{category}</p>
+            <h2 className="text-[1.35rem] font-semibold tracking-tight text-foreground sm:text-[1.5rem]">
+              {selection.title}
+            </h2>
+          </div>
+
+          <p className="text-[14px] leading-relaxed text-muted-foreground">
+            {selection.question}
+          </p>
+
+          {selection.item.stack?.length ? (
+            <PlaygroundStackLogos stack={selection.item.stack} label={builtWithLabel} />
+          ) : null}
+
+          {selection.tags.length > 0 ? (
+            <div className="mt-auto space-y-3 border-t border-border/60 pt-5">
+              <div className="flex items-start justify-between gap-4 text-[13px]">
+                <span className="shrink-0 text-muted-foreground">Tags</span>
+                <div className="flex flex-wrap justify-end gap-1.5">
+                  {selection.tags.map((tag) => (
+                    <CardTag key={tag}>{tag}</CardTag>
+                  ))}
+                </div>
               </div>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
+        </div>
+      </aside>
 
-          <div className="order-2 justify-self-center md:order-none">
-            <PlaygroundPhoneFrame size="detail">
-              <PlaygroundMediaContent
-                item={selection.item}
-                accessibilityLabel={selection.accessibilityLabel}
-                interactive
-              />
-            </PlaygroundPhoneFrame>
-          </div>
-
-          <div className="hidden md:block" aria-hidden />
-          </div>
+      {/* Main preview */}
+      <div
+        className="relative flex min-h-0 flex-1 items-center justify-center overflow-y-auto p-6 sm:p-10"
+        onClick={onClose}
+        role="presentation"
+      >
+        <div
+          className="relative z-10"
+          onClick={(event) => event.stopPropagation()}
+          role="presentation"
+        >
+          <PlaygroundItemMedia
+            item={selection.item}
+            accessibilityLabel={selection.accessibilityLabel}
+            size="detail"
+            interactive
+          />
         </div>
       </div>
-
-      <footer className="shrink-0 flex items-center justify-center gap-8 border-t border-black/[0.06] bg-inherit pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3 text-neutral-400 dark:border-white/[0.06]">
-        <button
-          type="button"
-          onClick={handlePrevious}
-          aria-label="Previous"
-          className="rounded-full p-2 transition-colors hover:bg-black/[0.05] hover:text-neutral-700 dark:hover:bg-white/[0.06] dark:hover:text-foreground"
-        >
-          <ChevronUp className="h-4 w-4" strokeWidth={1.75} />
-        </button>
-        <button
-          type="button"
-          onClick={handleNext}
-          aria-label="Next"
-          className="rounded-full p-2 transition-colors hover:bg-black/[0.05] hover:text-neutral-700 dark:hover:bg-white/[0.06] dark:hover:text-foreground"
-        >
-          <ChevronDown className="h-4 w-4" strokeWidth={1.75} />
-        </button>
-      </footer>
     </div>
   );
 }
 
-type PlaygroundClipCardProps = {
+type PlaygroundMasonryCardProps = {
   title: string;
-  icon?: React.ReactNode;
-  onOpen?: () => void;
+  onOpen: () => void;
   children: React.ReactNode;
   className?: string;
 };
 
-export function PlaygroundClipCard({ title, icon, onOpen, children, className }: PlaygroundClipCardProps) {
-  const shellClass = cn(
-    'w-full overflow-hidden rounded-[1.25rem] border border-black/[0.08] bg-white text-left shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:border-white/[0.08] dark:bg-[#1B1917]',
-    onOpen && 'transition-shadow hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.35)]',
-    className,
-  );
-
-  const header = (
-    <>
-      <div className="flex min-w-0 items-center gap-2.5">
-        {icon ? (
-          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-violet-500/15 text-[10px] text-violet-700 dark:text-violet-300">
-            {icon}
-          </span>
-        ) : null}
-        <span className="truncate text-[14px] font-medium tracking-tight text-neutral-900 sm:text-[15px] dark:text-foreground">
-          {title}
-        </span>
-      </div>
-      {onOpen ? (
-        <span className="text-lg leading-none text-neutral-400 transition-transform group-hover:translate-x-0.5 dark:text-muted-foreground">
-          ›
-        </span>
-      ) : null}
-    </>
-  );
-
-  const body = (
-    <div className="flex min-h-[480px] items-center justify-center overflow-hidden bg-neutral-100 px-3 py-6 sm:min-h-[520px] sm:px-6 sm:py-8 dark:bg-[#151110]">
-      {children}
-    </div>
-  );
-
-  if (onOpen) {
-    return (
-      <button type="button" onClick={onOpen} className={cn('group', shellClass)}>
-        <div className="flex items-center justify-between border-b border-black/[0.06] px-4 py-3.5 sm:px-5 dark:border-white/[0.06]">
-          {header}
-        </div>
-        {body}
-      </button>
-    );
-  }
-
+/** @deprecated Prefer PlaygroundCraftCard — kept for any legacy imports. */
+export function PlaygroundMasonryCard({ title, onOpen, children, className }: PlaygroundMasonryCardProps) {
   return (
-    <article className={shellClass}>
-      <div className="flex items-center justify-between border-b border-black/[0.06] px-4 py-3.5 sm:px-5 dark:border-white/[0.06]">
-        {header}
-      </div>
-      {body}
-    </article>
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={title}
+      className={cn(
+        'group relative mb-3 w-full break-inside-avoid overflow-hidden rounded-2xl bg-neutral-200/80 text-left transition-transform duration-200 hover:-translate-y-0.5 dark:bg-[#1B1917] md:mb-4',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400/60',
+        className,
+      )}
+    >
+      {children}
+      <span className="pointer-events-none absolute bottom-2.5 right-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-neutral-700 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 dark:bg-white/15 dark:text-white">
+        <ArrowRight className="h-3.5 w-3.5 -rotate-45" strokeWidth={2} />
+      </span>
+    </button>
   );
 }

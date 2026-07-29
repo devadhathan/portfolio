@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { play } from 'cuelume';
 import { cn } from '@/lib/utils';
 import { ProgressiveImage } from '@/components/progressive-image';
 
@@ -97,7 +98,7 @@ export function PhotoCarousel({
   }, []);
 
   const go = useCallback(
-    (delta: number) => {
+    (delta: number, options?: { withSound?: boolean }) => {
       if (!loop) return;
 
       const current = trackIndexRef.current;
@@ -117,6 +118,9 @@ export function PhotoCarousel({
       isAnimatingRef.current = true;
       setAnimate(true);
       setTrackIndex(next);
+      if (options?.withSound) {
+        play('page', { volume: 0.35 });
+      }
     },
     [loop, resetClonePosition],
   );
@@ -322,7 +326,7 @@ export function PhotoCarousel({
             aria-label="Previous photo"
             onClick={(e) => {
               e.stopPropagation();
-              go(-1);
+              go(-1, { withSound: true });
             }}
             className="absolute left-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-black/45 text-white/90 opacity-100 backdrop-blur-sm transition-all duration-200 hover:bg-black/60 md:opacity-0 md:group-hover:opacity-100"
           >
@@ -333,7 +337,7 @@ export function PhotoCarousel({
             aria-label="Next photo"
             onClick={(e) => {
               e.stopPropagation();
-              go(1);
+              go(1, { withSound: true });
             }}
             className="absolute right-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-black/45 text-white/90 opacity-100 backdrop-blur-sm transition-all duration-200 hover:bg-black/60 md:opacity-0 md:group-hover:opacity-100"
           >
@@ -351,6 +355,7 @@ export function PhotoCarousel({
                   isAnimatingRef.current = false;
                   setAnimate(true);
                   setTrackIndex(idx + 1);
+                  play('page', { volume: 0.3 });
                 }}
                 className={`rounded-full transition-all duration-300 ${
                   idx === logicalIndex

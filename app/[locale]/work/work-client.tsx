@@ -137,6 +137,9 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                       return (
                         <div key={projectId} className="space-y-1">
                           <button
+                            data-cuelume-hover="tick"
+                            data-cuelume-press
+                            data-cuelume-release
                             onClick={() => {
                               setSelectedProject(projectId);
                               if (sections.length > 0) {
@@ -166,6 +169,7 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                               {sections.map((section) => (
                                 <button
                                   key={section.id}
+                                  data-cuelume-hover="tick"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleSectionClick(section.id);
@@ -224,6 +228,9 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                       return (
                         <Card
                           key={`other-${index}`}
+                          data-cuelume-hover="tick"
+                          data-cuelume-press
+                          data-cuelume-release
                           className="col-span-1 rounded-2xl border-2 border-border/70 bg-[#1B1917] text-white cursor-pointer hover:border-primary/60 transition-all group overflow-hidden h-full flex flex-col"
                           onClick={() => setSelectedProject(projectId)}
                         >
@@ -268,6 +275,9 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                     {finshotsProject && (
                       <Card
                         key="finshots"
+                        data-cuelume-hover="tick"
+                        data-cuelume-press
+                        data-cuelume-release
                         className="col-span-1 lg:col-start-3 lg:col-span-1 lg:row-start-1 lg:row-span-2 rounded-2xl border-2 border-border/70 bg-[#1B1917] text-white cursor-pointer hover:border-primary/60 transition-all group overflow-hidden h-full flex flex-col"
                         onClick={() => setSelectedProject(getProjectId(finshotsProject.title))}
                       >

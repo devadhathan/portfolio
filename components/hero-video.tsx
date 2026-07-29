@@ -48,22 +48,19 @@ export function HeroVideo({ className }: HeroVideoProps) {
   const activeReady = showLoop ? loopReady : introReady;
 
   return (
-    <div
-      className={`relative h-full w-full overflow-hidden bg-[#1E1205] ${className ?? ''}`}
-      style={{ backgroundImage: `url(${HERO_VIDEO_POSTER})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-    >
-      {/* Poster stays visible until the active clip can play — no fade-in delay */}
+    <div className={`relative h-full w-full overflow-hidden bg-[#1E1205] ${className ?? ''}`}>
+      {/* Poster only until the active clip can play — never stacked under a playing video */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={HERO_VIDEO_POSTER}
-        alt=""
-        aria-hidden
-        fetchPriority="high"
-        decoding="sync"
-        className={`absolute inset-0 z-[2] h-full w-full object-cover ${
-          activeReady ? 'pointer-events-none opacity-0 transition-opacity duration-300' : 'opacity-100'
-        }`}
-      />
+      {!activeReady && (
+        <img
+          src={HERO_VIDEO_POSTER}
+          alt=""
+          aria-hidden
+          fetchPriority="high"
+          decoding="sync"
+          className="absolute inset-0 z-[2] h-full w-full object-cover"
+        />
+      )}
 
       <video
         ref={introRef}
@@ -75,7 +72,7 @@ export function HeroVideo({ className }: HeroVideoProps) {
         poster={HERO_VIDEO_POSTER}
         aria-label="Hero animation"
         className={`absolute inset-0 z-[1] h-full w-full object-cover object-center transition-opacity duration-500 ${
-          showLoop ? 'pointer-events-none opacity-0' : introReady ? 'opacity-80 group-hover:opacity-100' : 'opacity-0'
+          showLoop ? 'pointer-events-none opacity-0' : introReady ? 'opacity-100' : 'opacity-0'
         }`}
         onLoadedData={handleIntroReady}
         onCanPlay={handleIntroReady}
@@ -97,7 +94,7 @@ export function HeroVideo({ className }: HeroVideoProps) {
         preload="metadata"
         aria-hidden={!showLoop}
         className={`absolute inset-0 z-[1] h-full w-full object-cover object-center transition-opacity duration-500 ${
-          showLoop && loopReady ? 'opacity-80 group-hover:opacity-100' : 'pointer-events-none opacity-0'
+          showLoop && loopReady ? 'opacity-100' : 'pointer-events-none opacity-0'
         }`}
         onLoadedData={handleLoopReady}
         onCanPlay={handleLoopReady}

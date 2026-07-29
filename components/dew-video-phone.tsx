@@ -41,7 +41,11 @@ export function DewVideoPhone({
   };
 
   return (
-    <div ref={containerRef} className="relative z-10 flex h-full w-full items-center justify-center p-4">
+    <div
+      ref={containerRef}
+      data-cuelume-hover="whisper"
+      className="relative z-10 flex h-full w-full items-center justify-center p-4"
+    >
       <div className="relative aspect-[9/19.5] w-full max-w-[250px] rounded-[2.25rem] bg-black p-2 shadow-2xl">
         <div className="absolute left-1/2 top-0 z-20 h-6 w-28 -translate-x-1/2 rounded-b-2xl bg-black" />
         <div className="relative h-full w-full overflow-hidden rounded-[1.85rem] bg-black">
@@ -79,6 +83,9 @@ export function DewVideoPhone({
               href={linkHref}
               target="_blank"
               rel="noopener noreferrer"
+              data-cuelume-hover="tick"
+              data-cuelume-press
+              data-cuelume-release
               className="group/link inline-flex items-center gap-2 rounded-lg bg-white/20 px-3 py-1.5 text-[12px] font-medium text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/30"
               onClick={(e) => e.stopPropagation()}
             >

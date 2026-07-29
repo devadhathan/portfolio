@@ -240,6 +240,8 @@ export function DesktopSidebar({ onProjectSelect, isCollapsed = false, onCollaps
                         return (
                           <div key={index} className="group relative">
                             <div
+                              data-cuelume-hover="tick"
+                              data-cuelume-press
                               className="flex items-center gap-2 px-2.5 py-2 rounded hover:bg-accent/50 transition-colors cursor-pointer"
                               onClick={() => onProjectSelect?.(projectSlug)}
                             >

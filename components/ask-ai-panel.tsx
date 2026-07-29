@@ -50,6 +50,8 @@ export function AskAIPanel({
         <span className="text-sm font-medium text-foreground">Ask AI</span>
         <button
           onClick={onClose}
+          data-cuelume-press
+          data-cuelume-release
           className="p-1.5 rounded-md hover:bg-black/[0.05] dark:hover:bg-white/[0.06] transition-colors"
           title="Close"
           aria-label="Close Ask AI"
@@ -83,6 +85,9 @@ export function AskAIPanel({
                 type="button"
                 disabled={suggestionsDisabled ?? inputDisabled}
                 onClick={() => onSuggestionClick(label)}
+                data-cuelume-hover="tick"
+                data-cuelume-press
+                data-cuelume-release
                 className="flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left text-[13px] text-foreground/90 transition-colors hover:bg-black/[0.04] disabled:opacity-40 dark:hover:bg-white/[0.05]"
               >
                 <Icon className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={1.75} />
@@ -120,6 +125,8 @@ export function AskAIPanel({
             type="button"
             onClick={onSubmit}
             disabled={(sendDisabled ?? inputDisabled) || !input.trim()}
+            data-cuelume-press
+            data-cuelume-release
             className={cn(
               'absolute bottom-2.5 right-2.5 flex h-8 w-8 items-center justify-center rounded-lg',
               'border border-black/[0.08] bg-black/[0.04] text-foreground/80',

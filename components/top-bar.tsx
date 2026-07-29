@@ -181,6 +181,8 @@ export function TopBar() {
                     key={tab.path}
                     href={tab.path}
                     prefetch
+                    data-cuelume-hover="tick"
+                    data-cuelume-press
                     onClick={() => handleNavClick(tab.path)}
                     className={cn(
                       'relative rounded-full px-4 py-1.5 text-sm font-medium transition-colors duration-200 select-none',
@@ -201,6 +203,8 @@ export function TopBar() {
               variant="ghost"
               onClick={handleAskAI}
               aria-pressed={pathname === '/' && isAskAIActive}
+              data-cuelume-press
+              data-cuelume-hover="tick"
               className={cn(
                 'hidden h-10 items-center rounded-full border px-3.5 text-sm font-medium transition-colors lg:flex',
                 pathname === '/' && isAskAIActive
@@ -214,6 +218,8 @@ export function TopBar() {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
+                  data-cuelume-hover="tick"
+                  data-cuelume-press
                   className="flex h-10 items-center gap-2 rounded-full border border-border/55 bg-secondary/35 px-3.5 text-sm font-medium transition-colors hover:bg-secondary/50 dark:border-border/40 dark:bg-white/[0.04] dark:hover:bg-white/[0.07]"
                 >
                   {(() => {
@@ -247,6 +253,7 @@ export function TopBar() {
                     <DropdownMenuItem
                       key={item.id}
                       onClick={() => setTheme(item.id)}
+                      data-cuelume-toggle
                       className={theme === item.id ? 'bg-muted' : ''}
                     >
                       <div className="flex items-center gap-2">
@@ -307,6 +314,7 @@ export function MobileBottomNav() {
               key={tab.path}
               href={tab.path}
               prefetch
+              data-cuelume-press
               onClick={() => {
                 if (pathname === tab.path) {
                   scrollPageToTop();

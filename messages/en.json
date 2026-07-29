@@ -62,6 +62,12 @@
         "description": "A design critique agent with a personality — teaching the agent to read layouts and spot hierarchy issues.",
         "status": "Building",
         "tags": ["Agent", "Design critique"]
+      },
+      "catalystic": {
+        "title": "Catalystic UI",
+        "description": "A playground for Google’s A2UI generator — prompt a screen and it renders interactive Gen UI in place.",
+        "status": "Live",
+        "tags": ["A2UI", "Generative UI"]
       }
     },
     "musicNotch": {
@@ -144,8 +150,9 @@
     "website": "Website"
   },
   "playground": {
-    "label": "playground",
+    "label": "Playground",
     "esc": "Esc",
+    "builtWith": "Built with",
     "buildingAgent": {
       "title": "Which Design and Agent analyzer",
       "description": "A design critique agent with a personality — currently teaching the dog to read layouts, spot hierarchy issues, and explain what to fix.",
@@ -165,11 +172,11 @@
       }
     },
     "items": {
-      "voiceCoach": {
-        "title": "Voice-first fitness coach",
-        "question": "Does giving a voice assistant a face make it feel more accountable?",
-        "tags": ["Character animation", "Voice UI"],
-        "accessibilityLabel": "Voice fitness coach demo — animated character speaking on a green screen"
+      "dewAi": {
+        "title": "Dew AI",
+        "question": "An interactive AI character — a face for conversation, built with Whisper from ChatGPT, SwiftUI, Rive, and Xcode.",
+        "tags": ["Character", "SwiftUI", "Rive", "Whisper"],
+        "accessibilityLabel": "Dew AI interactive character demo"
       },
       "coachingThread": {
         "title": "Coaching in a thread",

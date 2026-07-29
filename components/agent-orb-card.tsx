@@ -48,6 +48,7 @@ export function AgentOrbCard({ title, description, buttonLabel, onClick, classNa
         'group flex h-full w-full flex-col items-center justify-center gap-3 px-4 py-5 pb-6 text-center max-lg:pb-10',
         className,
       )}
+      data-cuelume-hover="tick"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
@@ -60,6 +61,8 @@ export function AgentOrbCard({ title, description, buttonLabel, onClick, classNa
       </div>
       <button
         type="button"
+        data-cuelume-press
+        data-cuelume-release
         onClick={(e) => {
           e.stopPropagation();
           onClick();

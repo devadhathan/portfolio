@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { play } from 'cuelume';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -90,7 +91,10 @@ Hope you enjoy exploring! 🚀`,
 
   return (
     <>
-      <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#1B1917] dark:shadow-md flex flex-col max-h-[300px]">
+      <Card
+        data-cuelume-hover="whisper"
+        className="border-2 border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#1B1917] dark:shadow-md flex flex-col max-h-[300px]"
+      >
         <CardHeader className="pb-3 flex-shrink-0">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <FileText className="h-4 w-4 text-primary" />
@@ -103,7 +107,20 @@ Hope you enjoy exploring! 🚀`,
               {notes.map((note) => (
                   <div
                     key={note.id}
-                    onClick={() => setSelectedNote(note)}
+                    role="button"
+                    tabIndex={0}
+                    data-cuelume-hover="tick"
+                    onClick={() => {
+                      play('page', { volume: 0.35 });
+                      setSelectedNote(note);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        play('page', { volume: 0.35 });
+                        setSelectedNote(note);
+                      }
+                    }}
                     className="flex flex-col gap-1 p-2.5 rounded-md border border-border/20 transition-all cursor-pointer bg-secondary/30 hover:bg-secondary/40 hover:border-border/30"
                   >
                     <p className="text-xs flex-1 leading-relaxed">
@@ -116,7 +133,15 @@ Hope you enjoy exploring! 🚀`,
         </CardContent>
       </Card>
 
-      <Dialog open={!!selectedNote} onOpenChange={(open) => !open && setSelectedNote(null)}>
+      <Dialog
+        open={!!selectedNote}
+        onOpenChange={(open) => {
+          if (!open) {
+            play('droplet', { volume: 0.35 });
+            setSelectedNote(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">

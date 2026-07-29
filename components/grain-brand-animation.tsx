@@ -303,6 +303,7 @@ export function GrainBrandAnimation({
     <div
       className={cn('relative touch-none', className)}
       style={{ width: size, height: size }}
+      data-cuelume-hover="sparkle"
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
       aria-hidden

@@ -98,7 +98,11 @@ export function MacBookNotchPreview() {
 export function MusicNotchCard({ title, comingSoon, tagline, tagLabel, previewOnly = false, className }: MusicNotchCardProps) {
   if (previewOnly) {
     return (
-      <div className={cn('group/notch w-full', className)} onClick={(e) => e.stopPropagation()}>
+      <div
+        className={cn('group/notch w-full', className)}
+        data-cuelume-hover="chime"
+        onClick={(e) => e.stopPropagation()}
+      >
         <MacBookNotchPreview />
       </div>
     );
@@ -107,6 +111,7 @@ export function MusicNotchCard({ title, comingSoon, tagline, tagLabel, previewOn
   return (
     <div
       className={cn('group/notch flex h-full min-h-[240px] flex-col overflow-hidden', className)}
+      data-cuelume-hover="chime"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="shrink-0 px-4 pt-4 pb-2">

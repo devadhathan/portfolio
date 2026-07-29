@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { play } from 'cuelume';
 import { useTranslations } from 'next-intl';
 import { useSiteContent } from '@/components/site-content-provider';
 import { useRegisterNavActions } from '@/contexts/nav-actions-context';
@@ -36,9 +37,11 @@ export default function ContactPage() {
   const handleCopyEmail = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(settings.email);
+      play('success', { volume: 0.45 });
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
+      play('error', { volume: 0.4 });
       window.location.href = `mailto:${settings.email}`;
     }
   }, [settings.email]);
@@ -62,6 +65,9 @@ export default function ContactPage() {
 
           <a
             href={`mailto:${settings.email}`}
+            data-cuelume-hover="tick"
+            data-cuelume-press
+            data-cuelume-release
             className="max-w-full break-all text-[clamp(1.5rem,5vw,3rem)] font-normal leading-tight tracking-tight text-foreground transition-opacity hover:opacity-80"
           >
             {settings.email}
@@ -78,6 +84,9 @@ export default function ContactPage() {
                     key={action.label}
                     type="button"
                     onClick={action.onClick}
+                    data-cuelume-hover="tick"
+                    data-cuelume-press
+                    data-cuelume-release
                     className={cn(
                       'rounded-full px-4 py-2 text-sm transition-colors',
                       copied
@@ -96,6 +105,9 @@ export default function ContactPage() {
                   href={action.href}
                   target={action.external ? '_blank' : undefined}
                   rel={action.external ? 'noopener noreferrer' : undefined}
+                  data-cuelume-hover="tick"
+                  data-cuelume-press
+                  data-cuelume-release
                   className="rounded-full bg-secondary px-4 py-2 text-sm text-foreground transition-colors hover:bg-secondary/80"
                 >
                   {action.label}

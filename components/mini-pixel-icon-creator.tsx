@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Download, Loader2, PenLine, RotateCcw, X } from 'lucide-react';
+import { play } from 'cuelume';
 import { cn } from '@/lib/utils';
 import {
   PIXEL_GRID_SIZE,
@@ -152,6 +153,8 @@ function PixlThumbnail({
       <button
         type="button"
         onClick={onStartDraw}
+        data-cuelume-press
+        data-cuelume-release
         className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border/50 bg-primary px-5 py-1.5 font-mono text-[10px] uppercase tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
       >
         <PenLine className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -190,6 +193,9 @@ export function MiniPixelIconCreator({
   }, []);
 
   const paintAt = useCallback((x: number, y: number, mode: boolean, continueStroke = true) => {
+    if (!continueStroke) {
+      play('tick', { volume: 0.22 });
+    }
     setDrawMode(mode);
     setPixels((prev) => {
       const next = new Set(prev);
@@ -222,6 +228,7 @@ export function MiniPixelIconCreator({
     setError(null);
     setIsDrawing(false);
     clearStroke();
+    play('press', { volume: 0.4 });
   };
 
   const cancelEditing = () => {
@@ -231,6 +238,7 @@ export function MiniPixelIconCreator({
     setError(null);
     setIsDrawing(false);
     clearStroke();
+    play('droplet', { volume: 0.35 });
   };
 
   const retryDrawing = () => {
@@ -239,16 +247,19 @@ export function MiniPixelIconCreator({
     setError(null);
     setIsDrawing(false);
     clearStroke();
+    play('droplet', { volume: 0.4 });
   };
 
   const generateIcon = async () => {
     if (!pixelGridHasPixels(grid)) {
       setError(errorEmptyLabel);
+      play('error', { volume: 0.4 });
       return;
     }
 
     setError(null);
     setIsGenerating(true);
+    play('loading', { volume: 0.35 });
 
     // Local boundary trace — single smooth cubic-bezier path, no AI latency.
     const traced = normalizeSvgForDisplay(
@@ -257,6 +268,7 @@ export function MiniPixelIconCreator({
     setGeneratedSvg(traced);
     onSvgCreated?.(traced);
     setIsGenerating(false);
+    play('success', { volume: 0.45 });
   };
 
   if (!isEditorActive) {
@@ -337,6 +349,8 @@ export function MiniPixelIconCreator({
             type="button"
             onClick={generateIcon}
             disabled={isGenerating}
+            data-cuelume-press
+            data-cuelume-release
             className="inline-flex items-center justify-center gap-1.5 rounded-full border border-border/50 bg-primary px-4 py-1.5 font-mono text-[10px] uppercase tracking-wide text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isGenerating ? (
@@ -354,6 +368,8 @@ export function MiniPixelIconCreator({
           onClick={retryDrawing}
           disabled={isGenerating}
           aria-label={retryLabel}
+          data-cuelume-press
+          data-cuelume-release
           className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-60"
         >
           <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.75} />

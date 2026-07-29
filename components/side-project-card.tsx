@@ -42,6 +42,7 @@ export function SideProjectCard({
   return (
     <div
       className={cn('flex flex-col overflow-hidden', className)}
+      data-cuelume-hover="whisper"
       onClick={(e) => e.stopPropagation()}
       onMouseEnter={() => setCardHovered(true)}
       onMouseLeave={() => setCardHovered(false)}
@@ -51,6 +52,9 @@ export function SideProjectCard({
           href={href}
           target="_blank"
           rel="noopener noreferrer"
+          data-cuelume-hover="tick"
+          data-cuelume-press
+          data-cuelume-release
           className="group/link inline-flex max-w-full flex-wrap items-center gap-2"
         >
           <span className="text-[15px] font-medium tracking-tight text-foreground">{title}</span>

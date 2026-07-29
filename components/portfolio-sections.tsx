@@ -16,7 +16,7 @@ import { useTranslations } from 'next-intl';
 import { FINSHOTS_APP_SCREEN } from '@/lib/build-case-study-cards';
 import { ProjectTreeCard } from '@/components/project-tree-card';
 import { SideProjectCard } from '@/components/side-project-card';
-import { AgentDogCard } from '@/components/agent-dog-card';
+import { CatalysticCard } from '@/components/catalystic-card';
 import { MusicNotchCard } from '@/components/music-notch-card';
 import { PhotoCarousel } from '@/components/photo-carousel';
 import { AgentOrbCard } from '@/components/agent-orb-card';
@@ -54,6 +54,7 @@ const SectionLabel = ({ label, icon: Icon }: { label: string; icon: LucideIcon }
 const DEFAULT_PHOTO_PATHS = [
   '/photos/Le5RRVetScFh9EG3aEJYsrCsM.jpg.avif',
   '/photos/O6bInc2LhAgXBkQ6yLobk41OLss.jpg',
+  '/photos/ZZXFdA0RZyD5h20wZdhoCxLhy0.jpg',
   '/photos/sakura-park.jpg',
   '/photos/Cafe-laptop.png',
   '/photos/daffodils-squirrel.jpg',
@@ -70,6 +71,11 @@ const PHOTO_BLOCKLIST = new Set([
 ]);
 
 const HERO_LIGHT_SVG = '/svg/me alone and the background.svg';
+const HERO_THEME_SVGS: Record<'blue' | 'green' | 'red', string> = {
+  blue: '/svg/blue me.svg',
+  green: '/svg/green me.svg',
+  red: '/svg/red me.svg',
+};
 
 interface PortfolioSectionsProps {
   agentState: AgentState;
@@ -135,7 +141,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
         if (id === 'agent-dog') {
           return {
             id: 'agent-dog',
-            title: 'Agent Dog',
+            title: 'Catalystic UI',
             priority: 'high' as SectionPriority,
             order: 5,
             visible: true,
@@ -180,7 +186,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     const sizeMap: { [key: string]: string } = {
       'hero': 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1',
       'side-project': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 min-h-[300px] sm:min-h-[360px]',
-      'agent-dog': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 min-h-[300px] sm:min-h-[360px]',
+      'agent-dog': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 min-h-[420px] sm:min-h-[360px]',
       'music-notch': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 min-h-[320px]',
       'gen-ui-orb': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
       'finshots-award': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
@@ -278,6 +284,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
       <Card 
         key={section.id} 
         data-card-id={section.id}
+        data-cuelume-hover="whisper"
         className={`${baseStyles} ${bentoSize} group flex flex-col relative overflow-hidden`}
         onClick={() => handleCardClick(section.id)}
         onMouseMove={(e) => {
@@ -320,6 +327,12 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 <div className="relative w-full h-[240px] sm:h-[300px] md:h-[340px] max-h-[340px]">
                   {theme === 'dark' ? (
                     <HeroVideo />
+                  ) : theme === 'blue' || theme === 'green' || theme === 'red' ? (
+                    <img
+                      src={HERO_THEME_SVGS[theme]}
+                      alt="Dev"
+                      className="relative z-10 mx-auto h-full w-auto max-w-full max-h-[340px] object-contain opacity-80 transition-opacity duration-300 group-hover:opacity-100"
+                    />
                   ) : (
                     <img
                       src={HERO_LIGHT_SVG}
@@ -360,17 +373,17 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           <Card
             key={section.id}
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-full cursor-default group relative overflow-hidden`}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-full cursor-pointer group relative overflow-hidden`}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
           >
             {borderReveal}
             <CardContent className="relative z-10 h-full p-0">
-              <AgentDogCard
+              <CatalysticCard
                 sectionLabel={t('latestProjects.label')}
-                title={t('latestProjects.agentDog.title')}
-                description={t('latestProjects.agentDog.description')}
-                statusLabel={t('latestProjects.agentDog.status')}
+                title={t('latestProjects.catalystic.title')}
+                description={t('latestProjects.catalystic.description')}
+                statusLabel={t('latestProjects.catalystic.status')}
               />
             </CardContent>
           </Card>
@@ -491,6 +504,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
               id="work"
               data-section="work"
               data-card-id={section.id}
+              data-cuelume-hover="whisper"
               className={`${baseStyles} ${bentoSize} group relative flex flex-col overflow-hidden`}
               onMouseMove={(e) => handleMouseMove(section.id, e)}
               onMouseLeave={() => handleMouseLeave(section.id)}
@@ -691,6 +705,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           <Card
             key={section.id}
             data-card-id={section.id}
+            data-cuelume-hover="whisper"
             className={`${baseStyles} ${bentoSize} flex flex-col h-full overflow-hidden group p-0`}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseEnter={() => setCarouselPaused((prev) => ({ ...prev, [section.id]: true }))}

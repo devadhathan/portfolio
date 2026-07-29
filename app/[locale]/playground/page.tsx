@@ -4,12 +4,11 @@ import { useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { useRegisterNavActions } from '@/contexts/nav-actions-context';
+import { PlaygroundCraftCard } from '@/components/playground-craft-card';
 import {
-  PlaygroundClipCard,
   PlaygroundDetailOverlay,
   type PlaygroundSelection,
 } from '@/components/playground-detail-overlay';
-import { PlaygroundMediaContent, PlaygroundPhoneFrame } from '@/components/playground-phone-frame';
 import { PLAYGROUND_ITEMS } from '@/lib/playground-items';
 
 export default function PlaygroundPage() {
@@ -64,29 +63,26 @@ export default function PlaygroundPage() {
 
   return (
     <>
-      <div className="min-h-screen overflow-x-hidden bg-[#f3f3f3] text-neutral-900 dark:bg-background dark:text-foreground">
-        <main className="px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-14 sm:px-6 md:px-10">
-          <div className="mx-auto w-full max-w-2xl md:max-w-3xl">
-            <div className="mb-8 pt-2 text-center md:mb-10">
-              <p className="text-xs uppercase tracking-[0.36em] text-neutral-500 dark:text-muted-foreground">
+      <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
+        <main className="px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-16 sm:px-6 md:px-10">
+          <div className="mx-auto w-full max-w-[1280px]">
+            <div className="mb-6 border-b border-border/60 pb-3">
+              <h1 className="font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-foreground sm:text-xs">
                 {t('label')}
-              </p>
+              </h1>
             </div>
 
-            <section className="flex flex-col gap-5 md:gap-6">
+            <section className="flex gap-0 overflow-x-auto border border-border/60 [-ms-overflow-style:none] [scrollbar-width:none] sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-3 xl:grid-cols-4 [&::-webkit-scrollbar]:hidden">
               {PLAYGROUND_ITEMS.map((item) => {
                 const copy = getCopy(item.id);
                 return (
-                  <PlaygroundClipCard
+                  <PlaygroundCraftCard
                     key={item.id}
+                    item={item}
                     title={copy.title}
-                    icon="◆"
+                    accessibilityLabel={copy.accessibilityLabel}
                     onOpen={() => openItem(item.id)}
-                  >
-                    <PlaygroundPhoneFrame size="preview">
-                      <PlaygroundMediaContent item={item} accessibilityLabel={copy.accessibilityLabel} />
-                    </PlaygroundPhoneFrame>
-                  </PlaygroundClipCard>
+                  />
                 );
               })}
             </section>
@@ -99,7 +95,7 @@ export default function PlaygroundPage() {
         onClose={() => setSelection(null)}
         onPrevious={() => goToRelative(-1)}
         onNext={() => goToRelative(1)}
-        escLabel={t('esc')}
+        builtWithLabel={t('builtWith')}
       />
     </>
   );

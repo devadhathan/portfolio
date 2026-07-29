@@ -70,16 +70,17 @@ function TreeRow({
   const rowContent = (
     <>
       {hasChildren ? (
-        <button
-          type="button"
-          aria-label={isOpen ? `Collapse ${node.label}` : `Expand ${node.label}`}
-          aria-expanded={isOpen}
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggle(node.id);
-          }}
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground/70 transition-colors hover:bg-secondary/50 hover:text-foreground"
-        >
+          <button
+            type="button"
+            aria-label={isOpen ? `Collapse ${node.label}` : `Expand ${node.label}`}
+            aria-expanded={isOpen}
+            data-cuelume-toggle
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle(node.id);
+            }}
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground/70 transition-colors hover:bg-secondary/50 hover:text-foreground"
+          >
           <ChevronRight
             className={cn('h-3.5 w-3.5 transition-transform duration-200', isOpen && 'rotate-90')}
             strokeWidth={1.75}
@@ -131,6 +132,8 @@ function TreeRow({
           type="button"
           aria-label={`Open ${node.label}`}
           aria-current={isActive ? 'page' : undefined}
+          data-cuelume-hover="tick"
+          data-cuelume-press
           onClick={() => onProjectSelect?.(node.projectId!)}
           className={cn(
             'group/row flex min-h-[30px] w-full items-center gap-1 rounded-full px-1 pr-2 text-left transition-colors duration-200',
@@ -143,6 +146,7 @@ function TreeRow({
         </button>
       ) : (
         <div
+          data-cuelume-hover="tick"
           className={cn(
             'group/row flex min-h-[30px] items-center gap-1 pr-0.5',
             isLocked && 'opacity-45',

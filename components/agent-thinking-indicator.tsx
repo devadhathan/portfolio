@@ -2,24 +2,27 @@
 
 import { cn } from '@/lib/utils';
 
-const COLS = 2;
-const ROWS = 3;
+const SIZE = 3;
 
 function DotMatrix({ className }: { className?: string }) {
+  const gap = 3;
+  const dot = 3;
+  const side = SIZE * dot + (SIZE - 1) * gap;
+
   return (
     <div
-      className={cn('grid shrink-0 grid-cols-2 gap-[3px]', className)}
-      style={{ width: 11, height: 17 }}
+      className={cn('grid shrink-0 grid-cols-3 gap-[3px]', className)}
+      style={{ width: side, height: side }}
       aria-hidden
     >
-      {Array.from({ length: COLS * ROWS }, (_, i) => {
-        const col = i % COLS;
-        const row = Math.floor(i / COLS);
+      {Array.from({ length: SIZE * SIZE }, (_, i) => {
+        const col = i % SIZE;
+        const row = Math.floor(i / SIZE);
         return (
           <span
             key={i}
             className="block h-[3px] w-[3px] rounded-full bg-foreground/80 animate-thinking-matrix-dot"
-            style={{ animationDelay: `${(col + row) * 0.14}s` }}
+            style={{ animationDelay: `${(col + row) * 0.12}s` }}
           />
         );
       })}
@@ -29,11 +32,17 @@ function DotMatrix({ className }: { className?: string }) {
 
 type AgentThinkingIndicatorProps = {
   label?: string;
+  className?: string;
 };
 
-export function AgentThinkingIndicator({ label = 'Thinking…' }: AgentThinkingIndicatorProps) {
+export function AgentThinkingIndicator({ label = 'Thinking…', className }: AgentThinkingIndicatorProps) {
   return (
-    <div className="flex items-center gap-2.5" role="status" aria-live="polite" aria-label={label}>
+    <div
+      className={cn('flex items-center gap-2.5', className)}
+      role="status"
+      aria-live="polite"
+      aria-label={label}
+    >
       <DotMatrix />
       <p className="mb-0 text-sm text-muted-foreground">{label}</p>
     </div>

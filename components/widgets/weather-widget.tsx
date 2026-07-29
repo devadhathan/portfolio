@@ -16,7 +16,10 @@ export function WeatherWidget() {
   const Icon = weather.icon;
 
   return (
-    <Card className="border-2 border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#1B1917] dark:shadow-md">
+    <Card
+      data-cuelume-hover="whisper"
+      className="border-2 border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#1B1917] dark:shadow-md"
+    >
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Icon className="h-4 w-4 text-primary" />
