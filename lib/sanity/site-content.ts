@@ -1,5 +1,7 @@
+import { unstable_cache } from 'next/cache'
 import { resumeData } from '@/lib/resume-data'
 import type { ExperienceEntry, SiteSettings } from '@/lib/types/site-content'
+import { SANITY_REVALIDATE_SECONDS } from './cache'
 import { sanityClient } from './client'
 import { experienceQuery, siteSettingsQuery } from './queries'
 
@@ -32,7 +34,7 @@ function normalizeSettings(raw: Partial<SiteSettings> | null | undefined): SiteS
   }
 }
 
-export async function getSiteSettings(): Promise<SiteSettings> {
+async function fetchSiteSettingsUncached(): Promise<SiteSettings> {
   try {
     const settings = await sanityClient.fetch<Partial<SiteSettings> | null>(siteSettingsQuery)
     return normalizeSettings(settings)
@@ -42,7 +44,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
   return defaultSiteSettings
 }
 
-export async function getExperience(): Promise<ExperienceEntry[]> {
+async function fetchExperienceUncached(): Promise<ExperienceEntry[]> {
   try {
     const experience = await sanityClient.fetch<ExperienceEntry[]>(experienceQuery)
     if (Array.isArray(experience) && experience.length > 0) {
@@ -56,6 +58,14 @@ export async function getExperience(): Promise<ExperienceEntry[]> {
   }
   return resumeData.experience
 }
+
+export const getSiteSettings = unstable_cache(fetchSiteSettingsUncached, ['sanity-site-settings'], {
+  revalidate: SANITY_REVALIDATE_SECONDS,
+})
+
+export const getExperience = unstable_cache(fetchExperienceUncached, ['sanity-experience'], {
+  revalidate: SANITY_REVALIDATE_SECONDS,
+})
 
 export async function getSiteContent() {
   const [settings, experience] = await Promise.all([getSiteSettings(), getExperience()])

@@ -66,16 +66,14 @@ export function TopBar() {
   }, [pathname, optimisticPath]);
 
   useEffect(() => {
-    NAV_TAB_KEYS.forEach((tab) => {
-      router.prefetch(tab.path);
-    });
-  }, [router]);
-
-  useEffect(() => {
     if (pathname === '/' && consumeOpenAskAI()) {
       openAskAI();
     }
   }, [pathname, openAskAI]);
+
+  const prefetchTab = (path: string) => {
+    router.prefetch(path);
+  };
 
   const handleLogoClick = () => {
     onHomeClickRef.current?.();
@@ -180,7 +178,9 @@ export function TopBar() {
                   <Link
                     key={tab.path}
                     href={tab.path}
-                    prefetch
+                    prefetch={false}
+                    onMouseEnter={() => prefetchTab(tab.path)}
+                    onFocus={() => prefetchTab(tab.path)}
                     data-cuelume-hover="tick"
                     data-cuelume-press
                     onClick={() => handleNavClick(tab.path)}
@@ -292,12 +292,6 @@ export function MobileBottomNav() {
   const activePath = optimisticPath ?? pathname;
 
   useEffect(() => {
-    NAV_TAB_KEYS.forEach((tab) => {
-      router.prefetch(tab.path);
-    });
-  }, [router]);
-
-  useEffect(() => {
     if (optimisticPath !== null && pathname === optimisticPath) {
       setOptimisticPath(null);
     }
@@ -313,7 +307,9 @@ export function MobileBottomNav() {
             <Link
               key={tab.path}
               href={tab.path}
-              prefetch
+              prefetch={false}
+              onTouchStart={() => router.prefetch(tab.path)}
+              onMouseEnter={() => router.prefetch(tab.path)}
               data-cuelume-press
               onClick={() => {
                 if (pathname === tab.path) {

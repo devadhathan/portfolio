@@ -19,12 +19,15 @@ export function MobileSidebar({ onProjectSelect }: MobileSidebarProps) {
   const { projects } = useSiteContent();
   const [time, setTime] = useState<Date | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     setTime(new Date());
-    
-    // Update every 50ms for smooth second hand movement
+
+    // Only tick while the sheet is open (smooth second hand).
+    if (!open) return;
+
     const timer = setInterval(() => {
       setTime(new Date());
     }, 50);
@@ -32,7 +35,7 @@ export function MobileSidebar({ onProjectSelect }: MobileSidebarProps) {
     return () => {
       clearInterval(timer);
     };
-  }, []);
+  }, [open]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {
@@ -51,8 +54,6 @@ export function MobileSidebar({ onProjectSelect }: MobileSidebarProps) {
       day: 'numeric',
     });
   };
-
-  const [open, setOpen] = useState(false);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>

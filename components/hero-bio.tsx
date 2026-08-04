@@ -24,7 +24,7 @@ type HeroBioProps = {
 };
 
 export function HeroBio({
-  className = 'text-[13px] text-muted-foreground/70 leading-relaxed',
+  className = 'text-[13px] text-muted-foreground/70 leading-relaxed whitespace-pre-line',
   as: Tag = 'p',
   variant = 'full',
 }: HeroBioProps) {
@@ -34,6 +34,7 @@ export function HeroBio({
   return (
     <Tag className={className}>
       {t.rich(messageKey, {
+        i: (chunks) => <em className="italic">{chunks}</em>,
         wordsmith: (chunks) => companyLink('https://wordsmith.ai', chunks),
         nesoi: (chunks) => companyLink('https://nesoi.ai', chunks),
         ditto: (chunks) => companyLink('https://joinditto.in', chunks),

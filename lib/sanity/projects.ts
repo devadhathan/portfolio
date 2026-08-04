@@ -1,6 +1,8 @@
+import { unstable_cache } from 'next/cache'
 import { resumeData } from '@/lib/resume-data'
 import type { Project } from '@/lib/types/project'
 import { findProjectBySlug } from '@/lib/types/project'
+import { SANITY_REVALIDATE_SECONDS } from './cache'
 import { sanityClient } from './client'
 import { projectsQuery } from './queries'
 
@@ -11,7 +13,7 @@ function normalizeProject(project: SanityProject): Project {
   return rest
 }
 
-export async function getProjects(): Promise<Project[]> {
+async function fetchProjectsUncached(): Promise<Project[]> {
   try {
     const projects = await sanityClient.fetch<SanityProject[]>(projectsQuery)
 
@@ -26,6 +28,10 @@ export async function getProjects(): Promise<Project[]> {
     (p) => p.title !== 'Sustainable Kiosk' && p.title !== 'Booking Portal Redesign'
   ) as Project[]
 }
+
+export const getProjects = unstable_cache(fetchProjectsUncached, ['sanity-projects'], {
+  revalidate: SANITY_REVALIDATE_SECONDS,
+})
 
 export async function getProjectBySlug(slug: string): Promise<Project | null> {
   const projects = await getProjects()

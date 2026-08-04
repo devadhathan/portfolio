@@ -15,7 +15,6 @@ import { getProjects } from '@/lib/sanity/projects'
 import { getSiteContent } from '@/lib/sanity/site-content'
 import { localizeProjects } from '@/lib/i18n/localize-projects'
 import { routing, type Locale } from '@/i18n/routing'
-import { DEFAULT_CARD_PLACEHOLDER } from '@/lib/default-media'
 import { HERO_VIDEO_POSTER } from '@/lib/hero-media'
 import { fontVariables, geistSans } from '@/lib/fonts'
 import { Analytics } from '@vercel/analytics/next'
@@ -63,7 +62,6 @@ export default async function LocaleLayout({
     <html lang={locale} className="dark" suppressHydrationWarning>
       <head>
         <link rel="preload" href={HERO_VIDEO_POSTER} as="image" fetchPriority="high" />
-        <link rel="preload" href={DEFAULT_CARD_PLACEHOLDER} as="image" />
       </head>
       <body className={`${fontVariables} ${geistSans.className}`}>
         <NextIntlClientProvider messages={messages}>

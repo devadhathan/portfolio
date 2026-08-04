@@ -309,7 +309,10 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             <CardContent className="px-3 pb-3 pt-0 relative z-10 flex flex-col gap-4 sm:flex-row sm:items-start md:px-4 md:pb-4 h-full">
               <div className="flex-1 flex flex-col gap-3 justify-between h-full pb-4 sm:pb-8">
                 <div className="w-full max-w-[288px] min-w-0">
-                  <HeroBio variant="hero" />
+                  <HeroBio
+                    variant="hero"
+                    className="text-[13px] text-muted-foreground leading-relaxed whitespace-pre-line"
+                  />
                 </div>
                 <div className="flex flex-col gap-1 text-[13px] text-muted-foreground">
                   <div className="flex items-center gap-3">
@@ -904,11 +907,8 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     <>
       {!hideHeaderText && (
         <div className="mb-8 md:mb-10 text-left pt-8 md:pt-10 lg:pt-14">
-          <p className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-muted-foreground mb-4 md:mb-5">
-            {t('digitalHome')}
-          </p>
           <h1
-            className="max-w-5xl whitespace-pre-line text-balance text-3xl sm:text-[2.5rem] md:text-5xl lg:text-6xl xl:text-[4.25rem] font-light text-foreground tracking-tight leading-[1.02] mb-10 md:mb-14 lg:mb-16"
+            className="max-w-4xl whitespace-pre-line text-balance text-4xl sm:text-5xl md:text-[3.25rem] lg:text-6xl font-light text-foreground tracking-tight leading-[1.08] mb-10 md:mb-14 lg:mb-16"
           >
             {t('heroLine1')}
           </h1>
@@ -965,7 +965,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                     <div>
                       <h4 className="text-[15px] font-medium tracking-tight text-foreground mb-2">About</h4>
                       <HeroBio
-                        className="text-sm text-muted-foreground leading-relaxed"
+                        className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"
                         as="p"
                       />
                     </div>

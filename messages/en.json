@@ -19,8 +19,8 @@
   "home": {
     "digitalHome": "Dev's digital home",
     "heroLine1": "Designer building experiences for humans.",
-    "devBio": "Product designer who builds, most recently at <wordsmith>Wordsmith AI</wordsmith>. Before that, <nesoi>Nesoi</nesoi> and <ditto>Ditto Insurance</ditto> by <finshots>Finshots</finshots>, where I worked on the app that became Google Play's Best of 2020. Based in Edinburgh, shipping small Mac apps on the side.",
-    "devBioHero": "Product designer who builds, most recently at <wordsmith>Wordsmith AI</wordsmith>. Before that, <nesoi>Nesoi</nesoi> and <ditto>Ditto Insurance</ditto> by <finshots>Finshots</finshots>, shipping small Mac apps on the side.",
+    "devBio": "I design interfaces for the computer and experiences for the people.\n\nFour years in product design. Most recently <wordsmith>Wordsmith AI</wordsmith>, before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>.\n\nI think about interfaces and <i>what tickles us</i>. Research to find <i>the whys</i>, then obsess over details.\n\nBuilding something <i>simple, but better</i>.",
+    "devBioHero": "I design interfaces for the computer and experiences for the people.\n\nFour years in product design. Most recently <wordsmith>Wordsmith AI</wordsmith>, before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>.\n\nI think about interfaces and <i>what tickles us</i>. Research to find <i>the whys</i>, then obsess over details.\n\nBuilding something <i>simple, but better</i>.",
     "location": "Based in Edinburgh",
     "available": "Available for work",
     "availableOpportunities": "Available for opportunities",
@@ -191,10 +191,10 @@
         "accessibilityLabel": "Audio-reactive album artwork glitching to music, Spotify study"
       },
       "monthsDial": {
-        "title": "The months dial",
-        "question": "Why does Airbnb's dial feel faster than a date picker?",
-        "tags": ["Gestures + haptics", "Recreation study"],
-        "accessibilityLabel": "Trip length dial being dragged to six months, Airbnb study"
+        "title": "Koi pond",
+        "question": "What if a calm pond invited your finger to stir the water?",
+        "tags": ["Gestures + motion", "Playground study"],
+        "accessibilityLabel": "Interactive koi pond with lily pads, flowers, and ripples responding to touch"
       },
       "luxbrewReveal": {
         "title": "LuxBrew — the reveal",

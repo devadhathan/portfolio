@@ -35,6 +35,9 @@ export function DesktopSidebar({ onProjectSelect, isCollapsed = false, onCollaps
     setMounted(true);
     setTime(new Date());
 
+    // Smooth second hand only while the expanded clock is visible.
+    if (isCollapsed) return;
+
     const timer = setInterval(() => {
       setTime(new Date());
     }, 50);
@@ -42,7 +45,7 @@ export function DesktopSidebar({ onProjectSelect, isCollapsed = false, onCollaps
     return () => {
       clearInterval(timer);
     };
-  }, []);
+  }, [isCollapsed]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {

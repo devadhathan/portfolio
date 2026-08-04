@@ -174,13 +174,6 @@ export function PhotoCarousel({
   }, [photosKey, photos.length]);
 
   useEffect(() => {
-    photos.forEach((photo) => {
-      const img = new window.Image();
-      img.src = photo;
-    });
-  }, [photosKey, photos]);
-
-  useEffect(() => {
     if (animate) return;
 
     const frame = requestAnimationFrame(() => {
@@ -281,6 +274,10 @@ export function PhotoCarousel({
         {slides.map((photo, idx) => {
           const isActive = idx === trackIndex;
           const isHeld = heldIndex === idx && !isActive;
+          // Only load active/held/adjacent frames so the carousel doesn't
+          // download every multi-MB photo on first paint.
+          const dist = Math.abs(idx - trackIndex);
+          const shouldLoad = isActive || isHeld || dist <= 1;
 
           return (
             <div
@@ -293,25 +290,29 @@ export function PhotoCarousel({
                   isActive && enterBlur && !reduceMotion && 'photo-carousel-blur-in',
                 )}
               >
-                <ProgressiveImage
-                  ref={isActive ? activeImgRef : undefined}
-                  src={photo}
-                  alt={`${title} ${loop ? ((idx - 1 + count) % count) + 1 : idx + 1}`}
-                  loading={isActive ? 'eager' : 'lazy'}
-                  placeholderSrc={null}
-                  className={cn(
-                    'photo-carousel-image absolute inset-0 h-full w-full object-cover motion-reduce:scale-100 motion-reduce:animate-none',
-                    (isActive || isHeld) && !reduceMotion && 'photo-carousel-image--active',
-                    isHeld && 'photo-carousel-image--held',
-                    isActive && paused && 'photo-carousel-image--paused',
-                  )}
-                  style={
-                    (isActive || isHeld) && !reduceMotion
-                      ? ({ ['--ken-burns-scale' as string]: KEN_BURNS_SCALE } as React.CSSProperties)
-                      : undefined
-                  }
-                  onImageError={(event) => handleImageError(photo, event)}
-                />
+                {shouldLoad ? (
+                  <ProgressiveImage
+                    ref={isActive ? activeImgRef : undefined}
+                    src={photo}
+                    alt={`${title} ${loop ? ((idx - 1 + count) % count) + 1 : idx + 1}`}
+                    loading={isActive ? 'eager' : 'lazy'}
+                    placeholderSrc={null}
+                    className={cn(
+                      'photo-carousel-image absolute inset-0 h-full w-full object-cover motion-reduce:scale-100 motion-reduce:animate-none',
+                      (isActive || isHeld) && !reduceMotion && 'photo-carousel-image--active',
+                      isHeld && 'photo-carousel-image--held',
+                      isActive && paused && 'photo-carousel-image--paused',
+                    )}
+                    style={
+                      (isActive || isHeld) && !reduceMotion
+                        ? ({ ['--ken-burns-scale' as string]: KEN_BURNS_SCALE } as React.CSSProperties)
+                        : undefined
+                    }
+                    onImageError={(event) => handleImageError(photo, event)}
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-secondary/20" aria-hidden />
+                )}
               </div>
               <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/50 to-transparent" />
             </div>

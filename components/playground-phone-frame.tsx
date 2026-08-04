@@ -22,10 +22,10 @@ export function PlaygroundPhoneFrame({
     <div
       className={cn(
         'relative shrink-0 overflow-hidden bg-black',
-        'rounded-[1.65rem] border-[5px] border-black shadow-[0_12px_36px_rgba(0,0,0,0.22)]',
+        'rounded-[calc(1.65rem+2px)] border-[5px] border-black shadow-[0_12px_36px_rgba(0,0,0,0.22)]',
         size === 'preview' && 'w-[168px] sm:w-[188px]',
         size === 'detail' &&
-          'rounded-[1.85rem] border-[6px] shadow-[0_20px_56px_rgba(0,0,0,0.28)] w-[min(280px,calc(100vw-4rem))] sm:w-[300px]',
+          'rounded-[calc(1.85rem+2px)] border-[6px] shadow-[0_20px_56px_rgba(0,0,0,0.28)] w-[min(280px,calc(100vw-4rem))] sm:w-[300px]',
         className,
       )}
       style={{ aspectRatio: '9 / 19.5' }}
@@ -33,10 +33,10 @@ export function PlaygroundPhoneFrame({
       {showIsland ? (
         <div
           aria-hidden
-          className="pointer-events-none absolute left-1/2 top-2 z-20 h-5 w-[68px] -translate-x-1/2 rounded-full bg-black sm:top-2.5 sm:h-[22px] sm:w-[74px]"
+          className="pointer-events-none absolute left-1/2 top-1.5 z-20 h-[15px] w-[51px] -translate-x-1/2 rounded-full bg-black sm:top-2 sm:h-[16.5px] sm:w-[55.5px]"
         />
       ) : null}
-      <div className="absolute inset-[3px] overflow-hidden rounded-[1.35rem] bg-black sm:inset-[4px] sm:rounded-[1.45rem]">
+      <div className="absolute inset-[3px] overflow-hidden rounded-[calc(1.35rem+2px)] bg-black sm:inset-[4px] sm:rounded-[calc(1.45rem+2px)]">
         {children}
       </div>
     </div>
@@ -59,9 +59,10 @@ export function PlaygroundFlatFrame({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-2xl bg-neutral-100 dark:bg-[#1B1917]',
+        'relative overflow-hidden rounded-[1.65rem] bg-neutral-100 shadow-[0_12px_36px_rgba(0,0,0,0.18)] dark:bg-[#1B1917]',
         size === 'preview' && 'w-[168px] sm:w-[188px]',
-        size === 'detail' && 'mx-auto w-[min(480px,70vw)] rounded-[1.5rem] shadow-[0_20px_56px_rgba(0,0,0,0.2)]',
+        size === 'detail' &&
+          'mx-auto w-[min(280px,calc(100vw-4rem))] rounded-[1.85rem] shadow-[0_20px_56px_rgba(0,0,0,0.22)] sm:w-[300px]',
         className,
       )}
       style={{ aspectRatio: aspect.replace('/', ' / ') }}

@@ -27,17 +27,21 @@ export function HeroVideo({ className }: HeroVideoProps) {
     setLoopReady(false);
 
     const intro = introRef.current;
-    const loop = loopRef.current;
     muteVideo(intro);
-    muteVideo(loop);
+    // Load intro first; defer the loop clip until intro is ready/playing.
     intro?.load();
-    loop?.load();
   }, [muteVideo]);
 
   const handleIntroReady = () => {
     muteVideo(introRef.current);
     setIntroReady(true);
     void introRef.current?.play().catch(() => undefined);
+
+    const loop = loopRef.current;
+    if (loop && loop.networkState === HTMLMediaElement.NETWORK_EMPTY) {
+      muteVideo(loop);
+      loop.load();
+    }
   };
 
   const handleLoopReady = () => {
@@ -91,7 +95,7 @@ export function HeroVideo({ className }: HeroVideoProps) {
         loop
         muted
         playsInline
-        preload="metadata"
+        preload="none"
         aria-hidden={!showLoop}
         className={`absolute inset-0 z-[1] h-full w-full object-cover object-center transition-opacity duration-500 ${
           showLoop && loopReady ? 'opacity-100' : 'pointer-events-none opacity-0'

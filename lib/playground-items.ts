@@ -54,13 +54,13 @@ export const PLAYGROUND_VIDEO_ITEMS: PlaygroundItem[] = [
   },
   {
     id: 'monthsDial',
-    aspect: '1/1',
+    aspect: '634/1368',
     frame: 'flat',
-    stackLabel: 'GESTURES + HAPTICS',
+    stackLabel: 'GESTURES + MOTION',
     media: {
       type: 'video',
-      src: '/playground/videos/yJt7alfhHy2jaubTL6fRxMwNBcA.mp4',
-      poster: '/playground/posters/yJt7alfhHy2jaubTL6fRxMwNBcA.jpg',
+      src: '/playground/videos/months-dial-2026-07-30.mp4',
+      poster: '/playground/posters/months-dial-2026-07-30.jpg',
     },
   },
 ];

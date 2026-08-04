@@ -1,25 +1,33 @@
 'use client';
 
-import { useState, useEffect, useLayoutEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { useRegisterNavActions } from '@/contexts/nav-actions-context';
 import { useAskAI } from '@/components/ask-ai-provider';
-import { preloadHeroVideos } from '@/lib/hero-media';
 import { AgentState, PortfolioAgent } from '@/lib/agent';
 import type { GenUIViewport } from '@/lib/gen-ui-viewport';
 import { createLoadingViewport } from '@/lib/gen-ui-viewport';
 import { useGenUIPrompt } from '@/hooks/use-gen-ui-prompt';
 import { scrollPageToTop } from '@/lib/scroll-page';
+import { PortfolioSections } from '@/components/portfolio-sections';
 
 const GenUIModeShell = dynamic(
   () => import('@/components/gen-ui-mode-shell').then((mod) => ({ default: mod.GenUIModeShell })),
   { ssr: false },
 );
-const PortfolioSections = dynamic(() => import('@/components/portfolio-sections').then(mod => ({ default: mod.PortfolioSections })), { ssr: false });
-const DesktopSidebar = dynamic(() => import('@/components/desktop-sidebar').then(mod => ({ default: mod.DesktopSidebar })), { ssr: false });
-const ProjectDetailView = dynamic(() => import('@/components/project-detail-view').then(mod => ({ default: mod.ProjectDetailView })), { ssr: false });
-const ProjectsListView = dynamic(() => import('@/components/projects-list-view').then(mod => ({ default: mod.ProjectsListView })), { ssr: false });
+const DesktopSidebar = dynamic(
+  () => import('@/components/desktop-sidebar').then((mod) => ({ default: mod.DesktopSidebar })),
+  { ssr: false },
+);
+const ProjectDetailView = dynamic(
+  () => import('@/components/project-detail-view').then((mod) => ({ default: mod.ProjectDetailView })),
+  { ssr: false },
+);
+const ProjectsListView = dynamic(
+  () => import('@/components/projects-list-view').then((mod) => ({ default: mod.ProjectsListView })),
+  { ssr: false },
+);
 const GenUIChatWidget = dynamic(
   () => import('@/components/gen-ui-chat-widget').then((mod) => ({ default: mod.GenUIChatWidget })),
   { ssr: false },
@@ -38,10 +46,6 @@ const LOADING_MESSAGES = [
 
 export default function Home() {
   const { close: closeAskAI, resetAgent, registerStateChange } = useAskAI();
-
-  useLayoutEffect(() => {
-    preloadHeroVideos();
-  }, []);
 
   const [agentState, setAgentState] = useState<AgentState>(() => createDefaultAgentState());
   const [genUIViewports, setGenUIViewports] = useState<GenUIViewport[]>([]);
