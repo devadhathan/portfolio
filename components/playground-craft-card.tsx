@@ -12,7 +12,7 @@ type PlaygroundCraftCardProps = {
   className?: string;
 };
 
-/** CRAFT-style card: theme-aware shell, centered phone, mono title + stack footer. */
+/** Playground card aligned with home bento rhythm: rounded shell, preview, footer. */
 export function PlaygroundCraftCard({
   item,
   title,
@@ -29,8 +29,8 @@ export function PlaygroundCraftCard({
       data-cuelume-press
       data-cuelume-release
       className={cn(
-        'group flex w-[min(280px,78vw)] shrink-0 flex-col overflow-hidden border-r border-border/60 bg-card text-left last:border-r-0 transition-colors hover:bg-secondary/40 sm:w-full sm:min-h-[560px] sm:border-b sm:border-r',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/50',
+        'group flex h-full min-h-[320px] w-full flex-col overflow-hidden rounded-2xl border border-border/55 bg-card text-left transition-colors hover:border-border/80 hover:bg-secondary/20 sm:min-h-[420px] dark:border-border/40',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
         className,
       )}
     >
@@ -38,11 +38,11 @@ export function PlaygroundCraftCard({
         <PlaygroundItemMedia item={item} accessibilityLabel={accessibilityLabel} size="preview" />
       </div>
 
-      <div className="flex items-center justify-between gap-3 border-t border-border/60 bg-secondary/30 px-3 py-2.5">
-        <span className="truncate font-mono text-[10px] font-medium uppercase tracking-[0.06em] text-foreground sm:text-[11px]">
+      <div className="flex items-center justify-between gap-3 border-t border-border/50 bg-secondary/20 px-4 py-3">
+        <span className="truncate text-[13px] font-medium tracking-tight text-foreground">
           {title}
         </span>
-        <span className="shrink-0 truncate text-right font-mono text-[9px] font-medium uppercase tracking-[0.04em] text-muted-foreground sm:text-[10px]">
+        <span className="shrink-0 truncate text-right text-[11px] text-muted-foreground/70">
           {item.stackLabel}
         </span>
       </div>

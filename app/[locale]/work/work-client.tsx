@@ -76,20 +76,33 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
       );
 
       if (matchingProject) {
-        setSelectedProject(getProjectId(matchingProject.title));
+        const id = getProjectId(matchingProject.title);
+        setSelectedProject(id);
+        setExpandedProjects(new Set([id]));
         router.replace('/work', { scroll: false });
       }
     }
   }, [searchParams, router, projects]);
 
+  // Keep the open accordion in sync with the selected case study.
+  useEffect(() => {
+    if (!selectedProject) {
+      setExpandedProjects(new Set());
+      return;
+    }
+    setExpandedProjects(new Set([selectedProject]));
+  }, [selectedProject]);
+
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      <div className="pt-14 pb-24 px-4 md:px-6 lg:px-8 overflow-x-hidden">
-        {selectedProject ? (
-          <div className="flex flex-col lg:flex-row gap-6 max-w-[1600px] mx-auto relative">
-            <div className="lg:fixed lg:left-8 lg:top-0 lg:w-64 lg:pr-4 w-full pr-0 bg-card h-auto z-40 hidden lg:block">
+      <div className="flex pt-14 relative z-10">
+        <div className="flex-1 py-4 md:py-6 lg:py-8 pb-20 md:pb-24 lg:pb-8 overflow-x-hidden">
+          {selectedProject ? (
+            <div className="px-4 md:px-6 lg:px-8">
+              <div className="flex flex-col lg:flex-row gap-6 max-w-[1600px] mx-auto relative">
+            <div className="lg:fixed lg:left-8 lg:top-0 lg:w-64 lg:pr-4 w-full pr-0 h-auto z-40 hidden lg:block">
               <div className="pt-20">
-                <div className="sticky top-20 z-50 bg-card border border-border/50 rounded-lg p-4 pt-6">
+                <div className="sticky top-20 z-50 p-4 pt-6">
                   <Button
                     onClick={() => setSelectedProject(null)}
                     variant="ghost"
@@ -108,7 +121,13 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                       const isExpanded = expandedProjects.has(projectId);
 
                       const sections: { id: string; name: string }[] = [];
-                      if (project.designGallery?.length) sections.push({ id: 'design', name: t('sections.designGallery') });
+                      if (
+                        project.designGallery?.length ||
+                        project.title.toLowerCase().includes('nesoi') ||
+                        project.title.toLowerCase().includes('falcon')
+                      ) {
+                        sections.push({ id: 'design', name: t('sections.designGallery') });
+                      }
                       if (project.problem) sections.push({ id: 'problem', name: t('sections.problem') });
                       if (project.targetAudience) sections.push({ id: 'targetAudience', name: t('sections.targetAudience') });
                       project.detailSections?.forEach((section) => {
@@ -141,15 +160,16 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                             data-cuelume-press
                             data-cuelume-release
                             onClick={() => {
-                              setSelectedProject(projectId);
-                              if (sections.length > 0) {
+                              if (isSelected) {
                                 setExpandedProjects((prev) => {
                                   const next = new Set(prev);
                                   if (next.has(projectId)) next.delete(projectId);
                                   else next.add(projectId);
                                   return next;
                                 });
+                                return;
                               }
+                              setSelectedProject(projectId);
                             }}
                             className={`w-full text-left p-2.5 rounded-lg transition-all duration-200 flex items-center justify-between ${
                               isSelected
@@ -159,8 +179,12 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                           >
                             <span className="text-sm">{project.title}</span>
                             {sections.length > 0 && (
-                              <span className="ml-2">
-                                {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                              <span className="ml-2 shrink-0">
+                                {isSelected && isExpanded ? (
+                                  <ChevronDown className="h-4 w-4" />
+                                ) : (
+                                  <ChevronRight className="h-4 w-4" />
+                                )}
                               </span>
                             )}
                           </button>
@@ -209,14 +233,17 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
               />
             </div>
           </div>
+            </div>
         ) : (
-          <div className="max-w-[1300px] mx-auto">
-            <div className="mb-8 text-center">
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">{t('title')}</h1>
-              <p className="text-muted-foreground">{t('subtitle')}</p>
+          <div className="max-w-[1500px] mx-auto">
+            <div className="mx-0 px-4 sm:mx-4 sm:px-5 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-[70px] xl:px-[90px]">
+            <div className="mb-8 md:mb-10 text-left pt-8 md:pt-10 lg:pt-14">
+              <h1 className="max-w-4xl whitespace-pre-line text-balance text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem] font-light text-foreground tracking-tight leading-[1.1] mb-8 md:mb-10 lg:mb-12">
+                {t('heroLine')}
+              </h1>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 lg:gap-8 auto-rows-[minmax(260px,auto)] w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-4 lg:gap-5 auto-rows-[minmax(260px,auto)] w-full pb-4 md:pb-0">
               {(() => {
                 const finshotsProject = projects.find((p) => p.title.toLowerCase().includes('finshots'));
                 const otherProjects = projects.filter((p) => !p.title.toLowerCase().includes('finshots'));
@@ -231,7 +258,7 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                           data-cuelume-hover="tick"
                           data-cuelume-press
                           data-cuelume-release
-                          className="col-span-1 rounded-2xl border-2 border-border/70 bg-[#1B1917] text-white cursor-pointer hover:border-primary/60 transition-all group overflow-hidden h-full flex flex-col"
+                          className="col-span-1 rounded-2xl border border-border/55 bg-card text-foreground cursor-pointer hover:border-border/80 transition-all group overflow-hidden h-full flex flex-col dark:border-border/40"
                           onClick={() => setSelectedProject(projectId)}
                         >
                           <div className="flex flex-col h-full">
@@ -278,7 +305,7 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                         data-cuelume-hover="tick"
                         data-cuelume-press
                         data-cuelume-release
-                        className="col-span-1 lg:col-start-3 lg:col-span-1 lg:row-start-1 lg:row-span-2 rounded-2xl border-2 border-border/70 bg-[#1B1917] text-white cursor-pointer hover:border-primary/60 transition-all group overflow-hidden h-full flex flex-col"
+                        className="col-span-1 lg:col-start-3 lg:col-span-1 lg:row-start-1 lg:row-span-2 rounded-2xl border border-border/55 bg-card text-foreground cursor-pointer hover:border-border/80 transition-all group overflow-hidden h-full flex flex-col dark:border-border/40"
                         onClick={() => setSelectedProject(getProjectId(finshotsProject.title))}
                       >
                         <div className="flex flex-col h-full">
@@ -321,8 +348,10 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                 );
               })()}
             </div>
+            </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

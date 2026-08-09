@@ -27,7 +27,7 @@ export function GenUIChatWidget({
       type="button"
       onClick={onBackToChat}
       className={cn(
-        'fixed right-3 top-[calc(3.5rem+0.75rem)] z-40 flex max-w-[min(220px,calc(100vw-1.5rem))] items-center gap-2.5 rounded-2xl border border-border/60 bg-card/95 px-3 py-2.5 shadow-lg backdrop-blur-md transition-colors hover:bg-secondary/40 dark:border-white/10 dark:bg-[#1B1917]/95 sm:right-4',
+        'fixed right-3 top-[calc(3.5rem+0.75rem)] z-40 flex max-w-[min(220px,calc(100vw-1.5rem))] items-center gap-2.5 rounded-2xl border border-border/60 bg-card/95 px-3 py-2.5 shadow-lg backdrop-blur-md transition-colors hover:bg-secondary/40 dark:border-white/10 dark:bg-[#1C1A12]/95 sm:right-4',
         className,
       )}
       aria-label="Back to Gen UI chat"

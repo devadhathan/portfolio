@@ -248,7 +248,7 @@ export function PhotoCarousel({
     return () => window.clearInterval(timer);
   }, [loop, paused, go, reduceMotion]);
 
-  const minHeightClass = compact ? 'min-h-[200px]' : 'min-h-[320px]';
+  const minHeightClass = compact ? 'min-h-[200px]' : 'min-h-[400px] sm:min-h-[320px]';
 
   if (count === 0) {
     return (
@@ -263,6 +263,35 @@ export function PhotoCarousel({
       className={cn('group/photos relative z-10 h-full w-full overflow-hidden rounded-lg bg-secondary/10', minHeightClass)}
       style={{ ['--carousel-interval' as string]: `${CAROUSEL_INTERVAL_MS}ms` }}
     >
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-4 px-4 pt-4">
+        <p className="text-[15px] font-medium tracking-tight text-white drop-shadow-[0_1px_8px_rgba(0,0,0,0.55)]">
+          {title}
+        </p>
+        {loop ? (
+          <div className="pointer-events-auto flex items-center gap-2 pt-1">
+            {validPhotos.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                aria-label={`Go to photo ${idx + 1}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  isAnimatingRef.current = false;
+                  setAnimate(true);
+                  setTrackIndex(idx + 1);
+                  play('page', { volume: 0.3 });
+                }}
+                className={`rounded-full transition-all duration-300 ${
+                  idx === logicalIndex
+                    ? 'h-1.5 w-4 bg-white'
+                    : 'h-1.5 w-1.5 bg-white/40 hover:bg-white/65'
+                }`}
+              />
+            ))}
+          </div>
+        ) : null}
+      </div>
+
       <div
         className="flex h-full"
         style={{
@@ -274,10 +303,9 @@ export function PhotoCarousel({
         {slides.map((photo, idx) => {
           const isActive = idx === trackIndex;
           const isHeld = heldIndex === idx && !isActive;
-          // Only load active/held/adjacent frames so the carousel doesn't
-          // download every multi-MB photo on first paint.
-          const dist = Math.abs(idx - trackIndex);
-          const shouldLoad = isActive || isHeld || dist <= 1;
+          // Load the active slide (and held outgoing) only — adjacent preloads
+          // were pulling multi‑MB camera-roll originals on first paint.
+          const shouldLoad = isActive || isHeld;
 
           return (
             <div
@@ -314,6 +342,7 @@ export function PhotoCarousel({
                   <div className="absolute inset-0 bg-secondary/20" aria-hidden />
                 )}
               </div>
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-black/55 to-transparent" />
               <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/50 to-transparent" />
             </div>
           );
@@ -345,31 +374,10 @@ export function PhotoCarousel({
             <ChevronRight className="h-4 w-4" />
           </button>
 
-          <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5">
-            {validPhotos.map((_, idx) => (
-              <button
-                key={idx}
-                type="button"
-                aria-label={`Go to photo ${idx + 1}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  isAnimatingRef.current = false;
-                  setAnimate(true);
-                  setTrackIndex(idx + 1);
-                  play('page', { volume: 0.3 });
-                }}
-                className={`rounded-full transition-all duration-300 ${
-                  idx === logicalIndex
-                    ? 'h-1.5 w-4 bg-white'
-                    : 'h-1.5 w-1.5 bg-white/40 hover:bg-white/65'
-                }`}
-              />
-            ))}
-          </div>
         </>
       ) : null}
 
-      <div className="pointer-events-none absolute bottom-3 right-3 z-20 rounded-full bg-black/50 px-2.5 py-1 text-[11px] font-medium text-white/80 backdrop-blur-sm">
+      <div className="pointer-events-none absolute bottom-4 right-4 z-20 rounded-full bg-black/50 px-2 py-1 text-[12px] font-medium text-white/80 backdrop-blur-sm">
         {logicalIndex + 1} / {count}
       </div>
     </div>

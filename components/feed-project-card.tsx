@@ -41,7 +41,7 @@ export function FeedProjectCard({
   return (
     <article
       className={cn(
-        'flex h-full flex-col overflow-hidden rounded-2xl border border-border/50 bg-card shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-border/40 dark:bg-[#1B1917]',
+        'flex h-full flex-col overflow-hidden rounded-2xl border border-border/50 bg-card shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:border-border/40 dark:bg-[#1C1A12]',
         className,
       )}
     >

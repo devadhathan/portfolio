@@ -17,8 +17,8 @@ export function WeatherWidget() {
 
   return (
     <Card
-      data-cuelume-hover="whisper"
-      className="border-2 border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#1B1917] dark:shadow-md"
+      data-cuelume-card-hover
+      className="border-2 border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#1C1A12] dark:shadow-md"
     >
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium flex items-center gap-2">

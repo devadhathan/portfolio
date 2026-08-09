@@ -59,7 +59,7 @@ export function PlaygroundFlatFrame({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-[1.65rem] bg-neutral-100 shadow-[0_12px_36px_rgba(0,0,0,0.18)] dark:bg-[#1B1917]',
+        'relative overflow-hidden rounded-[1.65rem] bg-neutral-100 shadow-[0_12px_36px_rgba(0,0,0,0.18)] dark:bg-[#1C1A12]',
         size === 'preview' && 'w-[168px] sm:w-[188px]',
         size === 'detail' &&
           'mx-auto w-[min(280px,calc(100vw-4rem))] rounded-[1.85rem] shadow-[0_20px_56px_rgba(0,0,0,0.22)] sm:w-[300px]',

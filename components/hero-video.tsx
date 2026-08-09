@@ -52,7 +52,7 @@ export function HeroVideo({ className }: HeroVideoProps) {
   const activeReady = showLoop ? loopReady : introReady;
 
   return (
-    <div className={`relative h-full w-full overflow-hidden bg-[#1E1205] ${className ?? ''}`}>
+    <div className={`relative h-full w-full overflow-hidden bg-[#1D1807] ${className ?? ''}`}>
       {/* Poster only until the active clip can play — never stacked under a playing video */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {!activeReady && (
@@ -108,7 +108,7 @@ export function HeroVideo({ className }: HeroVideoProps) {
 
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-[3] bg-[#1E1205]/[20%]"
+        className="pointer-events-none absolute inset-0 z-[3] bg-[#1D1802]/[40%]"
       />
     </div>
   );

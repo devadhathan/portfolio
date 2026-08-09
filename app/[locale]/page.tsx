@@ -163,6 +163,9 @@ export default function Home() {
     onProjectSelect: setSelectedProject,
     onHomeClick: handleHomeClick,
     hideMobileNav: genUIMode,
+    showWidgetsToggle: !genUIMode,
+    widgetsCollapsed: isSidebarCollapsed,
+    onOpenWidgets: () => setIsSidebarCollapsed(false),
   });
 
   const handleEnterGenUI = () => {
@@ -173,7 +176,11 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden">
       <div className="flex pt-14 relative z-10">
-        <div className={`hidden lg:block fixed left-0 top-14 h-[calc(100vh-3.5rem)] z-20 transition-all duration-300 ${isSidebarCollapsed ? 'w-16' : 'w-80'}`}>
+        <div
+          className={`fixed left-0 top-14 z-20 hidden h-[calc(100vh-3.5rem)] transition-all duration-300 lg:block ${
+            isSidebarCollapsed ? 'pointer-events-none w-0' : 'w-80'
+          }`}
+        >
           <ErrorBoundary>
             <DesktopSidebar 
               onProjectSelect={setSelectedProject} 
@@ -185,11 +192,11 @@ export default function Home() {
         
         <div
           className={`flex-1 w-full relative z-10 transition-[margin-left] duration-500 ease-in-out overflow-x-hidden ${
-            isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-80'
+            isSidebarCollapsed ? 'lg:ml-0' : 'lg:ml-80'
           } ${
             genUIMode
               ? 'h-[calc(100vh-3.5rem)] min-h-0 overflow-hidden p-0'
-              : 'py-4 md:py-6 lg:py-8 pb-32 md:pb-28 lg:pb-8'
+              : 'py-4 md:py-6 lg:py-8 pb-20 md:pb-24 lg:pb-8'
           }`}
         >
           <div

@@ -38,12 +38,22 @@ export function useAskAI() {
 
 export function AskAIProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [hasOpened, setHasOpened] = useState(false);
   const stateChangeRef = useRef<(state: AgentState) => void>(() => {});
   const resetAgentRef = useRef<(() => void) | null>(null);
 
-  const open = useCallback(() => setIsOpen(true), []);
+  const open = useCallback(() => {
+    setHasOpened(true);
+    setIsOpen(true);
+  }, []);
   const close = useCallback(() => setIsOpen(false), []);
-  const toggle = useCallback(() => setIsOpen((prev) => !prev), []);
+  const toggle = useCallback(() => {
+    setIsOpen((prev) => {
+      const next = !prev;
+      if (next) setHasOpened(true);
+      return next;
+    });
+  }, []);
   const resetAgent = useCallback(() => {
     resetAgentRef.current?.();
   }, []);
@@ -80,13 +90,15 @@ export function AskAIProvider({ children }: { children: ReactNode }) {
       value={{ isOpen, open, close, toggle, resetAgent, registerStateChange }}
     >
       <div>{children}</div>
-      <SideAgent
-        variant="sidebar"
-        onStateChange={(state) => stateChangeRef.current(state)}
-        onCollapseChange={(collapsed) => setIsOpen(!collapsed)}
-        externalCollapsed={!isOpen}
-        resetRef={resetAgentRef}
-      />
+      {hasOpened ? (
+        <SideAgent
+          variant="sidebar"
+          onStateChange={(state) => stateChangeRef.current(state)}
+          onCollapseChange={(collapsed) => setIsOpen(!collapsed)}
+          externalCollapsed={!isOpen}
+          resetRef={resetAgentRef}
+        />
+      ) : null}
     </AskAIContext.Provider>
   );
 }

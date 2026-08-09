@@ -16,7 +16,7 @@ export default function NotFoundPage() {
   }, [])
 
   return (
-    <div className="relative w-full min-h-screen flex items-start justify-center bg-[#1B1917]">
+    <div className="relative w-full min-h-screen flex items-start justify-center bg-[#1C1A12]">
       <div className="absolute inset-0 bg-gradient-grid pointer-events-none opacity-30 z-0"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none z-0"></div>
       <div className="absolute inset-0 z-10 flex flex-col items-center justify-start pt-20 pointer-events-none">

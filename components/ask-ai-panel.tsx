@@ -45,7 +45,7 @@ export function AskAIPanel({
   messagesEndRef,
 }: AskAIPanelProps) {
   return (
-    <div className="fixed z-40 hidden lg:flex top-14 right-0 h-[calc(100vh-3.5rem)] w-[360px] flex-col border-l border-black/[0.08] bg-[#fafafa] shadow-[-12px_0_40px_rgba(0,0,0,0.06)] animate-in slide-in-from-right duration-300 dark:border-white/[0.08] dark:bg-[#151110] dark:shadow-[-12px_0_40px_rgba(0,0,0,0.45)]">
+    <div className="fixed z-40 hidden lg:flex top-14 right-0 h-[calc(100vh-3.5rem)] w-[360px] flex-col border-l border-border/60 bg-background shadow-[-12px_0_40px_rgba(0,0,0,0.06)] animate-in slide-in-from-right duration-300 dark:border-border dark:shadow-[-12px_0_40px_rgba(0,0,0,0.45)]">
       <div className="flex items-center justify-between px-4 h-12 border-b border-black/[0.06] shrink-0 dark:border-white/[0.08]">
         <span className="text-sm font-medium text-foreground">Ask AI</span>
         <button
@@ -109,7 +109,7 @@ export function AskAIPanel({
         )}
 
         <p className="mb-2.5 text-center text-[10px] text-muted-foreground/65 tabular-nums">{promptLimitLabel}</p>
-        <div className="relative rounded-xl border border-black/[0.10] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:border-white/[0.10] dark:bg-[#1B1917] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+        <div className="relative rounded-xl border border-border/60 bg-card shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:border-border dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
           <textarea
             ref={inputRef}
             value={input}

@@ -27,7 +27,7 @@ function AppleLogo({ className }: { className?: string }) {
 
 function MediaControls({ className }: { className?: string }) {
   return (
-    <div className={cn('flex items-center justify-center gap-2.5 text-foreground/90', className)}>
+    <div className={cn('flex items-center justify-center gap-2 text-foreground/90', className)}>
       <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden>
         <path d="M8 1.5v7L3 5z" fill="currentColor" />
         <path d="M2 1.5v7L0 5z" fill="currentColor" />
@@ -117,13 +117,13 @@ export function MusicNotchCard({ title, comingSoon, tagline, tagLabel, previewOn
       <div className="shrink-0 px-4 pt-4 pb-2">
         <div className="flex max-w-full flex-wrap items-center gap-2">
           <span className="text-[15px] font-medium tracking-tight text-foreground">{title}</span>
-          {tagLabel ? <CardTag>{tagLabel}</CardTag> : null}
-          <CardTag>{comingSoon}</CardTag>
+          {tagLabel ? <CardTag tone="glass">{tagLabel}</CardTag> : null}
+          <CardTag tone="amber">{comingSoon}</CardTag>
         </div>
-        {tagline ? <p className="mt-1 text-[11px] leading-snug text-muted-foreground/60">{tagline}</p> : null}
+        {tagline ? <p className="mt-4 text-[13px] leading-5 text-muted-foreground/60">{tagline}</p> : null}
       </div>
 
-      <div className="mt-auto px-3 pb-4 pt-2">
+      <div className="mt-auto px-4 pb-4 pt-2">
         <MacBookNotchPreview />
       </div>
     </div>

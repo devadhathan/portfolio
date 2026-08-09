@@ -16,7 +16,7 @@ import { useTranslations } from 'next-intl';
 import { FINSHOTS_APP_SCREEN } from '@/lib/build-case-study-cards';
 import { ProjectTreeCard } from '@/components/project-tree-card';
 import { SideProjectCard } from '@/components/side-project-card';
-import { CatalysticCard } from '@/components/catalystic-card';
+import { NesoiHomeCard } from '@/components/nesoi-home-card';
 import { MusicNotchCard } from '@/components/music-notch-card';
 import { PhotoCarousel } from '@/components/photo-carousel';
 import { AgentOrbCard } from '@/components/agent-orb-card';
@@ -24,10 +24,21 @@ import { DewVideoPhone, resolveDewVideoSrc } from '@/components/dew-video-phone'
 import { GrainBrandAnimation } from '@/components/grain-brand-animation';
 import { SiteUpdateNote } from '@/components/site-update-note';
 import { HeroVideo } from '@/components/hero-video';
+import { WordsmithCard } from '@/components/wordsmith-card';
+import { ConnectMiniPost } from '@/components/connect-mini-post';
+
+function XLogo({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className={className} fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.227-8.451L1.61 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" />
+    </svg>
+  );
+}
 
 const SECTION_ICON_MAP: Record<string, LucideIcon> = {
   hero: User,
   'side-project': Rocket,
+  wordsmith: Sparkles,
   'agent-dog': Sparkles,
   'music-notch': Sparkles,
   'finshots-award': Award,
@@ -45,7 +56,7 @@ const SECTION_ICON_MAP: Record<string, LucideIcon> = {
 const getSectionIcon = (id: string) => SECTION_ICON_MAP[id] ?? Sparkles;
 
 const SectionLabel = ({ label, icon: Icon }: { label: string; icon: LucideIcon }) => (
-  <div className="flex items-center gap-2.5">
+  <div className="flex items-center gap-2">
     <Icon className="h-4 w-4 text-foreground/80 flex-shrink-0" />
     <span className="text-[15px] font-medium tracking-tight text-foreground">{label}</span>
   </div>
@@ -53,12 +64,12 @@ const SectionLabel = ({ label, icon: Icon }: { label: string; icon: LucideIcon }
 
 const DEFAULT_PHOTO_PATHS = [
   '/photos/Le5RRVetScFh9EG3aEJYsrCsM.jpg.avif',
-  '/photos/O6bInc2LhAgXBkQ6yLobk41OLss.jpg',
-  '/photos/ZZXFdA0RZyD5h20wZdhoCxLhy0.jpg',
+  '/photos/optimized/O6bInc2LhAgXBkQ6yLobk41OLss.jpg',
+  '/photos/optimized/ZZXFdA0RZyD5h20wZdhoCxLhy0.jpg',
   '/photos/sakura-park.jpg',
-  '/photos/Cafe-laptop.png',
-  '/photos/daffodils-squirrel.jpg',
-  '/photos/edinburgh-street.jpg',
+  '/photos/optimized/Cafe-laptop.jpg',
+  '/photos/optimized/daffodils-squirrel.jpg',
+  '/photos/optimized/edinburgh-street.jpg',
 ];
 
 const PHOTO_BLOCKLIST = new Set([
@@ -126,24 +137,32 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     const list = [...visibleSections];
     const rowOrder = [
       'hero',
-      'projects',
-      'side-project',
-      'photos',
-      'agent-dog',
-      'gen-ui-orb',
-      'music-notch',
-      'video',
-      'experience',
       'connect',
+      'wordsmith',
+      'photos',
+      'side-project',
+      'projects',
+      'agent-dog',
+      'video',
     ];
     return rowOrder
       .map((id) => {
         if (id === 'agent-dog') {
           return {
             id: 'agent-dog',
-            title: 'Catalystic UI',
+            title: 'Nesoi.ai',
             priority: 'high' as SectionPriority,
             order: 5,
+            visible: true,
+            type: 'custom' as SectionType,
+          };
+        }
+        if (id === 'wordsmith') {
+          return {
+            id: 'wordsmith',
+            title: 'Wordsmith AI',
+            priority: 'high' as SectionPriority,
+            order: 3,
             visible: true,
             type: 'custom' as SectionType,
           };
@@ -185,17 +204,18 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     // On mobile, all cards should be single column (col-span-1)
     const sizeMap: { [key: string]: string } = {
       'hero': 'col-span-1 sm:col-span-2 lg:col-span-2 row-span-1',
-      'side-project': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 min-h-[300px] sm:min-h-[360px]',
-      'agent-dog': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 min-h-[420px] sm:min-h-[360px]',
+      'connect': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 min-h-[352px] sm:min-h-[452px]',
+      'wordsmith': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 min-h-[360px] sm:min-h-[520px]',
+      'side-project': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 min-h-[340px] sm:min-h-[400px]',
+      'agent-dog': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2 h-full min-h-[640px] sm:min-h-[560px]',
       'music-notch': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 min-h-[320px]',
       'gen-ui-orb': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
       'finshots-award': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
-      'projects': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 min-h-[300px] sm:min-h-[360px] lg:min-h-[420px]',
-      'photos': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 min-h-[300px] sm:min-h-[360px]',
+      'projects': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2 h-full min-h-[640px] sm:min-h-[560px]',
+      'photos': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 min-h-[400px] sm:min-h-[380px]',
       'video': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2 min-h-[320px]',
-      'connect': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
       'contact': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 ',
-      'experience': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
+      'experience': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 self-start h-auto',
     };
 
     // Use predefined size if available
@@ -224,7 +244,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     // border gently brightens on hover.
     const baseStyles = 'rounded-lg border border-border/55 hover:border-border/80 dark:border-border/40 dark:hover:border-border/70 cursor-pointer transition-all duration-500 ease-out relative overflow-hidden group';
 
-    const bgStyles = 'bg-card dark:bg-[#1B1917]';
+    const bgStyles = 'bg-card dark:bg-[#1C1A12]';
 
     const borderStyles: Record<Exclude<SectionPriority, 'hidden'>, string> = {
       high: '',
@@ -284,7 +304,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
       <Card 
         key={section.id} 
         data-card-id={section.id}
-        data-cuelume-hover="whisper"
+        data-cuelume-card-hover
         className={`${baseStyles} ${bentoSize} group flex flex-col relative overflow-hidden`}
         onClick={() => handleCardClick(section.id)}
         onMouseMove={(e) => {
@@ -299,19 +319,19 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             <CardHeader className="flex flex-col justify-center flex-shrink-0 relative z-10 pb-0 px-4 pt-4">
               <div className="mb-3">
                 <CardTitle className="text-[15px] font-medium tracking-tight text-foreground">
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2">
                     <SectionIcon className="h-4 w-4 text-foreground/80 flex-shrink-0" />
                     <span>Dev</span>
                   </div>
                 </CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="px-3 pb-3 pt-0 relative z-10 flex flex-col gap-4 sm:flex-row sm:items-start md:px-4 md:pb-4 h-full">
+            <CardContent className="relative z-10 flex flex-col gap-4 px-4 pb-4 pt-0 sm:flex-row sm:items-start h-full">
               <div className="flex-1 flex flex-col gap-3 justify-between h-full pb-4 sm:pb-8">
                 <div className="w-full max-w-[288px] min-w-0">
                   <HeroBio
                     variant="hero"
-                    className="text-[13px] text-muted-foreground leading-relaxed whitespace-pre-line"
+                    className="text-[13px] leading-5 text-muted-foreground whitespace-pre-line"
                   />
                 </div>
                 <div className="flex flex-col gap-1 text-[13px] text-muted-foreground">
@@ -327,20 +347,20 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
               </div>
             <div className="flex-1 flex justify-center">
               <div className="relative w-full max-w-[560px] rounded-lg overflow-hidden border border-border/40 dark:border-border/60 hero-illustration">
-                <div className="relative w-full h-[240px] sm:h-[300px] md:h-[340px] max-h-[340px]">
+                <div className="relative w-full h-[272px] sm:h-[332px] md:h-[372px] max-h-[372px]">
                   {theme === 'dark' ? (
                     <HeroVideo />
                   ) : theme === 'blue' || theme === 'green' || theme === 'red' ? (
                     <img
                       src={HERO_THEME_SVGS[theme]}
                       alt="Dev"
-                      className="relative z-10 mx-auto h-full w-auto max-w-full max-h-[340px] object-contain opacity-80 transition-opacity duration-300 group-hover:opacity-100"
+                      className="relative z-10 mx-auto h-full w-auto max-w-full max-h-[372px] object-contain opacity-80 transition-opacity duration-300 group-hover:opacity-100"
                     />
                   ) : (
                     <img
                       src={HERO_LIGHT_SVG}
                       alt="Dev"
-                      className={`relative z-10 mx-auto w-auto max-w-full max-h-[340px] object-contain opacity-80 transition-opacity duration-300 group-hover:opacity-100 svg-hero-${theme}`}
+                      className={`relative z-10 mx-auto w-auto max-w-full max-h-[372px] object-contain opacity-80 transition-opacity duration-300 group-hover:opacity-100 svg-hero-${theme}`}
                     />
                   )}
                 </div>
@@ -371,26 +391,69 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           </Card>
         );
 
-      case 'agent-dog':
+      case 'agent-dog': {
+        const experienceMousePos = mousePositions.experience;
+        const experienceHovered =
+          experienceMousePos !== null &&
+          experienceMousePos !== undefined &&
+          typeof experienceMousePos.x === 'number' &&
+          typeof experienceMousePos.y === 'number';
+        const experienceBorderReveal =
+          experienceHovered && experienceMousePos ? (
+            <div
+              className="absolute inset-0 pointer-events-none rounded-lg z-[1]"
+              style={{
+                border: '1px solid hsl(var(--primary) / 0.5)',
+                WebkitMaskImage: `radial-gradient(circle 200px at ${experienceMousePos.x}px ${experienceMousePos.y}px, black 30%, transparent 75%)`,
+                maskImage: `radial-gradient(circle 200px at ${experienceMousePos.x}px ${experienceMousePos.y}px, black 30%, transparent 75%)`,
+                transition: 'none',
+              }}
+            />
+          ) : null;
+
         return (
-          <Card
+          <div
             key={section.id}
-            data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-full cursor-pointer group relative overflow-hidden`}
-            onMouseMove={(e) => handleMouseMove(section.id, e)}
-            onMouseLeave={() => handleMouseLeave(section.id)}
+            className={`${bentoSize} flex min-h-0 flex-col gap-4`}
           >
-            {borderReveal}
-            <CardContent className="relative z-10 h-full p-0">
-              <CatalysticCard
-                sectionLabel={t('latestProjects.label')}
-                title={t('latestProjects.catalystic.title')}
-                description={t('latestProjects.catalystic.description')}
-                statusLabel={t('latestProjects.catalystic.status')}
-              />
-            </CardContent>
-          </Card>
+            <Card
+              data-card-id={section.id}
+              className={`${baseStyles} flex min-h-0 flex-1 flex-col cursor-pointer group relative overflow-hidden`}
+              onClick={() => onProjectSelect?.('nesoi-ai-dashboard')}
+              onMouseMove={(e) => handleMouseMove(section.id, e)}
+              onMouseLeave={() => handleMouseLeave(section.id)}
+            >
+              {borderReveal}
+              <CardContent className="relative z-10 h-full min-h-0 p-0">
+                <NesoiHomeCard
+                  title={t('latestProjects.nesoi.title')}
+                  description={t('latestProjects.nesoi.description')}
+                  statusLabel={t('latestProjects.nesoi.status')}
+                  onOpen={() => onProjectSelect?.('nesoi-ai-dashboard')}
+                />
+              </CardContent>
+            </Card>
+
+            <Card
+              id="work"
+              data-section="work"
+              data-card-id="experience"
+              data-cuelume-card-hover
+              className={`${baseStyles} group relative flex shrink-0 flex-col overflow-hidden`}
+              onMouseMove={(e) => handleMouseMove('experience', e)}
+              onMouseLeave={() => handleMouseLeave('experience')}
+            >
+              {experienceBorderReveal}
+              <CardContent className="relative z-10 flex min-h-0 flex-row items-center gap-2 px-4 py-2">
+                <SiteUpdateNote className="min-w-0 flex-1" />
+                <div className="shrink-0">
+                  <GrainBrandAnimation size={40} />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         );
+      }
 
       case 'music-notch':
         return (
@@ -418,25 +481,72 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           <Card
             key={section.id}
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-auto cursor-default group relative overflow-hidden`}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-full cursor-default group relative overflow-hidden`}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
           >
             {borderReveal}
-            <CardContent className="relative z-10 p-0">
+            <CardContent className="relative z-10 h-full p-0">
               <SideProjectCard
                 title={t('sideProject.title')}
-                url={t('sideProject.url')}
-                href="https://pixlanimations.vercel.app"
-                tagLabel={t('sideProject.label')}
-                createIconLabel={t('sideProject.createIcon')}
-                startDrawLabel={t('sideProject.startDraw')}
-                retryLabel={t('sideProject.retry')}
-                cancelLabel={t('sideProject.cancel')}
-                downloadLabel={t('sideProject.downloadSvg')}
-                generatingLabel={t('sideProject.generating')}
-                errorEmptyLabel={t('sideProject.errorEmpty')}
-                apiErrorLabel={t('sideProject.apiError')}
+                projects={[
+                  {
+                    id: 'catalystic',
+                    name: t('sideProject.projects.catalystic'),
+                    image: '/photos/catalystic-preview.png',
+                    href: 'https://catalysticui.space/landing.html',
+                    status: t('sideProject.status.shipped'),
+                  },
+                  {
+                    id: 'pixl',
+                    name: t('sideProject.projects.pixl'),
+                    image: '/photos/sideprojects/pixl.png',
+                    href: 'https://pixlanimations.vercel.app',
+                    status: t('sideProject.status.inProgress'),
+                  },
+                  {
+                    id: 'musicNotch',
+                    name: t('sideProject.projects.musicNotch'),
+                    image: '/photos/sideprojects/musicnotch.jpg',
+                    href: 'https://musicnotch-landing.vercel.app/',
+                    status: t('sideProject.status.comingSoon'),
+                  },
+                  {
+                    id: 'linkring',
+                    name: t('sideProject.projects.linkring'),
+                    image: '/photos/sideprojects/linkring.png',
+                    href: 'https://linkring.vercel.app/',
+                    status: t('sideProject.status.shipped'),
+                  },
+                  {
+                    id: 'bigBang',
+                    name: t('sideProject.projects.bigBang'),
+                    image: '/photos/sideprojects/big-bang.png',
+                    href: 'https://big-bang-timeline.vercel.app/',
+                    status: t('sideProject.status.shipped'),
+                  },
+                ]}
+              />
+            </CardContent>
+          </Card>
+        );
+
+      case 'wordsmith':
+        return (
+          <Card
+            key={section.id}
+            data-card-id={section.id}
+            className={`${baseStyles} ${bentoSize} flex flex-col h-full cursor-default group relative overflow-hidden`}
+            onMouseMove={(e) => handleMouseMove(section.id, e)}
+            onMouseLeave={() => handleMouseLeave(section.id)}
+          >
+            {borderReveal}
+            <CardContent className="relative z-10 h-full p-0">
+              <WordsmithCard
+                title={t('wordsmithCard.title')}
+                tagLabel={t('wordsmithCard.tag')}
+                yearLabel={t('wordsmithCard.year')}
+                description={t('wordsmithCard.description')}
               />
             </CardContent>
           </Card>
@@ -476,11 +586,11 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
               </div>
               <div className="mt-auto grid grid-cols-2 gap-2">
                 <div className="rounded-lg border border-border/30 bg-secondary/30 px-3 py-2">
-                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Downloads</p>
+                  <p className="text-[12px] uppercase tracking-wide text-muted-foreground">Downloads</p>
                   <p className="text-[14px] font-medium">100k+</p>
                 </div>
                 <div className="rounded-lg border border-border/30 bg-secondary/30 px-3 py-2">
-                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Rating</p>
+                  <p className="text-[12px] uppercase tracking-wide text-muted-foreground">Rating</p>
                   <p className="text-[14px] font-medium">4.9★</p>
                 </div>
               </div>
@@ -507,16 +617,16 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
               id="work"
               data-section="work"
               data-card-id={section.id}
-              data-cuelume-hover="whisper"
+              data-cuelume-card-hover
               className={`${baseStyles} ${bentoSize} group relative flex flex-col overflow-hidden`}
               onMouseMove={(e) => handleMouseMove(section.id, e)}
               onMouseLeave={() => handleMouseLeave(section.id)}
             >
               {borderReveal}
-              <CardContent className="relative z-10 flex min-h-[220px] flex-col items-start justify-between gap-4 px-4 pb-4 pt-[18px]">
-                <SiteUpdateNote className="w-full" />
-                <div className="flex w-full justify-center pb-1">
-                  <GrainBrandAnimation size={88} />
+              <CardContent className="relative z-10 flex min-h-0 flex-row items-center gap-2 px-4 py-2">
+                <SiteUpdateNote className="min-w-0 flex-1" />
+                <div className="shrink-0">
+                  <GrainBrandAnimation size={40} />
                 </div>
               </CardContent>
             </Card>
@@ -585,12 +695,12 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             id="work"
             data-section="work"
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-full min-h-[300px] sm:min-h-[360px] lg:min-h-[420px] max-h-[420px] cursor-default group relative overflow-hidden`}
+            className={`${baseStyles} ${bentoSize} flex h-full min-h-0 flex-col cursor-default group relative overflow-hidden`}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
           >
             {borderReveal}
-            <CardContent className="relative z-10 flex h-full min-h-0 flex-col px-4 pb-4 pt-[18px]">
+            <CardContent className="relative z-10 flex h-full min-h-0 flex-1 flex-col px-4 pb-4 pt-4">
               <ProjectTreeCard
                 label={t('projectTreeLabel')}
                 icon={FolderKanban}
@@ -598,7 +708,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 onProjectSelect={(projectId) => {
                   onProjectSelect?.(projectId);
                 }}
-                className="h-full min-h-0"
+                className="h-full min-h-0 flex-1"
               />
             </CardContent>
           </Card>
@@ -708,7 +818,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           <Card
             key={section.id}
             data-card-id={section.id}
-            data-cuelume-hover="whisper"
+            data-cuelume-card-hover
             className={`${baseStyles} ${bentoSize} flex flex-col h-full overflow-hidden group p-0`}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseEnter={() => setCarouselPaused((prev) => ({ ...prev, [section.id]: true }))}
@@ -721,7 +831,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             {photos.length > 0 ? (
               <PhotoCarousel
                 photos={photos}
-                title={section.title || 'Photo'}
+                title={t('latestProjects.photosTitle')}
                 paused={carouselPaused[section.id] ?? false}
               />
             ) : (
@@ -856,50 +966,58 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
         );
       }
 
-      case 'connect':
+      case 'connect': {
+        const linkedinUrl = (settings.linkedin ?? 'in/devadhathan/').startsWith('http')
+          ? settings.linkedin!
+          : `https://linkedin.com/${(settings.linkedin ?? 'in/devadhathan/').replace(/^\/+/, '')}`;
+        const githubUrl = settings.github?.startsWith('http')
+          ? settings.github
+          : `https://github.com/${settings.github ?? 'devadhathan'}`;
+        const socialLinks = [
+          {
+            label: 'Email',
+            href: `mailto:${settings.email}`,
+            icon: <Mail className="h-4 w-4" />,
+          },
+          {
+            label: 'X',
+            href: 'https://x.com/mddevadhathan',
+            icon: <XLogo className="h-3.5 w-3.5" />,
+          },
+          {
+            label: 'LinkedIn',
+            href: linkedinUrl,
+            icon: <Linkedin className="h-4 w-4" />,
+          },
+          {
+            label: 'GitHub',
+            href: githubUrl,
+            icon: <Github className="h-4 w-4" />,
+          },
+        ];
+
         return (
-          <Card 
-            key={section.id} 
+          <Card
+            key={section.id}
             data-card-id={section.id}
             className={`${baseStyles} ${bentoSize} flex flex-col h-full group relative overflow-hidden`}
-            onClick={() => handleCardClick(section.id)}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
           >
             {borderReveal}
-            <CardHeader className="pb-2 flex-shrink-0 relative z-10">
-              <CardTitle className="text-[16px] mb-2">
-                <SectionLabel label={t('connect')} icon={SectionIcon} />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-2 relative z-10 flex-1 justify-center">
-              <a
-                href={`mailto:${settings.email}`}
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group/item border border-border/20"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Mail className="h-4 w-4 text-primary group-hover/item:scale-110 transition-transform flex-shrink-0" />
-                <div className="flex flex-col min-w-0">
-                  <span className="text-[13px] font-medium">{t('email')}</span>
-                  <span className="text-[11px] text-muted-foreground truncate">{settings.email}</span>
-                </div>
-              </a>
-              <a
-                href={`https://linkedin.com/${(settings.linkedin ?? 'in/devadhathan/').replace(/^\/+/, '')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group/item border border-border/20"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Linkedin className="h-4 w-4 text-primary group-hover/item:scale-110 transition-transform flex-shrink-0" />
-                <div className="flex flex-col min-w-0">
-                  <span className="text-[13px] font-medium">LinkedIn</span>
-                  <span className="text-[11px] text-muted-foreground">{t('connectWithMe')}</span>
-                </div>
-              </a>
+            <CardContent className="relative z-10 h-full p-0">
+              <ConnectMiniPost
+                name={t('connectPost.name')}
+                handle={t('connectPost.handle')}
+                avatarSrc="/photos/sideprojects/avatar-face.jpg"
+                body={t('connectPost.body')}
+                profileHref="https://x.com/mddevadhathan"
+                socialLinks={socialLinks}
+              />
             </CardContent>
           </Card>
         );
+      }
     }
   };
 
@@ -914,7 +1032,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           </h1>
         </div>
       )}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-4 lg:gap-5 auto-rows-[minmax(220px,auto)] pb-4 md:pb-0 w-full">
+      <div className="grid w-full grid-cols-1 gap-4 auto-rows-[minmax(0,auto)] pb-4 sm:grid-cols-2 md:pb-0 lg:grid-cols-3">
         {displaySections.map((section, index) => renderSection(section, index))}
       </div>
       

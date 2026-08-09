@@ -43,7 +43,7 @@ export function DewVideoPhone({
   return (
     <div
       ref={containerRef}
-      data-cuelume-hover="whisper"
+      data-cuelume-card-hover
       className="relative z-10 flex h-full w-full items-center justify-center p-4"
     >
       <div className="relative aspect-[9/19.5] w-full max-w-[250px] rounded-[2.25rem] bg-black p-2 shadow-2xl">

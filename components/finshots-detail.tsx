@@ -83,37 +83,37 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
   }
 
   return (
-    <div className="animate-in fade-in duration-300 w-full text-foreground pb-20 lg:pb-0 max-w-6xl mx-auto mt-8 lg:mt-24 px-4 md:px-6 lg:px-0">
+    <div className="animate-in fade-in duration-300 w-full text-foreground pb-20 lg:pb-0 max-w-6xl mx-auto mt-12 lg:mt-24 px-4 md:px-6 lg:px-0">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-12 lg:mb-16">
         <div>
           {!hideBackButton && (
-            <Button onClick={onBack} variant="ghost" size="sm" className="mb-5">
+            <Button onClick={onBack} variant="ghost" size="sm" className="mb-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
               {t('backToPortfolio')}
             </Button>
           )}
-          <div className="flex items-center gap-3 mb-3">
-            <h1 className="text-3xl font-bold text-foreground">{project.title}</h1>
-            <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-medium border border-red-500/30">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{project.title}</h1>
+            <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-[12px] font-medium border border-red-500/30">
               {t('shipped')}
             </span>
           </div>
-          <div className="flex items-center gap-5 text-sm text-muted-foreground">
+          <div className="mt-4 flex flex-wrap items-center gap-4 text-[13px] leading-5 text-muted-foreground">
             {(project.company || project.institution) && (
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 {project.company || project.institution}
               </span>
             )}
             {project.period && (
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
                 {project.period}
               </span>
             )}
             {project.type && (
-              <span className="px-2 py-1 bg-primary/20 text-primary rounded-md text-xs font-medium">
+              <span className="px-2 py-1 bg-primary/20 text-primary rounded-full text-[12px] font-medium">
                 {project.type}
               </span>
             )}
@@ -122,24 +122,24 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       </div>
 
       {/* Main Content Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 mb-24 lg:mb-32">
         {/* Left Content - Description */}
-        <div className="lg:col-span-2 space-y-6">
-          <p className="text-lg case-study-body text-muted-foreground">
+        <div className="lg:col-span-2 space-y-8">
+          <p className="text-[15px] leading-7 case-study-body text-muted-foreground">
             {t('finshotsIntro1')}
           </p>
-          <p className="text-lg case-study-body text-muted-foreground">
+          <p className="text-[15px] leading-7 case-study-body text-muted-foreground">
             {t('finshotsIntro2')}
           </p>
           {project.url && (
-            <div className="flex flex-wrap gap-4 pt-2">
+            <div className="flex flex-wrap gap-4 pt-4">
               <a
                 href={project.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
               >
-                <span className="text-base font-medium">{t('viewProject')}</span>
+                <span className="text-[13px] font-medium">{t('viewProject')}</span>
                 <Smartphone className="h-4 w-4" />
                 <ExternalLink className="h-4 w-4" />
               </a>
@@ -151,17 +151,17 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
         <div className="lg:col-span-1 space-y-0 border-l border-border/50 pl-8">
           {project.type && (
             <div className="pb-6 border-b border-border/50">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">{t('product')}</h3>
-              <p className="text-base text-foreground">{project.type}</p>
+              <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">{t('product')}</h3>
+              <p className="text-[13px] leading-5 text-foreground">{project.type}</p>
             </div>
           )}
           
           {project.tools && project.tools.length > 0 && (
             <div className="py-6 border-b border-border/50">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">{t('skills')}</h3>
+              <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">{t('skills')}</h3>
               <div className="space-y-2">
                 {project.tools.map((tool, idx) => (
-                  <p key={idx} className="text-base text-foreground">{tool}</p>
+                  <p key={idx} className="text-[13px] leading-5 text-foreground">{tool}</p>
                 ))}
               </div>
             </div>
@@ -169,39 +169,39 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
           
           {project.role && (
             <div className="py-6 border-b border-border/50">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">{t('myRole')}</h3>
-              <p className="text-base text-foreground">{project.role}</p>
+              <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">{t('myRole')}</h3>
+              <p className="text-[13px] leading-5 text-foreground">{project.role}</p>
             </div>
           )}
           
           {project.period && (
             <div className="py-6 border-b border-border/50">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">{t('timeline')}</h3>
-              <p className="text-base text-foreground">{project.period}</p>
+              <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">{t('timeline')}</h3>
+              <p className="text-[13px] leading-5 text-foreground">{project.period}</p>
             </div>
           )}
           
           {project.team && (
             <div className="pt-6">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">{t('team')}</h3>
-              <p className="text-base text-foreground">{project.team}</p>
+              <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">{t('team')}</h3>
+              <p className="text-[13px] leading-5 text-foreground">{project.team}</p>
             </div>
           )}
         </div>
       </div>
 
       {/* Bento Grid - Images Section */}
-      <div className="mb-64">
-        <h2 className="text-2xl font-normal text-foreground mb-4">{t('designGallery')}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="mb-24 lg:mb-32">
+        <h2 className="text-xl md:text-2xl font-normal text-foreground mb-8 lg:mb-12">{t('designGallery')}</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {finshotsImages.map((image, idx) => (
             <div key={idx}>
             <Card 
               className="col-span-1 border-2 border-border/70 bg-card/60 backdrop-blur-md hover:border-primary/50 transition-all duration-300 cursor-pointer group overflow-hidden"
               onClick={() => handleImageClick(image.src)}
             >
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-[15px] font-medium tracking-tight flex items-center gap-2">
                   {image.title}
                   <ZoomIn className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                 </CardTitle>
@@ -225,10 +225,10 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
 
       {/* Problem Section */}
       {project.problem && (
-        <div id={`${projectId}-problem`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('problem')}</h2>
+        <div id={`${projectId}-problem`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('problem')}</h2>
           <div className="lg:col-span-3">
-            <p className="text-lg case-study-body text-muted-foreground">
+            <p className="text-[15px] leading-7 case-study-body text-muted-foreground">
               {project.problem}
             </p>
             <div className="mt-6">
@@ -256,10 +256,10 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
 
       {/* Research Section */}
       {project.research && (
-        <div id={`${projectId}-research`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('research')}</h2>
+        <div id={`${projectId}-research`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('research')}</h2>
           <div className="lg:col-span-3">
-            <p className="text-lg case-study-body text-muted-foreground">
+            <p className="text-[15px] leading-7 case-study-body text-muted-foreground">
               {project.research}
             </p>
           </div>
@@ -268,10 +268,10 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
 
       {/* HMW Section */}
       {project.hmw && (
-        <div id={`${projectId}-hmw`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('hmw')}</h2>
+        <div id={`${projectId}-hmw`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('hmw')}</h2>
           <div className="lg:col-span-3">
-            <p className="text-lg case-study-body text-muted-foreground font-medium">
+            <p className="text-[15px] leading-7 case-study-body text-muted-foreground font-medium">
               {project.hmw}
             </p>
           </div>
@@ -279,10 +279,10 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       )}
 
       {/* Possible Solutions */}
-      <div id={`${projectId}-possible-solutions`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-        <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('possibleSolutions')}</h2>
+      <div id={`${projectId}-possible-solutions`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+        <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('possibleSolutions')}</h2>
         <div className="lg:col-span-3">
-          <p className="text-lg case-study-body text-muted-foreground">
+          <p className="text-[15px] leading-7 case-study-body text-muted-foreground">
             {t('finshotsPossibleSolutions')}
           </p>
         </div>
@@ -290,10 +290,9 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
 
       {/* Key Features Section */}
       {project.keyFeatures && project.keyFeatures.length > 0 && (
-        <div id={`${projectId}-key-features`} className="mb-64">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8">
-            <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('keyFeaturesShipped')}</h2>
-            <div className="lg:col-span-3"></div>
+        <div id={`${projectId}-key-features`} className="mb-24 lg:mb-32">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12 mb-8">
+            <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('keyFeaturesShipped')}</h2>
           </div>
           <div className="space-y-12">
             {project.keyFeatures.map((feature, idx) => {
@@ -305,9 +304,9 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
               return (
                 <div key={idx} className="space-y-4">
                   <div>
-                    <h3 className="text-2xl font-medium text-foreground mb-2">{featureName}</h3>
+                    <h3 className="text-[15px] font-medium tracking-tight text-foreground mb-4">{featureName}</h3>
                     {featureDesc && (
-                      <p className="text-lg case-study-body text-muted-foreground">
+                      <p className="text-[15px] leading-7 case-study-body text-muted-foreground">
                         {featureDesc}
                       </p>
                     )}
@@ -367,17 +366,17 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
 
       {/* Results Section */}
       {project.results && project.results.length > 0 && (
-        <div id={`${projectId}-stats`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('result')}</h2>
+        <div id={`${projectId}-stats`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('result')}</h2>
           <div className="lg:col-span-3">
-            <p className="text-lg case-study-body text-muted-foreground mb-6">
+            <p className="text-[15px] leading-7 case-study-body text-muted-foreground mb-8">
               {t('finshotsResultsIntro')}
             </p>
-            <div className="space-y-3">
+            <div className="space-y-8">
               {project.results.map((result, idx) => (
-                <div key={idx} className="flex items-start gap-3">
+                <div key={idx} className="flex items-start gap-4">
                   <span className="text-primary mt-1">→</span>
-                  <p className="text-lg case-study-body text-muted-foreground">{result}</p>
+                  <p className="text-[15px] leading-7 case-study-body text-muted-foreground">{result}</p>
                 </div>
               ))}
             </div>
@@ -387,19 +386,19 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
 
       {/* Learnings Section */}
       {project.learnings && (
-        <div id={`${projectId}-learnings`} className="mb-64 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <h2 className="text-2xl font-normal text-foreground lg:col-span-2">{t('whatDidILearn')}</h2>
+        <div id={`${projectId}-learnings`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('whatDidILearn')}</h2>
           <div className="lg:col-span-3">
             {Array.isArray(project.learnings) ? (
-              <div className="space-y-4">
+              <div className="space-y-8">
                 {project.learnings.map((learning, idx) => (
-                  <p key={idx} className="text-lg case-study-body text-muted-foreground">
+                  <p key={idx} className="text-[15px] leading-7 case-study-body text-muted-foreground">
                     {learning}
                   </p>
                 ))}
               </div>
             ) : (
-              <p className="text-lg case-study-body text-muted-foreground">
+              <p className="text-[15px] leading-7 case-study-body text-muted-foreground">
                 {project.learnings}
               </p>
             )}

@@ -4,7 +4,8 @@
     "description": "Portfolio of Devadhathan, Product Designer"
   },
   "nav": {
-    "about": "About",
+    "home": "Home",
+    "about": "Home",
     "work": "Work",
     "contact": "Contact",
     "playground": "Playground",
@@ -27,6 +28,11 @@
     "loadingPortfolio": "Loading Dev's Portfolio",
     "experience": "Experience",
     "connect": "Connect",
+    "connectPost": {
+      "name": "Dev MD",
+      "handle": "@mddevadhathan",
+      "body": "Connect with me on LinkedIn or X — let’s build something great 💪"
+    },
     "designPreferences": "Design Preferences",
     "designPhilosophy": "Design Philosophy",
     "connectWithMe": "Connect with me",
@@ -56,7 +62,7 @@
     "projectTreeLabel": "Case studies",
     "latestProjects": {
       "label": "Latest projects",
-      "photosTitle": "Camera roll",
+      "photosTitle": "My photos",
       "agentDog": {
         "title": "AgentDog",
         "description": "A design critique agent with a personality — teaching the agent to read layouts and spot hierarchy issues.",
@@ -68,6 +74,11 @@
         "description": "A playground for Google’s A2UI generator — prompt a screen and it renders interactive Gen UI in place.",
         "status": "Live",
         "tags": ["A2UI", "Generative UI"]
+      },
+      "nesoi": {
+        "title": "Nesoi.ai",
+        "description": "From form wizard to AI partner — turning internal material into interactive training for enterprise teams.",
+        "status": "Case study"
       }
     },
     "musicNotch": {
@@ -76,18 +87,28 @@
       "tagline": "Your notch, fully alive."
     },
     "sideProject": {
-      "label": "Side project",
-      "title": "Pixl",
+      "title": "Sideprojects",
       "url": "pixlanimations.vercel.app",
-      "description": "Pixel grid sequencer for motion and animation. Sketch below — AI recognizes your drawing and generates an SVG.",
-      "startDraw": "Draw",
-      "createIcon": "Generate",
-      "retry": "Retry",
-      "cancel": "Cancel",
-      "downloadSvg": "Download SVG",
-      "generating": "Recognizing…",
-      "errorEmpty": "Draw something on the grid first.",
-      "apiError": "Could not reach the icon API. Try again."
+      "label": "Side project",
+      "status": {
+        "shipped": "Shipped",
+        "comingSoon": "Coming soon",
+        "inProgress": "Work in progress"
+      },
+      "projects": {
+        "pixl": "Pixl",
+        "musicNotch": "MusicNotch",
+        "linkring": "Linkring",
+        "bigBang": "Big Bang Timeline",
+        "agentDog": "AgentDog",
+        "catalystic": "Catalystic UI"
+      }
+    },
+    "wordsmithCard": {
+      "title": "Wordsmith AI",
+      "tag": "Latest experience",
+      "year": "2026",
+      "description": "Designed contract review and workflow blueprint flows for in-house legal teams. Shipped end-to-end UX, partnering with legal engineers and developers, and ran the end-to-end discovery research behind it."
     },
     "philosophy": {
       "userCenteredTitle": "User-Centered Design",
@@ -120,6 +141,7 @@
   },
   "work": {
     "title": "Work",
+    "heroLine": "Selected case studies.",
     "subtitle": "My projects",
     "loadingProject": "Loading project...",
     "loading": "Loading...",
@@ -151,6 +173,7 @@
   },
   "playground": {
     "label": "Playground",
+    "heroLine": "Interaction studies and experiments.",
     "esc": "Esc",
     "builtWith": "Built with",
     "buildingAgent": {

@@ -55,9 +55,9 @@ export function AgentOrbCard({ title, description, buttonLabel, onClick, classNa
       <div ref={orbRef} className="flex items-center justify-center">
         <AgentOrb size="md" lookAt={lookAt} />
       </div>
-      <div className="max-w-[14rem] space-y-1">
+      <div className="max-w-[14rem] space-y-4">
         <p className="text-[15px] font-medium tracking-tight text-foreground">{title}</p>
-        <p className="text-[11px] leading-snug text-muted-foreground/75">{description}</p>
+        <p className="text-[13px] leading-5 text-muted-foreground/75">{description}</p>
       </div>
       <button
         type="button"
@@ -67,7 +67,7 @@ export function AgentOrbCard({ title, description, buttonLabel, onClick, classNa
           e.stopPropagation();
           onClick();
         }}
-        className="relative z-20 inline-flex items-center justify-center rounded-full border border-border/50 bg-primary px-5 py-1.5 font-mono text-[10px] uppercase tracking-wide text-primary-foreground hover:bg-primary/90 max-lg:mb-2"
+        className="relative z-20 inline-flex items-center justify-center rounded-full border border-border/50 bg-primary px-4 py-2 font-mono text-[12px] uppercase tracking-wide text-primary-foreground hover:bg-primary/90 max-lg:mb-2"
       >
         {buttonLabel}
       </button>

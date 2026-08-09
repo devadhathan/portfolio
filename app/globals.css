@@ -13,24 +13,24 @@ body {
 
 /* Theme variables - outside @layer for proper specificity */
 .dark {
-  --background: 12 14% 7.3%;
+  --background: 53 31% 6%;
   --foreground: 0 0% 98%;
-  --card: 30 8% 9.8%;
+  --card: 47 20% 9%;
   --card-foreground: 0 0% 98%;
-  --popover: 30 8% 9.8%;
+  --popover: 47 20% 9%;
   --popover-foreground: 0 0% 98%;
   --primary: 0 0% 98%;
   --primary-foreground: 0 0% 10%;
-  --secondary: 15 10% 12%;
+  --secondary: 45 10% 12%;
   --secondary-foreground: 0 0% 98%;
-  --muted: 15 10% 12%;
+  --muted: 45 10% 12%;
   --muted-foreground: 0 0% 65%;
-  --accent: 18 9% 14%;
+  --accent: 45 9% 14%;
   --accent-foreground: 0 0% 98%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
-  --border: 20 8% 16%;
-  --input: 20 8% 16%;
+  --border: 45 9% 17%;
+  --input: 45 9% 17%;
   --ring: 0 0% 83.9%;
   --radius: 0.75rem;
   --theme-color: #F5F5F5;
@@ -288,24 +288,24 @@ body {
     --radius: 0.75rem;
   }
   .dark {
-    --background: 12 14% 7.3%;
+    --background: 53 31% 6%;
     --foreground: 0 0% 98%;
-    --card: 30 8% 9.8%;
+    --card: 47 20% 9%;
     --card-foreground: 0 0% 98%;
-    --popover: 30 8% 9.8%;
+    --popover: 47 20% 9%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
-    --secondary: 15 10% 12%;
+    --secondary: 45 10% 12%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 15 10% 12%;
+    --muted: 45 10% 12%;
     --muted-foreground: 0 0% 63.9%;
-    --accent: 18 9% 14%;
+    --accent: 45 9% 14%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 20 8% 16%;
-    --input: 20 8% 16%;
+    --border: 45 9% 17%;
+    --input: 45 9% 17%;
     --ring: 0 0% 83.1%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
@@ -493,6 +493,74 @@ body {
   }
 }
 
+@keyframes comparison-sonar {
+  0% {
+    transform: translate(-50%, -50%) scale(0.35);
+    opacity: 0.9;
+  }
+  70% {
+    opacity: 0.18;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3.4);
+    opacity: 0;
+  }
+}
+
+.comparison-sonar-ring {
+  animation: comparison-sonar 3.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  will-change: transform, opacity;
+}
+
+.comparison-sonar-ring-delay {
+  animation-delay: 1.8s;
+}
+
+.comparison-sonar-ring-delay-2 {
+  animation-delay: 0.9s;
+}
+
+/* Side-projects deck: exit — scale + move together (no rotate, no fade) */
+@keyframes side-project-exit {
+  0% {
+    transform: translate3d(-50%, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(-50%, 160%, 260px) scale(1.65);
+  }
+}
+
+.side-project-card-exit {
+  animation: side-project-exit 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: center bottom;
+  will-change: transform;
+  transition: none !important;
+}
+
+.side-project-card-exit-shuffle {
+  animation: side-project-exit 1.5s ease-in-out forwards;
+  transform-origin: center bottom;
+  will-change: transform;
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .side-project-card-exit,
+  .side-project-card-exit-shuffle {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .comparison-sonar-ring,
+  .comparison-sonar-ring-delay,
+  .comparison-sonar-ring-delay-2 {
+    animation: none;
+    opacity: 0;
+  }
+}
+
 @keyframes notch-progress {
   0% { width: 16%; }
   100% { width: 74%; }
@@ -520,12 +588,12 @@ body {
 /* Case study body copy — matches design spec */
 .case-study-body {
   line-height: 28px;
-  letter-spacing: -0.17px;
+  letter-spacing: -0.09px;
 }
 
 /* Dynamic background gradient based on theme */
 html.dark body {
-  background: #151110;
+  background: hsl(53 31% 6%);
 }
 
 html.light body {
@@ -904,4 +972,164 @@ html.red body {
 
 .photo-carousel-blur-in {
   animation: photo-carousel-blur-in 1000ms ease-out forwards;
+}
+
+/* Floating glass nav — translucent, deep blur, specular edge */
+.glass-nav-pill {
+  isolation: isolate;
+  background:
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.55) 0%,
+      rgba(255, 255, 255, 0.28) 42%,
+      rgba(255, 255, 255, 0.18) 100%
+    );
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.14),
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(28px) saturate(180%) brightness(1.05);
+  -webkit-backdrop-filter: blur(28px) saturate(180%) brightness(1.05);
+}
+
+.glass-nav-pill::before {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(120% 80% at 20% 0%, rgba(255, 255, 255, 0.55) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, transparent 42%);
+  opacity: 0.9;
+  z-index: 0;
+}
+
+.glass-nav-pill::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  z-index: 0;
+}
+
+.dark .glass-nav-pill,
+html.blue .glass-nav-pill,
+html.green .glass-nav-pill,
+html.red .glass-nav-pill {
+  background:
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.14) 0%,
+      rgba(255, 255, 255, 0.07) 45%,
+      rgba(255, 255, 255, 0.04) 100%
+    );
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.45),
+    0 4px 14px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(32px) saturate(170%) brightness(1.08);
+  -webkit-backdrop-filter: blur(32px) saturate(170%) brightness(1.08);
+}
+
+.dark .glass-nav-pill::before,
+html.blue .glass-nav-pill::before,
+html.green .glass-nav-pill::before,
+html.red .glass-nav-pill::before {
+  background:
+    radial-gradient(120% 80% at 18% 0%, rgba(255, 255, 255, 0.22) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, transparent 40%);
+  opacity: 1;
+}
+
+.dark .glass-nav-pill::after,
+html.blue .glass-nav-pill::after,
+html.green .glass-nav-pill::after,
+html.red .glass-nav-pill::after {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+/* Top-bar chrome buttons (Ask AI, Theme, Sound) — light frosted vs pure glass on dark/color themes */
+.glass-chrome {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.glass-chrome:hover {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.dark .glass-chrome,
+html.blue .glass-chrome,
+html.green .glass-chrome,
+html.red .glass-chrome {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.dark .glass-chrome:hover,
+html.blue .glass-chrome:hover,
+html.green .glass-chrome:hover,
+html.red .glass-chrome:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Progressive blur header — stacked masked backdrop layers */
+.progressive-blur-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.progressive-blur-tint {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    hsl(var(--background) / 0.72) 0%,
+    hsl(var(--background) / 0.28) 42%,
+    hsl(var(--background) / 0) 100%
+  );
+}
+
+.dark .progressive-blur-tint {
+  background: linear-gradient(
+    to bottom,
+    hsl(var(--background) / 0.82) 0%,
+    hsl(var(--background) / 0.32) 45%,
+    hsl(var(--background) / 0) 100%
+  );
+}
+
+/* Soft fade only — no backdrop-filter (used under lg) */
+.progressive-blur-tint--mobile {
+  background: linear-gradient(
+    to bottom,
+    hsl(var(--background) / 0.78) 0%,
+    hsl(var(--background) / 0.3) 40%,
+    hsl(var(--background) / 0) 100%
+  );
+}
+
+.dark .progressive-blur-tint--mobile {
+  background: linear-gradient(
+    to bottom,
+    hsl(var(--background) / 0.88) 0%,
+    hsl(var(--background) / 0.36) 42%,
+    hsl(var(--background) / 0) 100%
+  );
 }

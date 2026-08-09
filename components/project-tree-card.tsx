@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { ArrowUpRight, ChevronRight, FileText, Folder, Lock, type LucideIcon } from 'lucide-react';
+import { play } from 'cuelume';
 import { cn } from '@/lib/utils';
 import { PROJECT_TREE, type ProjectTreeNode } from '@/lib/project-tree-data';
 
@@ -12,6 +13,63 @@ type ProjectTreeCardProps = {
   onProjectSelect?: (projectId: string) => void;
   className?: string;
 };
+
+/** Idle = fanned folders; hover = gather into a neat stack. */
+const FOLDER_STACK = [
+  { idle: 'translate(-22px, 10px) rotate(-18deg)', gathered: 'translate(-4px, 2px) rotate(-3deg)' },
+  { idle: 'translate(8px, -6px) rotate(14deg)', gathered: 'translate(2px, -1px) rotate(2deg)' },
+  { idle: 'translate(-6px, -14px) rotate(-8deg)', gathered: 'translate(-1px, -2px) rotate(-1deg)' },
+  { idle: 'translate(18px, 8px) rotate(22deg)', gathered: 'translate(3px, 1px) rotate(3deg)' },
+  { idle: 'translate(-14px, 16px) rotate(6deg)', gathered: 'translate(0px, 0px) rotate(0deg)' },
+] as const;
+
+function FolderOutline({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 64 52"
+      fill="none"
+      className={cn('h-full w-full', className)}
+      aria-hidden
+    >
+      <path
+        d="M4 14.5C4 12.0147 6.01472 10 8.5 10H22.2c1.1 0 2.15.5 2.85 1.35L27.5 14.5H55.5C57.9853 14.5 60 16.5147 60 19V43.5C60 45.9853 57.9853 48 55.5 48H8.5C6.01472 48 4 45.9853 4 43.5V14.5Z"
+        className="fill-card stroke-foreground/35"
+        strokeWidth="0.9"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M4 19.5H60"
+        className="stroke-foreground/30"
+        strokeWidth="0.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function DocStackGraphic({ gathered, className }: { gathered: boolean; className?: string }) {
+  return (
+    <div
+      className={cn('pointer-events-none absolute bottom-0 right-0 h-[150px] w-[170px] origin-bottom-right scale-110', className)}
+      aria-hidden
+    >
+      <div className="relative h-full w-full">
+        {FOLDER_STACK.map((folder, index) => (
+          <div
+            key={index}
+            className="absolute left-1/2 top-1/2 h-[82px] w-[100px] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            style={{
+              zIndex: index + 1,
+              transform: `translate(-50%, -50%) ${gathered ? folder.gathered : folder.idle}`,
+            }}
+          >
+            <FolderOutline />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function collectDefaultOpen(nodes: ProjectTreeNode[]): Set<string> {
   const open = new Set<string>();
@@ -134,7 +192,12 @@ function TreeRow({
           aria-current={isActive ? 'page' : undefined}
           data-cuelume-hover="tick"
           data-cuelume-press
-          onClick={() => onProjectSelect?.(node.projectId!)}
+          onClick={() => {
+            if (window.matchMedia('(hover: none)').matches) {
+              play('tick', { volume: 0.4 });
+            }
+            onProjectSelect?.(node.projectId!);
+          }}
           className={cn(
             'group/row flex min-h-[30px] w-full items-center gap-1 rounded-full px-1 pr-2 text-left transition-colors duration-200',
             isActive
@@ -185,6 +248,7 @@ export function ProjectTreeCard({
 }: ProjectTreeCardProps) {
   const defaultOpen = useMemo(() => collectDefaultOpen(PROJECT_TREE), []);
   const [openIds, setOpenIds] = useState<Set<string>>(defaultOpen);
+  const [stackGathered, setStackGathered] = useState(false);
 
   const onToggle = useCallback((id: string) => {
     setOpenIds((prev) => {
@@ -196,13 +260,17 @@ export function ProjectTreeCard({
   }, []);
 
   return (
-    <div className={cn('flex h-full min-h-0 flex-col', className)}>
-      <div className="mb-3 flex shrink-0 items-center gap-2.5">
+    <div
+      className={cn('relative flex h-full min-h-0 flex-col', className)}
+      onMouseEnter={() => setStackGathered(true)}
+      onMouseLeave={() => setStackGathered(false)}
+    >
+      <div className="mb-4 flex shrink-0 items-center gap-2">
         {Icon ? <Icon className="h-4 w-4 shrink-0 text-foreground/80" strokeWidth={1.75} /> : null}
         <span className="text-[15px] font-medium tracking-tight text-foreground">{label}</span>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-0.5">
-        <ul className="m-0 flex flex-col gap-1.5 p-0">
+      <div className="relative z-10 min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-0.5">
+        <ul className="m-0 flex flex-col gap-2 p-0">
           {PROJECT_TREE.map((node, index) => (
             <TreeRow
               key={node.id}
@@ -217,6 +285,7 @@ export function ProjectTreeCard({
           ))}
         </ul>
       </div>
+      <DocStackGraphic gathered={stackGathered} />
     </div>
   );
 }

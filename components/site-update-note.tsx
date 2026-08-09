@@ -39,16 +39,18 @@ export function SiteUpdateNote({ className }: SiteUpdateNoteProps) {
   const dateLabel = useLastUpdatedDate();
 
   return (
-    <div className={cn('space-y-2 text-left', className)}>
-      <h3 className="text-[15px] font-medium tracking-tight text-foreground">
+    <div className={cn('min-w-0 space-y-4 text-left', className)}>
+      <h3 className="text-[15px] font-medium tracking-tight text-foreground leading-tight">
         Still in motion
       </h3>
-      <p className="text-[12px] leading-relaxed text-muted-foreground">
-        This portfolio keeps shifting — expect small commits, layout tweaks, and polish whenever something starts to itch.
-      </p>
-      <p className="text-[11px] text-muted-foreground/75">
-        Last updated: {dateLabel ?? '...'}
-      </p>
+      <div className="space-y-2">
+        <p className="text-[13px] leading-5 text-muted-foreground">
+          Small commits and polish as things itch.
+        </p>
+        <p className="text-[13px] leading-5 text-muted-foreground/65">
+          Updated {dateLabel ?? '...'}
+        </p>
+      </div>
     </div>
   );
 }

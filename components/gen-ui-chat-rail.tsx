@@ -88,7 +88,7 @@ export function GenUIChatRail({ messages, isLoading = false, autoCollapse = fals
       <button
         type="button"
         onClick={expand}
-        className="fixed right-3 top-[calc(3.5rem+0.75rem)] z-40 flex flex-col items-center gap-2 rounded-2xl border border-border/60 bg-card/95 px-2.5 py-3 shadow-lg backdrop-blur-md transition-colors hover:bg-secondary/40 dark:border-white/10 dark:bg-[#1B1917]/95"
+        className="fixed right-3 top-[calc(3.5rem+0.75rem)] z-40 flex flex-col items-center gap-2 rounded-2xl border border-border/60 bg-card/95 px-2.5 py-3 shadow-lg backdrop-blur-md transition-colors hover:bg-secondary/40 dark:border-white/10 dark:bg-[#1C1A12]/95"
         aria-label="Expand Gen UI chat"
       >
         <AgentOrb size="xs" creating={isLoading} />
@@ -107,7 +107,7 @@ export function GenUIChatRail({ messages, isLoading = false, autoCollapse = fals
         aria-hidden
         onClick={() => setCollapsed(true)}
       />
-      <aside className="fixed inset-x-0 bottom-0 z-50 flex h-[min(70vh,520px)] flex-col rounded-t-2xl border border-border/60 bg-card/95 shadow-[0_-8px_32px_rgba(0,0,0,0.12)] backdrop-blur-md dark:border-white/10 dark:bg-[#151110]/95 lg:hidden">
+      <aside className="fixed inset-x-0 bottom-0 z-50 flex h-[min(70vh,520px)] flex-col rounded-t-2xl border border-border/60 bg-background shadow-[0_-8px_32px_rgba(0,0,0,0.12)] backdrop-blur-md dark:border-border lg:hidden">
         <div className="flex items-center justify-between gap-2 border-b border-border/50 px-4 py-3 dark:border-white/8">
           <div className="flex min-w-0 items-center gap-2">
             <AgentOrb size="xs" creating={isLoading} />
@@ -127,7 +127,7 @@ export function GenUIChatRail({ messages, isLoading = false, autoCollapse = fals
         </ScrollArea>
       </aside>
 
-      <aside className="fixed right-0 top-14 z-40 hidden h-[calc(100vh-3.5rem)] w-[300px] flex-col border-l border-border/60 bg-card/95 shadow-[-8px_0_32px_rgba(0,0,0,0.06)] backdrop-blur-md dark:border-white/10 dark:bg-[#151110]/95 lg:flex">
+      <aside className="fixed right-0 top-14 z-40 hidden h-[calc(100vh-3.5rem)] w-[300px] flex-col border-l border-border/60 bg-background shadow-[-8px_0_32px_rgba(0,0,0,0.06)] backdrop-blur-md dark:border-border lg:flex">
         <div className="flex items-center justify-between gap-2 border-b border-border/50 px-3 py-2.5 dark:border-white/8">
           <div className="flex min-w-0 items-center gap-2">
             <AgentOrb size="xs" creating={isLoading} />

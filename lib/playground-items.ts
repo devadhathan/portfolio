@@ -31,14 +31,14 @@ export const PLAYGROUND_VIDEO_ITEMS: PlaygroundItem[] = [
     },
   },
   {
-    id: 'coachingThread',
-    aspect: '201/251',
-    frame: 'phone',
-    stackLabel: 'CLAUDE API',
+    id: 'monthsDial',
+    aspect: '634/1368',
+    frame: 'flat',
+    stackLabel: 'GESTURES + MOTION',
     media: {
       type: 'video',
-      src: '/playground/videos/fg4QJdetrVJSbCHrLYVUQRIslDY.mp4',
-      poster: '/playground/posters/fg4QJdetrVJSbCHrLYVUQRIslDY.jpg',
+      src: '/playground/videos/months-dial-2026-07-30.mp4',
+      poster: '/playground/posters/months-dial-2026-07-30.jpg',
     },
   },
   {
@@ -53,14 +53,14 @@ export const PLAYGROUND_VIDEO_ITEMS: PlaygroundItem[] = [
     },
   },
   {
-    id: 'monthsDial',
-    aspect: '634/1368',
-    frame: 'flat',
-    stackLabel: 'GESTURES + MOTION',
+    id: 'coachingThread',
+    aspect: '201/251',
+    frame: 'phone',
+    stackLabel: 'CLAUDE API',
     media: {
       type: 'video',
-      src: '/playground/videos/months-dial-2026-07-30.mp4',
-      poster: '/playground/posters/months-dial-2026-07-30.jpg',
+      src: '/playground/videos/fg4QJdetrVJSbCHrLYVUQRIslDY.mp4',
+      poster: '/playground/posters/fg4QJdetrVJSbCHrLYVUQRIslDY.jpg',
     },
   },
 ];

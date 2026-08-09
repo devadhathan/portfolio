@@ -168,7 +168,7 @@ export function PlaygroundMasonryCard({ title, onOpen, children, className }: Pl
       onClick={onOpen}
       aria-label={title}
       className={cn(
-        'group relative mb-3 w-full break-inside-avoid overflow-hidden rounded-2xl bg-neutral-200/80 text-left transition-transform duration-200 hover:-translate-y-0.5 dark:bg-[#1B1917] md:mb-4',
+        'group relative mb-3 w-full break-inside-avoid overflow-hidden rounded-2xl bg-neutral-200/80 text-left transition-transform duration-200 hover:-translate-y-0.5 dark:bg-[#1C1A12] md:mb-4',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400/60',
         className,
       )}

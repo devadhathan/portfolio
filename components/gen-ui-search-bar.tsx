@@ -8,7 +8,7 @@ import { MAX_GEN_UI_PROMPT_LENGTH } from '@/lib/gen-ui-prompt';
 import { cn } from '@/lib/utils';
 
 const INPUT_SHELL_CLASS =
-  'rounded-full border border-border/60 bg-card shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:border-white/[0.10] dark:bg-[#1B1917] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]';
+  'rounded-full border border-border/60 bg-card shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:border-white/[0.10] dark:bg-[#1C1A12] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]';
 
 const CHIP_CLASS =
   'rounded-full border border-border/55 bg-secondary/80 px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-40 transition-colors dark:border-white/[0.12] dark:bg-white/[0.04] dark:text-foreground/75 dark:hover:bg-white/[0.08] dark:hover:text-foreground';

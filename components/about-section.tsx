@@ -13,7 +13,7 @@ export function AboutSection() {
       {((settings.awards?.length ?? 0) > 0 || (settings.certifications?.length ?? 0) > 0) && (
         <div className="mx-auto grid w-full max-w-none grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-2">
           {(settings.awards?.length ?? 0) > 0 && (
-            <Card className="about-section-card w-full border border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#1B1917]">
+            <Card className="about-section-card w-full border border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#1C1A12]">
               <CardHeader className="pb-4">
                 <CardTitle className="text-base flex items-center gap-2">
                   <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">
@@ -35,7 +35,7 @@ export function AboutSection() {
           )}
 
           {(settings.certifications?.length ?? 0) > 0 && (
-            <Card className="about-section-card w-full border border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#1B1917]">
+            <Card className="about-section-card w-full border border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#1C1A12]">
               <CardHeader className="pb-4">
                 <CardTitle className="text-base flex items-center gap-2">
                   <span className="font-dm-mono uppercase tracking-[0.4em] text-[11px] text-foreground">

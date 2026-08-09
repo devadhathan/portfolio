@@ -70,86 +70,65 @@ export const resumeData = {
       title: "Nesoi.ai Dashboard",
       type: "Product Design",
       company: "Nesoi.ai",
-      period: "July 2025 - November 2025",
+      period: "July to November 2025",
       description:
-        "Nesoi.ai is an AI-powered learning platform used by Amazon, the University of Toronto, Bain & Company, and other large organizations. Teams rely on it to create interactive learning content, train employees, and improve knowledge retention.",
-      cardSubtext: "AI chat-first creation experience",
+        "Nesoi is an AI learning platform used by Amazon, the University of Toronto and Bain & Company to turn internal material into interactive training.\n\nProblem: A creator arrives with one goal: turn a document, deck or video into an interactive learning video. Everything else is overhead. The old flow made them do the thinking — upload, configure, wait, hope. AI existed in the product but sat off to the side, so people treated it as a novelty rather than the fastest route to the thing they came for.\n\nGoal: If the AI already understands the material, why is the user still assembling it by hand? Getting from raw asset to finished interactive video had to take fewer decisions than doing it manually — a partner that reads what you uploaded, forms a view on what you are trying to make, proposes it, and shows its work.",
+      cardSubtext: "From form wizard to AI partner",
       detailSections: [
         {
-          id: "problem",
-          title: "Problem",
+          id: "framing",
+          title: "Framing",
           description:
-            "Before this project, content creators could upload raw materials (documents, videos, slides) but turning that into engaging learning experiences was manual and time-consuming. There was no conversational way to collaborate with AI, no guided structure for shaping learning flows, and limited support for iterating on ideas, so creators spent effort on assembly instead of pedagogy and outcomes."
-        },
-
-        {
-          id: "goals",
-          title: "Goals",
-          description:
-            "The goal was to embed AI into the creation experience so it feels natural and collaborative, help creators explore, refine, and iterate conversationally instead of filling out rigid forms, and build on a scalable design system that spans dashboards, creation tools, and admin interfaces."
-        },
-
-        {
-          id: "challenge",
-          title: "Framing the challenge",
-          description:
-            "We reframed the work through How might we questions: enabling creators to converse with AI while building, supporting flexible exploration instead of strict wizards, and making AI feel like a learning partner rather than just a generator.",
-          image: "/CRM/initial image.png"
-        },
-
-        {
-          id: "chat-decision",
-          title: "AI chat as the primary creation tool",
-          description:
-            "Introduced an AI chat interface embedded in the creation experience so creators always see both their material and the conversation. They can ask questions, request transformations, and refine outputs in natural language while the chat restructures, summarizes, and adapts content into learning flows, a familiar model that handles ambiguity better than fixed forms."
-        },
-
-        {
-          id: "system",
-          title: "System and component design",
-          description:
-            "System work was anchored on the Obra UI design system from Shadcn and customized for Nesoi needs, focusing on message bubbles with clear AI/user distinction plus loading and error states, input prompts that support structured templates and freeform prompts, and conversation layouts that handle long sessions while preserving orientation so patterns can be reused across dashboards, creation tools, and admin interfaces.",
-          image: "/CRM/Figma.png"
-        },
-
-        {
-          id: "workflows",
-          title: "AI chat workflows",
-          description:
-            "Core flows covered initial exploration (AI greets creators after analysing assets), transforming content (simplifying, chaptering, or making content interactive via templates or freeform prompts), refining and iterating (structured suggestions with follow-up questions and alternative outputs), and multiple iterations (viewing and comparing versions without losing earlier drafts) under the principle that AI supports thinking without replacing it.",
+            "The brief was not \"add a chat box.\" The bar was seamlessness. Getting from raw asset to finished interactive video had to take fewer decisions than doing it manually, not more.\n\nThat moved the design target from an interface to a partner. Something that reads what you uploaded, forms a view on what you are trying to make, proposes it, and shows its work.",
           image: "/CRM/comparison.png"
         },
-
+        {
+          id: "what-changed",
+          title: "What I changed, and why",
+          description:
+            "Show the thinking, not just the steps. Our first version jumped straight into creation steps — progress labels, no visibility. Users could not tell whether the AI had understood their material or was guessing. I pulled our v1 apart against the closest competitor and found the same gap in both: plenty of status, no reasoning. The new design surfaces the AI's thinking as it works — what it read, what it inferred about structure, what it intends to build. When users can see the reasoning, they correct it early instead of discarding the output at the end.\n\nStart from motivation, not a blank prompt. A blank prompt pushes translation work onto the user. Instead the AI opens with what it found and what it thinks you are making, then asks the one question that actually changes the output. Confirm or redirect. Two moves instead of ten. This turned out to be the decision testing rewarded most, and not for the reason I expected.\n\nTemplates and freeform on the same surface. People do not stay in one mode. They pick a template, then talk their way out of it. Structured actions (simplify, chapter, make interactive) and freeform prompts share one input, so switching costs nothing.\n\nVersions that do not punish iteration. Every refinement keeps the previous output alive and comparable. Iteration only feels safe when going backwards is free."
+        },
+        {
+          id: "decisions",
+          title: "The calls, and what they cost",
+          description:
+            "Surface the AI's reasoning while it works — instead of progress states only, which is what our v1 and the competitor both did. Users catch a wrong read early instead of binning the output at the end. Costs perceived speed, since visible thinking reads slower than a spinner.\n\nOpen with an interpretation of the upload — instead of a blank prompt. Removes the translation work. The risk is guessing wrong, so redirecting had to be cheap and obvious.\n\nOne input for templates and freeform — instead of separate modes. People switch mid task. Forcing a mode choice makes the user commit before they know what they want.\n\nExtend shadcn/ui — instead of building bespoke chat components. Speed, and everything fed back into one shared library. Accepted less visual distinctiveness in return.\n\nCut multi-user chat collaboration from v1. The happy path had to be proven before we designed for teams. Deliberate scope, not an oversight.\n\nPrototype in Cursor — instead of a Figma click-through. Tests the real interaction, and doubles as a reference implementation for engineering."
+        },
+        {
+          id: "system",
+          title: "System",
+          description:
+            "Built on shadcn/ui, extended for chat: message and thinking states, prompt patterns, long-conversation layout, and the content-type variants the product needed. All of it went back into the shared library so the dashboard and the creation tools stayed on one system."
+        },
         {
           id: "constraints",
           title: "Constraints",
           description:
-            "Evolving AI capabilities demanded flexible patterns, the product lacked any prior chat experience so we studied familiar tools such as Slack and ChatGPT for enterprise inspiration, and a tight timeline forced us to focus on the core happy path while deferring complex features like multi-user chat collaboration."
+            "Model capability was moving under us. Patterns had to still hold when the AI got better, not just work at current quality.\n\nCompetitors were shipping fast. We took the patterns that were working and ignored the decoration.\n\nThe timeline forced a happy path. Multi-user chat collaboration was scoped out deliberately.\n\nDesigned with tool and MCP integrations coming, so the thinking view had room for tool calls we had not built yet."
         },
-
         {
-          id: "delivery",
-          title: "Delivery and validation",
+          id: "validation",
+          title: "Validation",
           description:
-            "Delivered high-fidelity designs, a Figma library aligned with the design system, and developer-ready specs while sharing Obra UI customizations via GitHub and deploying a Vercel prototype for internal testing; feedback noted that chat felt natural, creators mixed templates and freeform prompts, iteration sped up to 3–4 refinement rounds per session, and the consistent system increased developer confidence, paving the way for client-facing pilots alongside future opportunities like saved prompt templates, multi-content comparison, and collaborative chat for teams.",
+            "Every change above was a claim, so we tested them rather than shipping on taste.\n\nGuerrilla study, five participants, run in a cafe — Static Form against Agent Variant, with real users. Confidence and trust measured qualitatively; engagement and chat message volume measured quantitatively. Mean SUS 82.5. Post-update sentiment captured through an in-product PostHog survey.\n\nThe finding that changed how I think about this: users trusted the Agent variant more, and the interview pause created a perception of higher quality output before generation had even started. The wait was doing work. Asking the right question up front bought credibility that the output itself had not yet earned.\n\nTechnical readiness: a functional React prototype built in Cursor, simulating real LLM latency and states rather than faking them. Engineering received working code, not a video walkthrough. It killed the ambiguity on the hard states — thinking, typing, error loops. The states nobody specs properly and everybody argues about in build.",
           image: "/CRM/validation.png"
         },
         {
           id: "prototype",
           title: "Prototype",
           description:
-            "Interactive prototype demonstrating the AI chat-first creation experience, showing how creators can collaborate with AI to transform content into engaging learning flows.",
+            "Interactive React prototype of the AI chat-first creation experience — real latency and states, built in Cursor as a reference for engineering.",
           prototypeGif: "/CRM/prototype.gif"
         }
       ],
 
       learnings: [
-        "Conversational AI lowers the barrier to creation when it is embedded directly into real workflows instead of isolated as a separate tool.",
-        "Enterprise users want control and clarity; clear states, transparent behaviour, and safe iteration paths keep trust intact.",
-        "Designing AI products depends on trust and UX patterns as much as it does on model capabilities."
+        "Embedded beats adjacent. Conversational AI only lowers the barrier when it lives inside the workflow the user came for.",
+        "Enterprise users will trade speed for legibility. Show the reasoning and they let the AI do more.",
+        "Trust is a UX problem before it is a model problem."
       ],
       role: "Product Designer",
-      tools: ["Figma", "Design Systems", "Accessibility Tools"]
+      tools: ["Figma", "Design systems", "shadcn/ui", "Prototyping in Cursor", "PostHog"]
     },
     {
       title: "Falcon Design System",

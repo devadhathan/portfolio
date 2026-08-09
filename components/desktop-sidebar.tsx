@@ -6,19 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   Clock,
-  Clock5,
   Calendar,
   FolderKanban,
   ChevronRight,
-  ChevronLeft,
-  Cloud,
-  FileText,
+  ChevronsLeft,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSiteContent } from '@/components/site-content-provider';
 import { getProjectId } from '@/lib/types/project';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { AnimateIcon } from './animate-icon';
 
 interface DesktopSidebarProps {
   onProjectSelect?: (projectSlug: string) => void;
@@ -65,17 +61,21 @@ export function DesktopSidebar({ onProjectSelect, isCollapsed = false, onCollaps
     });
   };
 
+  if (isCollapsed) {
+    return null;
+  }
+
   const clockCard = (
-    <Card className="border border-border/55 bg-card shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)] dark:border-2 dark:border-border/70 dark:bg-[#1B1917] dark:shadow-md">
+    <Card className="border border-border/55 bg-card shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)] dark:border-2 dark:border-border/70 dark:bg-[#1C1A12] dark:shadow-md">
       <CardContent className="p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Clock className="h-4 w-4 text-primary shrink-0" />
+        <div className="mb-3 flex items-center gap-2">
+          <Clock className="h-4 w-4 shrink-0 text-primary" />
           <span className="text-xs font-medium">Time</span>
         </div>
         {mounted && time instanceof Date ? (
           <div className="space-y-3">
-            <div className="relative w-full aspect-square max-w-[180px] mx-auto">
-              <svg className="w-full h-full" viewBox="0 0 200 200">
+            <div className="relative mx-auto aspect-square w-full max-w-[180px]">
+              <svg className="h-full w-full" viewBox="0 0 200 200">
                 <circle
                   cx="100"
                   cy="100"
@@ -136,7 +136,7 @@ export function DesktopSidebar({ onProjectSelect, isCollapsed = false, onCollaps
                 <circle cx="100" cy="100" r="3" fill="hsl(var(--background))" />
               </svg>
             </div>
-            <div className="text-center space-y-1">
+            <div className="space-y-1 text-center">
               <p className="text-lg font-semibold">{formatTime(time)}</p>
               <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
                 <Calendar className="h-3 w-3" />
@@ -158,128 +158,76 @@ export function DesktopSidebar({ onProjectSelect, isCollapsed = false, onCollaps
   );
 
   return (
-    <div className={`h-full overflow-hidden flex flex-col bg-card border-r border-border/30 relative transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-80'}`}>
-      <div className="flex items-center justify-between px-4 pt-4 pb-2 flex-shrink-0 border-b border-border/30">
-        {!isCollapsed && (
-          <h2 className="text-sm font-semibold text-foreground">Widgets</h2>
-        )}
+    <div className="relative flex h-full w-80 flex-col overflow-hidden">
+      <div className="flex flex-shrink-0 items-center justify-between px-4 pb-2 pt-4">
+        <h2 className="text-sm font-semibold text-foreground">Widgets</h2>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
-          className={`h-7 w-7 rounded-md bg-background/80 border border-border/70 shadow-sm hover:bg-accent transition-all ${isCollapsed ? 'mx-auto' : ''}`}
-          onClick={() => onCollapseChange?.(!isCollapsed)}
+          aria-label="Close widgets"
+          title="Close widgets"
+          data-cuelume-press
+          data-cuelume-hover="tick"
+          className="h-8 w-8 rounded-full border border-border/55 bg-secondary/50 shadow-sm backdrop-blur-md transition-colors hover:bg-secondary/70 dark:border-border/40 dark:bg-white/[0.06]"
+          onClick={() => onCollapseChange?.(true)}
         >
-          {isCollapsed ? (
-            <ChevronRight className="h-4 w-4 text-primary" />
-          ) : (
-            <ChevronLeft className="h-4 w-4 text-primary" />
-          )}
+          <ChevronsLeft className="h-4 w-4" />
         </Button>
       </div>
 
-      {isCollapsed ? (
-        <div className="flex flex-col items-center gap-3 py-4 px-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-10 w-10 rounded-lg bg-background/80 border border-border/70 shadow-sm hover:bg-accent transition-all"
-            title="Projects"
-            onClick={() => onCollapseChange?.(false)}
-          >
-            <AnimateIcon animation="pointing">
-              <FolderKanban className="h-5 w-5 text-primary" />
-            </AnimateIcon>
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-10 w-10 rounded-lg bg-background/80 border border-border/70 shadow-sm hover:bg-accent transition-all"
-            title="Notes"
-          >
-            <AnimateIcon animation="pulse">
-              <FileText className="h-5 w-5 text-primary" />
-            </AnimateIcon>
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-10 w-10 rounded-lg bg-background/80 border border-border/70 shadow-sm hover:bg-accent transition-all"
-            title="Weather"
-          >
-            <AnimateIcon animation="bounce">
-              <Cloud className="h-5 w-5 text-primary" />
-            </AnimateIcon>
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-10 w-10 rounded-lg bg-background/80 border border-border/70 shadow-sm hover:bg-accent transition-all"
-            title="Clock"
-          >
-            <AnimateIcon animation="rotate">
-              <Clock5 className="h-5 w-5 text-primary" />
-            </AnimateIcon>
-          </Button>
-        </div>
-      ) : (
-        <>
-          {/* Projects */}
-          <div className="px-4 pt-4 pb-2 flex-1 min-h-0 flex flex-col overflow-hidden">
-            <Card className="border border-border/55 bg-card shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)] dark:border-2 dark:border-border/70 dark:bg-[#1B1917] dark:shadow-md h-full flex flex-col">
-              <CardHeader className="pb-3 flex-shrink-0">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <FolderKanban className="h-4 w-4 text-primary shrink-0" />
-                  Projects
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0 flex-1 min-h-0 overflow-hidden p-0">
-                <ScrollArea className="h-full px-4 pb-4">
-                  <div className="space-y-0.5">
-                    {projects.map((project, index) => {
-                        const projectSlug = getProjectId(project.title);
-                        return (
-                          <div key={index} className="group relative">
-                            <div
-                              data-cuelume-hover="tick"
-                              data-cuelume-press
-                              className="flex items-center gap-2 px-2.5 py-2 rounded hover:bg-accent/50 transition-colors cursor-pointer"
-                              onClick={() => onProjectSelect?.(projectSlug)}
-                            >
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-1 h-1 rounded-full bg-muted-foreground/60 group-hover:bg-primary transition-colors flex-shrink-0 mt-0.5" />
-                                  <p className="text-sm font-medium truncate">{project.title}</p>
-                                </div>
-                                <p className="text-xs text-muted-foreground ml-3 truncate">
-                                  {project.company || project.institution} • {project.period}
-                                </p>
-                              </div>
-                              <ChevronRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-                            </div>
+      {/* Projects */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-2 pt-2">
+        <Card className="flex h-full flex-col border border-border/55 bg-card shadow-[0_1px_2px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)] dark:border-2 dark:border-border/70 dark:bg-[#1C1A12] dark:shadow-md">
+          <CardHeader className="flex-shrink-0 pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <FolderKanban className="h-4 w-4 shrink-0 text-primary" />
+              Projects
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="min-h-0 flex-1 overflow-hidden p-0 pt-0">
+            <ScrollArea className="h-full px-4 pb-4">
+              <div className="space-y-0.5">
+                {projects.map((project, index) => {
+                  const projectSlug = getProjectId(project.title);
+                  return (
+                    <div key={index} className="group relative">
+                      <div
+                        data-cuelume-hover="tick"
+                        data-cuelume-press
+                        className="flex cursor-pointer items-center gap-2 rounded px-2.5 py-2 transition-colors hover:bg-accent/50"
+                        onClick={() => onProjectSelect?.(projectSlug)}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <div className="mt-0.5 h-1 w-1 flex-shrink-0 rounded-full bg-muted-foreground/60 transition-colors group-hover:bg-primary" />
+                            <p className="truncate text-sm font-medium">{project.title}</p>
                           </div>
-                        );
-                      })}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </div>
+                          <p className="ml-3 truncate text-xs text-muted-foreground">
+                            {project.company || project.institution} • {project.period}
+                          </p>
+                        </div>
+                        <ChevronRight className="h-3 w-3 flex-shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      </div>
 
-          {/* Notes */}
-          <div className="px-4 pb-2 flex-shrink-0">
-            <NotesWidget />
-          </div>
+      {/* Notes */}
+      <div className="flex-shrink-0 px-4 pb-2">
+        <NotesWidget />
+      </div>
 
-          {/* Weather + Time */}
-          <div className="px-4 pb-4 space-y-4 flex-shrink-0">
-            <WeatherWidget />
-            {clockCard}
-          </div>
-        </>
-      )}
+      {/* Weather + Time */}
+      <div className="flex-shrink-0 space-y-4 px-4 pb-4">
+        <WeatherWidget />
+        {clockCard}
+      </div>
     </div>
   );
 }

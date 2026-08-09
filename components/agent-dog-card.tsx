@@ -24,20 +24,20 @@ export function AgentDogCard({
       className={cn('flex h-full min-h-[280px] flex-col overflow-hidden', className)}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="shrink-0 px-4 pt-[18px]">
+      <div className="shrink-0 px-4 pt-4 pb-2">
         {sectionLabel ? (
-          <p className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground/55">
+          <p className="mb-2 text-[12px] font-medium uppercase tracking-[0.22em] text-muted-foreground/55">
             {sectionLabel}
           </p>
         ) : null}
         <div className="flex max-w-full flex-wrap items-center gap-2">
           <span className="text-[15px] font-medium tracking-tight text-foreground">{title}</span>
-          <CardTag className="border-primary/25 bg-primary/10 text-primary">{statusLabel}</CardTag>
+          <CardTag tone="accent">{statusLabel}</CardTag>
         </div>
-        <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-muted-foreground/70">{description}</p>
+        <p className="mt-4 line-clamp-2 text-[13px] leading-5 text-muted-foreground/70">{description}</p>
       </div>
 
-      <div className="flex flex-1 items-center justify-center px-4 pb-4 pt-3">
+      <div className="flex flex-1 items-center justify-center px-4 pb-4 pt-4">
         <AgentDogIcon className="w-28 sm:w-32" />
       </div>
     </div>

@@ -64,30 +64,34 @@ export default function PlaygroundPage() {
   return (
     <>
       <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
-        <main className="px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-16 sm:px-6 md:px-10">
-          <div className="mx-auto w-full max-w-[1280px]">
-            <div className="mb-6 border-b border-border/60 pb-3">
-              <h1 className="font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-foreground sm:text-xs">
-                {t('label')}
-              </h1>
-            </div>
+        <div className="flex pt-14 relative z-10">
+          <main className="flex-1 py-4 md:py-6 lg:py-8 pb-20 md:pb-24 lg:pb-8 overflow-x-hidden">
+            <div className="max-w-[1500px] mx-auto">
+              <div className="mx-0 px-4 sm:mx-4 sm:px-5 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-[70px] xl:px-[90px]">
+              <div className="mb-8 md:mb-10 text-left pt-8 md:pt-10 lg:pt-14">
+                <h1 className="max-w-4xl whitespace-pre-line text-balance text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem] font-light text-foreground tracking-tight leading-[1.1] mb-8 md:mb-10 lg:mb-12">
+                  {t('heroLine')}
+                </h1>
+              </div>
 
-            <section className="flex gap-0 overflow-x-auto border border-border/60 [-ms-overflow-style:none] [scrollbar-width:none] sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-3 xl:grid-cols-4 [&::-webkit-scrollbar]:hidden">
-              {PLAYGROUND_ITEMS.map((item) => {
-                const copy = getCopy(item.id);
-                return (
-                  <PlaygroundCraftCard
-                    key={item.id}
-                    item={item}
-                    title={copy.title}
-                    accessibilityLabel={copy.accessibilityLabel}
-                    onOpen={() => openItem(item.id)}
-                  />
-                );
-              })}
-            </section>
-          </div>
-        </main>
+              <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-4 lg:gap-5 auto-rows-[minmax(220px,auto)] w-full pb-4 md:pb-0">
+                {PLAYGROUND_ITEMS.map((item) => {
+                  const copy = getCopy(item.id);
+                  return (
+                    <PlaygroundCraftCard
+                      key={item.id}
+                      item={item}
+                      title={copy.title}
+                      accessibilityLabel={copy.accessibilityLabel}
+                      onOpen={() => openItem(item.id)}
+                    />
+                  );
+                })}
+              </section>
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
 
       <PlaygroundDetailOverlay
