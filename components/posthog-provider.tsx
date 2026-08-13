@@ -39,8 +39,12 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
         capture_pageview: false, // manual via PostHogPageView (App Router)
         capture_pageleave: true,
         autocapture: false,
-        // Keep the desktop OS snappy — replay is the costly part
+        // Keep first load light — pageviews only, no optional PostHog CDN scripts
         disable_session_recording: true,
+        disable_surveys: true,
+        disable_external_dependency_loading: true,
+        capture_performance: false,
+        capture_dead_clicks: false,
         persistence: 'localStorage+cookie',
         advanced_disable_feature_flags: true,
       });
