@@ -26,7 +26,7 @@
     "heroLine1": "Designer building experiences for humans.",
     "intro": {
       "name": "Devadhathan M D",
-      "updatedFallback": "Updated recently",
+      "role": "Product designer",
       "p1": "I'm currently in Edinburgh, United Kingdom.",
       "p2": "Most recently I worked on <wordsmith>Wordsmith AI</wordsmith>, and before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>. I have a master's in design and a bachelor's in computer engineering.",
       "p3": "I design interfaces for the computer and experiences for the people, and I'm building something <i>simple, but better</i>.",

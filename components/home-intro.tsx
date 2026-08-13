@@ -8,48 +8,6 @@ import { useSiteContent } from '@/components/site-content-provider';
 import { easeOutExpo } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
-const UPDATED_CACHE_KEY = 'portfolio-home-updated-label';
-
-function formatUpdatedLabel(date: Date) {
-  return `Updated ${MONTHS[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
-}
-
-function readCachedUpdatedLabel() {
-  if (typeof window === 'undefined') return null;
-  try {
-    return window.sessionStorage.getItem(UPDATED_CACHE_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function useUpdatedLabel(fallback: string) {
-  const [label, setLabel] = useState(() => readCachedUpdatedLabel() ?? fallback);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch('/api/last-updated', { signal: controller.signal })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!data?.lastUpdatedDate) return;
-        const parsed = new Date(data.lastUpdatedDate);
-        if (Number.isNaN(parsed.getTime())) return;
-        const next = formatUpdatedLabel(parsed);
-        setLabel(next);
-        try {
-          window.sessionStorage.setItem(UPDATED_CACHE_KEY, next);
-        } catch {
-          /* ignore */
-        }
-      })
-      .catch(() => undefined);
-    return () => controller.abort();
-  }, []);
-
-  return label;
-}
-
 /** Start staggered enter only after paint so delays aren’t burned during chunk load. */
 export function useHomeIntroPlay(reduceMotion: boolean | null) {
   const [play, setPlay] = useState(() => Boolean(reduceMotion));
@@ -105,7 +63,6 @@ export function HomeIntro({ className }: HomeIntroProps) {
   const { settings } = useSiteContent();
   const reduceMotion = useReducedMotion();
   const play = useHomeIntroPlay(reduceMotion);
-  const updatedLabel = useUpdatedLabel(t('updatedFallback'));
 
   const linkedinUrl = settings.linkedin?.startsWith('http')
     ? settings.linkedin
@@ -138,9 +95,7 @@ export function HomeIntro({ className }: HomeIntroProps) {
           <h1 className="text-[1.2rem] font-medium tracking-tight text-foreground sm:text-[1.35rem] md:text-[1.5rem]">
             {t('name')}
           </h1>
-          <p className="min-h-[1.25rem] text-[12px] text-muted-foreground transition-opacity duration-200 sm:text-[13px]">
-            {updatedLabel}
-          </p>
+          <p className="text-[13px] text-muted-foreground sm:text-[14px]">{t('role')}</p>
         </div>
       ),
     },
