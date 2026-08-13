@@ -77,9 +77,6 @@ const BODY: Record<DesktopWindowId, ComponentType> = {
   contact: ContactWindowBody,
   writings: createLinkWindowBody('writings'),
   catalystic: createLinkWindowBody('catalystic'),
-  pixl: createLinkWindowBody('pixl'),
-  musicNotch: createLinkWindowBody('musicNotch'),
-  linkring: createLinkWindowBody('linkring'),
   bigBang: createLinkWindowBody('bigBang'),
 };
 
@@ -116,9 +113,6 @@ export function DesktopOsShell() {
     contact: t('contact'),
     writings: 'Writings',
     catalystic: 'Catalystic',
-    pixl: 'Pixl',
-    musicNotch: 'MusicNotch',
-    linkring: 'Linkring',
     bigBang: 'Big Bang',
   };
 

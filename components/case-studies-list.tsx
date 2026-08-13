@@ -8,7 +8,6 @@ import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provide
 import {
   HOME_INTRO_CARDS_DELAY,
   HOME_INTRO_LINE_DURATION,
-  HOME_INTRO_LINE_STAGGER,
   useHomeIntroPlay,
 } from '@/components/home-intro';
 import { getProjectId, type Project } from '@/lib/types/project';
@@ -121,13 +120,9 @@ function buildItems(projects: Project[]): ListItem[] {
   return [WORDSMITH_ITEM, ...parsed];
 }
 
-/** Delay until case-studies list animation completes (heading + rows). */
-export function getHomeAfterCaseStudiesDelay(itemCount: number) {
-  return (
-    HOME_INTRO_CARDS_DELAY +
-    (1 + Math.max(itemCount, 0)) * HOME_INTRO_LINE_STAGGER +
-    HOME_INTRO_LINE_DURATION * 0.25
-  );
+/** Delay until the case-studies block animation completes. */
+export function getHomeAfterCaseStudiesDelay(_itemCount?: number) {
+  return HOME_INTRO_CARDS_DELAY + HOME_INTRO_LINE_DURATION * 0.25;
 }
 
 export function CaseStudiesList({ onProjectSelect, className }: CaseStudiesListProps) {
@@ -166,33 +161,29 @@ export function CaseStudiesList({ onProjectSelect, className }: CaseStudiesListP
     onProjectSelect?.(item.id);
   };
 
-  const lineTransition = (index: number) => ({
+  const blockTransition = {
     duration: reduceMotion ? 0 : HOME_INTRO_LINE_DURATION,
-    delay: reduceMotion || !play ? 0 : HOME_INTRO_CARDS_DELAY + index * HOME_INTRO_LINE_STAGGER,
+    delay: reduceMotion || !play ? 0 : HOME_INTRO_CARDS_DELAY,
     ease: easeOutExpo,
-  });
+  };
 
   const hidden = { opacity: 0, y: 8 };
   const shown = { opacity: 1, y: 0 };
 
   return (
-    <section className={cn('w-full max-w-[40rem]', className)} aria-label={t('caseStudies')}>
-      <motion.h2
-        className="mb-5 text-[15px] font-medium text-muted-foreground sm:mb-6 sm:text-base"
-        initial={reduceMotion ? false : hidden}
-        animate={reduceMotion || play ? shown : hidden}
-        transition={lineTransition(0)}
-      >
+    <motion.section
+      className={cn('w-full max-w-[40rem]', className)}
+      aria-label={t('caseStudies')}
+      initial={reduceMotion ? false : hidden}
+      animate={reduceMotion || play ? shown : hidden}
+      transition={blockTransition}
+    >
+      <h2 className="mb-5 text-[15px] font-medium text-muted-foreground sm:mb-6 sm:text-base">
         {t('caseStudies')}
-      </motion.h2>
+      </h2>
       <ul className="flex flex-col gap-4 sm:gap-5">
-        {rows.map(({ year, item }, index) => (
-          <motion.li
-            key={item.id}
-            initial={reduceMotion ? false : hidden}
-            animate={reduceMotion || play ? shown : hidden}
-            transition={lineTransition(index + 1)}
-          >
+        {rows.map(({ year, item }) => (
+          <li key={item.id}>
             <button
               type="button"
               onClick={() => handleSelect(item)}
@@ -218,9 +209,9 @@ export function CaseStudiesList({ onProjectSelect, className }: CaseStudiesListP
                 {item.dateLabel}
               </span>
             </button>
-          </motion.li>
+          </li>
         ))}
       </ul>
-    </section>
+    </motion.section>
   );
 }

@@ -1,10 +1,4 @@
-export type DesktopLinkIconId =
-  | 'writings'
-  | 'catalystic'
-  | 'pixl'
-  | 'musicNotch'
-  | 'linkring'
-  | 'bigBang';
+export type DesktopLinkIconId = 'writings' | 'catalystic' | 'bigBang';
 
 export type DesktopWindowId =
   | 'home'
@@ -77,21 +71,6 @@ export const DESKTOP_LINK_ICONS: DesktopLinkIcon[] = [
     href: 'https://catalysticui.space/landing.html',
   },
   {
-    id: 'pixl',
-    label: 'Pixl',
-    href: 'https://pixlanimations.vercel.app',
-  },
-  {
-    id: 'musicNotch',
-    label: 'MusicNotch',
-    href: 'https://musicnotch-landing.vercel.app/',
-  },
-  {
-    id: 'linkring',
-    label: 'Linkring',
-    href: 'https://linkring.vercel.app/',
-  },
-  {
     id: 'bigBang',
     label: 'Big Bang',
     href: 'https://big-bang-timeline.vercel.app/',
@@ -126,9 +105,6 @@ export const DESKTOP_ICON_IDS: DesktopIconId[] = [
   'photos',
   'writings',
   'catalystic',
-  'pixl',
-  'musicNotch',
-  'linkring',
   'bigBang',
   'contact',
   'trash',
@@ -147,8 +123,8 @@ export function pathToWindowId(pathname: string): DesktopWindowId {
   return 'home';
 }
 
-export const DESKTOP_OS_ICON_STORAGE_KEY = 'portfolio-desktop-os-icons-v6';
-export const DESKTOP_OS_WALLPAPER_KEY = 'portfolio-desktop-os-wallpaper-v6';
+export const DESKTOP_OS_ICON_STORAGE_KEY = 'portfolio-desktop-os-icons-v7';
+export const DESKTOP_OS_WALLPAPER_KEY = 'portfolio-desktop-os-wallpaper-v7';
 
 /** One visible window at a time. */
 export const MAX_OPEN_WINDOWS = 1;
@@ -184,7 +160,7 @@ export const WALLPAPER_PRESETS: WallpaperPreset[] = [
   },
 ];
 
-export const DEFAULT_WALLPAPER_ID: WallpaperId = 'dusk';
+export const DEFAULT_WALLPAPER_ID: WallpaperId = 'bloom';
 
 /** Applied on `<html>` before paint so reload doesn't flash the default wallpaper. */
 export const OS_WALLPAPER_CSS_VAR = '--os-wallpaper';
@@ -232,10 +208,7 @@ export const DEFAULT_ICON_POSITIONS: Record<DesktopIconId, DesktopIconPosition> 
   wordsmith: { x: COL_INSET, y: START_Y + ROW * 5, edge: 'left' },
   // Right rail
   catalystic: { x: COL_INSET, y: START_Y, edge: 'right' },
-  pixl: { x: COL_INSET, y: START_Y + ROW, edge: 'right' },
-  musicNotch: { x: COL_INSET, y: START_Y + ROW * 2, edge: 'right' },
-  linkring: { x: COL_INSET, y: START_Y + ROW * 3, edge: 'right' },
-  bigBang: { x: COL_INSET, y: START_Y + ROW * 4, edge: 'right' },
+  bigBang: { x: COL_INSET, y: START_Y + ROW, edge: 'right' },
   trash: { x: COL_INSET, y: START_Y + ROW * 7, edge: 'right' },
 };
 
@@ -251,10 +224,7 @@ export const NARROW_ICON_POSITIONS: Record<DesktopIconId, DesktopIconPosition> =
   contact: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 7, edge: 'left' },
   wordsmith: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 5, edge: 'left' },
   catalystic: { x: NARROW_COL_INSET, y: NARROW_START_Y, edge: 'right' },
-  pixl: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW, edge: 'right' },
-  musicNotch: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 2, edge: 'right' },
-  linkring: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 3, edge: 'right' },
-  bigBang: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 4, edge: 'right' },
+  bigBang: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW, edge: 'right' },
   trash: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 7, edge: 'right' },
 };
 

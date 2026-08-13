@@ -44,9 +44,6 @@ const WINDOW_ICON_ID_SET = new Set<string>([
 const LINK_ICON_SRC: Record<DesktopLinkIconId, string> = {
   writings: '/icons/menu.svg',
   catalystic: '/icons/lightbulb.svg',
-  pixl: '/icons/lightbulb.svg',
-  musicNotch: '/icons/lightbulb.svg',
-  linkring: '/icons/lightbulb.svg',
   bigBang: '/icons/lightbulb.svg',
 };
 

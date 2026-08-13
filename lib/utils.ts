@@ -7,4 +7,4 @@ export function cn(...inputs: ClassValue[]) {
 
 /** Shared keyboard focus ring for OS menubar and chrome controls. */
 export const focusRing =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+  'focus-visible:outline-none focus-visible:!ring-2 focus-visible:!ring-offset-0 focus-visible:!ring-white/90 light:focus-visible:!ring-foreground/45'

@@ -414,6 +414,7 @@ export function TopBar() {
                   data-cuelume-press
                   className={cn(
                     'flex h-9 items-center gap-2 rounded-full px-2.5 text-sm font-medium text-foreground sm:px-3.5',
+                    'focus-visible:ring-offset-0',
                     focusRing,
                     osEnabled
                       ? 'hover:bg-secondary/50'

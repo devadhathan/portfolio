@@ -32,6 +32,8 @@ export function WallpaperPicker({ open, onOpenChange }: WallpaperPickerProps) {
           data-cuelume-hover="tick"
           className={cn(
             'flex h-9 items-center gap-2 rounded-full px-2.5 text-sm font-medium text-foreground/85 hover:bg-secondary/50 hover:text-foreground sm:px-3',
+            // Override Button’s default ring-offset so menubar doesn’t get a double ring.
+            'focus-visible:ring-offset-0',
             focusRing,
           )}
         >
