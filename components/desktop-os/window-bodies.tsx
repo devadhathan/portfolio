@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useSiteContent } from '@/components/site-content-provider';
 import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
 import { OsBackButton } from '@/components/os-back-button';
+import { GlowProgressBar } from '@/components/glow-progress-bar';
 import {
   DESKTOP_LINK_ICONS,
   GAMES_EMBED_URL,
@@ -19,8 +20,11 @@ import { cn } from '@/lib/utils';
  */
 
 function BodySkeleton() {
-  // Keep the window calm on reload — no pulse bar flash while the page chunk loads.
-  return <div className="min-h-[120px]" aria-hidden />;
+  return (
+    <div className="flex min-h-[160px] items-center justify-center px-8" aria-hidden>
+      <GlowProgressBar className="w-full max-w-sm" label="Loading" />
+    </div>
+  );
 }
 
 const homePageImport = () => import('@/components/home-page');

@@ -1777,3 +1777,73 @@ html.red .glass-chrome:hover {
     hsl(var(--background) / 0) 100%
   );
 }
+
+/* Orange glow progress — short load delay (case study chunk, etc.) */
+.glow-progress {
+  width: 100%;
+  padding-block: 0.75rem;
+}
+
+.glow-progress__track {
+  position: relative;
+  height: 2px;
+  width: 100%;
+  overflow: visible;
+  border-radius: 999px;
+  background: hsl(0 0% 100% / 0.22);
+}
+
+html.light .glow-progress__track {
+  background: hsl(0 0% 0% / 0.12);
+}
+
+.glow-progress__fill {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 30%;
+  border-radius: inherit;
+  background: #ff6a1a;
+  animation: glow-progress-sweep 1.15s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.glow-progress__tip {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  translate: 50% -50%;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    #fff 0%,
+    #ff8a3d 35%,
+    rgb(255 106 26 / 0.55) 60%,
+    transparent 75%
+  );
+  box-shadow:
+    0 0 10px 3px rgb(255 106 26 / 0.85),
+    0 0 22px 8px rgb(255 106 26 / 0.45),
+    0 0 36px 14px rgb(255 106 26 / 0.2);
+  pointer-events: none;
+}
+
+@keyframes glow-progress-sweep {
+  0% {
+    width: 8%;
+  }
+  55% {
+    width: 72%;
+  }
+  100% {
+    width: 96%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-progress__fill {
+    animation: none;
+    width: 42%;
+  }
+}
