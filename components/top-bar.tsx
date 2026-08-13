@@ -118,12 +118,6 @@ export function TopBar() {
     }
   };
 
-  const handleAboutMe = () => {
-    onHomeClickRef.current?.();
-    scrollPageToTop();
-    desktopOs?.openWindow('home');
-  };
-
   const handleOsCaseStudy = useCallback(
     (slug: string) => {
       if (!desktopOs) return;
@@ -141,7 +135,6 @@ export function TopBar() {
   };
 
   const focusedId = desktopOs?.focusedId ?? null;
-  const aboutActive = osEnabled && focusedId === 'home';
   const playgroundActive = osEnabled && focusedId === 'playground';
 
   const handleAskAI = () => {
@@ -265,17 +258,17 @@ export function TopBar() {
                     type="button"
                     data-cuelume-hover="tick"
                     data-cuelume-press
-                    onClick={handleAboutMe}
-                    aria-current={aboutActive ? 'page' : undefined}
+                    onClick={handleOsPlayground}
+                    aria-current={playgroundActive ? 'page' : undefined}
                     className={cn(
                       'rounded-md px-2.5 py-1 text-[13px] font-medium transition-colors',
                       focusRing,
-                      aboutActive
+                      playgroundActive
                         ? 'text-foreground'
                         : 'text-foreground/70 hover:bg-secondary/40 hover:text-foreground',
                     )}
                   >
-                    {t('aboutMe')}
+                    {t('playground')}
                   </button>
 
                   <DropdownMenu
@@ -318,23 +311,6 @@ export function TopBar() {
                       })}
                     </DropdownMenuContent>
                   </DropdownMenu>
-
-                  <button
-                    type="button"
-                    data-cuelume-hover="tick"
-                    data-cuelume-press
-                    onClick={handleOsPlayground}
-                    aria-current={playgroundActive ? 'page' : undefined}
-                    className={cn(
-                      'rounded-md px-2.5 py-1 text-[13px] font-medium transition-colors',
-                      focusRing,
-                      playgroundActive
-                        ? 'text-foreground'
-                        : 'text-foreground/70 hover:bg-secondary/40 hover:text-foreground',
-                    )}
-                  >
-                    {t('playground')}
-                  </button>
                 </nav>
               ) : null}
             </div>
