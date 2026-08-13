@@ -170,7 +170,7 @@ export function CaseStudiesList({ onProjectSelect, className }: CaseStudiesListP
 
   return (
     <motion.section
-      className={cn('mx-auto w-full max-w-[40rem]', className)}
+      className={cn('os-col w-full', className)}
       aria-label={t('caseStudies')}
       initial={reduceMotion ? false : hidden}
       animate={reduceMotion || play ? shown : hidden}

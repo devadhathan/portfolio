@@ -113,7 +113,7 @@ export function HomeIntro({ className }: HomeIntroProps) {
   const shown = { opacity: 1, y: 0 };
 
   return (
-    <header className={cn('home-intro mx-auto max-w-[40rem] w-full pt-4 sm:pt-6 md:pt-8 lg:pt-10', className)}>
+    <header className={cn('home-intro os-col w-full pt-4 sm:pt-6 md:pt-8 lg:pt-10', className)}>
       <div className="flex flex-col gap-4 sm:gap-5 md:gap-6">
         {lines.map((line, index) => (
           <motion.div

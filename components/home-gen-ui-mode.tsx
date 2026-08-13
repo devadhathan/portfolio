@@ -116,7 +116,7 @@ export default function HomeGenUIMode({
         transition={caseStudyEnterTransition}
       >
         <div className="h-full overflow-y-auto pb-24 lg:pb-8">
-          <div className="sticky top-0 z-50 mb-2 mx-auto max-w-4xl px-4 pt-3 sm:px-6 md:pt-4">
+          <div className="os-col sticky top-0 z-50 mb-2 px-4 pt-3 sm:px-6 md:pt-4">
             <OsBackButton
               onClick={() => {
                 onClearProject();
@@ -125,15 +125,16 @@ export default function HomeGenUIMode({
               aria-label="Back to Ask AI"
             />
           </div>
-          <ProjectDetailView
-            projectId={selectedProject}
-            hideBackButton
-            onBack={() => {
-              onClearProject();
-              scrollPageToTop();
-            }}
-          />
-        </div>
+          <div className="px-4 sm:px-6">
+            <ProjectDetailView
+              projectId={selectedProject}
+              hideBackButton
+              onBack={() => {
+                onClearProject();
+                scrollPageToTop();
+              }}
+            />
+          </div>        </div>
         <GenUIChatWidget
           messages={genUIPrompt.conversationHistory}
           isLoading={genUIPrompt.isLoading || isAgentWorking}

@@ -1068,13 +1068,43 @@ html.light .os-window-titlebar {
   background: hsl(0 0% 100% / 0.45);
 }
 
+/* Content width follows the OS window size (stage-max → cover) */
+.os-window-body {
+  container-type: inline-size;
+  container-name: os-win;
+}
+
 .os-window-content {
   min-width: 0;
   width: 100%;
 }
 
-[data-os-embedded='true'] .home-intro {
+/* Centered column shared by home + case study (same start edge) */
+.os-col {
+  width: 100%;
   max-width: min(40rem, 100%);
+  margin-inline: auto;
+}
+
+@container os-win (min-width: 720px) {
+  .os-col {
+    max-width: min(44rem, 92%);
+  }
+}
+
+@container os-win (min-width: 980px) {
+  .os-col {
+    max-width: min(48rem, 90%);
+  }
+}
+
+@container os-win (min-width: 1280px) {
+  .os-col {
+    max-width: min(52rem, 88%);
+  }
+}
+
+[data-os-embedded='true'] .home-intro {
   padding-inline: 0.25rem;
 }
 

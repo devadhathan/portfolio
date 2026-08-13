@@ -243,7 +243,7 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
               </div>
             </div>
 
-            <div className="flex-1 min-w-0 lg:ml-72 ml-0">
+            <div className="flex-1 min-w-0 lg:ml-72 ml-0 px-4 sm:px-6">
               <div className="lg:hidden mb-4">
                 <Button
                   onClick={() => setSelectedProject(null)}

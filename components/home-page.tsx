@@ -199,13 +199,13 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
               {selectedProject && !genUIMode ? (
                 <motion.div
                   key={`case-${selectedProject}`}
-                  className="w-full"
+                  className={cn('w-full', contentGutterClass)}
                   initial={reduceMotion ? false : blurFadeUp.initial}
                   animate={blurFadeUp.animate}
                   exit={reduceMotion ? undefined : blurFadeUp.exit}
                   transition={caseStudyEnterTransition}
                 >
-                  <div className="sticky top-0 z-50 mb-2 mx-auto max-w-4xl px-4 pt-3 sm:px-6 md:pt-4">
+                  <div className="os-col sticky top-0 z-50 mb-2 pt-3 md:pt-4">
                     <OsBackButton onClick={backFromCaseStudy} aria-label="Back to Home" />
                   </div>
                   <ProjectDetailView

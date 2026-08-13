@@ -76,7 +76,7 @@ export function ProjectsListView({ onBack, onProjectSelect, selectedProjectId }:
       {/* Main Content Area - Project Details */}
       <div className="flex-1 min-w-0">
         {selectedProjectId ? (
-          <div className="h-full overflow-y-auto">
+          <div className="h-full overflow-y-auto px-4 sm:px-6">
             <ProjectDetailView 
               projectId={selectedProjectId} 
               onBack={() => onProjectSelect('')} 

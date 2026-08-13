@@ -5,7 +5,7 @@ import { OsBackButton } from '@/components/os-back-button';
 /** Shown while the case-study chunk is loading. */
 export function CaseStudyLoading({ onBack }: { onBack?: () => void }) {
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 pt-1 sm:px-6">
+    <div className="os-col pt-1">
       {onBack ? (
         <div className="mb-8">
           <OsBackButton onClick={onBack} aria-label="Back to Home" />
