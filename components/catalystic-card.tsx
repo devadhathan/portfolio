@@ -146,8 +146,10 @@ export function CatalysticCard({
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/photos/catalystic-preview.png"
+              src="/photos/catalystic-preview.webp"
               alt="Catalystic UI"
+              loading="lazy"
+              decoding="async"
               className="h-full w-full object-cover object-top"
             />
           </div>

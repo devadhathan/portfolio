@@ -69,10 +69,33 @@ export function SideProjectCard({
   const [previousId, setPreviousId] = useState<string | null>(null);
   const [exitGen, setExitGen] = useState(0);
   const [arrowTop, setArrowTop] = useState(0);
+  const [nearViewport, setNearViewport] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const rowRefs = useRef<Map<string, HTMLElement>>(new Map());
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node || nearViewport) return;
+
+    if (typeof IntersectionObserver === 'undefined') {
+      setNearViewport(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setNearViewport(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px 0px', threshold: 0.01 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [nearViewport]);
   useLayoutEffect(() => {
     if (!previousId) return;
     const node = cardRefs.current.get(previousId);
@@ -140,6 +163,7 @@ export function SideProjectCard({
 
   return (
     <div
+      ref={rootRef}
       className={cn('flex h-full min-h-[340px] flex-col overflow-hidden sm:min-h-[400px]', className)}
       data-cuelume-card-hover
       onClick={(e) => e.stopPropagation()}
@@ -220,6 +244,12 @@ export function SideProjectCard({
               const entry = roles.get(project.id) ?? { role: 'stack' as const, depth: MAX_VISIBLE_STACK };
               const motion = cardMotion(entry.role, entry.depth);
               const isExit = entry.role === 'exit';
+              // Only fetch visible stack faces once near the viewport.
+              const shouldLoadImage =
+                nearViewport &&
+                (entry.role === 'front' ||
+                  entry.role === 'exit' ||
+                  (entry.role === 'stack' && entry.depth < MAX_VISIBLE_STACK));
 
               return (
                 <div
@@ -248,15 +278,19 @@ export function SideProjectCard({
                     transition: isExit ? 'none' : `transform ${SPRING_STACK}`,
                   }}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={project.image}
-                    alt={project.name}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-full w-full object-cover object-top"
-                    draggable={false}
-                  />
+                  {shouldLoadImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={project.image}
+                      alt={project.name}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover object-top"
+                      draggable={false}
+                    />
+                  ) : (
+                    <div className="h-full w-full bg-secondary/25" aria-hidden />
+                  )}
                 </div>
               );
             })}

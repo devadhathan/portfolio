@@ -48,10 +48,35 @@ export function PhotoCarousel({
   const [reduceMotion, setReduceMotion] = useState(false);
   const [heldIndex, setHeldIndex] = useState<number | null>(null);
   const [enterBlur, setEnterBlur] = useState(false);
+  /** Don’t fetch camera-roll bytes until the carousel is near the viewport. */
+  const [nearViewport, setNearViewport] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const trackIndexRef = useRef(trackIndex);
   const prevTrackIndexRef = useRef(trackIndex);
   const activeImgRef = useRef<HTMLImageElement | null>(null);
   const skipTransitionFxRef = useRef(true);
+
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node || nearViewport) return;
+
+    if (typeof IntersectionObserver === 'undefined') {
+      setNearViewport(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setNearViewport(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px 0px', threshold: 0.01 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [nearViewport]);
   useEffect(() => {
     trackIndexRef.current = trackIndex;
 
@@ -241,12 +266,12 @@ export function PhotoCarousel({
   }, []);
 
   useEffect(() => {
-    if (!loop || paused) return;
+    if (!loop || paused || !nearViewport) return;
     if (reduceMotion) return;
 
     const timer = window.setInterval(() => go(1), CAROUSEL_INTERVAL_MS);
     return () => window.clearInterval(timer);
-  }, [loop, paused, go, reduceMotion]);
+  }, [loop, paused, go, reduceMotion, nearViewport]);
 
   const minHeightClass = compact ? 'min-h-[200px]' : 'min-h-[400px] sm:min-h-[320px]';
 
@@ -260,6 +285,7 @@ export function PhotoCarousel({
 
   return (
     <div
+      ref={rootRef}
       className={cn('group/photos relative z-10 h-full w-full overflow-hidden rounded-lg bg-secondary/10', minHeightClass)}
       style={{ ['--carousel-interval' as string]: `${CAROUSEL_INTERVAL_MS}ms` }}
     >
@@ -303,9 +329,9 @@ export function PhotoCarousel({
         {slides.map((photo, idx) => {
           const isActive = idx === trackIndex;
           const isHeld = heldIndex === idx && !isActive;
-          // Load the active slide (and held outgoing) only — adjacent preloads
-          // were pulling multi‑MB camera-roll originals on first paint.
-          const shouldLoad = isActive || isHeld;
+          // Load the active slide (and held outgoing) only — and only once near
+          // the viewport so below-fold carousels don’t contend with LCP.
+          const shouldLoad = nearViewport && (isActive || isHeld);
 
           return (
             <div
@@ -323,7 +349,7 @@ export function PhotoCarousel({
                     ref={isActive ? activeImgRef : undefined}
                     src={photo}
                     alt={`${title} ${loop ? ((idx - 1 + count) % count) + 1 : idx + 1}`}
-                    loading={isActive ? 'eager' : 'lazy'}
+                    loading="lazy"
                     placeholderSrc={null}
                     className={cn(
                       'photo-carousel-image absolute inset-0 h-full w-full object-cover motion-reduce:scale-100 motion-reduce:animate-none',
