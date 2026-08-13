@@ -17,6 +17,7 @@ import { localizeProjects } from '@/lib/i18n/localize-projects'
 import { routing, type Locale } from '@/i18n/routing'
 import { HERO_VIDEO_POSTER } from '@/lib/hero-media'
 import { fontVariables, geistSans } from '@/lib/fonts'
+import { getWallpaperBootScript } from '@/lib/desktop-os'
 import { Analytics } from '@vercel/analytics/next'
 import { PostHogProvider } from '@/components/posthog-provider'
 
@@ -63,6 +64,7 @@ export default async function LocaleLayout({
     <html lang={locale} className="dark" suppressHydrationWarning>
       <head>
         <link rel="preload" href={HERO_VIDEO_POSTER} as="image" fetchPriority="high" />
+        <script dangerouslySetInnerHTML={{ __html: getWallpaperBootScript() }} />
       </head>
       <body className={`${fontVariables} ${geistSans.className}`}>
         <PostHogProvider>

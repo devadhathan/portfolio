@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AgentState, SectionPriority, SectionType } from '@/lib/agent';
-import { User, Briefcase, Mail, Linkedin, FileText, Sparkles, Code2, Calendar, Award, Globe, Github, Zap, FolderKanban, Image as ImageIcon, ExternalLink, Rocket, MapPin, type LucideIcon } from 'lucide-react';
+import { User, Briefcase, Mail, Linkedin, FileText, Sparkles, Code2, Calendar, Award, Globe, Github, FolderKanban, Image as ImageIcon, ExternalLink, Rocket, MapPin, type LucideIcon } from 'lucide-react';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import { HighlightedText } from './highlighted-text';
@@ -340,10 +340,6 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                     <MapPin className="h-3.5 w-3.5 shrink-0" />
                     <span className="font-medium">{t('location')}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-foreground/85 transition-colors duration-200 group-hover:text-primary">
-                    <Briefcase className="h-3.5 w-3.5 shrink-0 transition-colors duration-200 group-hover:text-primary" />
-                    <span className="font-medium">{t('available')}</span>
-                  </div>
                 </div>
               </div>
             <div className="flex-1 flex justify-center">
@@ -387,6 +383,10 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 description={t('genUiCard.description')}
                 buttonLabel={t('genUiCard.button')}
                 onClick={() => onEnterGenUI?.()}
+                onPointerEnter={() => {
+                  void import('@/components/home-gen-ui-mode');
+                  void import('@/components/gen-ui-mode-shell');
+                }}
               />
             </CardContent>
           </Card>
@@ -1152,10 +1152,6 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                       <div className="flex items-center gap-2 text-sm">
                         <Globe className="h-4 w-4 text-primary" />
                         <span>{t('location')}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Zap className="h-4 w-4 text-primary" />
-                        <span>{t('availableOpportunities')}</span>
                       </div>
                     </div>
                   </>

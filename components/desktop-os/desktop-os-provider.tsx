@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -19,8 +20,10 @@ import {
   DESKTOP_OS_WALLPAPER_KEY,
   DESKTOP_WINDOW_IDS,
   MAX_OPEN_WINDOWS,
+  OS_WALLPAPER_CSS_VAR,
   pathToWindowId,
   WALLPAPER_PRESETS,
+  wallpaperBackgroundFor,
   WINDOW_PATH,
   type DesktopIconId,
   type DesktopIconPosition,
@@ -124,7 +127,7 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
   const [iconPositions, setIconPositions] = useState<Record<DesktopIconId, DesktopIconPosition>>(
     () => DEFAULT_ICON_POSITIONS,
   );
-  const [wallpaperId, setWallpaperIdState] = useState<WallpaperId>(DEFAULT_WALLPAPER_ID);
+  const [wallpaperId, setWallpaperIdState] = useState<WallpaperId>(() => readWallpaperId());
 
   useEffect(() => {
     const mq = window.matchMedia(NARROW_QUERY);
@@ -136,8 +139,14 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const stored = readIconPositions();
     if (stored) setIconPositions(stored);
-    setWallpaperIdState(readWallpaperId());
   }, []);
+
+  useLayoutEffect(() => {
+    document.documentElement.style.setProperty(
+      OS_WALLPAPER_CSS_VAR,
+      wallpaperBackgroundFor(wallpaperId),
+    );
+  }, [wallpaperId]);
 
   const bumpZ = useCallback(() => {
     // Stay below OS menubar (z-200) and widgets panel (z-190)
@@ -220,19 +229,23 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
       [id]: { ...prev[id], open: false, covered: false, maximized: true },
     }));
     setFocusedId((curr) => (curr === id ? null : curr));
+    // Trash itself never goes into the closed stack
+    if (id === 'trash') return;
     setClosedStack((prev) => [id, ...prev.filter((x) => x !== id)]);
   }, []);
 
+  const emptyTrash = useCallback(() => {
+    setClosedStack([]);
+  }, []);
+
+  const openTrash = useCallback(() => {
+    emptyTrash();
+    openWindow('trash', { syncUrl: false });
+  }, [emptyTrash, openWindow]);
+
   const restoreFromTrash = useCallback(() => {
-    setClosedStack((prev) => {
-      if (prev.length === 0) return prev;
-      const [id, ...rest] = prev;
-      queueMicrotask(() => {
-        openWindow(id);
-      });
-      return rest.filter((x) => x !== id);
-    });
-  }, [openWindow]);
+    openTrash();
+  }, [openTrash]);
 
   const toggleCover = useCallback((id: DesktopWindowId) => {
     setWindows((prev) => {
@@ -292,9 +305,7 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
     focusWindowRef.current(id, { syncUrl: false });
   }, [pathname]);
 
-  const wallpaperBackground =
-    WALLPAPER_PRESETS.find((p) => p.id === wallpaperId)?.background ??
-    WALLPAPER_PRESETS[0].background;
+  const wallpaperBackground = wallpaperBackgroundFor(wallpaperId);
 
   const osValue = useMemo<DesktopOsContextValue>(
     () => ({

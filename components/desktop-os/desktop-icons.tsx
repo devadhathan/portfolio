@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useRef, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
-import { ArrowUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import {
   useDesktopIconLayout,
@@ -9,6 +8,7 @@ import {
 } from '@/components/desktop-os/desktop-os-provider';
 import {
   DESKTOP_LINK_ICONS,
+  DESKTOP_LINK_ICON_IDS,
   NARROW_ICON_POSITIONS,
   type DesktopIconId,
   type DesktopLinkIconId,
@@ -23,26 +23,31 @@ type AppIconWindowId = (typeof APP_ICON_IDS)[number];
 
 const APP_ICONS: {
   id: AppIconWindowId;
-  labelKey: 'aboutMe' | 'work' | 'playground' | 'askAI' | 'games' | 'photos';
+  labelKey: 'home' | 'work' | 'playground' | 'askAI' | 'games' | 'photos';
   src: string;
 }[] = [
-  { id: 'home', labelKey: 'aboutMe', src: '/icons/user.svg' },
+  { id: 'home', labelKey: 'home', src: '/icons/home.svg' },
   { id: 'work', labelKey: 'work', src: '/icons/briefcase.svg' },
   { id: 'playground', labelKey: 'playground', src: '/icons/folder.svg' },
   { id: 'ask', labelKey: 'askAI', src: '/icons/sparkles.svg' },
-  { id: 'games', labelKey: 'games', src: '/icons/lightbulb.svg' },
+  { id: 'games', labelKey: 'games', src: '/icons/32.svg' },
   { id: 'photos', labelKey: 'photos', src: '/icons/image.svg' },
 ];
 
-const APP_ICON_ID_SET = new Set<DesktopWindowId>(APP_ICON_IDS);
+const LINK_ICON_ID_SET = new Set<string>(DESKTOP_LINK_ICON_IDS);
+const WINDOW_ICON_ID_SET = new Set<string>([
+  ...APP_ICON_IDS,
+  ...DESKTOP_LINK_ICON_IDS,
+  'contact',
+]);
 
 const LINK_ICON_SRC: Record<DesktopLinkIconId, string> = {
-  writings: '/icons/news.svg',
-  catalystic: '/icons/settings.svg',
-  pixl: '/icons/sync.svg',
-  musicNotch: '/icons/music.svg',
-  linkring: '/icons/contact-card.svg',
-  bigBang: '/icons/analytics.svg',
+  writings: '/icons/menu.svg',
+  catalystic: '/icons/lightbulb.svg',
+  pixl: '/icons/lightbulb.svg',
+  musicNotch: '/icons/lightbulb.svg',
+  linkring: '/icons/lightbulb.svg',
+  bigBang: '/icons/lightbulb.svg',
 };
 
 const iconFocusClass =
@@ -75,10 +80,11 @@ function DesktopAssetIcon({ src, alt }: { src: string; alt: string }) {
 }
 
 type DesktopIconsProps = {
+  /** @deprecated Contact opens as an OS window now. */
   onContact?: () => void;
 };
 
-export function DesktopIcons({ onContact }: DesktopIconsProps) {
+export function DesktopIcons(_props?: DesktopIconsProps) {
   const t = useTranslations('nav');
   const {
     windows,
@@ -129,7 +135,7 @@ export function DesktopIcons({ onContact }: DesktopIconsProps) {
       if (isNarrow || e.button !== 0) return;
       // Avoid focus / image-drag work on the grab frame
       e.preventDefault();
-      if (APP_ICON_ID_SET.has(id as DesktopWindowId)) {
+      if (WINDOW_ICON_ID_SET.has(id)) {
         prefetchDesktopWindow(id);
       }
       const pos = positionsRef.current[id] ?? { x: 28, y: 72, edge: 'left' as const };
@@ -178,33 +184,24 @@ export function DesktopIcons({ onContact }: DesktopIconsProps) {
     [isNarrow],
   );
 
-  const openExternal = useCallback((href: string) => {
-    window.open(href, '_blank', 'noopener,noreferrer');
-  }, []);
-
   const activateIcon = useCallback(
     (id: DesktopIconId) => {
       if (id === 'trash') {
-        if (!trashEmpty) restoreFromTrash();
-        return;
-      }
-      if (id === 'contact') {
-        onContact?.();
+        restoreFromTrash();
         return;
       }
 
-      const link = DESKTOP_LINK_ICONS.find((item) => item.id === id);
-      if (link) {
-        openExternal(link.href);
-        return;
-      }
-
-      if (APP_ICON_ID_SET.has(id as DesktopWindowId)) {
-        const wid = id as AppIconWindowId;
-        openWindow(wid, wid === 'games' || wid === 'photos' ? { syncUrl: false } : undefined);
+      if (WINDOW_ICON_ID_SET.has(id)) {
+        const wid = id as DesktopWindowId;
+        const noRouteSync =
+          wid === 'games' ||
+          wid === 'photos' ||
+          wid === 'contact' ||
+          LINK_ICON_ID_SET.has(wid);
+        openWindow(wid, noRouteSync ? { syncUrl: false } : undefined);
       }
     },
-    [onContact, openExternal, openWindow, restoreFromTrash, trashEmpty],
+    [openWindow, restoreFromTrash],
   );
 
   const onPointerUp = useCallback(
@@ -289,23 +286,23 @@ export function DesktopIcons({ onContact }: DesktopIconsProps) {
           y: 64,
           edge: item.id === 'writings' ? ('left' as const) : ('right' as const),
         };
+        const win = windows[item.id];
+        const isOpen = win.open;
+        const isFocused = focusedId === item.id && isOpen;
 
         return (
           <button
             key={item.id}
             type="button"
             data-cuelume-hover="tick"
-            aria-label={`Open ${item.label} (external)`}
-            title={`${item.label} — opens externally`}
-            className={iconClass}
+            aria-label={item.label}
+            className={cn(iconClass, isFocused && 'os-desktop-icon--active')}
             style={styleFor(item.id, pos)}
             {...dragHandlers(item.id)}
           >
             <span className="os-desktop-icon__well os-desktop-icon__well--asset">
               <DesktopAssetIcon src={LINK_ICON_SRC[item.id]} alt="" />
-              <span className="os-desktop-icon__external" aria-hidden>
-                <ArrowUpRight className="h-2.5 w-2.5" strokeWidth={2.5} />
-              </span>
+              {isOpen ? <span className="os-desktop-icon__dot" /> : null}
             </span>
             <span className="os-desktop-icon__label">{item.label}</span>
           </button>
@@ -316,12 +313,13 @@ export function DesktopIcons({ onContact }: DesktopIconsProps) {
         type="button"
         data-cuelume-hover="tick"
         aria-label={t('contact')}
-        className={iconClass}
+        className={cn(iconClass, windows.contact.open && focusedId === 'contact' && 'os-desktop-icon--active')}
         style={styleFor('contact', positions.contact ?? { x: 28, y: 416, edge: 'left' })}
         {...dragHandlers('contact')}
       >
         <span className="os-desktop-icon__well os-desktop-icon__well--asset">
           <DesktopAssetIcon src="/icons/mailbox.svg" alt="" />
+          {windows.contact.open ? <span className="os-desktop-icon__dot" /> : null}
         </span>
         <span className="os-desktop-icon__label">{t('contact')}</span>
       </button>
@@ -329,14 +327,14 @@ export function DesktopIcons({ onContact }: DesktopIconsProps) {
       <button
         type="button"
         data-cuelume-hover="tick"
-        disabled={trashEmpty}
-        aria-label={trashEmpty ? 'Trash is empty' : 'Restore from trash'}
-        className={cn(iconClass, trashEmpty && 'os-desktop-icon--disabled')}
+        aria-label="Trash"
+        className={cn(iconClass, windows.trash.open && focusedId === 'trash' && 'os-desktop-icon--active')}
         style={styleFor('trash', positions.trash ?? { x: 28, y: 504, edge: 'right' })}
         {...dragHandlers('trash')}
       >
         <span className="os-desktop-icon__well os-desktop-icon__well--asset">
           <DesktopAssetIcon src="/icons/trash.svg" alt="" />
+          {windows.trash.open ? <span className="os-desktop-icon__dot" /> : null}
           {!trashEmpty ? (
             <span className="os-desktop-icon__badge">{Math.min(closedStack.length, 9)}</span>
           ) : null}

@@ -724,7 +724,7 @@ html.red body {
 }
 
 .desktop-os-canvas--wallpaper {
-  background-color: hsl(var(--background));
+  background: var(--os-wallpaper, hsl(var(--background)));
 }
 
 .desktop-os-stage-windows {
@@ -803,113 +803,121 @@ html.light .os-menubar {
   opacity: 0 !important;
 }
 
-  .os-desktop-icon--active .os-desktop-icon__well {
-    box-shadow:
-      0 0 0 2px hsl(var(--primary) / 0.85),
-      0 6px 16px hsl(0 0% 0% / 0.35);
-  }
+.os-desktop-icon--active .os-desktop-icon__well {
+  box-shadow:
+    0 0 0 2px hsl(var(--primary) / 0.85),
+    0 6px 16px hsl(0 0% 0% / 0.35);
+}
 
-  .os-desktop-icon--active .os-desktop-icon__well--asset {
-    box-shadow:
-      0 0 0 2px hsl(var(--primary) / 0.9),
-      0 8px 18px hsl(0 0% 0% / 0.35);
-  }
+.os-desktop-icon--active .os-desktop-icon__well--asset {
+  box-shadow:
+    0 0 0 2px hsl(var(--primary) / 0.9),
+    0 8px 18px hsl(0 0% 0% / 0.35);
+}
 
-  .os-desktop-icon--disabled {
-    opacity: 0.45;
-  }
+.os-desktop-icon--disabled {
+  opacity: 0.45;
+}
 
-  .os-desktop-icon__well {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 3.5rem;
-    height: 3.5rem;
-    border-radius: 9999px;
-    background: hsl(0 0% 100% / 0.18);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.25),
-      0 4px 12px hsl(0 0% 0% / 0.25);
-    color: hsl(0 0% 100%);
-  }
+.os-desktop-icon__well {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  background: hsl(0 0% 100% / 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / 0.25),
+    0 4px 12px hsl(0 0% 0% / 0.25);
+  color: hsl(0 0% 100%);
+}
 
-  /* Full squircle assets from /public/icons — plate is baked into the SVG */
-  .os-desktop-icon__well--asset {
-    width: 4rem;
-    height: 4rem;
-    border-radius: 1rem;
-    background: transparent;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    box-shadow: 0 6px 14px hsl(0 0% 0% / 0.28);
-    overflow: visible;
-    isolation: isolate;
-  }
+/* Full squircle assets — frosted pad behind the SVG glass plate */
+.os-desktop-icon__well--asset {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 1.15rem;
+  background:
+    linear-gradient(hsl(0 0% 100% / 0.1), hsl(0 0% 100% / 0.04)),
+    hsl(var(--background) / 0.28);
+  backdrop-filter: blur(28px) saturate(150%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / 0.22),
+    0 6px 14px hsl(0 0% 0% / 0.28);
+  overflow: visible;
+  isolation: isolate;
+}
 
-  .os-desktop-icon__asset {
-    position: relative;
-    z-index: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    pointer-events: none;
-    user-select: none;
-    border-radius: inherit;
-    transition: filter 0.28s ease;
-  }
+.os-desktop-icon__asset {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  border-radius: inherit;
+  transition: filter 0.28s ease;
+}
 
-  /* Theme wash: recolors glass plate / glyphs toward --theme-color */
-  .os-desktop-icon__tint {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    border-radius: inherit;
-    background: var(--theme-color);
-    mix-blend-mode: soft-light;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.28s ease;
-  }
+/* Theme wash: recolors glass plate / glyphs toward --theme-color */
+.os-desktop-icon__tint {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: var(--theme-color);
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
 
-  /* Colored themes: light wash only — keep glass readable */
-  html.blue .os-desktop-icon__tint,
-  html.green .os-desktop-icon__tint,
-  html.red .os-desktop-icon__tint {
-    opacity: 0.28;
-  }
+/* Colored themes: light wash only — keep glass readable */
+html.blue .os-desktop-icon__tint,
+html.green .os-desktop-icon__tint,
+html.red .os-desktop-icon__tint {
+  opacity: 0.28;
+}
 
-  /*
-   * Assets are authored with light glyphs — keep them white in light too.
-   */
-  html.light .os-desktop-icon__tint {
-    opacity: 0;
-  }
+/*
+ * Assets are authored with light glyphs — keep them white in light too.
+ */
+html.light .os-desktop-icon__tint {
+  opacity: 0;
+}
 
-  html.light .os-desktop-icon__asset {
-    filter: none;
-  }
+html.light .os-desktop-icon__asset {
+  filter: none;
+}
 
-  html.dark .os-desktop-icon__asset {
-    filter: none;
-  }
+html.dark .os-desktop-icon__asset {
+  filter: none;
+}
 
-  html.light .os-desktop-icon {
-    color: hsl(0 0% 12% / 0.9);
-    text-shadow: 0 1px 2px hsl(0 0% 100% / 0.7);
-  }
+html.light .os-desktop-icon {
+  color: hsl(0 0% 12% / 0.9);
+  text-shadow: 0 1px 2px hsl(0 0% 100% / 0.7);
+}
 
-  html.light .os-desktop-icon__well {
-    background: hsl(0 0% 100% / 0.72);
-    color: hsl(0 0% 15%);
-  }
+html.light .os-desktop-icon__well {
+  background: hsl(0 0% 100% / 0.72);
+  color: hsl(0 0% 15%);
+}
 
-  html.light .os-desktop-icon__well--asset {
-    background: transparent;
-    box-shadow: 0 6px 16px hsl(30 20% 20% / 0.18);
-  }
+html.light .os-desktop-icon__well--asset {
+  background:
+    linear-gradient(hsl(0 0% 100% / 0.42), hsl(0 0% 100% / 0.22)),
+    hsl(var(--background) / 0.36);
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / 0.75),
+    0 6px 16px hsl(30 20% 20% / 0.16);
+}
 
 .os-desktop-icon__label {
   font-size: 0.8125rem;
@@ -1088,16 +1096,16 @@ html.light .os-window-titlebar {
     width: 5rem;
   }
 
-    .os-desktop-icon__well {
-      width: 3.15rem;
-      height: 3.15rem;
-    }
+  .os-desktop-icon__well {
+    width: 3.15rem;
+    height: 3.15rem;
+  }
 
-    .os-desktop-icon__well--asset {
-      width: 3.65rem;
-      height: 3.65rem;
-      border-radius: 0.95rem;
-    }
+  .os-desktop-icon__well--asset {
+    width: 3.65rem;
+    height: 3.65rem;
+    border-radius: 0.95rem;
+  }
 
   .os-desktop-icon__label {
     max-width: 5rem;
@@ -1131,14 +1139,14 @@ html.light .os-window-titlebar {
   }
 
   .os-window--stage-max {
-    left: 3.5rem;
-    right: 3.5rem;
+    left: 0;
+    right: 0;
     top: 2.85rem;
     bottom: max(0.4rem, env(safe-area-inset-bottom, 0px));
     width: auto;
     height: auto;
     margin: 0;
-    border-radius: 0.85rem;
+    border-radius: 0.85rem 0.85rem 0 0;
   }
 
   .os-window--covered {
@@ -1163,24 +1171,24 @@ html.light .os-window-titlebar {
     cursor: pointer;
   }
 
-    .os-desktop-icons--narrow .os-desktop-icon__well,
-    .os-desktop-icon--fixed .os-desktop-icon__well {
-      width: 2.75rem;
-      height: 2.75rem;
-    }
+  .os-desktop-icons--narrow .os-desktop-icon__well,
+  .os-desktop-icon--fixed .os-desktop-icon__well {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
 
-    .os-desktop-icons--narrow .os-desktop-icon__well--asset,
-    .os-desktop-icon--fixed .os-desktop-icon__well--asset {
-      width: 3.15rem;
-      height: 3.15rem;
-      border-radius: 0.8rem;
-    }
+  .os-desktop-icons--narrow .os-desktop-icon__well--asset,
+  .os-desktop-icon--fixed .os-desktop-icon__well--asset {
+    width: 3.15rem;
+    height: 3.15rem;
+    border-radius: 0.8rem;
+  }
 
-    .os-desktop-icons--narrow .os-desktop-icon__well svg,
-    .os-desktop-icon--fixed .os-desktop-icon__well svg {
-      width: 1.15rem;
-      height: 1.15rem;
-    }
+  .os-desktop-icons--narrow .os-desktop-icon__well svg,
+  .os-desktop-icon--fixed .os-desktop-icon__well svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
 
   .os-desktop-icons--narrow .os-desktop-icon__label,
   .os-desktop-icon--fixed .os-desktop-icon__label {

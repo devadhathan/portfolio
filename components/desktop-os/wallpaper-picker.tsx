@@ -12,11 +12,16 @@ import { useDesktopOs } from '@/components/desktop-os/desktop-os-provider';
 import { WALLPAPER_PRESETS } from '@/lib/desktop-os';
 import { cn, focusRing } from '@/lib/utils';
 
-export function WallpaperPicker() {
+type WallpaperPickerProps = {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+};
+
+export function WallpaperPicker({ open, onOpenChange }: WallpaperPickerProps) {
   const { wallpaperId, setWallpaperId } = useDesktopOs();
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button
           type="button"

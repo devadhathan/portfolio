@@ -27,16 +27,14 @@
     "intro": {
       "name": "Devadhathan M D",
       "updatedFallback": "Updated recently",
-      "p1": "I design interfaces for the computer and experiences for the people.",
-      "p2": "Most recently <wordsmith>Wordsmith AI</wordsmith>, before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>.",
-      "p3": "I think about interfaces and <i>what tickles us</i>. Research to find <i>the whys</i>, then obsess over details.",
-      "p4": "Building something <i>simple, but better</i>.",
-      "p5": "Based in Edinburgh. Available for work.",
-      "p6": "You can find me on <x>X</x>, <linkedin>LinkedIn</linkedin>, or reach me via <email>email</email>."
+      "p1": "I'm currently in Edinburgh, United Kingdom.",
+      "p2": "Most recently I worked on <wordsmith>Wordsmith AI</wordsmith>, and before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>, and I have a master's in design and a bachelor's in computer engineering.",
+      "p3": "I design interfaces for the computer and experiences for the people, and I'm building something <i>simple, but better</i>.",
+      "p4": "You can find me on <x>X</x>, <linkedin>LinkedIn</linkedin>, or reach me via <email>email</email>."
     },
-    "devBio": "I design interfaces for the computer and experiences for the people.\n\nMost recently <wordsmith>Wordsmith AI</wordsmith>, before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>.\n\nI think about interfaces and <i>what tickles us</i>. Research to find <i>the whys</i>, then obsess over details.\n\nBuilding something <i>simple, but better</i>.",
-    "devBioHero": "I design interfaces for the computer and experiences for the people.\n\nMost recently <wordsmith>Wordsmith AI</wordsmith>, before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>.\n\nI think about interfaces and <i>what tickles us</i>. Research to find <i>the whys</i>, then obsess over details.\n\nBuilding something <i>simple, but better</i>.",
-    "location": "Based in Edinburgh",
+    "devBio": "I'm currently in Edinburgh, United Kingdom.\n\nMost recently I worked on <wordsmith>Wordsmith AI</wordsmith>, and before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>, and I have a master's in design and a bachelor's in computer engineering.\n\nI design interfaces for the computer and experiences for the people, and I'm building something <i>simple, but better</i>.",
+    "devBioHero": "I'm currently in Edinburgh, United Kingdom.\n\nMost recently I worked on <wordsmith>Wordsmith AI</wordsmith>, and before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>, and I have a master's in design and a bachelor's in computer engineering.\n\nI design interfaces for the computer and experiences for the people, and I'm building something <i>simple, but better</i>.",
+    "location": "I'm currently in Edinburgh, United Kingdom",
     "available": "Available for work",
     "availableOpportunities": "Available for opportunities",
     "loadingPortfolio": "Loading Dev's Portfolio",

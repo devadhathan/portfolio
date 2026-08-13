@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type ComponentType } from 'react';
+import { useEffect, useRef, type ComponentType } from 'react';
 import { useTranslations } from 'next-intl';
 import { useNavActions } from '@/contexts/nav-actions-context';
 import { useAskAI } from '@/components/ask-ai-provider';
@@ -8,18 +8,23 @@ import { useDesktopOs } from '@/components/desktop-os/desktop-os-provider';
 import { OsWindow } from '@/components/desktop-os/os-window';
 import { WidgetsPanel } from '@/components/desktop-os/widgets-panel';
 import { DesktopIcons } from '@/components/desktop-os/desktop-icons';
-import { ContactChat } from '@/components/contact-chat';
 import {
   AskWindowBody,
+  ContactWindowBody,
+  createLinkWindowBody,
   GamesWindowBody,
   HomeWindowBody,
   PlaygroundWindowBody,
   prefetchDesktopWindowBodies,
+  TrashWindowBody,
   WordsmithWindowBody,
   WorkWindowBody,
 } from '@/components/desktop-os/window-bodies';
 import { PhotosWindowBody } from '@/components/desktop-os/photos-window-body';
-import { DESKTOP_WINDOW_IDS, type DesktopWindowId } from '@/lib/desktop-os';
+import {
+  DESKTOP_WINDOW_IDS,
+  type DesktopWindowId,
+} from '@/lib/desktop-os';
 import { openCaseStudyInHomeWindow } from '@/lib/open-case-study';
 
 /** Keep Cmd/Ctrl+I Ask AI toggle in sync with the Ask OS window. */
@@ -68,20 +73,32 @@ const BODY: Record<DesktopWindowId, ComponentType> = {
   games: GamesWindowBody,
   photos: PhotosWindowBody,
   wordsmith: WordsmithWindowBody,
+  trash: TrashWindowBody,
+  contact: ContactWindowBody,
+  writings: createLinkWindowBody('writings'),
+  catalystic: createLinkWindowBody('catalystic'),
+  pixl: createLinkWindowBody('pixl'),
+  musicNotch: createLinkWindowBody('musicNotch'),
+  linkring: createLinkWindowBody('linkring'),
+  bigBang: createLinkWindowBody('bigBang'),
 };
 
 export function DesktopOsShell() {
   const t = useTranslations('nav');
-  const { windows, openWindow, wallpaperBackground, isNarrow } = useDesktopOs();
+  const { windows, openWindow, isNarrow } = useDesktopOs();
   const { onProjectSelectRef } = useNavActions();
-  const [chatOpen, setChatOpen] = useState(false);
 
   // Warm heavy window chunks in idle time so first opens feel instant
   useEffect(() => {
     const run = () => prefetchDesktopWindowBodies();
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      const id = window.requestIdleCallback(run, { timeout: 1800 });
-      return () => window.cancelIdleCallback(id);
+    const w = window as Window &
+      typeof globalThis & {
+        requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+        cancelIdleCallback?: (id: number) => void;
+      };
+    if (typeof w.requestIdleCallback === 'function') {
+      const id = w.requestIdleCallback(run, { timeout: 1800 });
+      return () => w.cancelIdleCallback?.(id);
     }
     const t = window.setTimeout(run, 400);
     return () => window.clearTimeout(t);
@@ -95,6 +112,14 @@ export function DesktopOsShell() {
     games: t('games'),
     photos: t('photos'),
     wordsmith: 'Wordsmith AI',
+    trash: 'Trash',
+    contact: t('contact'),
+    writings: 'Writings',
+    catalystic: 'Catalystic',
+    pixl: 'Pixl',
+    musicNotch: 'MusicNotch',
+    linkring: 'Linkring',
+    bigBang: 'Big Bang',
   };
 
   return (
@@ -104,10 +129,9 @@ export function DesktopOsShell() {
           ? 'desktop-os-canvas desktop-os-canvas--wallpaper desktop-os-canvas--narrow relative h-[100dvh] w-full overflow-hidden'
           : 'desktop-os-canvas desktop-os-canvas--wallpaper relative h-[100dvh] w-full overflow-hidden'
       }
-      style={{ background: wallpaperBackground }}
     >
       <AskWindowBridge />
-      <DesktopIcons onContact={() => setChatOpen(true)} />
+      <DesktopIcons />
       <div className="desktop-os-stage-windows">
         {DESKTOP_WINDOW_IDS.map((id) => {
           if (!windows[id].everOpened) return null;
@@ -128,7 +152,6 @@ export function DesktopOsShell() {
           });
         }}
       />
-      <ContactChat open={chatOpen} onOpenChange={setChatOpen} />
     </div>
   );
 }

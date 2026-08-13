@@ -1,12 +1,3 @@
-export type DesktopWindowId =
-  | 'home'
-  | 'work'
-  | 'playground'
-  | 'ask'
-  | 'games'
-  | 'photos'
-  | 'wordsmith';
-
 export type DesktopLinkIconId =
   | 'writings'
   | 'catalystic'
@@ -15,7 +6,19 @@ export type DesktopLinkIconId =
   | 'linkring'
   | 'bigBang';
 
-export type DesktopIconId = DesktopWindowId | DesktopLinkIconId | 'contact' | 'trash';
+export type DesktopWindowId =
+  | 'home'
+  | 'work'
+  | 'playground'
+  | 'ask'
+  | 'games'
+  | 'photos'
+  | 'wordsmith'
+  | 'trash'
+  | 'contact'
+  | DesktopLinkIconId;
+
+export type DesktopIconId = DesktopWindowId;
 
 export type DesktopWindowState = {
   open: boolean;
@@ -36,7 +39,7 @@ export type DesktopIconPosition = {
   edge?: 'left' | 'right';
 };
 
-export type WallpaperId = 'cafe' | 'fjord' | 'vista' | 'bloom' | 'dusk' | 'mist';
+export type WallpaperId = 'vista' | 'bloom' | 'dusk' | 'forth';
 
 export type WallpaperPreset = {
   id: WallpaperId;
@@ -49,27 +52,24 @@ export type DesktopLinkIcon = {
   id: DesktopLinkIconId;
   label: string;
   href: string;
+  /** When false, site blocks iframes — show a thumbnail open prompt instead. */
+  embeddable?: boolean;
+  /** Preview image used when embeddable is false. */
+  thumbnail?: string;
 };
-
-export const DESKTOP_WINDOW_IDS: DesktopWindowId[] = [
-  'home',
-  'work',
-  'playground',
-  'ask',
-  'games',
-  'photos',
-  'wordsmith',
-];
 
 export const GAMES_EMBED_URL = 'https://puzzlegig.vercel.app';
 export const WORDSMITH_EMBED_URL = 'https://www.wordsmith.ai/products/blueprints';
 
-/** External redirects — shown with an arrow badge on the icon. */
+/** Side projects / writings — open as iframe OS windows (no route sync). */
 export const DESKTOP_LINK_ICONS: DesktopLinkIcon[] = [
   {
     id: 'writings',
     label: 'Writings',
     href: 'https://medium.com/@devadhathanmd18',
+    // Medium refuses iframe embedding (X-Frame-Options / CSP).
+    embeddable: false,
+    thumbnail: '/videos/dew-medium-thumb.jpg',
   },
   {
     id: 'catalystic',
@@ -100,6 +100,23 @@ export const DESKTOP_LINK_ICONS: DesktopLinkIcon[] = [
 
 export const DESKTOP_LINK_ICON_IDS: DesktopLinkIconId[] = DESKTOP_LINK_ICONS.map((i) => i.id);
 
+export const DESKTOP_WINDOW_IDS: DesktopWindowId[] = [
+  'home',
+  'work',
+  'playground',
+  'ask',
+  'games',
+  'photos',
+  'wordsmith',
+  'trash',
+  'contact',
+  ...DESKTOP_LINK_ICON_IDS,
+];
+
+export function getDesktopLinkIcon(id: DesktopWindowId): DesktopLinkIcon | undefined {
+  return DESKTOP_LINK_ICONS.find((item) => item.id === id);
+}
+
 export const DESKTOP_ICON_IDS: DesktopIconId[] = [
   'home',
   'work',
@@ -121,7 +138,7 @@ export const WINDOW_PATH: Partial<Record<DesktopWindowId, string>> = {
   home: '/',
   work: '/work',
   playground: '/playground',
-  // ask + games + photos + wordsmith stay as floating OS windows (no route sync)
+  // ask + games + photos + wordsmith + side-project embeds stay as floating OS windows
 };
 
 export function pathToWindowId(pathname: string): DesktopWindowId {
@@ -138,43 +155,55 @@ export const MAX_OPEN_WINDOWS = 1;
 
 export const WALLPAPER_PRESETS: WallpaperPreset[] = [
   {
-    id: 'cafe',
-    label: 'Cafe',
+    id: 'forth',
+    label: 'Forth',
     background:
-      "#0a0a0a center / cover no-repeat url('/playground/posters/1c6bf4951f51208c6c506133e9605963.jpg')",
-  },
-  {
-    id: 'fjord',
-    label: 'Fjord',
-    background: "center / cover no-repeat url('/wallpapers/fjord.png')",
+      "#0a0a0a center / cover no-repeat url('/wallpapers/forth.webp')",
   },
   {
     id: 'vista',
     label: 'Vista',
     background:
-      "#0a0a0a center / cover no-repeat url('/playground/posters/image-4.jpg')",
+      "#0a0a0a center / cover no-repeat url('/wallpapers/vista.webp')",
   },
   {
     id: 'bloom',
     label: 'Bloom',
     background:
-      "#0a0a0a center / cover no-repeat url('/playground/posters/image-5.jpg')",
+      "#0a0a0a center / cover no-repeat url('/wallpapers/bloom.webp')",
   },
   {
     id: 'dusk',
     label: 'Dusk',
-    background:
-      'radial-gradient(ellipse 100% 80% at 50% 0%, hsl(28 40% 28%) 0%, transparent 55%), linear-gradient(180deg, hsl(230 35% 12%) 0%, hsl(20 30% 8%) 100%)',
-  },
-  {
-    id: 'mist',
-    label: 'Mist',
-    background:
-      'radial-gradient(ellipse 90% 70% at 40% 20%, hsl(200 20% 70% / 0.35) 0%, transparent 50%), linear-gradient(180deg, hsl(210 15% 82%) 0%, hsl(40 10% 70%) 100%)',
+    /* Soft blue sky → warm peach/amber horizon glow (no land silhouette) */
+    background: [
+      'radial-gradient(ellipse 130% 58% at 48% 92%, hsl(32 95% 62%) 0%, hsl(22 88% 55% / 0.85) 18%, hsl(350 55% 62% / 0.28) 42%, transparent 62%)',
+      'radial-gradient(ellipse 90% 45% at 62% 78%, hsl(18 80% 58% / 0.45) 0%, transparent 55%)',
+      'linear-gradient(180deg, hsl(205 48% 36%) 0%, hsl(200 42% 46%) 28%, hsl(198 38% 58%) 48%, hsl(190 30% 68%) 58%, hsl(40 55% 72%) 70%, hsl(28 75% 58%) 82%, hsl(215 28% 22%) 100%)',
+    ].join(', '),
   },
 ];
 
-export const DEFAULT_WALLPAPER_ID: WallpaperId = 'bloom';
+export const DEFAULT_WALLPAPER_ID: WallpaperId = 'dusk';
+
+/** Applied on `<html>` before paint so reload doesn't flash the default wallpaper. */
+export const OS_WALLPAPER_CSS_VAR = '--os-wallpaper';
+
+export function wallpaperBackgroundFor(id: WallpaperId): string {
+  return (
+    WALLPAPER_PRESETS.find((p) => p.id === id)?.background ??
+    WALLPAPER_PRESETS.find((p) => p.id === DEFAULT_WALLPAPER_ID)?.background ??
+    WALLPAPER_PRESETS[0].background
+  );
+}
+
+/** Inline boot script for `<head>` — reads localStorage and sets `--os-wallpaper`. */
+export function getWallpaperBootScript(): string {
+  const presets = Object.fromEntries(
+    WALLPAPER_PRESETS.map((preset) => [preset.id, preset.background]),
+  );
+  return `(function(){try{var k=${JSON.stringify(DESKTOP_OS_WALLPAPER_KEY)};var id=localStorage.getItem(k);var p=${JSON.stringify(presets)};var bg=(id&&p[id])?p[id]:p[${JSON.stringify(DEFAULT_WALLPAPER_ID)}];if(bg)document.documentElement.style.setProperty(${JSON.stringify(OS_WALLPAPER_CSS_VAR)},bg);}catch(e){}})();`;
+}
 
 const COL_INSET = 24;
 const ROW = 92;

@@ -67,7 +67,23 @@ export function TopBar() {
   const [chatOpen, setChatOpen] = useState(false);
   const [isProjectSheetOpen, setIsProjectSheetOpen] = useState(false);
   const [optimisticPath, setOptimisticPath] = useState<string | null>(null);
+  /** Only one menubar dropdown open at a time. */
+  const [menubarMenu, setMenubarMenu] = useState<'caseStudies' | 'wallpaper' | 'theme' | null>(
+    null,
+  );
   const activePath = optimisticPath ?? pathname;
+
+  const setExclusiveMenu = useCallback(
+    (id: 'caseStudies' | 'wallpaper' | 'theme') => (open: boolean) => {
+      setMenubarMenu((prev) => {
+        if (open) return id;
+        // Ignore dismiss from a menu that is no longer active (switching menus)
+        return prev === id ? null : prev;
+      });
+      if (open) desktopOs?.setWidgetsOpen(false);
+    },
+    [desktopOs],
+  );
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -262,7 +278,10 @@ export function TopBar() {
                     {t('aboutMe')}
                   </button>
 
-                  <DropdownMenu>
+                  <DropdownMenu
+                    open={menubarMenu === 'caseStudies'}
+                    onOpenChange={setExclusiveMenu('caseStudies')}
+                  >
                     <DropdownMenuTrigger asChild>
                       <button
                         type="button"
@@ -378,8 +397,16 @@ export function TopBar() {
                 {t('askAI')}
               </Button>
             ) : null}
-            {osEnabled ? <WallpaperPicker /> : null}
-            <DropdownMenu>
+            {osEnabled ? (
+              <WallpaperPicker
+                open={menubarMenu === 'wallpaper'}
+                onOpenChange={setExclusiveMenu('wallpaper')}
+              />
+            ) : null}
+            <DropdownMenu
+              open={menubarMenu === 'theme'}
+              onOpenChange={setExclusiveMenu('theme')}
+            >
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"

@@ -11,6 +11,8 @@ type GenUIViewportStackProps = {
   isBuilding: boolean;
   scrollToId?: string | null;
   hideMobileNav?: boolean;
+  /** Size to parent panel/window instead of the browser viewport. */
+  embedded?: boolean;
   onActiveChange?: (id: string) => void;
   onCaseStudySelect?: (projectSlug: string) => void;
 };
@@ -25,6 +27,7 @@ export function GenUIViewportStack({
   isBuilding,
   scrollToId,
   hideMobileNav = false,
+  embedded = false,
   onActiveChange,
   onCaseStudySelect,
 }: GenUIViewportStackProps) {
@@ -73,15 +76,31 @@ export function GenUIViewportStack({
     return () => observer.disconnect();
   }, [viewports, isBuilding]);
 
-  const viewportHeightClass = hideMobileNav
-    ? 'h-[calc(100vh-3.5rem-env(safe-area-inset-bottom,0px)-4.5rem)] lg:h-[calc(100vh-5.5rem)]'
-    : 'h-[calc(100vh-3.5rem-3.5rem-env(safe-area-inset-bottom,0px)-4.5rem)] lg:h-[calc(100vh-5.5rem)]';
+  const viewportHeightClass = embedded
+    ? 'h-full min-h-0'
+    : hideMobileNav
+      ? 'h-[calc(100vh-3.5rem-env(safe-area-inset-bottom,0px)-4.5rem)] lg:h-[calc(100vh-5.5rem)]'
+      : 'h-[calc(100vh-3.5rem-3.5rem-env(safe-area-inset-bottom,0px)-4.5rem)] lg:h-[calc(100vh-5.5rem)]';
 
   return (
-    <div className={cn('relative', hideMobileNav ? 'pb-6 lg:pb-24' : 'pb-[calc(3.5rem+env(safe-area-inset-bottom,0px)+1.5rem)] lg:pb-24')}>
+    <div
+      className={cn(
+        'relative',
+        embedded
+          ? 'flex h-full min-h-0 flex-col'
+          : hideMobileNav
+            ? 'pb-6 lg:pb-24'
+            : 'pb-[calc(3.5rem+env(safe-area-inset-bottom,0px)+1.5rem)] lg:pb-24',
+      )}
+    >
       <div
         ref={containerRef}
-        className={cn(viewportHeightClass, 'overflow-y-auto overscroll-y-contain scroll-pt-6')}
+        className={cn(
+          viewportHeightClass,
+          'overflow-y-auto overscroll-y-contain scroll-pt-6',
+          // Clear the floating bottom prompt bar inside OS windows.
+          embedded && 'pb-36',
+        )}
       >
         {viewports.map((vp) => (
           <GenUIViewportSection key={vp.id} viewport={vp} onCaseStudySelect={onCaseStudySelect} />

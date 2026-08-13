@@ -87,7 +87,7 @@ function introLink(href: string, chunks: ReactNode) {
   );
 }
 
-const LINE_KEYS = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'] as const;
+const LINE_KEYS = ['p1', 'p2', 'p3', 'p4'] as const;
 
 export const HOME_INTRO_LINE_STAGGER = 0.07;
 export const HOME_INTRO_LINE_DURATION = 0.38;

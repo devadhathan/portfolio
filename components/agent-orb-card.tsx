@@ -9,6 +9,8 @@ type AgentOrbCardProps = {
   description: string;
   buttonLabel: string;
   onClick: () => void;
+  /** Warm Gen UI chunks before click. */
+  onPointerEnter?: () => void;
   className?: string;
 };
 
@@ -28,7 +30,7 @@ function pupilOffsetFromCursor(
   };
 }
 
-export function AgentOrbCard({ title, description, buttonLabel, onClick, className }: AgentOrbCardProps) {
+export function AgentOrbCard({ title, description, buttonLabel, onClick, onPointerEnter, className }: AgentOrbCardProps) {
   const orbRef = useRef<HTMLDivElement>(null);
   const [lookAt, setLookAt] = useState<{ x: number; y: number } | null>(null);
 
@@ -51,6 +53,7 @@ export function AgentOrbCard({ title, description, buttonLabel, onClick, classNa
       data-cuelume-hover="tick"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onPointerEnter={onPointerEnter}
     >
       <div ref={orbRef} className="flex items-center justify-center">
         <AgentOrb size="md" lookAt={lookAt} />

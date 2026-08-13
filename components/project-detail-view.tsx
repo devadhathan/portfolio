@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Users, ExternalLink, Smartphone, X } from 'lucide-react';
+import { Calendar, Users, ExternalLink, Smartphone, X } from 'lucide-react';
 import type { Project } from '@/lib/types/project';
 import { findProjectBySlug, getProjectId, normalizeProjectSlug } from '@/lib/types/project';
 import { useSiteContent } from '@/components/site-content-provider';
@@ -9,9 +9,11 @@ import { FinshotsDetail } from './finshots-detail';
 import { CaseStudyScreenStage } from '@/components/case-study-screen-stage';
 import { ImageComparison } from '@/components/image-comparison';
 import { shouldStageCaseStudyMedia } from '@/lib/case-study-backgrounds';
+import { OsBackButton } from '@/components/os-back-button';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { scrollPageToTop } from '@/lib/scroll-page';
 
 interface ProjectDetailViewProps {
   projectId: string;
@@ -72,9 +74,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false, p
   const isNesoi = project ? (project.title.toLowerCase().includes('nesoi') || projectId.toLowerCase().includes('nesoi')) : false;
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0 });
-    }
+    scrollPageToTop();
     // Close zoom modal when project changes to prevent cleanup errors
     setZoomedImage(null);
   }, [projectId]);
@@ -106,24 +106,22 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false, p
             <li key={i}>{p.title} → {getProjectId(p.title)}</li>
           ))}
         </ul>
-        <Button onClick={onBack} variant="ghost" className="mt-4">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          {t('back')}
-        </Button>
+        <div className="mt-6 flex justify-center">
+          <OsBackButton onClick={onBack} aria-label="Back to Home" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="animate-in fade-in duration-300 w-full text-foreground pb-20 lg:pb-0 max-w-6xl mx-auto mt-12 lg:mt-24 px-4 md:px-6 lg:px-0">
+    <div className="w-full text-foreground pb-20 lg:pb-0 max-w-6xl mx-auto mt-3 md:mt-4 px-4 md:px-6 lg:px-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-12 lg:mb-16">
         <div className="w-full">
           {!hideBackButton && (
-            <Button onClick={onBack} variant="ghost" size="sm" className="mb-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {t('backToPortfolio')}
-            </Button>
+            <div className="mb-5">
+              <OsBackButton onClick={onBack} aria-label="Back to Home" />
+            </div>
           )}
           <div className="flex items-center gap-3">
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">{project.title}</h1>

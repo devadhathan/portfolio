@@ -46,12 +46,26 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       });
     };
 
-    if ('requestIdleCallback' in window) {
-      const id = window.requestIdleCallback(init, { timeout: 2500 });
-      return () => window.cancelIdleCallback(id);
-    }
-    const t = window.setTimeout(init, 800);
-    return () => window.clearTimeout(t);
+    if (typeof window === 'undefined') return;
+
+    const schedule =
+      typeof (window as Window & { requestIdleCallback?: typeof requestIdleCallback })
+        .requestIdleCallback === 'function'
+        ? (cb: () => void) => {
+            const id = (
+              window as Window & { requestIdleCallback: typeof requestIdleCallback }
+            ).requestIdleCallback(cb, { timeout: 2500 });
+            return () =>
+              (
+                window as Window & { cancelIdleCallback: typeof cancelIdleCallback }
+              ).cancelIdleCallback(id);
+          }
+        : (cb: () => void) => {
+            const t = window.setTimeout(cb, 800);
+            return () => window.clearTimeout(t);
+          };
+
+    return schedule(init);
   }, []);
 
   if (!TOKEN) return <>{children}</>;
