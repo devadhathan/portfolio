@@ -13,7 +13,7 @@ const nextConfig = {
     formats: ['image/webp'],
   },
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
-  transpilePackages: ['next-intl', 'use-intl'],
+  transpilePackages: ['next-intl', 'use-intl', 'cuelume'],
   experimental: {
     optimizeCss: false,
     optimizePackageImports: ['lucide-react'],

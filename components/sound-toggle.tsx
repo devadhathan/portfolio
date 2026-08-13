@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
-import { play, setEnabled } from 'cuelume';
+import { playAfterActivation, setEnabled } from '@/lib/sound';
 import { cn, focusRing } from '@/lib/utils';
 
 const STORAGE_KEY = 'portfolio-sound-enabled';
@@ -26,13 +26,15 @@ export function SoundToggle({ variant = 'floating' }: SoundToggleProps) {
 
   const toggle = () => {
     const next = !enabled;
-    // Play before muting so unmute/mute still gives feedback.
+    // Keep mute feedback audible: play while still enabled, then apply mute.
+    // Defer play so sticky user-activation is set (cuelume gate).
     if (next) {
       setEnabled(true);
-      play('toggle', { volume: 0.45 });
+      playAfterActivation('toggle', { volume: 0.5 });
     } else {
-      play('toggle', { volume: 0.45 });
-      setEnabled(false);
+      playAfterActivation('toggle', { volume: 0.5 });
+      // Mute after the deferred play starts.
+      window.setTimeout(() => setEnabled(false), 0);
     }
     setEnabledState(next);
     window.localStorage.setItem(STORAGE_KEY, String(next));

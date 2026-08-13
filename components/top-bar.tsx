@@ -34,7 +34,7 @@ import { cn, focusRing } from '@/lib/utils';
 import { SoundToggle } from '@/components/sound-toggle';
 import { ProgressiveBlurTop } from '@/components/progressive-blur-top';
 import { navPillTransition } from '@/lib/motion';
-import { play } from 'cuelume';
+import { playAfterActivation } from '@/lib/sound';
 import { MenubarClock } from '@/components/desktop-os/menubar-clock';
 import { WallpaperPicker } from '@/components/desktop-os/wallpaper-picker';
 import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
@@ -492,7 +492,7 @@ export function MobileBottomNav() {
               onClick={() => {
                 // Cuelume press/hover need a mouse — tap feedback for touch.
                 if (window.matchMedia('(hover: none)').matches) {
-                  play('tick', { volume: 0.4 });
+                  playAfterActivation('tick', { volume: 0.4 });
                 }
                 if (pathname === tab.path) {
                   scrollPageToTop();

@@ -116,7 +116,7 @@ export default function HomeGenUIMode({
         transition={caseStudyEnterTransition}
       >
         <div className="h-full overflow-y-auto pb-24 lg:pb-8">
-          <div className="sticky top-0 z-50 mb-2 max-w-6xl mx-auto px-4 pt-3 md:px-6 md:pt-4 lg:px-0">
+          <div className="sticky top-0 z-50 mb-2 mx-auto max-w-4xl px-4 pt-3 sm:px-6 md:pt-4">
             <OsBackButton
               onClick={() => {
                 onClearProject();

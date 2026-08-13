@@ -1,19 +1,20 @@
 'use client';
 
 import { useEffect } from 'react';
-import { bind, play } from 'cuelume';
+import { bind, installSoundUnlock, playAfterActivation } from '@/lib/sound';
 
 const CARD_HOVER_ATTR = 'data-cuelume-card-hover';
 const HOVER_GAP_MS = 180;
 let lastCardHover = -Infinity;
 
 /**
- * Wire declarative cuelume attrs, plus a quieter card-hover cue
- * (replaces the louder default "whisper" whoosh on portfolio cards).
+ * Wire declarative cuelume attrs, unlock Web Audio on first gesture,
+ * plus a quieter card-hover cue (replaces the louder default "whisper").
  */
 export function CuelumeBind() {
   useEffect(() => {
     bind();
+    const teardownUnlock = installSoundUnlock();
 
     const onPointerEnter = (event: PointerEvent) => {
       if (event.pointerType !== 'mouse') return;
@@ -30,11 +31,14 @@ export function CuelumeBind() {
       if (now - lastCardHover < HOVER_GAP_MS) return;
       lastCardHover = now;
 
-      play('tick', { volume: 0.12 });
+      playAfterActivation('tick', { volume: 0.12 });
     };
 
     document.addEventListener('pointerenter', onPointerEnter, true);
-    return () => document.removeEventListener('pointerenter', onPointerEnter, true);
+    return () => {
+      teardownUnlock();
+      document.removeEventListener('pointerenter', onPointerEnter, true);
+    };
   }, []);
 
   return null;

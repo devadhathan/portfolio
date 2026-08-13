@@ -54,8 +54,8 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
   const [genUIMode, setGenUIMode] = useState(false);
   const [showProjectsList, setShowProjectsList] = useState(false);
   const contentGutterClass = isSidebarCollapsed
-    ? 'mx-0 px-4 sm:mx-4 sm:px-5 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-[70px] xl:px-[90px]'
-    : 'mx-0 px-4 sm:mx-3 sm:px-4 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-8 xl:px-10';
+    ? 'mx-auto w-full max-w-[72rem] px-4 sm:px-6 md:px-8 lg:px-10'
+    : 'mx-auto w-full max-w-7xl px-4 sm:px-5 md:px-6 lg:px-8';
 
   const handleStateChange = useCallback((state: AgentState) => {
     setAgentState(state);
@@ -205,7 +205,7 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
                   exit={reduceMotion ? undefined : blurFadeUp.exit}
                   transition={caseStudyEnterTransition}
                 >
-                  <div className="sticky top-0 z-50 mb-2 max-w-6xl mx-auto px-4 pt-3 md:px-6 md:pt-4 lg:px-0">
+                  <div className="sticky top-0 z-50 mb-2 mx-auto max-w-4xl px-4 pt-3 sm:px-6 md:pt-4">
                     <OsBackButton onClick={backFromCaseStudy} aria-label="Back to Home" />
                   </div>
                   <ProjectDetailView

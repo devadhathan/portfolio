@@ -83,7 +83,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
   }
 
   return (
-    <div className="w-full text-foreground pb-20 lg:pb-0 max-w-6xl mx-auto mt-3 md:mt-4 px-4 md:px-6 lg:px-0">
+    <div className="mx-auto mt-3 w-full max-w-4xl px-4 pb-20 text-foreground sm:px-6 md:mt-4 lg:pb-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-12 lg:mb-16">
         <div>
