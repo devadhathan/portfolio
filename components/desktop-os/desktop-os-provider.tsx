@@ -170,13 +170,16 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
   const focusWindow = useCallback(
     (id: DesktopWindowId, opts?: { syncUrl?: boolean }) => {
       setWindows((prev) => {
+        const current = prev[id];
+        const alreadyOpen = Boolean(current?.open);
         const next: Record<DesktopWindowId, DesktopWindowState> = {
           ...prev,
           [id]: {
-            ...prev[id],
+            ...current,
             open: true,
             maximized: true,
-            covered: false,
+            // Keep cover/expand when re-focusing (e.g. clicking a case study).
+            covered: alreadyOpen ? current.covered : false,
             everOpened: true,
             zIndex: bumpZ(),
           },

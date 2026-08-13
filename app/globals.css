@@ -1079,28 +1079,35 @@ html.light .os-window-titlebar {
   width: 100%;
 }
 
-/* Centered column shared by home + case study (same start edge) */
+/* Home — slightly tighter than case studies. */
 .os-col {
   width: 100%;
   max-width: min(40rem, 100%);
   margin-inline: auto;
 }
 
-@container os-win (min-width: 720px) {
+/* Case study — medium growth with window expand. */
+.os-col--case {
+  width: 100%;
+  max-width: min(44rem, 100%);
+  margin-inline: auto;
+}
+
+@container os-win (min-width: 900px) {
   .os-col {
-    max-width: min(44rem, 92%);
+    max-width: min(48rem, 92%);
+  }
+  .os-col--case {
+    max-width: min(52rem, 92%);
   }
 }
 
-@container os-win (min-width: 980px) {
+@container os-win (min-width: 1200px) {
   .os-col {
-    max-width: min(48rem, 90%);
+    max-width: min(50rem, 90%);
   }
-}
-
-@container os-win (min-width: 1280px) {
-  .os-col {
-    max-width: min(52rem, 88%);
+  .os-col--case {
+    max-width: min(56rem, 90%);
   }
 }
 

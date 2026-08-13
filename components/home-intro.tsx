@@ -8,24 +8,35 @@ import { useSiteContent } from '@/components/site-content-provider';
 import { easeOutExpo } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 
-/** Start staggered enter only after paint so delays aren’t burned during chunk load. */
+/** Start staggered enter only after a committed paint (Chromium needs this). */
 export function useHomeIntroPlay(reduceMotion: boolean | null) {
-  const [play, setPlay] = useState(() => Boolean(reduceMotion));
+  const [play, setPlay] = useState(false);
 
   useEffect(() => {
     if (reduceMotion) {
       setPlay(true);
       return;
     }
+
     let cancelled = false;
-    const id = requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (!cancelled) setPlay(true);
+    let innerRaf = 0;
+    let timeoutId = 0;
+
+    // Paint the hidden state first, then animate — nested rAF alone can
+    // collapse into one frame on Chromium and skip the stagger.
+    const outerRaf = requestAnimationFrame(() => {
+      innerRaf = requestAnimationFrame(() => {
+        timeoutId = window.setTimeout(() => {
+          if (!cancelled) setPlay(true);
+        }, 32);
       });
     });
+
     return () => {
       cancelled = true;
-      cancelAnimationFrame(id);
+      cancelAnimationFrame(outerRaf);
+      cancelAnimationFrame(innerRaf);
+      window.clearTimeout(timeoutId);
     };
   }, [reduceMotion]);
 
@@ -47,8 +58,8 @@ function introLink(href: string, chunks: ReactNode) {
 
 const LINE_KEYS = ['p1', 'p2', 'p3', 'p4'] as const;
 
-export const HOME_INTRO_LINE_STAGGER = 0.07;
-export const HOME_INTRO_LINE_DURATION = 0.38;
+export const HOME_INTRO_LINE_STAGGER = 0.1;
+export const HOME_INTRO_LINE_DURATION = 0.42;
 
 /** Seconds until the last intro line finishes — used to delay following home content. */
 export const HOME_INTRO_CARDS_DELAY =
@@ -109,7 +120,7 @@ export function HomeIntro({ className }: HomeIntroProps) {
     })),
   ];
 
-  const hidden = { opacity: 0, y: 8 };
+  const hidden = { opacity: 0, y: 10 };
   const shown = { opacity: 1, y: 0 };
 
   return (

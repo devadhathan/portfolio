@@ -114,7 +114,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false, p
   }
 
   return (
-    <div className="os-col mt-3 pb-20 text-foreground md:mt-4 lg:pb-0">
+    <div className="os-col--case mt-3 pb-20 text-foreground md:mt-4 lg:pb-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-12 lg:mb-16">
         <div className="w-full">

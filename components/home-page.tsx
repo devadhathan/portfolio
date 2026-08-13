@@ -205,7 +205,7 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
                   exit={reduceMotion ? undefined : blurFadeUp.exit}
                   transition={caseStudyEnterTransition}
                 >
-                  <div className="os-col sticky top-0 z-50 mb-2 pt-3 md:pt-4">
+                  <div className="os-col--case sticky top-0 z-50 mb-2 pt-3 md:pt-4">
                     <OsBackButton onClick={backFromCaseStudy} aria-label="Back to Home" />
                   </div>
                   <ProjectDetailView
