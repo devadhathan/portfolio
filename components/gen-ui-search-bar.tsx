@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { AgentOrb } from '@/components/agent-orb';
 import { GEN_UI_STARTER_CHIPS } from '@/lib/gen-ui-prompt-placeholders';
@@ -25,6 +25,9 @@ type GenUISearchBarProps = {
   className?: string;
   headline?: string;
   subhead?: string;
+  /** Place supporting copy under the chips instead of under the headline. */
+  subheadPlacement?: 'under-headline' | 'below-chips';
+  orbSize?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   limitLabel?: string;
 };
 
@@ -37,6 +40,8 @@ export function GenUISearchBar({
   className,
   headline = 'What would you like to explore?',
   subhead = "Ask about my work — I'll build a custom view.",
+  subheadPlacement = 'under-headline',
+  orbSize = 'sm',
   limitLabel,
 }: GenUISearchBarProps) {
   const [value, setValue] = useState('');
@@ -48,6 +53,7 @@ export function GenUISearchBar({
     limitReached && promptCount !== undefined && promptCount <= 0
       ? 'Prompt limit reached'
       : 'Ask anything about Dev’s work…';
+  const subheadBelow = subheadPlacement === 'below-chips';
 
   const handleSubmit = async () => {
     const trimmed = value.trim();
@@ -69,13 +75,15 @@ export function GenUISearchBar({
   if (isCenter) {
     return (
       <div className={cn('flex w-full max-w-2xl flex-col items-center gap-4 md:gap-5', className)}>
-        <AgentOrb size="sm" />
+        <AgentOrb size={orbSize} />
 
         <div className="space-y-2 text-center max-w-lg">
           <p className="text-[20px] sm:text-[26px] md:text-[30px] font-light text-foreground/90 tracking-tight">
             {headline}
           </p>
-          <p className="text-[13px] sm:text-sm leading-relaxed text-muted-foreground/80">{subhead}</p>
+          {!subheadBelow && subhead ? (
+            <p className="text-[13px] sm:text-sm leading-relaxed text-muted-foreground/80">{subhead}</p>
+          ) : null}
         </div>
 
         <div className={cn('w-full', INPUT_SHELL_CLASS)}>
@@ -121,6 +129,12 @@ export function GenUISearchBar({
             </button>
           ))}
         </div>
+
+        {subheadBelow && subhead ? (
+          <p className="max-w-md text-center text-[13px] sm:text-sm leading-relaxed text-muted-foreground/70">
+            {subhead}
+          </p>
+        ) : null}
 
         {limitLabel ? (
           <p className="text-xs text-muted-foreground/50 tabular-nums">{limitLabel}</p>

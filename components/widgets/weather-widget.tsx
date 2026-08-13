@@ -2,8 +2,13 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Cloud, Droplets, Wind } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export function WeatherWidget() {
+type WeatherWidgetProps = {
+  className?: string;
+};
+
+export function WeatherWidget({ className }: WeatherWidgetProps) {
   const weather = {
     location: 'Edinburgh',
     temp: 52,
@@ -18,15 +23,18 @@ export function WeatherWidget() {
   return (
     <Card
       data-cuelume-card-hover
-      className="border-2 border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#1C1A12] dark:shadow-md"
+      className={cn(
+        'border-0 bg-transparent text-white shadow-none [&_.text-muted-foreground]:text-white/55',
+        className,
+      )}
     >
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-sm font-medium">
           <Icon className="h-4 w-4 text-primary" />
           Weather
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-0 space-y-2">
+      <CardContent className="space-y-2 pt-0">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xl font-semibold">{weather.temp}°F</p>
@@ -34,7 +42,7 @@ export function WeatherWidget() {
           </div>
           <Icon className="h-8 w-8 text-primary/60" />
         </div>
-        <div className="flex items-center gap-4 pt-2 border-t border-border/30">
+        <div className="flex items-center gap-4 border-t border-white/15 pt-2">
           <div className="flex items-center gap-1.5">
             <Droplets className="h-3 w-3 text-muted-foreground" />
             <span className="text-xs text-muted-foreground">{weather.humidity}%</span>

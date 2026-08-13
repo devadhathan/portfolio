@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Users, ExternalLink, Smartphone, X } from 'lucide-react';
+import { Calendar, Users, ExternalLink, Smartphone, X } from 'lucide-react';
 import type { Project } from '@/lib/types/project';
 import { findProjectBySlug, getProjectId, normalizeProjectSlug } from '@/lib/types/project';
 import { useSiteContent } from '@/components/site-content-provider';
@@ -9,9 +9,11 @@ import { FinshotsDetail } from './finshots-detail';
 import { CaseStudyScreenStage } from '@/components/case-study-screen-stage';
 import { ImageComparison } from '@/components/image-comparison';
 import { shouldStageCaseStudyMedia } from '@/lib/case-study-backgrounds';
+import { OsBackButton } from '@/components/os-back-button';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { scrollPageToTop } from '@/lib/scroll-page';
 
 interface ProjectDetailViewProps {
   projectId: string;
@@ -33,17 +35,17 @@ const NESOI_GALLERY_SECTIONS = [
   {
     title: 'Partner, not a chat box',
     description:
-      'The brief was not “add a chat box.” Getting from raw asset to finished interactive video had to take fewer decisions than doing it manually — a partner that reads the upload, proposes a plan, and shows its work.',
+      'The brief was not “add a chat box.” Raw asset to finished video had to take fewer decisions than doing it by hand. A partner that reads the upload, proposes a plan, and shows its work.',
   },
   {
     title: 'Show the thinking',
     description:
-      'Progress labels alone hide whether the AI understood the material. Surfacing what it read, inferred, and intends to build lets creators correct early instead of discarding the output at the end.',
+      'Progress labels alone hide whether the AI understood the material. Surfacing what it read, inferred, and intends to build lets creators correct early instead of discarding the output.',
   },
   {
     title: 'Motivation over blank prompts',
     description:
-      'The AI opens with what it found and what it thinks you are making, then asks the one question that changes the output. Confirm or redirect — two moves instead of ten.',
+      'The AI opens with what it found and what it thinks you are making, then asks the one question that changes the output. Confirm or redirect. Two moves instead of ten.',
   },
 ] as const;
 
@@ -72,9 +74,7 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false, p
   const isNesoi = project ? (project.title.toLowerCase().includes('nesoi') || projectId.toLowerCase().includes('nesoi')) : false;
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0 });
-    }
+    scrollPageToTop();
     // Close zoom modal when project changes to prevent cleanup errors
     setZoomedImage(null);
   }, [projectId]);
@@ -106,24 +106,22 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false, p
             <li key={i}>{p.title} → {getProjectId(p.title)}</li>
           ))}
         </ul>
-        <Button onClick={onBack} variant="ghost" className="mt-4">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          {t('back')}
-        </Button>
+        <div className="mt-6 flex justify-center">
+          <OsBackButton onClick={onBack} aria-label="Back to Home" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="animate-in fade-in duration-300 w-full text-foreground pb-20 lg:pb-0 max-w-6xl mx-auto mt-12 lg:mt-24 px-4 md:px-6 lg:px-0">
+    <div className="w-full text-foreground pb-20 lg:pb-0 max-w-6xl mx-auto mt-3 md:mt-4 px-4 md:px-6 lg:px-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-12 lg:mb-16">
         <div className="w-full">
           {!hideBackButton && (
-            <Button onClick={onBack} variant="ghost" size="sm" className="mb-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {t('backToPortfolio')}
-            </Button>
+            <div className="mb-5">
+              <OsBackButton onClick={onBack} aria-label="Back to Home" />
+            </div>
           )}
           <div className="flex items-center gap-3">
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">{project.title}</h1>
@@ -614,41 +612,53 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false, p
                     ))}
                   </div>
                 </div>
-                {'image' in section && section.image && (
-                  <div className="space-y-6 mt-8 lg:mt-12">
-                    {shouldStageCaseStudyMedia({
-                      projectId,
-                      sectionId: section.id,
-                      kind: 'detail-image',
-                    }) ? (
-                      <CaseStudyScreenStage
-                        seed={`${projectId}-${section.id}-image`}
-                        alt={section.title || 'Section image'}
-                        frame="landscape"
-                        media={{ type: 'image', src: section.image }}
-                        onClick={() => section.image && handleImageClick(section.image)}
-                      />
-                    ) : (
-                      <div
-                        className="relative w-full cursor-pointer group"
-                        onClick={() => section.image && handleImageClick(section.image)}
-                      >
-                        <div className="relative w-full" style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}>
-                          <Image
-                            src={section.image}
+                {(() => {
+                  const sectionImages = [
+                    ...('image' in section && section.image ? [section.image] : []),
+                    ...('images' in section && Array.isArray(section.images) ? section.images : []),
+                  ]
+                  if (sectionImages.length === 0) return null
+                  return (
+                    <div className="space-y-6 mt-8 lg:mt-12">
+                      {sectionImages.map((src, imageIdx) => {
+                        const staged = shouldStageCaseStudyMedia({
+                          projectId,
+                          sectionId: section.id,
+                          kind: 'detail-image',
+                        })
+                        return staged ? (
+                          <CaseStudyScreenStage
+                            key={`${section.id}-image-${imageIdx}`}
+                            seed={`${projectId}-${section.id}-image-${imageIdx}`}
                             alt={section.title || 'Section image'}
-                            width={1920}
-                            height={1080}
-                            loading="lazy"
-                            priority={false}
-                            className="object-contain group-hover:opacity-90 transition-transform duration-300 rounded-3xl border border-border/50 shadow-lg"
-                            sizes="(max-width: 768px) 100vw, 80vw"
+                            frame="landscape"
+                            media={{ type: 'image', src }}
+                            onClick={() => handleImageClick(src)}
                           />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                        ) : (
+                          <div
+                            key={`${section.id}-image-${imageIdx}`}
+                            className="relative w-full cursor-pointer group"
+                            onClick={() => handleImageClick(src)}
+                          >
+                            <div className="relative w-full" style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}>
+                              <Image
+                                src={src}
+                                alt={section.title || 'Section image'}
+                                width={1920}
+                                height={1080}
+                                loading="lazy"
+                                priority={false}
+                                className="object-contain group-hover:opacity-90 transition-transform duration-300 rounded-3xl border border-border/50 shadow-lg"
+                                sizes="(max-width: 768px) 100vw, 80vw"
+                              />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                })()}
                 {'video' in section && section.video && (
                   <div className="space-y-6 mt-8 lg:mt-12">
                     {shouldStageCaseStudyMedia({
@@ -660,11 +670,20 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false, p
                         seed={`${projectId}-${section.id}-video`}
                         alt={`${section.title} walkthrough video`}
                         frame="landscape"
-                        media={{ type: 'video', src: section.video, controls: true }}
+                        media={{
+                          type: 'video',
+                          src: section.video,
+                          poster: section.videoPoster,
+                          controls: true,
+                          autoPlay: false,
+                        }}
                       />
                     ) : (
                       <video
                         controls
+                        playsInline
+                        preload="metadata"
+                        poster={section.videoPoster}
                         className="w-full rounded-3xl border border-border/50 shadow-lg object-cover"
                         src={section.video}
                         aria-label={`${section.title} walkthrough video`}

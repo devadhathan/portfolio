@@ -2,6 +2,7 @@
 
 import { FeedProjectCard, PhoneFrame } from '@/components/feed-project-card';
 import { AgentDogIcon } from '@/components/agent-dog-icon';
+import { AgentOrb } from '@/components/agent-orb';
 import { cn } from '@/lib/utils';
 import type { PlaygroundItem } from '@/lib/playground-items';
 
@@ -52,7 +53,7 @@ export function PlaygroundFeedCard({
             muted
             preload="metadata"
           />
-        ) : (
+        ) : item.media.type === 'image' ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             className="h-full w-full object-cover"
@@ -60,6 +61,10 @@ export function PlaygroundFeedCard({
             alt={accessibilityLabel}
             loading="lazy"
           />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-[#12100e]">
+            <AgentOrb size="md" hoverScale={false} />
+          </div>
         )}
       </PhoneFrame>
     </FeedProjectCard>
@@ -132,7 +137,7 @@ export function PlaygroundGroupFeedCard({
                   muted
                   preload="metadata"
                 />
-              ) : (
+              ) : item.media.type === 'image' ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   className="h-full w-full object-cover"
@@ -140,6 +145,10 @@ export function PlaygroundGroupFeedCard({
                   alt={copy.accessibilityLabel}
                   loading="lazy"
                 />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-[#12100e]">
+                  <AgentOrb size="sm" hoverScale={false} />
+                </div>
               )}
             </PhoneFrame>
           );

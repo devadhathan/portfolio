@@ -78,7 +78,7 @@ export function ConnectMiniPost({
                   aria-label={`${link.label}: ${tooltip}`}
                   data-cuelume-hover="tick"
                   data-cuelume-press
-                  className="group/social relative flex h-10 w-10 items-center justify-center rounded-full border border-border/40 bg-secondary/30 text-foreground transition-colors hover:border-border/70 hover:bg-secondary/50"
+                  className="group/social relative flex h-10 w-10 items-center justify-center rounded-full border border-border/40 bg-secondary/30 text-primary transition-colors hover:border-primary/40 hover:bg-primary/10"
                 >
                   {link.icon}
                   <span
@@ -133,7 +133,7 @@ export function ConnectMiniPost({
           </a>
         </div>
 
-        <div className="mt-4 space-y-2 text-[13px] leading-5 text-muted-foreground/75 transition-colors duration-300 group-hover/connect:text-foreground">
+        <div className="mt-4 space-y-2.5 text-[14px] leading-relaxed text-muted-foreground transition-colors duration-300 group-hover/connect:text-foreground/90">
           {paragraphs.map((paragraph, index) => (
             <p key={index} className="whitespace-pre-wrap">
               {paragraph.split(/(@[A-Za-z0-9_]+)/g).map((part, partIndex) =>

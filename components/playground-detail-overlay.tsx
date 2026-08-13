@@ -1,11 +1,13 @@
 'use client';
 
 import { useCallback, useEffect } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, X } from 'lucide-react';
 import { CardTag } from '@/components/card-tag';
 import { PlaygroundItemMedia } from '@/components/playground-phone-frame';
 import { PlaygroundStackLogos } from '@/components/playground-stack-logos';
 import type { PlaygroundItem } from '@/lib/playground-items';
+import { defaultTransition, easeOutExpo, overlayFade, panelTransition } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 
 export type PlaygroundSelection = {
@@ -33,6 +35,7 @@ export function PlaygroundDetailOverlay({
   onNext,
   builtWithLabel = 'Built with',
 }: PlaygroundDetailOverlayProps) {
+  const reduceMotion = useReducedMotion();
   const handlePrevious = useCallback(() => {
     onPrevious?.();
   }, [onPrevious]);
@@ -64,92 +67,111 @@ export function PlaygroundDetailOverlay({
     };
   }, [selection, onClose, handlePrevious, handleNext]);
 
-  if (!selection) return null;
-
-  const category = selection.tags[0] ?? 'Playground';
+  const category = selection?.tags[0] ?? 'Playground';
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-black/50 text-foreground backdrop-blur-md md:flex-row">
-      {/* Left info panel */}
-      <aside className="flex max-h-[42vh] w-full shrink-0 flex-col overflow-y-auto border-b border-border/60 bg-card md:max-h-none md:h-full md:w-[min(340px,36vw)] md:border-b-0 md:border-r">
-        <div className="flex items-center gap-1 px-3 py-3 sm:px-4">
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
-          >
-            <X className="h-4 w-4" strokeWidth={1.75} />
-          </button>
-          <button
-            type="button"
-            onClick={handlePrevious}
-            aria-label="Previous"
-            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" strokeWidth={1.75} />
-          </button>
-          <button
-            type="button"
-            onClick={handleNext}
-            aria-label="Next"
-            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
-          >
-            <ArrowRight className="h-4 w-4" strokeWidth={1.75} />
-          </button>
-        </div>
-
-        <div className="flex flex-1 flex-col gap-5 px-5 pb-8 pt-2 sm:px-6">
-          <div className="space-y-2">
-            <p className="text-[12px] font-medium text-muted-foreground">{category}</p>
-            <h2 className="text-[1.35rem] font-semibold tracking-tight text-foreground sm:text-[1.5rem]">
-              {selection.title}
-            </h2>
-          </div>
-
-          <p className="text-[14px] leading-relaxed text-muted-foreground">
-            {selection.question}
-          </p>
-
-          {selection.item.stack?.length ? (
-            <PlaygroundStackLogos stack={selection.item.stack} label={builtWithLabel} />
-          ) : null}
-
-          {selection.tags.length > 0 ? (
-            <div className="mt-auto space-y-3 border-t border-border/60 pt-5">
-              <div className="flex items-start justify-between gap-4 text-[13px]">
-                <span className="shrink-0 text-muted-foreground">Tags</span>
-                <div className="flex flex-wrap justify-end gap-1.5">
-                  {selection.tags.map((tag) => (
-                    <CardTag key={tag}>{tag}</CardTag>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ) : null}
-        </div>
-      </aside>
-
-      {/* Main preview */}
-      <div
-        className="relative flex min-h-0 flex-1 items-center justify-center overflow-y-auto p-6 sm:p-10"
-        onClick={onClose}
-        role="presentation"
-      >
-        <div
-          className="relative z-10"
-          onClick={(event) => event.stopPropagation()}
-          role="presentation"
+    <AnimatePresence>
+      {selection ? (
+        <motion.div
+          key={selection.id}
+          className="fixed inset-0 z-[100] flex flex-col bg-black/50 text-foreground backdrop-blur-md md:flex-row"
+          initial={reduceMotion ? false : overlayFade.initial}
+          animate={overlayFade.animate}
+          exit={overlayFade.exit}
+          transition={{ duration: 0.28, ease: easeOutExpo }}
         >
-          <PlaygroundItemMedia
-            item={selection.item}
-            accessibilityLabel={selection.accessibilityLabel}
-            size="detail"
-            interactive
-          />
-        </div>
-      </div>
-    </div>
+          {/* Left info panel */}
+          <motion.aside
+            className="flex max-h-[42vh] w-full shrink-0 flex-col overflow-y-auto border-b border-border/60 bg-card md:max-h-none md:h-full md:w-[min(340px,36vw)] md:border-b-0 md:border-r"
+            initial={reduceMotion ? false : { opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -12 }}
+            transition={panelTransition}
+          >
+            <div className="flex items-center gap-1 px-3 py-3 sm:px-4">
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close"
+                className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
+              >
+                <X className="h-4 w-4" strokeWidth={1.75} />
+              </button>
+              <button
+                type="button"
+                onClick={handlePrevious}
+                aria-label="Previous"
+                className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
+              >
+                <ArrowLeft className="h-4 w-4" strokeWidth={1.75} />
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                aria-label="Next"
+                className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
+              >
+                <ArrowRight className="h-4 w-4" strokeWidth={1.75} />
+              </button>
+            </div>
+
+            <div className="flex flex-1 flex-col gap-5 px-5 pb-8 pt-2 sm:px-6">
+              <div className="space-y-2">
+                <p className="text-[12px] font-medium text-muted-foreground">{category}</p>
+                <h2 className="text-[1.35rem] font-semibold tracking-tight text-foreground sm:text-[1.5rem]">
+                  {selection.title}
+                </h2>
+              </div>
+
+              <p className="text-[14px] leading-relaxed text-muted-foreground">
+                {selection.question}
+              </p>
+
+              {selection.item.stack?.length ? (
+                <PlaygroundStackLogos stack={selection.item.stack} label={builtWithLabel} />
+              ) : null}
+
+              {selection.tags.length > 0 ? (
+                <div className="mt-auto space-y-3 border-t border-border/60 pt-5">
+                  <div className="flex items-start justify-between gap-4 text-[13px]">
+                    <span className="shrink-0 text-muted-foreground">Tags</span>
+                    <div className="flex flex-wrap justify-end gap-1.5">
+                      {selection.tags.map((tag) => (
+                        <CardTag key={tag}>{tag}</CardTag>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </motion.aside>
+
+          {/* Main preview */}
+          <motion.div
+            className="relative flex min-h-0 flex-1 items-center justify-center overflow-y-auto p-6 sm:p-10"
+            onClick={onClose}
+            role="presentation"
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={defaultTransition}
+          >
+            <div
+              className="relative z-10"
+              onClick={(event) => event.stopPropagation()}
+              role="presentation"
+            >
+              <PlaygroundItemMedia
+                item={selection.item}
+                accessibilityLabel={selection.accessibilityLabel}
+                size="detail"
+                interactive
+              />
+            </div>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }
 

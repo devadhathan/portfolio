@@ -11,7 +11,11 @@ export type ProjectDetailSection = {
   title: string
   description: string
   image?: string
+  /** Extra images stacked under `image` (same section). */
+  images?: string[]
   video?: string
+  /** Poster image for `video` (and for legacy `prototypeGif` when migrated to mp4). */
+  videoPoster?: string
   prototypeGif?: string
 }
 

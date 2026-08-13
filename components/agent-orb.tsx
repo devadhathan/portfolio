@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 type AgentOrbProps = {
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   className?: string;
   hoverScale?: boolean;
   creating?: boolean;
@@ -13,7 +13,7 @@ type AgentOrbProps = {
   lookAt?: { x: number; y: number } | null;
 };
 
-const SIZE = { xs: 28, sm: 40, md: 56, lg: 72, xl: 96 } as const;
+const SIZE = { xs: 28, sm: 40, md: 56, lg: 72, xl: 96, '2xl': 128 } as const;
 
 export function AgentOrb({
   size = 'md',

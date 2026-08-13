@@ -21,7 +21,7 @@ export function AgentDogCard({
 }: AgentDogCardProps) {
   return (
     <div
-      className={cn('flex h-full min-h-[280px] flex-col overflow-hidden', className)}
+      className={cn('group flex h-full min-h-[280px] flex-col overflow-hidden', className)}
       onClick={(e) => e.stopPropagation()}
     >
       <div className="shrink-0 px-4 pt-4 pb-2">
@@ -31,10 +31,10 @@ export function AgentDogCard({
           </p>
         ) : null}
         <div className="flex max-w-full flex-wrap items-center gap-2">
-          <span className="text-[15px] font-medium tracking-tight text-foreground">{title}</span>
-          <CardTag tone="accent">{statusLabel}</CardTag>
+          <span className="card-title-type">{title}</span>
+          <CardTag>{statusLabel}</CardTag>
         </div>
-        <p className="mt-4 line-clamp-2 text-[13px] leading-5 text-muted-foreground/70">{description}</p>
+        <p className="card-body-type mt-4 line-clamp-2">{description}</p>
       </div>
 
       <div className="flex flex-1 items-center justify-center px-4 pb-4 pt-4">

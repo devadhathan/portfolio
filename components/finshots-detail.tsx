@@ -3,9 +3,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Users, ExternalLink, X, ZoomIn, Smartphone } from 'lucide-react';
+import { Calendar, Users, ExternalLink, X, ZoomIn, Smartphone } from 'lucide-react';
 import { findProjectBySlug } from '@/lib/types/project';
 import { useSiteContent } from '@/components/site-content-provider';
+import { OsBackButton } from '@/components/os-back-button';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
@@ -74,24 +75,22 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
     return (
       <div className="text-center py-12 text-foreground">
         <p className="text-muted-foreground mb-4">{t('projectNotFound')}</p>
-        <Button onClick={onBack} variant="ghost">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          {t('back')}
-        </Button>
+        <div className="mt-6 flex justify-center">
+          <OsBackButton onClick={onBack} aria-label="Back to Home" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="animate-in fade-in duration-300 w-full text-foreground pb-20 lg:pb-0 max-w-6xl mx-auto mt-12 lg:mt-24 px-4 md:px-6 lg:px-0">
+    <div className="w-full text-foreground pb-20 lg:pb-0 max-w-6xl mx-auto mt-3 md:mt-4 px-4 md:px-6 lg:px-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-12 lg:mb-16">
         <div>
           {!hideBackButton && (
-            <Button onClick={onBack} variant="ghost" size="sm" className="mb-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {t('backToPortfolio')}
-            </Button>
+            <div className="mb-5">
+              <OsBackButton onClick={onBack} aria-label="Back to Home" />
+            </div>
           )}
           <div className="flex items-center gap-3">
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">{project.title}</h1>

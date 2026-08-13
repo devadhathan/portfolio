@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { play, setEnabled } from 'cuelume';
-import { cn } from '@/lib/utils';
+import { cn, focusRing } from '@/lib/utils';
 
 const STORAGE_KEY = 'portfolio-sound-enabled';
 
@@ -40,9 +40,16 @@ export function SoundToggle({ variant = 'floating' }: SoundToggleProps) {
 
   if (!ready) return null;
 
-  const buttonClass = cn(
-    'glass-chrome flex h-10 w-10 items-center justify-center rounded-full text-foreground',
-  );
+  const buttonClass =
+    variant === 'inline'
+      ? cn(
+          'flex h-9 w-9 items-center justify-center rounded-md text-foreground/85 transition-colors hover:bg-secondary/50 hover:text-foreground',
+          focusRing,
+        )
+      : cn(
+          'glass-chrome flex h-10 w-10 items-center justify-center rounded-full text-foreground',
+          focusRing,
+        );
 
   if (variant === 'inline') {
     return (

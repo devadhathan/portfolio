@@ -7,15 +7,10 @@ import {
   useEffect,
   useRef,
   useState,
+  type MutableRefObject,
   type ReactNode,
 } from 'react';
-import dynamic from 'next/dynamic';
 import type { AgentState } from '@/lib/agent';
-
-const SideAgent = dynamic(
-  () => import('@/components/side-agent').then((mod) => ({ default: mod.SideAgent })),
-  { ssr: false },
-);
 
 type AskAIContextValue = {
   isOpen: boolean;
@@ -24,6 +19,8 @@ type AskAIContextValue = {
   toggle: () => void;
   resetAgent: () => void;
   registerStateChange: (handler: (state: AgentState) => void) => void;
+  dispatchStateChange: (state: AgentState) => void;
+  resetRef: MutableRefObject<(() => void) | null>;
 };
 
 const AskAIContext = createContext<AskAIContextValue | null>(null);
@@ -38,21 +35,15 @@ export function useAskAI() {
 
 export function AskAIProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [hasOpened, setHasOpened] = useState(false);
   const stateChangeRef = useRef<(state: AgentState) => void>(() => {});
   const resetAgentRef = useRef<(() => void) | null>(null);
 
   const open = useCallback(() => {
-    setHasOpened(true);
     setIsOpen(true);
   }, []);
   const close = useCallback(() => setIsOpen(false), []);
   const toggle = useCallback(() => {
-    setIsOpen((prev) => {
-      const next = !prev;
-      if (next) setHasOpened(true);
-      return next;
-    });
+    setIsOpen((prev) => !prev);
   }, []);
   const resetAgent = useCallback(() => {
     resetAgentRef.current?.();
@@ -62,9 +53,12 @@ export function AskAIProvider({ children }: { children: ReactNode }) {
     stateChangeRef.current = handler;
   }, []);
 
+  const dispatchStateChange = useCallback((state: AgentState) => {
+    stateChangeRef.current(state);
+  }, []);
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (window.innerWidth < 1024) return;
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'i') {
         event.preventDefault();
         toggle();
@@ -74,31 +68,21 @@ export function AskAIProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [toggle]);
 
-  useEffect(() => {
-    const onResize = () => {
-      if (window.innerWidth < 1024) {
-        setIsOpen(false);
-      }
-    };
-    onResize();
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
-
+  // Ask AI always lives in the Desktop OS window — no fixed SideAgent rail.
   return (
     <AskAIContext.Provider
-      value={{ isOpen, open, close, toggle, resetAgent, registerStateChange }}
+      value={{
+        isOpen,
+        open,
+        close,
+        toggle,
+        resetAgent,
+        registerStateChange,
+        dispatchStateChange,
+        resetRef: resetAgentRef,
+      }}
     >
       <div>{children}</div>
-      {hasOpened ? (
-        <SideAgent
-          variant="sidebar"
-          onStateChange={(state) => stateChangeRef.current(state)}
-          onCollapseChange={(collapsed) => setIsOpen(!collapsed)}
-          externalCollapsed={!isOpen}
-          resetRef={resetAgentRef}
-        />
-      ) : null}
     </AskAIContext.Provider>
   );
 }

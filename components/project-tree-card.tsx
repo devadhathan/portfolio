@@ -88,10 +88,10 @@ function TreeItemGlyph({ isDocument, locked }: { isDocument: boolean; locked?: b
 
   return (
     <span className="relative inline-flex h-4 w-4 shrink-0 items-center justify-center">
-      <Icon className="h-3.5 w-3.5 text-foreground/50" strokeWidth={1.35} aria-hidden />
+      <Icon className="h-3.5 w-3.5 text-primary/55" strokeWidth={1.35} aria-hidden />
       {locked && (
         <Lock
-          className="absolute -bottom-0.5 -right-0.5 h-[7px] w-[7px] text-foreground/45"
+          className="absolute -bottom-0.5 -right-0.5 h-[7px] w-[7px] text-primary/50"
           strokeWidth={2.25}
           aria-hidden
         />
@@ -152,7 +152,7 @@ function TreeRow({
 
       <span
         className={cn(
-          'min-w-0 flex-1 truncate text-[13px] leading-none',
+          'min-w-0 flex-1 truncate text-[14px] leading-none',
           isActive ? 'text-primary-foreground' : 'text-foreground/80',
           showOpenHint && !isActive && 'group-hover/row:text-foreground',
         )}
@@ -266,8 +266,8 @@ export function ProjectTreeCard({
       onMouseLeave={() => setStackGathered(false)}
     >
       <div className="mb-4 flex shrink-0 items-center gap-2">
-        {Icon ? <Icon className="h-4 w-4 shrink-0 text-foreground/80" strokeWidth={1.75} /> : null}
-        <span className="text-[15px] font-medium tracking-tight text-foreground">{label}</span>
+        {Icon ? <Icon className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.75} /> : null}
+        <span className="card-title-type">{label}</span>
       </div>
       <div className="relative z-10 min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-0.5">
         <ul className="m-0 flex flex-col gap-2 p-0">

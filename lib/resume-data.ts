@@ -72,58 +72,61 @@ export const resumeData = {
       company: "Nesoi.ai",
       period: "July to November 2025",
       description:
-        "Nesoi is an AI learning platform used by Amazon, the University of Toronto and Bain & Company to turn internal material into interactive training.\n\nProblem: A creator arrives with one goal: turn a document, deck or video into an interactive learning video. Everything else is overhead. The old flow made them do the thinking — upload, configure, wait, hope. AI existed in the product but sat off to the side, so people treated it as a novelty rather than the fastest route to the thing they came for.\n\nGoal: If the AI already understands the material, why is the user still assembling it by hand? Getting from raw asset to finished interactive video had to take fewer decisions than doing it manually — a partner that reads what you uploaded, forms a view on what you are trying to make, proposes it, and shows its work.",
+        "Nesoi is an AI learning platform used by Amazon, the University of Toronto and Bain & Company to turn internal material into interactive training.\n\nProblem: Creators arrive to turn a document, deck or video into an interactive learning video. Everything else is overhead. The old flow made them do the thinking: upload, configure, wait, hope. AI sat off to the side, treated as a novelty rather than the fastest path.\n\nGoal: If the AI already understands the material, why assemble it by hand? Raw asset to finished video needed fewer decisions than doing it manually. A partner that reads the upload, proposes a plan, and shows its work.",
       cardSubtext: "From form wizard to AI partner",
       detailSections: [
         {
           id: "framing",
           title: "Framing",
           description:
-            "The brief was not \"add a chat box.\" The bar was seamlessness. Getting from raw asset to finished interactive video had to take fewer decisions than doing it manually, not more.\n\nThat moved the design target from an interface to a partner. Something that reads what you uploaded, forms a view on what you are trying to make, proposes it, and shows its work.",
+            "The brief was not \"add a chat box.\" The bar was seamlessness: fewer decisions than doing it by hand, not more.\n\nThat moved the target from an interface to a partner. Something that reads the upload, forms a view, proposes it, and shows its work.",
           image: "/CRM/comparison.png"
         },
         {
           id: "what-changed",
           title: "What I changed, and why",
           description:
-            "Show the thinking, not just the steps. Our first version jumped straight into creation steps — progress labels, no visibility. Users could not tell whether the AI had understood their material or was guessing. I pulled our v1 apart against the closest competitor and found the same gap in both: plenty of status, no reasoning. The new design surfaces the AI's thinking as it works — what it read, what it inferred about structure, what it intends to build. When users can see the reasoning, they correct it early instead of discarding the output at the end.\n\nStart from motivation, not a blank prompt. A blank prompt pushes translation work onto the user. Instead the AI opens with what it found and what it thinks you are making, then asks the one question that actually changes the output. Confirm or redirect. Two moves instead of ten. This turned out to be the decision testing rewarded most, and not for the reason I expected.\n\nTemplates and freeform on the same surface. People do not stay in one mode. They pick a template, then talk their way out of it. Structured actions (simplify, chapter, make interactive) and freeform prompts share one input, so switching costs nothing.\n\nVersions that do not punish iteration. Every refinement keeps the previous output alive and comparable. Iteration only feels safe when going backwards is free."
+            "Show the thinking, not just the steps. V1 jumped into creation with progress labels and no visibility. Users could not tell if the AI understood their material. The same gap showed up in the closest competitor: plenty of status, no reasoning. The new design surfaces what the AI read, inferred, and intends to build, so people correct early instead of discarding the output.\n\nStart from motivation, not a blank prompt. The AI opens with what it found and what it thinks you are making, then asks the one question that changes the output. Confirm or redirect. Two moves instead of ten. Testing rewarded this most.\n\nTemplates and freeform on the same surface. People pick a template, then talk their way out of it. Structured actions and freeform prompts share one input, so switching costs nothing.\n\nVersions that do not punish iteration. Every refinement keeps the previous output alive and comparable."
         },
         {
           id: "decisions",
           title: "The calls, and what they cost",
           description:
-            "Surface the AI's reasoning while it works — instead of progress states only, which is what our v1 and the competitor both did. Users catch a wrong read early instead of binning the output at the end. Costs perceived speed, since visible thinking reads slower than a spinner.\n\nOpen with an interpretation of the upload — instead of a blank prompt. Removes the translation work. The risk is guessing wrong, so redirecting had to be cheap and obvious.\n\nOne input for templates and freeform — instead of separate modes. People switch mid task. Forcing a mode choice makes the user commit before they know what they want.\n\nExtend shadcn/ui — instead of building bespoke chat components. Speed, and everything fed back into one shared library. Accepted less visual distinctiveness in return.\n\nCut multi-user chat collaboration from v1. The happy path had to be proven before we designed for teams. Deliberate scope, not an oversight.\n\nPrototype in Cursor — instead of a Figma click-through. Tests the real interaction, and doubles as a reference implementation for engineering."
+            "Surface the AI's reasoning while it works, instead of progress states only. Users catch a wrong read early. The cost is perceived speed; visible thinking reads slower than a spinner.\n\nOpen with an interpretation of the upload, instead of a blank prompt. Removes translation work. The risk is guessing wrong, so redirecting had to be cheap.\n\nOne input for templates and freeform, instead of separate modes. People switch mid task. A forced mode choice makes them commit too early.\n\nExtend shadcn/ui, instead of bespoke chat components. Faster, and everything fed one shared library. Less visual distinctiveness in return.\n\nCut multi user chat from v1. Prove the happy path before designing for teams.\n\nPrototype in Cursor, instead of a Figma click through. Tests the real interaction and doubles as a reference for engineering."
         },
         {
           id: "system",
           title: "System",
           description:
-            "Built on shadcn/ui, extended for chat: message and thinking states, prompt patterns, long-conversation layout, and the content-type variants the product needed. All of it went back into the shared library so the dashboard and the creation tools stayed on one system."
+            "Built on shadcn/ui and extended for chat: message and thinking states, prompt patterns, long conversation layout, and content type variants. All of it went back into the shared library so dashboard and creation tools stayed on one system.",
+          image: "/CRM/Figma.png",
+          images: ["/CRM/shadcn-system.png"]
         },
         {
           id: "constraints",
           title: "Constraints",
           description:
-            "Model capability was moving under us. Patterns had to still hold when the AI got better, not just work at current quality.\n\nCompetitors were shipping fast. We took the patterns that were working and ignored the decoration.\n\nThe timeline forced a happy path. Multi-user chat collaboration was scoped out deliberately.\n\nDesigned with tool and MCP integrations coming, so the thinking view had room for tool calls we had not built yet."
+            "Model capability was moving under us. Patterns had to hold when the AI got better, not just at current quality.\n\nCompetitors shipped fast. We took what worked and ignored the decoration.\n\nThe timeline forced a happy path. Multi user chat was scoped out on purpose.\n\nDesigned with tool and MCP integrations coming, so the thinking view had room for tool calls we had not built yet."
         },
         {
           id: "validation",
           title: "Validation",
           description:
-            "Every change above was a claim, so we tested them rather than shipping on taste.\n\nGuerrilla study, five participants, run in a cafe — Static Form against Agent Variant, with real users. Confidence and trust measured qualitatively; engagement and chat message volume measured quantitatively. Mean SUS 82.5. Post-update sentiment captured through an in-product PostHog survey.\n\nThe finding that changed how I think about this: users trusted the Agent variant more, and the interview pause created a perception of higher quality output before generation had even started. The wait was doing work. Asking the right question up front bought credibility that the output itself had not yet earned.\n\nTechnical readiness: a functional React prototype built in Cursor, simulating real LLM latency and states rather than faking them. Engineering received working code, not a video walkthrough. It killed the ambiguity on the hard states — thinking, typing, error loops. The states nobody specs properly and everybody argues about in build.",
+            "Every change was a claim, so we tested rather than shipping on taste.\n\nGuerrilla study with five participants in a cafe: Static Form against Agent Variant. Confidence and trust measured qualitatively; engagement and chat volume measured quantitatively. Mean SUS 82.5. Sentiment via an in product PostHog survey.\n\nUsers trusted the Agent variant more. The interview pause created a sense of higher quality before generation even started. Asking the right question up front bought credibility the output had not yet earned.\n\nA React prototype in Cursor simulated real LLM latency and states. Engineering got working code, not a walkthrough. It cleared the hard states: thinking, typing, error loops.",
           image: "/CRM/validation.png"
         },
         {
           id: "prototype",
           title: "Prototype",
           description:
-            "Interactive React prototype of the AI chat-first creation experience — real latency and states, built in Cursor as a reference for engineering.",
-          prototypeGif: "/CRM/prototype.gif"
+            "Interactive React prototype of the AI creation experience, with real latency and states, built in Cursor as a reference for engineering.",
+          video: "/CRM/prototype.mp4",
+          videoPoster: "/CRM/prototype-poster.jpg"
         }
       ],
 
       learnings: [
-        "Embedded beats adjacent. Conversational AI only lowers the barrier when it lives inside the workflow the user came for.",
+        "Embedded beats adjacent. Conversational AI only helps when it lives inside the workflow the user came for.",
         "Enterprise users will trade speed for legibility. Show the reasoning and they let the AI do more.",
         "Trust is a UX problem before it is a model problem."
       ],

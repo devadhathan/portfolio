@@ -1,6 +1,7 @@
 export type PlaygroundMedia =
   | { type: 'video'; src: string; poster?: string }
-  | { type: 'image'; src: string };
+  | { type: 'image'; src: string }
+  | { type: 'orb' };
 
 export type PlaygroundStackId = 'whisper' | 'swiftui' | 'rive' | 'xcode';
 
@@ -18,6 +19,13 @@ export type PlaygroundItem = {
 };
 
 export const PLAYGROUND_VIDEO_ITEMS: PlaygroundItem[] = [
+  {
+    id: 'botOrb',
+    aspect: '9/19.5',
+    frame: 'phone',
+    stackLabel: 'REACT + MOTION',
+    media: { type: 'orb' },
+  },
   {
     id: 'dewAi',
     aspect: '444/960',

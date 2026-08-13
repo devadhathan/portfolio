@@ -8,7 +8,7 @@ export const WORDSMITH_BLUEPRINTS_URL = 'https://www.wordsmith.ai/products/bluep
 
 type WordsmithCardProps = {
   title: string;
-  tagLabel: string;
+  tagLabel?: string;
   yearLabel?: string;
   description: string;
   href?: string;
@@ -39,16 +39,16 @@ export function WordsmithCard({
     >
       <div className="relative z-10 shrink-0 px-4 pt-4 pb-2">
         <div className="flex max-w-full flex-wrap items-center gap-2">
-          <span className="text-[15px] font-medium tracking-tight text-foreground">{title}</span>
-          <CardTag tone="accent">{tagLabel}</CardTag>
-          {yearLabel ? <CardTag tone="glass">{yearLabel}</CardTag> : null}
+          <span className="card-title-type">{title}</span>
+          {tagLabel ? <CardTag>{tagLabel}</CardTag> : null}
+          {yearLabel ? <CardTag>{yearLabel}</CardTag> : null}
           <ArrowUpRight
             className="h-3.5 w-3.5 shrink-0 opacity-0 transition-all duration-300 group-hover/ws:translate-x-0.5 group-hover/ws:opacity-100"
             strokeWidth={2}
             aria-hidden
           />
         </div>
-        <p className="mt-4 line-clamp-4 text-[13px] leading-5 text-muted-foreground/75">
+        <p className="card-body-type mt-4 line-clamp-4">
           {description}
         </p>
       </div>

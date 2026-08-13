@@ -29,15 +29,15 @@ export function PreferenceGraph() {
   return (
     <div className="h-full flex flex-col p-4 relative">
       <div className="pb-2 flex-shrink-0 relative z-10">
-        <CardTitle className="text-[15px] font-medium tracking-tight text-foreground flex items-center gap-2.5">
-          <PenTool className="h-4 w-4 text-foreground/80 flex-shrink-0" />
-          <span className="text-[15px] font-medium tracking-tight text-foreground">
+        <CardTitle className="card-title-type flex items-center gap-2.5">
+          <PenTool className="h-4 w-4 text-primary flex-shrink-0" />
+          <span className="card-title-type">
             {t('designPreferences')}
           </span>
         </CardTitle>
       </div>
 
-      <HighlightedText text={t('preferenceIntro')} className="text-[13px] text-muted-foreground/70 leading-relaxed pb-2 flex-shrink-0 relative z-10" as="p" />
+      <HighlightedText text={t('preferenceIntro')} className="card-body-type pb-2 flex-shrink-0 relative z-10" as="p" />
 
       <div className="flex-1 flex items-center justify-center relative z-10" style={{ minHeight: '240px' }}>
         <ResponsiveContainer width="100%" height="100%">

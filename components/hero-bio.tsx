@@ -24,7 +24,7 @@ type HeroBioProps = {
 };
 
 export function HeroBio({
-  className = 'text-[13px] leading-5 text-muted-foreground/70 whitespace-pre-line',
+  className = 'text-[14px] leading-[1.65] text-foreground/80 whitespace-pre-line',
   as: Tag = 'p',
   variant = 'full',
 }: HeroBioProps) {

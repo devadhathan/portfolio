@@ -256,9 +256,10 @@ const BASE_CARD_REGISTRY: Record<string, GenUIItem> = {
     caption: 'Falcon — Comprehensive design system for Ditto',
     link: '/work?project=falcon-design-system',
   },
-  'image:crm': {
-    type: 'image',
-    src: '/CRM/prototype.gif',
+  'video:crm-prototype': {
+    type: 'video',
+    src: '/CRM/prototype.mp4',
+    poster: '/CRM/prototype-poster.jpg',
     alt: 'CRM Redesign Prototype',
     caption: 'CRM Redesign — Interactive prototype',
     link: '/work?project=crm-redesign',

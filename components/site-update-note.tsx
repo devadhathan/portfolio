@@ -40,14 +40,14 @@ export function SiteUpdateNote({ className }: SiteUpdateNoteProps) {
 
   return (
     <div className={cn('min-w-0 space-y-4 text-left', className)}>
-      <h3 className="text-[15px] font-medium tracking-tight text-foreground leading-tight">
+      <h3 className="card-title-type leading-tight">
         Still in motion
       </h3>
       <div className="space-y-2">
-        <p className="text-[13px] leading-5 text-muted-foreground">
+        <p className="card-body-type">
           Small commits and polish as things itch.
         </p>
-        <p className="text-[13px] leading-5 text-muted-foreground/65">
+        <p className="card-meta-type">
           Updated {dateLabel ?? '...'}
         </p>
       </div>

@@ -149,9 +149,9 @@ export function SideProjectCard({
       }}
     >
       <div className="shrink-0 px-4 pt-4 pb-2">
-        <span className="text-[15px] font-medium tracking-tight text-foreground">{title}</span>
+        <span className="card-title-type">{title}</span>
         {url ? (
-          <p className="mt-4 truncate text-[13px] leading-5 text-muted-foreground/70">{url}</p>
+          <p className="card-body-type mt-4 truncate">{url}</p>
         ) : null}
       </div>
 
@@ -186,15 +186,15 @@ export function SideProjectCard({
                       : { type: 'button' as const })}
                     data-cuelume-hover="tick"
                     className={cn(
-                      'flex w-full items-center justify-between gap-2 text-left transition-colors duration-200',
-                      isActive ? 'text-foreground' : 'text-muted-foreground/75 hover:text-foreground',
+                      'group/row flex w-full items-center justify-between gap-2 text-left transition-colors duration-200',
+                      isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
                     )}
                     onMouseEnter={() => selectProject(project.id)}
                     onFocus={() => selectProject(project.id)}
                   >
-                    <span className="min-w-0 truncate text-[13px]">{project.name}</span>
+                    <span className="card-body-type min-w-0 truncate">{project.name}</span>
                     {project.status ? (
-                      <CardTag className="max-w-[42%] shrink-0 truncate sm:max-w-none">
+                      <CardTag tone="mono" className="max-w-[48%] shrink-0 truncate sm:max-w-none">
                         {project.status}
                       </CardTag>
                     ) : null}
