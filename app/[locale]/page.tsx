@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { useRegisterNavActions } from '@/contexts/nav-actions-context';
 import { useAskAI } from '@/components/ask-ai-provider';
@@ -11,6 +12,7 @@ import { createLoadingViewport } from '@/lib/gen-ui-viewport';
 import { useGenUIPrompt } from '@/hooks/use-gen-ui-prompt';
 import { scrollPageToTop } from '@/lib/scroll-page';
 import { PortfolioSections } from '@/components/portfolio-sections';
+import { defaultTransition, fadeSlideUp } from '@/lib/motion';
 
 const GenUIModeShell = dynamic(
   () => import('@/components/gen-ui-mode-shell').then((mod) => ({ default: mod.GenUIModeShell })),
@@ -44,8 +46,9 @@ const LOADING_MESSAGES = [
   'Almost there...'
 ];
 
-export default function Home() {
+export default function Home({ embedded = false }: { embedded?: boolean }) {
   const { close: closeAskAI, resetAgent, registerStateChange } = useAskAI();
+  const reduceMotion = useReducedMotion();
 
   const [agentState, setAgentState] = useState<AgentState>(() => createDefaultAgentState());
   const [genUIViewports, setGenUIViewports] = useState<GenUIViewport[]>([]);
@@ -163,8 +166,8 @@ export default function Home() {
     onProjectSelect: setSelectedProject,
     onHomeClick: handleHomeClick,
     hideMobileNav: genUIMode,
-    showWidgetsToggle: !genUIMode,
-    widgetsCollapsed: isSidebarCollapsed,
+    showWidgetsToggle: !genUIMode && !embedded,
+    widgetsCollapsed: embedded ? true : isSidebarCollapsed,
     onOpenWidgets: () => setIsSidebarCollapsed(false),
   });
 
@@ -174,8 +177,13 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-x-hidden">
-      <div className="flex pt-14 relative z-10">
+    <div
+      className={`relative overflow-x-hidden bg-background antialiased ${
+        embedded ? 'min-h-0 bg-transparent' : 'min-h-screen lg:min-h-0 lg:bg-transparent'
+      }`}
+    >
+      <div className={`relative z-10 flex ${embedded ? 'pt-0' : 'pt-14 lg:pt-0'}`}>
+        {!embedded && (
         <div
           className={`fixed left-0 top-14 z-20 hidden h-[calc(100vh-3.5rem)] transition-all duration-300 lg:block ${
             isSidebarCollapsed ? 'pointer-events-none w-0' : 'w-80'
@@ -189,21 +197,34 @@ export default function Home() {
             />
           </ErrorBoundary>
         </div>
+        )}
         
         <div
           className={`flex-1 w-full relative z-10 transition-[margin-left] duration-500 ease-in-out overflow-x-hidden ${
-            isSidebarCollapsed ? 'lg:ml-0' : 'lg:ml-80'
+            embedded || isSidebarCollapsed ? 'lg:ml-0' : 'lg:ml-80'
           } ${
             genUIMode
-              ? 'h-[calc(100vh-3.5rem)] min-h-0 overflow-hidden p-0'
-              : 'py-4 md:py-6 lg:py-8 pb-20 md:pb-24 lg:pb-8'
+              ? embedded
+                ? 'h-full min-h-0 overflow-hidden p-0'
+                : 'h-[calc(100vh-3.5rem)] min-h-0 overflow-hidden p-0'
+              : embedded
+                ? 'py-4 px-1 pb-8'
+                : 'py-4 md:py-6 lg:py-8 pb-20 md:pb-24 lg:pb-8'
           }`}
         >
           <div
             className={`transition-[max-width,margin] duration-500 ease-in-out ${isSidebarCollapsed ? 'max-w-[1500px] mx-auto' : 'max-w-7xl mx-auto'}${genUIMode ? ' h-full' : ''}`}
           >
+            <AnimatePresence mode="wait">
             {selectedProject && !genUIMode ? (
-            <div className="w-full">
+            <motion.div
+              key={`case-${selectedProject}`}
+              className="w-full"
+              initial={reduceMotion ? false : fadeSlideUp.initial}
+              animate={fadeSlideUp.animate}
+              exit={fadeSlideUp.exit}
+              transition={defaultTransition}
+            >
               <ProjectDetailView 
                 projectId={selectedProject} 
                 onBack={() => {
@@ -211,9 +232,9 @@ export default function Home() {
                   setShowProjectsList(false);
                 }} 
               />
-            </div>
+            </motion.div>
           ) : genUIMode && selectedProject ? (
-            <div className="relative h-full min-h-0 overflow-hidden">
+            <div key={`genui-case-${selectedProject}`} className="relative h-full min-h-0 overflow-hidden">
               <div className="h-full overflow-y-auto pb-24 lg:pb-8">
                 <ProjectDetailView
                   projectId={selectedProject}
@@ -233,7 +254,7 @@ export default function Home() {
               />
             </div>
           ) : showProjectsList ? (
-            <div className="w-full h-full">
+            <div key="projects-list" className="w-full h-full">
               <ProjectsListView
                 onBack={() => {
                   setShowProjectsList(false);
@@ -246,6 +267,7 @@ export default function Home() {
               />
             </div>
           ) : genUIMode ? (
+            <div key="genui-mode" className="h-full">
             <GenUIModeShell
               viewports={genUIViewports}
               activeViewportId={activeViewportId}
@@ -265,8 +287,17 @@ export default function Home() {
                 scrollPageToTop();
               }}
             />
+            </div>
           ) : (
-            <div className={contentGutterClass}>
+            <motion.div
+              key="home-feed"
+              className={contentGutterClass}
+              /* Don’t fade the whole feed — that hides HomeIntro’s line stagger */
+              initial={false}
+              animate={{ opacity: 1 }}
+              exit={fadeSlideUp.exit}
+              transition={defaultTransition}
+            >
               <ErrorBoundary>
                 <PortfolioSections
                   agentState={agentState}
@@ -277,8 +308,9 @@ export default function Home() {
                   selectedProjectId={selectedProject}
                 />
               </ErrorBoundary>
-            </div>
+            </motion.div>
           )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

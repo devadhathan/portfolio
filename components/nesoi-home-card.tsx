@@ -40,10 +40,10 @@ export function NesoiHomeCard({
         className="relative z-10 w-full shrink-0 px-4 pt-4 pb-2 text-left outline-none"
       >
         <div className="flex max-w-full flex-wrap items-center gap-2">
-          <span className="text-[15px] font-medium tracking-tight text-foreground">{title}</span>
-          <CardTag tone="accent">{statusLabel}</CardTag>
+          <span className="card-title-type">{title}</span>
+          <CardTag>{statusLabel}</CardTag>
         </div>
-        <p className="mt-4 line-clamp-2 text-[13px] leading-5 text-muted-foreground/70">
+        <p className="card-body-type mt-4 line-clamp-2">
           {description}
         </p>
       </button>

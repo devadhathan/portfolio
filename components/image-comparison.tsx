@@ -190,7 +190,7 @@ export function ImageComparison({
           <span
             className={cn(
               'pointer-events-none absolute left-2 top-2 z-10 rounded-full border border-white/20 bg-black/50 font-medium uppercase tracking-wide text-white backdrop-blur-md',
-              compact ? 'px-2 py-1 text-[12px]' : 'left-3 top-3 px-2 py-1 text-[12px]',
+              compact ? 'left-1.5 top-1.5 px-1.5 py-0.5 text-[9px] tracking-wider' : 'left-3 top-3 px-2 py-1 text-[12px]',
             )}
           >
             {beforeLabel}
@@ -198,7 +198,7 @@ export function ImageComparison({
           <span
             className={cn(
               'pointer-events-none absolute right-2 top-2 z-10 rounded-full border border-white/20 bg-black/50 font-medium uppercase tracking-wide text-white backdrop-blur-md',
-              compact ? 'px-2 py-1 text-[12px]' : 'right-3 top-3 px-2 py-1 text-[12px]',
+              compact ? 'right-1.5 top-1.5 px-1.5 py-0.5 text-[9px] tracking-wider' : 'right-3 top-3 px-2 py-1 text-[12px]',
             )}
           >
             {afterLabel}

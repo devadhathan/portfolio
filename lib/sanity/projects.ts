@@ -72,7 +72,7 @@ async function fetchProjectsUncached(): Promise<Project[]> {
   return localProjects
 }
 
-export const getProjects = unstable_cache(fetchProjectsUncached, ['sanity-projects-local-overlay-v4'], {
+export const getProjects = unstable_cache(fetchProjectsUncached, ['sanity-projects-local-overlay-v9'], {
   revalidate: SANITY_REVALIDATE_SECONDS,
 })
 

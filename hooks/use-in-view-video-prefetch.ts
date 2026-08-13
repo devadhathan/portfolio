@@ -4,6 +4,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 export const DEW_VIDEO_SRC = '/videos/2tUv4Phgglg0Cvb9dLfZYDnN1k_compressed.mp4';
 export const DEW_VIDEO_POSTER = '/videos/dew-poster.jpg';
+export const DEW_MEDIUM_THUMB = '/videos/dew-medium-thumb.jpg';
+export const DEW_MEDIUM_URL =
+  'https://medium.com/@devadhathanmd18/why-ai-needs-a-face-building-dew-my-duolingo-inspired-ai-character-2d4e56f94772';
 
 /** Prefetch video when the container enters (or nears) the viewport. */
 export function useInViewVideoPrefetch(containerRef: React.RefObject<HTMLElement | null>, src: string) {

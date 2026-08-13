@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Sun, List, User, Briefcase, Gamepad2, ChevronsRight } from 'lucide-react';
+import { Sun, List, User, Briefcase, Gamepad2, ChevronDown } from 'lucide-react';
 import { useTheme, allThemes } from '@/contexts/theme-context';
 import {
   DropdownMenu,
@@ -13,7 +13,8 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { ContactChat } from './contact-chat';
 import {
   Sheet,
@@ -26,12 +27,17 @@ import { useSiteContent } from '@/components/site-content-provider';
 import { getProjectId } from '@/lib/types/project';
 import { useAskAI } from '@/components/ask-ai-provider';
 import { markOpenAskAI, consumeOpenAskAI } from '@/lib/open-ask-ai';
+import { openCaseStudyInHomeWindow } from '@/lib/open-case-study';
 import { useNavActions } from '@/contexts/nav-actions-context';
 import { scrollPageToTop } from '@/lib/scroll-page';
-import { cn } from '@/lib/utils';
+import { cn, focusRing } from '@/lib/utils';
 import { SoundToggle } from '@/components/sound-toggle';
 import { ProgressiveBlurTop } from '@/components/progressive-blur-top';
+import { navPillTransition } from '@/lib/motion';
 import { play } from 'cuelume';
+import { MenubarClock } from '@/components/desktop-os/menubar-clock';
+import { WallpaperPicker } from '@/components/desktop-os/wallpaper-picker';
+import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
 
 const MobileSidebar = dynamic(
   () => import('./mobile-sidebar').then((mod) => ({ default: mod.MobileSidebar })),
@@ -48,8 +54,9 @@ export function TopBar() {
   const t = useTranslations('nav');
   const { theme, setTheme } = useTheme();
   const { projects } = useSiteContent();
-  const { onProjectSelectRef, onHomeClickRef, onOpenWidgetsRef, showWidgetsToggle, widgetsCollapsed } =
-    useNavActions();
+  const { onProjectSelectRef, onHomeClickRef } = useNavActions();
+  const desktopOs = useDesktopOsOptional();
+  const osEnabled = desktopOs?.enabled ?? false;
   const handleProjectSelect = useCallback((projectSlug: string) => {
     onProjectSelectRef.current?.(projectSlug);
   }, [onProjectSelectRef]);
@@ -61,80 +68,7 @@ export function TopBar() {
   const [isProjectSheetOpen, setIsProjectSheetOpen] = useState(false);
   const [optimisticPath, setOptimisticPath] = useState<string | null>(null);
   const activePath = optimisticPath ?? pathname;
-  const showLogoWidgetsArrow = showWidgetsToggle && widgetsCollapsed;
-  const navRef = useRef<HTMLElement>(null);
-  const tabRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
-  const [pill, setPill] = useState({ left: 0, width: 0, ready: false });
-  const [reduceMotion, setReduceMotion] = useState(false);
-  const [pillMotion, setPillMotion] = useState(false);
-
-  const updatePill = useCallback(() => {
-    const nav = navRef.current;
-    const activeTab = tabRefs.current[activePath];
-    if (!nav || !activeTab) {
-      setPill((prev) => ({ ...prev, ready: false }));
-      return;
-    }
-
-    const navRect = nav.getBoundingClientRect();
-    const tabRect = activeTab.getBoundingClientRect();
-    if (tabRect.width < 2) {
-      setPill((prev) => ({ ...prev, ready: false }));
-      return;
-    }
-
-    setPill({
-      left: tabRect.left - navRect.left,
-      width: tabRect.width,
-      ready: true,
-    });
-  }, [activePath]);
-
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const sync = () => setReduceMotion(media.matches);
-    sync();
-    media.addEventListener('change', sync);
-    return () => media.removeEventListener('change', sync);
-  }, []);
-
-  useLayoutEffect(() => {
-    updatePill();
-    let cancelled = false;
-    const fontsReady =
-      typeof document !== 'undefined' && document.fonts?.ready
-        ? document.fonts.ready
-        : Promise.resolve();
-    fontsReady.then(() => {
-      if (!cancelled) updatePill();
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [updatePill, t]);
-
-  // Enable slide animation only after the pill has been placed once (avoids fill-on-reload).
-  useEffect(() => {
-    if (!pill.ready || pillMotion) return;
-    const id = requestAnimationFrame(() => setPillMotion(true));
-    return () => cancelAnimationFrame(id);
-  }, [pill.ready, pillMotion]);
-
-  useEffect(() => {
-    const nav = navRef.current;
-    if (!nav || typeof ResizeObserver === 'undefined') return;
-
-    const observer = new ResizeObserver(() => updatePill());
-    observer.observe(nav);
-    Object.values(tabRefs.current).forEach((tab) => {
-      if (tab) observer.observe(tab);
-    });
-    window.addEventListener('resize', updatePill);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', updatePill);
-    };
-  }, [updatePill]);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     if (optimisticPath !== null && pathname === optimisticPath) {
@@ -143,10 +77,14 @@ export function TopBar() {
   }, [pathname, optimisticPath]);
 
   useEffect(() => {
+    if (osEnabled && consumeOpenAskAI()) {
+      desktopOs?.openWindow('ask', { syncUrl: false });
+      return;
+    }
     if (pathname === '/' && consumeOpenAskAI()) {
       openAskAI();
     }
-  }, [pathname, openAskAI]);
+  }, [pathname, openAskAI, osEnabled, desktopOs]);
 
   const prefetchTab = (path: string) => {
     router.prefetch(path);
@@ -155,12 +93,51 @@ export function TopBar() {
   const handleLogoClick = () => {
     onHomeClickRef.current?.();
     scrollPageToTop();
+    if (osEnabled) {
+      desktopOs?.openWindow('home');
+      return;
+    }
     if (pathname !== '/') {
       router.push('/');
     }
   };
 
+  const handleAboutMe = () => {
+    onHomeClickRef.current?.();
+    scrollPageToTop();
+    desktopOs?.openWindow('home');
+  };
+
+  const handleOsCaseStudy = useCallback(
+    (slug: string) => {
+      if (!desktopOs) return;
+      openCaseStudyInHomeWindow({
+        openWindow: desktopOs.openWindow,
+        selectProject: (id) => onProjectSelectRef.current?.(id),
+        slug,
+      });
+    },
+    [desktopOs, onProjectSelectRef],
+  );
+
+  const handleOsPlayground = () => {
+    desktopOs?.openWindow('playground');
+  };
+
+  const focusedId = desktopOs?.focusedId ?? null;
+  const aboutActive = osEnabled && focusedId === 'home';
+  const playgroundActive = osEnabled && focusedId === 'playground';
+
   const handleAskAI = () => {
+    if (osEnabled) {
+      const askOpen = desktopOs?.windows.ask.open;
+      if (askOpen) {
+        desktopOs?.closeWindow('ask');
+      } else {
+        desktopOs?.openWindow('ask', { syncUrl: false });
+      }
+      return;
+    }
     if (pathname === '/') {
       toggleAskAI();
       return;
@@ -182,17 +159,27 @@ export function TopBar() {
   };
 
   return (
-    <div className="pointer-events-none fixed top-0 left-0 right-0 z-50">
-      <ProgressiveBlurTop heightClassName="h-20 sm:h-24" />
+    <div
+      className={cn(
+        'pointer-events-none fixed top-0 left-0 right-0',
+        osEnabled ? 'os-menubar z-[200]' : 'z-50',
+      )}
+    >
+      {osEnabled ? null : <ProgressiveBlurTop heightClassName="h-20 sm:h-24" />}
       <div className="relative z-10 w-full px-3 md:px-5 lg:px-6">
-        <div className="relative flex h-14 items-center justify-between">
-          <div className="pointer-events-auto flex flex-shrink-0 items-center gap-2">
-            {!isWorkPage && (
+        <div
+          className={cn(
+            'relative flex items-center justify-between',
+            osEnabled ? 'h-11' : 'h-14',
+          )}
+        >
+          <div className="pointer-events-auto flex min-w-0 flex-shrink items-center gap-1.5 sm:gap-2 lg:gap-3">
+            {!osEnabled && !isWorkPage && (
               <div className="lg:hidden">
                 <MobileSidebar onProjectSelect={handleProjectSelect} />
               </div>
             )}
-            {isWorkPage && (
+            {!osEnabled && isWorkPage && (
               <div className="lg:hidden">
                 <Sheet open={isProjectSheetOpen} onOpenChange={setIsProjectSheetOpen}>
                   <SheetTrigger asChild>
@@ -233,11 +220,15 @@ export function TopBar() {
                 </Sheet>
               </div>
             )}
-            <div className="relative flex items-center">
+            <div className="relative flex min-w-0 items-center gap-1 sm:gap-2">
               <button
                 type="button"
                 onClick={handleLogoClick}
-                className="flex items-center transition-opacity hover:opacity-80"
+                aria-label="Home"
+                className={cn(
+                  'flex shrink-0 items-center rounded-md transition-opacity hover:opacity-80',
+                  focusRing,
+                )}
               >
                 <Image
                   src="/photos/Image@4x.png"
@@ -248,49 +239,96 @@ export function TopBar() {
                   priority
                 />
               </button>
-              {showLogoWidgetsArrow ? (
-                <button
-                  type="button"
-                  aria-label="Open widgets"
-                  title="Open widgets"
-                  data-cuelume-press
-                  data-cuelume-hover="tick"
-                  onClick={() => onOpenWidgetsRef.current?.()}
-                  className="absolute left-1/2 top-full mt-3.5 hidden h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border border-border/55 bg-secondary/50 text-foreground shadow-sm backdrop-blur-md transition-colors hover:bg-secondary/70 lg:flex dark:border-border/40 dark:bg-white/[0.06] dark:hover:bg-white/[0.1]"
+
+              {osEnabled ? (
+                <nav
+                  className="os-logo-menu ml-0.5 hidden max-w-[min(100%,18rem)] items-center gap-0 overflow-x-auto sm:ml-1 sm:max-w-none sm:gap-0.5 lg:flex"
+                  aria-label="Desktop menu"
                 >
-                  <ChevronsRight className="h-4 w-4" strokeWidth={1.75} />
-                </button>
+                  <button
+                    type="button"
+                    data-cuelume-hover="tick"
+                    data-cuelume-press
+                    onClick={handleAboutMe}
+                    aria-current={aboutActive ? 'page' : undefined}
+                    className={cn(
+                      'rounded-md px-2.5 py-1 text-[13px] font-medium transition-colors',
+                      focusRing,
+                      aboutActive
+                        ? 'text-foreground'
+                        : 'text-foreground/70 hover:bg-secondary/40 hover:text-foreground',
+                    )}
+                  >
+                    {t('aboutMe')}
+                  </button>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        data-cuelume-hover="tick"
+                        data-cuelume-press
+                        className={cn(
+                          'inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[13px] font-medium text-foreground/70 transition-colors hover:bg-secondary/40 hover:text-foreground',
+                          focusRing,
+                        )}
+                      >
+                        {t('caseStudies')}
+                        <ChevronDown className="h-3 w-3 opacity-70" aria-hidden />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="start"
+                      className="max-h-[min(70vh,28rem)] w-64 overflow-y-auto border border-border bg-card"
+                    >
+                      {projects.map((project) => {
+                        const projectId = getProjectId(project.title);
+                        return (
+                          <DropdownMenuItem
+                            key={projectId}
+                            data-cuelume-hover="tick"
+                            onClick={() => handleOsCaseStudy(projectId)}
+                            className="flex cursor-pointer flex-col items-start gap-0.5 py-2"
+                          >
+                            <span className="text-sm font-medium">{project.title}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {project.company || project.type || project.period}
+                            </span>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <button
+                    type="button"
+                    data-cuelume-hover="tick"
+                    data-cuelume-press
+                    onClick={handleOsPlayground}
+                    aria-current={playgroundActive ? 'page' : undefined}
+                    className={cn(
+                      'rounded-md px-2.5 py-1 text-[13px] font-medium transition-colors',
+                      focusRing,
+                      playgroundActive
+                        ? 'text-foreground'
+                        : 'text-foreground/70 hover:bg-secondary/40 hover:text-foreground',
+                    )}
+                  >
+                    {t('playground')}
+                  </button>
+                </nav>
               ) : null}
             </div>
           </div>
 
-          <nav
-            ref={navRef}
-            className="glass-nav-pill pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-0.5 rounded-full p-1 lg:flex"
-          >
-              {pill.ready ? (
-                <span
-                  aria-hidden
-                  className={cn(
-                    'pointer-events-none absolute left-0 top-1 bottom-1 rounded-full bg-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]',
-                    pillMotion &&
-                      !reduceMotion &&
-                      'transition-[transform,width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
-                  )}
-                  style={{
-                    width: pill.width,
-                    transform: `translate3d(${pill.left}px, 0, 0)`,
-                  }}
-                />
-              ) : null}
+          {/* Classic tablet center pill — hidden when Desktop OS is on */}
+          {!osEnabled ? (
+            <nav className="glass-nav-pill pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-0.5 rounded-full p-1 md:flex lg:hidden">
               {NAV_TAB_KEYS.map((tab) => {
                 const isActive = activePath === tab.path;
                 return (
                   <Link
                     key={tab.path}
-                    ref={(node) => {
-                      tabRefs.current[tab.path] = node;
-                    }}
                     href={tab.path}
                     prefetch={false}
                     onMouseEnter={() => prefetchTab(tab.path)}
@@ -303,39 +341,57 @@ export function TopBar() {
                       isActive
                         ? 'text-primary-foreground'
                         : 'text-muted-foreground hover:text-foreground',
-                      isActive && !pill.ready && 'bg-primary',
                     )}
                   >
+                    {isActive ? (
+                      <motion.span
+                        layoutId="nav-pill-desktop"
+                        aria-hidden
+                        className="absolute inset-0 rounded-full bg-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+                        transition={reduceMotion ? { duration: 0 } : navPillTransition}
+                      />
+                    ) : null}
                     <span className="relative z-10">{t(tab.labelKey)}</span>
                   </Link>
                 );
               })}
             </nav>
+          ) : null}
 
           <div className="pointer-events-auto flex flex-shrink-0 items-center gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={handleAskAI}
-              aria-pressed={pathname === '/' && isAskAIActive}
-              data-cuelume-press
-              data-cuelume-hover="tick"
-              className={cn(
-                'hidden h-10 items-center rounded-full px-3.5 text-sm font-medium transition-colors lg:flex',
-                pathname === '/' && isAskAIActive
-                  ? 'border border-primary/40 bg-primary/10 text-foreground hover:bg-primary/15'
-                  : 'glass-chrome text-foreground',
-              )}
-            >
-              {t('askAI')}
-            </Button>
+            {/* Ask AI is a desktop icon/window on lg OS; menubar entry stays for mobile/non-OS */}
+            {!osEnabled ? (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleAskAI}
+                aria-pressed={pathname === '/' && isAskAIActive}
+                data-cuelume-press
+                data-cuelume-hover="tick"
+                className={cn(
+                  'hidden h-9 items-center rounded-full px-3.5 text-sm font-medium transition-colors lg:flex',
+                  isAskAIActive
+                    ? 'border border-primary/40 bg-primary/10 text-foreground hover:bg-primary/15'
+                    : 'glass-chrome text-foreground',
+                )}
+              >
+                {t('askAI')}
+              </Button>
+            ) : null}
+            {osEnabled ? <WallpaperPicker /> : null}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   data-cuelume-hover="tick"
                   data-cuelume-press
-                  className="glass-chrome flex h-10 items-center gap-2 rounded-full px-3.5 text-sm font-medium text-foreground"
+                  className={cn(
+                    'flex h-9 items-center gap-2 rounded-full px-2.5 text-sm font-medium text-foreground sm:px-3.5',
+                    focusRing,
+                    osEnabled
+                      ? 'hover:bg-secondary/50'
+                      : 'glass-chrome',
+                  )}
                 >
                   {(() => {
                     const currentTheme = allThemes.find((item) => item.id === theme);
@@ -392,10 +448,11 @@ export function TopBar() {
               </DropdownMenuContent>
             </DropdownMenu>
             <SoundToggle variant="inline" />
+            {osEnabled ? <MenubarClock /> : null}
           </div>
         </div>
       </div>
-      <ContactChat open={chatOpen} onOpenChange={setChatOpen} />
+      {!osEnabled ? <ContactChat open={chatOpen} onOpenChange={setChatOpen} /> : null}
     </div>
   );
 }
@@ -404,80 +461,9 @@ export function MobileBottomNav() {
   const t = useTranslations('nav');
   const pathname = usePathname();
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
   const [optimisticPath, setOptimisticPath] = useState<string | null>(null);
   const activePath = optimisticPath ?? pathname;
-  const navRef = useRef<HTMLElement>(null);
-  const tabRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
-  const [pill, setPill] = useState({ left: 0, width: 0, ready: false });
-  const [reduceMotion, setReduceMotion] = useState(false);
-  const [pillMotion, setPillMotion] = useState(false);
-
-  const updatePill = useCallback(() => {
-    const nav = navRef.current;
-    const activeTab = tabRefs.current[activePath];
-    if (!nav || !activeTab) {
-      setPill((prev) => ({ ...prev, ready: false }));
-      return;
-    }
-
-    const navRect = nav.getBoundingClientRect();
-    const tabRect = activeTab.getBoundingClientRect();
-    if (tabRect.width < 2) {
-      setPill((prev) => ({ ...prev, ready: false }));
-      return;
-    }
-
-    setPill({
-      left: tabRect.left - navRect.left,
-      width: tabRect.width,
-      ready: true,
-    });
-  }, [activePath]);
-
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const sync = () => setReduceMotion(media.matches);
-    sync();
-    media.addEventListener('change', sync);
-    return () => media.removeEventListener('change', sync);
-  }, []);
-
-  useLayoutEffect(() => {
-    updatePill();
-    let cancelled = false;
-    const fontsReady =
-      typeof document !== 'undefined' && document.fonts?.ready
-        ? document.fonts.ready
-        : Promise.resolve();
-    fontsReady.then(() => {
-      if (!cancelled) updatePill();
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [updatePill, t]);
-
-  useEffect(() => {
-    if (!pill.ready || pillMotion) return;
-    const id = requestAnimationFrame(() => setPillMotion(true));
-    return () => cancelAnimationFrame(id);
-  }, [pill.ready, pillMotion]);
-
-  useEffect(() => {
-    const nav = navRef.current;
-    if (!nav || typeof ResizeObserver === 'undefined') return;
-
-    const observer = new ResizeObserver(() => updatePill());
-    observer.observe(nav);
-    Object.values(tabRefs.current).forEach((tab) => {
-      if (tab) observer.observe(tab);
-    });
-    window.addEventListener('resize', updatePill);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', updatePill);
-    };
-  }, [updatePill]);
 
   useEffect(() => {
     if (optimisticPath !== null && pathname === optimisticPath) {
@@ -487,33 +473,12 @@ export function MobileBottomNav() {
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:hidden">
-      <nav
-        ref={navRef}
-        className="glass-nav-pill pointer-events-auto relative flex items-center gap-0.5 rounded-full p-1"
-      >
-        {pill.ready ? (
-          <span
-            aria-hidden
-            className={cn(
-              'pointer-events-none absolute left-0 top-1 bottom-1 z-[1] rounded-full bg-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_2px_8px_rgba(0,0,0,0.18)]',
-              pillMotion &&
-                !reduceMotion &&
-                'transition-[transform,width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
-            )}
-            style={{
-              width: pill.width,
-              transform: `translate3d(${pill.left}px, 0, 0)`,
-            }}
-          />
-        ) : null}
+      <nav className="glass-nav-pill pointer-events-auto relative flex items-center gap-0.5 rounded-full p-1">
         {NAV_TAB_KEYS.map((tab) => {
           const isActive = activePath === tab.path;
           return (
             <Link
               key={tab.path}
-              ref={(node) => {
-                tabRefs.current[tab.path] = node;
-              }}
               href={tab.path}
               prefetch={false}
               onTouchStart={() => router.prefetch(tab.path)}
@@ -537,9 +502,16 @@ export function MobileBottomNav() {
                 isActive
                   ? 'text-primary-foreground'
                   : 'text-muted-foreground active:text-foreground',
-                isActive && !pill.ready && 'bg-primary',
               )}
             >
+              {isActive ? (
+                <motion.span
+                  layoutId="nav-pill-mobile"
+                  aria-hidden
+                  className="absolute inset-0 z-[1] rounded-full bg-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_2px_8px_rgba(0,0,0,0.18)]"
+                  transition={reduceMotion ? { duration: 0 } : navPillTransition}
+                />
+              ) : null}
               <span className="relative z-10">{t(tab.labelKey)}</span>
             </Link>
           );

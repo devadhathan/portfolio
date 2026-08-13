@@ -2,9 +2,11 @@
 
 import type { ReactNode, Ref } from 'react';
 import { ArrowUp, ChevronsRight } from 'lucide-react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ASK_AI_SUGGESTIONS } from '@/lib/ask-ai-suggestions';
 import { MAX_GEN_UI_PROMPT_LENGTH } from '@/lib/gen-ui-prompt';
+import { panelSlideRight, panelTransition } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 
 type AskAIPanelProps = {
@@ -24,6 +26,8 @@ type AskAIPanelProps = {
   showSuggestionChips: boolean;
   children: ReactNode;
   messagesEndRef: Ref<HTMLDivElement>;
+  /** Fill parent (OS window) instead of fixed right rail. */
+  embedded?: boolean;
 };
 
 export function AskAIPanel({
@@ -43,25 +47,41 @@ export function AskAIPanel({
   showSuggestionChips,
   children,
   messagesEndRef,
+  embedded = false,
 }: AskAIPanelProps) {
+  const reduceMotion = useReducedMotion();
+
   return (
-    <div className="fixed z-40 hidden lg:flex top-14 right-0 h-[calc(100vh-3.5rem)] w-[360px] flex-col border-l border-border/60 bg-background shadow-[-12px_0_40px_rgba(0,0,0,0.06)] animate-in slide-in-from-right duration-300 dark:border-border dark:shadow-[-12px_0_40px_rgba(0,0,0,0.45)]">
-      <div className="flex items-center justify-between px-4 h-12 border-b border-black/[0.06] shrink-0 dark:border-white/[0.08]">
-        <span className="text-sm font-medium text-foreground">Ask AI</span>
-        <button
-          onClick={onClose}
-          data-cuelume-press
-          data-cuelume-release
-          className="p-1.5 rounded-md hover:bg-black/[0.05] dark:hover:bg-white/[0.06] transition-colors"
-          title="Close"
-          aria-label="Close Ask AI"
-        >
-          <ChevronsRight className="h-4 w-4 text-muted-foreground" />
-        </button>
-      </div>
+    <motion.div
+      className={cn(
+        'flex flex-col',
+        embedded
+          ? 'relative h-full w-full bg-transparent'
+          : 'fixed z-40 top-14 right-0 hidden h-[calc(100vh-3.5rem)] w-[360px] border-l border-border/60 bg-background shadow-[-12px_0_40px_rgba(0,0,0,0.06)] lg:flex dark:border-border dark:shadow-[-12px_0_40px_rgba(0,0,0,0.45)]',
+      )}
+      initial={reduceMotion || embedded ? false : panelSlideRight.initial}
+      animate={panelSlideRight.animate}
+      exit={embedded ? undefined : panelSlideRight.exit}
+      transition={panelTransition}
+    >
+      {!embedded && (
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-black/[0.06] px-4 dark:border-white/[0.08]">
+          <span className="text-sm font-medium text-foreground">Ask AI</span>
+          <button
+            onClick={onClose}
+            data-cuelume-press
+            data-cuelume-release
+            className="rounded-md p-1.5 transition-colors hover:bg-black/[0.05] dark:hover:bg-white/[0.06]"
+            title="Close"
+            aria-label="Close Ask AI"
+          >
+            <ChevronsRight className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+      )}
 
       {!emptyState && (
-        <ScrollArea className="flex-1 min-h-0">
+        <ScrollArea className="min-h-0 flex-1">
           <div className="space-y-3 px-4 py-4 pb-2">
             {children}
             <div ref={messagesEndRef} />
@@ -69,7 +89,7 @@ export function AskAIPanel({
         </ScrollArea>
       )}
 
-      {emptyState && <div className="flex-1 min-h-0" />}
+      {emptyState && <div className="min-h-0 flex-1" />}
 
       <div
         className={cn(
@@ -139,6 +159,6 @@ export function AskAIPanel({
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

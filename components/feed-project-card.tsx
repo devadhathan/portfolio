@@ -58,7 +58,7 @@ export function FeedProjectCard({
               {icon}
             </div>
           ) : null}
-          <span className="truncate text-[13px] font-medium tracking-tight text-foreground">{title}</span>
+          <span className="card-title-type truncate">{title}</span>
         </div>
         <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" strokeWidth={1.75} />
       </HeaderTag>
@@ -75,9 +75,9 @@ export function FeedProjectCard({
       {(subtitle || statusLabel || tags?.length || footer) && (
         <div className="space-y-2 border-t border-border/35 px-3.5 py-3 dark:border-white/[0.05]">
           {statusLabel ? (
-            <CardTag className="border-primary/25 bg-primary/10 text-primary">{statusLabel}</CardTag>
+            <CardTag>{statusLabel}</CardTag>
           ) : null}
-          {subtitle ? <p className="text-[12px] leading-relaxed text-muted-foreground">{subtitle}</p> : null}
+          {subtitle ? <p className="card-body-type">{subtitle}</p> : null}
           {tags && tags.length > 0 ? (
             <div className="flex flex-wrap gap-1.5">
               {tags.map((tag) => (

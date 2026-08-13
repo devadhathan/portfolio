@@ -1,6 +1,7 @@
 'use client';
 
 import { CardTag } from '@/components/card-tag';
+import { AgentOrb } from '@/components/agent-orb';
 import { cn } from '@/lib/utils';
 import type { PlaygroundItem } from '@/lib/playground-items';
 
@@ -56,7 +57,7 @@ export function PlaygroundItemRow({
           muted
           preload="metadata"
         />
-      ) : (
+      ) : item.media.type === 'image' ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           className="h-full w-full object-contain"
@@ -64,6 +65,10 @@ export function PlaygroundItemRow({
           alt={accessibilityLabel}
           loading="lazy"
         />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center bg-[#12100e]">
+          <AgentOrb size="md" hoverScale={false} />
+        </div>
       )}
     </div>
   );
@@ -167,7 +172,7 @@ export function PlaygroundBrandGroup({
                   muted
                   preload="metadata"
                 />
-              ) : (
+              ) : item.media.type === 'image' ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   className="h-full w-full object-contain"
@@ -175,6 +180,10 @@ export function PlaygroundBrandGroup({
                   alt={copy.accessibilityLabel}
                   loading="lazy"
                 />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-[#12100e]">
+                  <AgentOrb size="sm" hoverScale={false} />
+                </div>
               )}
             </div>
           );

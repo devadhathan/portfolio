@@ -18,6 +18,7 @@ import { routing, type Locale } from '@/i18n/routing'
 import { HERO_VIDEO_POSTER } from '@/lib/hero-media'
 import { fontVariables, geistSans } from '@/lib/fonts'
 import { Analytics } from '@vercel/analytics/next'
+import { PostHogProvider } from '@/components/posthog-provider'
 
 export const revalidate = SANITY_REVALIDATE_SECONDS
 
@@ -64,6 +65,7 @@ export default async function LocaleLayout({
         <link rel="preload" href={HERO_VIDEO_POSTER} as="image" fetchPriority="high" />
       </head>
       <body className={`${fontVariables} ${geistSans.className}`}>
+        <PostHogProvider>
         <NextIntlClientProvider messages={messages}>
           <SuppressCleanupErrors />
           <ThemeProvider
@@ -83,6 +85,7 @@ export default async function LocaleLayout({
             </ClientThemeProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
+        </PostHogProvider>
         <Analytics />
       </body>
     </html>

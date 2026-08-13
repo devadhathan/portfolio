@@ -93,7 +93,7 @@ Hope you enjoy exploring! 🚀`,
     <>
       <Card
         data-cuelume-card-hover
-        className="border-2 border-border/70 bg-card/60 backdrop-blur-none dark:bg-[#1C1A12] dark:shadow-md flex flex-col max-h-[300px]"
+        className="flex max-h-[300px] flex-col border-0 bg-transparent text-white shadow-none [&_.text-muted-foreground]:text-white/55"
       >
         <CardHeader className="pb-3 flex-shrink-0">
           <CardTitle className="text-sm font-medium flex items-center gap-2">

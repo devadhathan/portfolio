@@ -56,8 +56,8 @@ export function AgentOrbCard({ title, description, buttonLabel, onClick, classNa
         <AgentOrb size="md" lookAt={lookAt} />
       </div>
       <div className="max-w-[14rem] space-y-4">
-        <p className="text-[15px] font-medium tracking-tight text-foreground">{title}</p>
-        <p className="text-[13px] leading-5 text-muted-foreground/75">{description}</p>
+        <p className="card-title-type">{title}</p>
+        <p className="card-body-type">{description}</p>
       </div>
       <button
         type="button"

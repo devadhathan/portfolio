@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useRouter } from '@/i18n/navigation';
 import { useRegisterNavActions } from '@/contexts/nav-actions-context';
 import { PlaygroundCraftCard } from '@/components/playground-craft-card';
@@ -10,15 +11,24 @@ import {
   type PlaygroundSelection,
 } from '@/components/playground-detail-overlay';
 import { PLAYGROUND_ITEMS } from '@/lib/playground-items';
+import { blurFadeUp, easeOutExpo, fadeUpSoft } from '@/lib/motion';
+import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
 
 export default function PlaygroundPage() {
   const router = useRouter();
   const t = useTranslations('playground');
+  const reduceMotion = useReducedMotion();
+  const desktopOs = useDesktopOsOptional();
+  const embedded = Boolean(desktopOs?.enabled);
   const [selection, setSelection] = useState<PlaygroundSelection | null>(null);
 
   const handleHomeClick = useCallback(() => {
+    if (desktopOs?.enabled) {
+      desktopOs.openWindow('home');
+      return;
+    }
     router.push('/');
-  }, [router]);
+  }, [router, desktopOs]);
 
   useRegisterNavActions({ onHomeClick: handleHomeClick });
 
@@ -63,28 +73,51 @@ export default function PlaygroundPage() {
 
   return (
     <>
-      <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
-        <div className="flex pt-14 relative z-10">
-          <main className="flex-1 py-4 md:py-6 lg:py-8 pb-20 md:pb-24 lg:pb-8 overflow-x-hidden">
+      <div
+        className={`overflow-x-hidden text-foreground ${
+          embedded ? 'min-h-0 bg-transparent' : 'min-h-screen bg-background lg:min-h-0 lg:bg-transparent'
+        }`}
+      >
+        <div className={`relative z-10 flex ${embedded ? 'pt-0' : 'pt-14 lg:pt-0'}`}>
+          <main
+            className={`flex-1 overflow-x-hidden ${
+              embedded ? 'py-4 pb-8' : 'py-4 md:py-6 lg:py-8 pb-20 md:pb-24 lg:pb-8'
+            }`}
+          >
             <div className="max-w-[1500px] mx-auto">
               <div className="mx-0 px-4 sm:mx-4 sm:px-5 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-[70px] xl:px-[90px]">
-              <div className="mb-8 md:mb-10 text-left pt-8 md:pt-10 lg:pt-14">
+              <div className={`mb-8 md:mb-10 text-left ${embedded ? 'pt-4' : 'pt-8 md:pt-10 lg:pt-14'}`}>
                 <h1 className="max-w-4xl whitespace-pre-line text-balance text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem] font-light text-foreground tracking-tight leading-[1.1] mb-8 md:mb-10 lg:mb-12">
                   {t('heroLine')}
                 </h1>
               </div>
 
               <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-4 lg:gap-5 auto-rows-[minmax(220px,auto)] w-full pb-4 md:pb-0">
-                {PLAYGROUND_ITEMS.map((item) => {
+                {PLAYGROUND_ITEMS.map((item, index) => {
                   const copy = getCopy(item.id);
+                  const enter =
+                    item.media.type === 'video' || item.media.type === 'orb'
+                      ? fadeUpSoft
+                      : blurFadeUp;
                   return (
-                    <PlaygroundCraftCard
+                    <motion.div
                       key={item.id}
-                      item={item}
-                      title={copy.title}
-                      accessibilityLabel={copy.accessibilityLabel}
-                      onOpen={() => openItem(item.id)}
-                    />
+                      className="h-full min-h-0"
+                      initial={reduceMotion ? false : enter.initial}
+                      animate={enter.animate}
+                      transition={{
+                        duration: 0.5,
+                        delay: Math.min(index, 10) * 0.06,
+                        ease: easeOutExpo,
+                      }}
+                    >
+                      <PlaygroundCraftCard
+                        item={item}
+                        title={copy.title}
+                        accessibilityLabel={copy.accessibilityLabel}
+                        onOpen={() => openItem(item.id)}
+                      />
+                    </motion.div>
                   );
                 })}
               </section>

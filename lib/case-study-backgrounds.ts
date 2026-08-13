@@ -21,8 +21,10 @@ const PROJECT_BG_SLOTS: Record<string, Record<string, number>> = {
   nesoi: {
     'design-gallery': 0,
     framing: 1,
-    validation: 2,
-    prototype: 3,
+    system: 2,
+    'system-image-1': 5,
+    validation: 3,
+    prototype: 4,
   },
   crm: {
     'adding-notes': 4,
@@ -68,12 +70,12 @@ export function shouldStageCaseStudyMedia(opts: {
 }): boolean {
   const id = opts.projectId.toLowerCase();
 
-  // Nesoi: framing / validation / prototype.
+  // Nesoi: framing / system / validation / prototype.
   // Design gallery uses the comparison slider (no painting stage).
   if (id.includes('nesoi')) {
     if (opts.kind === 'design-gallery') return false;
     if (opts.kind === 'detail-image' || opts.kind === 'detail-gif') {
-      return ['framing', 'validation', 'prototype'].includes(opts.sectionId ?? '');
+      return ['framing', 'system', 'validation', 'prototype'].includes(opts.sectionId ?? '');
     }
     return false;
   }

@@ -33,9 +33,12 @@ type GrainBrandAnimationProps = {
 };
 
 function resolveGrainColor() {
-  if (typeof window === 'undefined') return 'hsl(0 0% 98%)';
-  const fg = getComputedStyle(document.documentElement).getPropertyValue('--foreground').trim();
-  return fg ? `hsl(${fg})` : 'hsl(0 0% 98%)';
+  if (typeof window === 'undefined') return '#F5F5F5';
+  const root = document.documentElement;
+  const themeColor = getComputedStyle(root).getPropertyValue('--theme-color').trim();
+  if (themeColor) return themeColor;
+  const primary = getComputedStyle(root).getPropertyValue('--primary').trim();
+  return primary ? `hsl(${primary})` : '#F5F5F5';
 }
 
 function buildGrains(source: ImageData, width: number, height: number, targetSize: number): Grain[] {

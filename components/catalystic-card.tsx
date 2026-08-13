@@ -117,8 +117,8 @@ export function CatalysticCard({
           </p>
         ) : null}
         <div className="flex max-w-full flex-wrap items-center gap-2">
-          <span className="text-[15px] font-medium tracking-tight text-foreground">{title}</span>
-          <CardTag tone="accent">{statusLabel}</CardTag>
+          <span className="card-title-type">{title}</span>
+          <CardTag>{statusLabel}</CardTag>
           <ArrowUpRight
             className={cn(
               'h-3.5 w-3.5 shrink-0 transition-all duration-300',
@@ -128,7 +128,7 @@ export function CatalysticCard({
             aria-hidden
           />
         </div>
-        <p className="mt-4 line-clamp-2 text-[13px] leading-5 text-muted-foreground/70">{description}</p>
+        <p className="card-body-type mt-4 line-clamp-2">{description}</p>
       </div>
 
       <div className="relative mt-4 min-h-0 flex-1 overflow-hidden">

@@ -33,17 +33,17 @@ const NESOI_GALLERY_SECTIONS = [
   {
     title: 'Partner, not a chat box',
     description:
-      'The brief was not “add a chat box.” Getting from raw asset to finished interactive video had to take fewer decisions than doing it manually — a partner that reads the upload, proposes a plan, and shows its work.',
+      'The brief was not “add a chat box.” Raw asset to finished video had to take fewer decisions than doing it by hand. A partner that reads the upload, proposes a plan, and shows its work.',
   },
   {
     title: 'Show the thinking',
     description:
-      'Progress labels alone hide whether the AI understood the material. Surfacing what it read, inferred, and intends to build lets creators correct early instead of discarding the output at the end.',
+      'Progress labels alone hide whether the AI understood the material. Surfacing what it read, inferred, and intends to build lets creators correct early instead of discarding the output.',
   },
   {
     title: 'Motivation over blank prompts',
     description:
-      'The AI opens with what it found and what it thinks you are making, then asks the one question that changes the output. Confirm or redirect — two moves instead of ten.',
+      'The AI opens with what it found and what it thinks you are making, then asks the one question that changes the output. Confirm or redirect. Two moves instead of ten.',
   },
 ] as const;
 
@@ -614,41 +614,53 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false, p
                     ))}
                   </div>
                 </div>
-                {'image' in section && section.image && (
-                  <div className="space-y-6 mt-8 lg:mt-12">
-                    {shouldStageCaseStudyMedia({
-                      projectId,
-                      sectionId: section.id,
-                      kind: 'detail-image',
-                    }) ? (
-                      <CaseStudyScreenStage
-                        seed={`${projectId}-${section.id}-image`}
-                        alt={section.title || 'Section image'}
-                        frame="landscape"
-                        media={{ type: 'image', src: section.image }}
-                        onClick={() => section.image && handleImageClick(section.image)}
-                      />
-                    ) : (
-                      <div
-                        className="relative w-full cursor-pointer group"
-                        onClick={() => section.image && handleImageClick(section.image)}
-                      >
-                        <div className="relative w-full" style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}>
-                          <Image
-                            src={section.image}
+                {(() => {
+                  const sectionImages = [
+                    ...('image' in section && section.image ? [section.image] : []),
+                    ...('images' in section && Array.isArray(section.images) ? section.images : []),
+                  ]
+                  if (sectionImages.length === 0) return null
+                  return (
+                    <div className="space-y-6 mt-8 lg:mt-12">
+                      {sectionImages.map((src, imageIdx) => {
+                        const staged = shouldStageCaseStudyMedia({
+                          projectId,
+                          sectionId: section.id,
+                          kind: 'detail-image',
+                        })
+                        return staged ? (
+                          <CaseStudyScreenStage
+                            key={`${section.id}-image-${imageIdx}`}
+                            seed={`${projectId}-${section.id}-image-${imageIdx}`}
                             alt={section.title || 'Section image'}
-                            width={1920}
-                            height={1080}
-                            loading="lazy"
-                            priority={false}
-                            className="object-contain group-hover:opacity-90 transition-transform duration-300 rounded-3xl border border-border/50 shadow-lg"
-                            sizes="(max-width: 768px) 100vw, 80vw"
+                            frame="landscape"
+                            media={{ type: 'image', src }}
+                            onClick={() => handleImageClick(src)}
                           />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                        ) : (
+                          <div
+                            key={`${section.id}-image-${imageIdx}`}
+                            className="relative w-full cursor-pointer group"
+                            onClick={() => handleImageClick(src)}
+                          >
+                            <div className="relative w-full" style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}>
+                              <Image
+                                src={src}
+                                alt={section.title || 'Section image'}
+                                width={1920}
+                                height={1080}
+                                loading="lazy"
+                                priority={false}
+                                className="object-contain group-hover:opacity-90 transition-transform duration-300 rounded-3xl border border-border/50 shadow-lg"
+                                sizes="(max-width: 768px) 100vw, 80vw"
+                              />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                })()}
                 {'video' in section && section.video && (
                   <div className="space-y-6 mt-8 lg:mt-12">
                     {shouldStageCaseStudyMedia({
@@ -660,11 +672,20 @@ export function ProjectDetailView({ projectId, onBack, hideBackButton = false, p
                         seed={`${projectId}-${section.id}-video`}
                         alt={`${section.title} walkthrough video`}
                         frame="landscape"
-                        media={{ type: 'video', src: section.video, controls: true }}
+                        media={{
+                          type: 'video',
+                          src: section.video,
+                          poster: section.videoPoster,
+                          controls: true,
+                          autoPlay: false,
+                        }}
                       />
                     ) : (
                       <video
                         controls
+                        playsInline
+                        preload="metadata"
+                        poster={section.videoPoster}
                         className="w-full rounded-3xl border border-border/50 shadow-lg object-cover"
                         src={section.video}
                         aria-label={`${section.title} walkthrough video`}

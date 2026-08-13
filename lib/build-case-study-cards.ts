@@ -181,7 +181,7 @@ export function buildCaseStudyCards(projects: Project[] = resumeData.projects as
           section.video,
           section.title,
           truncate(section.description, 140),
-          undefined,
+          section.videoPoster,
           slug,
         );
       }

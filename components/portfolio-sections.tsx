@@ -2,14 +2,16 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AgentState, SectionPriority, SectionType } from '@/lib/agent';
-import { User, Briefcase, Mail, Linkedin, FileText, Sparkles, Code2, Calendar, Award, Globe, Github, Zap, FolderKanban, Image as ImageIcon, ExternalLink, Rocket, type LucideIcon } from 'lucide-react';
+import { User, Briefcase, Mail, Linkedin, FileText, Sparkles, Code2, Calendar, Award, Globe, Github, Zap, FolderKanban, Image as ImageIcon, ExternalLink, Rocket, MapPin, type LucideIcon } from 'lucide-react';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import { HighlightedText } from './highlighted-text';
 import { HeroBio } from './hero-bio';
+import { HomeIntro } from './home-intro';
+import { CaseStudiesList, getHomeAfterCaseStudiesDelay } from './case-studies-list';
 import { useSiteContent } from '@/components/site-content-provider';
 import { useTheme } from '@/contexts/theme-context';
 import { useTranslations } from 'next-intl';
@@ -21,11 +23,14 @@ import { MusicNotchCard } from '@/components/music-notch-card';
 import { PhotoCarousel } from '@/components/photo-carousel';
 import { AgentOrbCard } from '@/components/agent-orb-card';
 import { DewVideoPhone, resolveDewVideoSrc } from '@/components/dew-video-phone';
+import { DEW_MEDIUM_THUMB, DEW_MEDIUM_URL } from '@/hooks/use-in-view-video-prefetch';
 import { GrainBrandAnimation } from '@/components/grain-brand-animation';
 import { SiteUpdateNote } from '@/components/site-update-note';
 import { HeroVideo } from '@/components/hero-video';
 import { WordsmithCard } from '@/components/wordsmith-card';
 import { ConnectMiniPost } from '@/components/connect-mini-post';
+import { motion, useReducedMotion } from 'framer-motion';
+import { easeOutExpo, fadeUpSoft } from '@/lib/motion';
 
 function XLogo({ className }: { className?: string }) {
   return (
@@ -57,8 +62,8 @@ const getSectionIcon = (id: string) => SECTION_ICON_MAP[id] ?? Sparkles;
 
 const SectionLabel = ({ label, icon: Icon }: { label: string; icon: LucideIcon }) => (
   <div className="flex items-center gap-2">
-    <Icon className="h-4 w-4 text-foreground/80 flex-shrink-0" />
-    <span className="text-[15px] font-medium tracking-tight text-foreground">{label}</span>
+    <Icon className="h-4 w-4 text-primary flex-shrink-0" />
+    <span className="card-title-type">{label}</span>
   </div>
 );
 
@@ -100,6 +105,7 @@ interface PortfolioSectionsProps {
 export function PortfolioSections({ agentState, hideHeaderText = false, onProjectSelect, onShowProjectsList, onEnterGenUI, selectedProjectId }: PortfolioSectionsProps) {
   const t = useTranslations('home');
   const { theme } = useTheme();
+  const reduceMotion = useReducedMotion();
   const { settings, projects } = useSiteContent();
   // Track carousel pause state for photo sections
   const [carouselPaused, setCarouselPaused] = React.useState<Record<string, boolean>>({});
@@ -136,13 +142,8 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
   const displaySections = React.useMemo(() => {
     const list = [...visibleSections];
     const rowOrder = [
-      'hero',
-      'connect',
-      'wordsmith',
       'photos',
       'side-project',
-      'projects',
-      'agent-dog',
       'video',
     ];
     return rowOrder
@@ -305,7 +306,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
         key={section.id} 
         data-card-id={section.id}
         data-cuelume-card-hover
-        className={`${baseStyles} ${bentoSize} group flex flex-col relative overflow-hidden`}
+        className={`${baseStyles} h-full w-full group flex flex-col relative overflow-hidden`}
         onClick={() => handleCardClick(section.id)}
         onMouseMove={(e) => {
           handleMouseMove(section.id, e);
@@ -318,9 +319,9 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             
             <CardHeader className="flex flex-col justify-center flex-shrink-0 relative z-10 pb-0 px-4 pt-4">
               <div className="mb-3">
-                <CardTitle className="text-[15px] font-medium tracking-tight text-foreground">
+                <CardTitle className="card-title-type">
                   <div className="flex items-center gap-2">
-                    <SectionIcon className="h-4 w-4 text-foreground/80 flex-shrink-0" />
+                    <SectionIcon className="h-4 w-4 text-primary flex-shrink-0" />
                     <span>Dev</span>
                   </div>
                 </CardTitle>
@@ -328,19 +329,19 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             </CardHeader>
             <CardContent className="relative z-10 flex flex-col gap-4 px-4 pb-4 pt-0 sm:flex-row sm:items-start h-full">
               <div className="flex-1 flex flex-col gap-3 justify-between h-full pb-4 sm:pb-8">
-                <div className="w-full max-w-[288px] min-w-0">
+                <div className="w-full max-w-[320px] min-w-0">
                   <HeroBio
                     variant="hero"
-                    className="text-[13px] leading-5 text-muted-foreground whitespace-pre-line"
+                    className="text-[14px] leading-[1.65] text-foreground/80 whitespace-pre-line"
                   />
                 </div>
-                <div className="flex flex-col gap-1 text-[13px] text-muted-foreground">
-                  <div className="flex items-center gap-3">
-                    <Globe className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span>{t('location')}</span>
+                <div className="flex flex-col gap-1.5 text-[13px] leading-relaxed">
+                  <div className="flex items-center gap-3 text-foreground/85">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    <span className="font-medium">{t('location')}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-muted-foreground transition-colors duration-200 group-hover:text-emerald-400">
-                    <Briefcase className="h-3.5 w-3.5 text-muted-foreground transition-colors duration-200 group-hover:text-emerald-400" />
+                  <div className="flex items-center gap-3 text-foreground/85 transition-colors duration-200 group-hover:text-primary">
+                    <Briefcase className="h-3.5 w-3.5 shrink-0 transition-colors duration-200 group-hover:text-primary" />
                     <span className="font-medium">{t('available')}</span>
                   </div>
                 </div>
@@ -375,7 +376,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           <Card
             key={section.id}
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-auto cursor-default group relative overflow-hidden`}
+            className={`${baseStyles} h-full w-full flex flex-col h-auto cursor-default group relative overflow-hidden`}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
           >
@@ -414,7 +415,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
         return (
           <div
             key={section.id}
-            className={`${bentoSize} flex min-h-0 flex-col gap-4`}
+            className="flex h-full min-h-0 flex-col gap-4"
           >
             <Card
               data-card-id={section.id}
@@ -460,7 +461,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           <Card
             key={section.id}
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-full cursor-default group relative overflow-hidden`}
+            className={`${baseStyles} h-full w-full flex flex-col h-full cursor-default group relative overflow-hidden`}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
           >
@@ -481,7 +482,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           <Card
             key={section.id}
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-full cursor-default group relative overflow-hidden`}
+            className={`${baseStyles} h-full w-full flex flex-col h-full cursor-default group relative overflow-hidden`}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
           >
@@ -536,7 +537,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           <Card
             key={section.id}
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-full cursor-default group relative overflow-hidden`}
+            className={`${baseStyles} h-full w-full flex flex-col h-full cursor-default group relative overflow-hidden`}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
           >
@@ -544,7 +545,6 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             <CardContent className="relative z-10 h-full p-0">
               <WordsmithCard
                 title={t('wordsmithCard.title')}
-                tagLabel={t('wordsmithCard.tag')}
                 yearLabel={t('wordsmithCard.year')}
                 description={t('wordsmithCard.description')}
               />
@@ -557,7 +557,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           <Card
             key={section.id}
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-full group relative overflow-hidden`}
+            className={`${baseStyles} h-full w-full flex flex-col h-full group relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
@@ -572,7 +572,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             <CardContent className="flex flex-col gap-3 relative z-10 flex-1">
               <HighlightedText
                 text={t('finshotsAward.story')}
-                className="text-[13px] text-muted-foreground/70 leading-relaxed"
+                className="text-[14px] text-muted-foreground leading-relaxed"
                 as="p"
               />
               <div className="relative w-full overflow-hidden rounded-xl border border-border/30 bg-secondary/20 aspect-[4/3]">
@@ -618,7 +618,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
               data-section="work"
               data-card-id={section.id}
               data-cuelume-card-hover
-              className={`${baseStyles} ${bentoSize} group relative flex flex-col overflow-hidden`}
+              className={`${baseStyles} h-full w-full group relative flex flex-col overflow-hidden`}
               onMouseMove={(e) => handleMouseMove(section.id, e)}
               onMouseLeave={() => handleMouseLeave(section.id)}
             >
@@ -641,7 +641,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           <Card 
             key={section.id} 
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
+            className={`${baseStyles} h-full w-full flex flex-col h-auto group relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
@@ -695,7 +695,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             id="work"
             data-section="work"
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex h-full min-h-0 flex-col cursor-default group relative overflow-hidden`}
+            className={`${baseStyles} h-full w-full flex h-full min-h-0 flex-col cursor-default group relative overflow-hidden`}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
           >
@@ -719,7 +719,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           <Card 
             key={section.id} 
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
+            className={`${baseStyles} h-full w-full flex flex-col h-auto group relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
@@ -764,7 +764,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           <Card 
             key={section.id} 
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
+            className={`${baseStyles} h-full w-full flex flex-col h-auto group relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
@@ -819,7 +819,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             key={section.id}
             data-card-id={section.id}
             data-cuelume-card-hover
-            className={`${baseStyles} ${bentoSize} flex flex-col h-full overflow-hidden group p-0`}
+            className={`${baseStyles} h-full w-full flex flex-col h-full overflow-hidden group p-0`}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseEnter={() => setCarouselPaused((prev) => ({ ...prev, [section.id]: true }))}
             onMouseLeave={() => {
@@ -854,14 +854,14 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
 
       case 'video': {
         const videoSrc = resolveDewVideoSrc(section.content);
-        const videoLink = section.links?.[0]?.url || 'https://medium.com/@devadhathanmd18/why-ai-needs-a-face-building-dew-my-duolingo-inspired-ai-character-2d4e56f94772';
+        const videoLink = section.links?.[0]?.url || DEW_MEDIUM_URL;
         const videoTitle = section.id === 'video' ? t('dewTitle') : (section.title || 'Video');
 
         return (
           <Card
             key={section.id}
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-full overflow-hidden group relative`}
+            className={`${baseStyles} h-full w-full flex flex-col h-full overflow-hidden group relative`}
             onClick={() => handleCardClick(section.id)}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => {
@@ -905,7 +905,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           <Card 
             key={section.id} 
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-auto group relative overflow-hidden`}
+            className={`${baseStyles} h-full w-full flex flex-col h-auto group relative overflow-hidden`}
             onClick={() => handleCardClick(section.id)}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
@@ -1000,7 +1000,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           <Card
             key={section.id}
             data-card-id={section.id}
-            className={`${baseStyles} ${bentoSize} flex flex-col h-full group relative overflow-hidden`}
+            className={`${baseStyles} h-full w-full flex flex-col h-full group relative overflow-hidden`}
             onMouseMove={(e) => handleMouseMove(section.id, e)}
             onMouseLeave={() => handleMouseLeave(section.id)}
           >
@@ -1024,20 +1024,81 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
   return (
     <>
       {!hideHeaderText && (
-        <div className="mb-8 md:mb-10 text-left pt-8 md:pt-10 lg:pt-14">
-          <h1
-            className="max-w-4xl whitespace-pre-line text-balance text-4xl sm:text-5xl md:text-[3.25rem] lg:text-6xl font-light text-foreground tracking-tight leading-[1.08] mb-10 md:mb-14 lg:mb-16"
-          >
-            {t('heroLine1')}
-          </h1>
-        </div>
+        <>
+          <HomeIntro className="mb-8 sm:mb-10 md:mb-12 lg:mb-14" />
+          <CaseStudiesList
+            className="mb-10 sm:mb-12 md:mb-16 lg:mb-20"
+            onProjectSelect={onProjectSelect}
+          />
+        </>
       )}
-      <div className="grid w-full grid-cols-1 gap-4 auto-rows-[minmax(0,auto)] pb-4 sm:grid-cols-2 md:pb-0 lg:grid-cols-3">
-        {displaySections.map((section, index) => renderSection(section, index))}
+      <div className="grid w-full grid-cols-1 gap-3 auto-rows-[minmax(0,auto)] pb-4 sm:grid-cols-2 sm:gap-4 md:pb-0 lg:grid-cols-3">
+        {displaySections.map((section, index) => {
+          const bentoSize = getBentoSize(section.priority, section.id, section.type, section.order);
+          return (
+            <motion.div
+              key={section.id}
+              className={`${bentoSize} min-h-0`}
+              initial={reduceMotion ? false : fadeUpSoft.initial}
+              animate={fadeUpSoft.animate}
+              transition={{
+                duration: 0.4,
+                delay:
+                  (reduceMotion ? 0 : getHomeAfterCaseStudiesDelay(projects.length + 1)) +
+                  Math.min(index, 10) * 0.04,
+                ease: easeOutExpo,
+              }}
+            >
+              {renderSection(section, index)}
+            </motion.div>
+          );
+        })}
       </div>
       
       {/* Detail Dialog - Exclude projects section */}
       <Dialog open={!!selectedSection && selectedSection.id !== 'projects'} onOpenChange={(open) => !open && setSelectedSection(null)}>
+        {selectedSection?.id === 'video' || selectedSection?.type === 'video' ? (
+          <DialogContent
+            hideClose
+            className="max-w-xl gap-0 overflow-hidden border-border/50 p-0 sm:rounded-2xl sm:max-w-2xl"
+          >
+            <DialogHeader className="sr-only">
+              <DialogTitle>{t('dewTitle')}</DialogTitle>
+              <DialogDescription>{t('readOnMedium')}</DialogDescription>
+            </DialogHeader>
+            <div className="relative w-full overflow-hidden bg-background">
+              <Image
+                src={DEW_MEDIUM_THUMB}
+                alt={t('dewTitle')}
+                width={1016}
+                height={655}
+                className="h-auto w-full"
+                sizes="(max-width: 768px) 100vw, 42rem"
+                priority
+              />
+              <DialogClose
+                className="absolute right-3 top-3 z-10 text-2xl leading-none text-foreground/70 transition-opacity hover:opacity-100 focus:outline-none"
+                aria-label="Close"
+              >
+                ×
+              </DialogClose>
+            </div>
+            <div className="flex justify-center px-6 py-6">
+              <a
+                href={selectedSection.links?.[0]?.url || DEW_MEDIUM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-cuelume-hover="tick"
+                data-cuelume-press
+                data-cuelume-release
+                className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90"
+              >
+                {t('readOnMedium')}
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </div>
+          </DialogContent>
+        ) : (
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           {selectedSection && selectedSection.id !== 'projects' && (
             <>
@@ -1261,7 +1322,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 )}
 
                 {/* Generic content for other sections */}
-                {!['hero', 'finshots-award', 'about', 'experience', 'contact', 'connect'].includes(selectedSection.id) && selectedSection.content && (
+                {!['hero', 'finshots-award', 'about', 'experience', 'contact', 'connect', 'video'].includes(selectedSection.id) && selectedSection.content && (
                   <div>
                     <h4 className="font-medium mb-2 text-base">Details</h4>
                     <div className="text-sm text-muted-foreground leading-relaxed prose dark:prose-invert prose-sm max-w-none">
@@ -1294,6 +1355,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             </>
           )}
         </DialogContent>
+        )}
       </Dialog>
     </>
   );

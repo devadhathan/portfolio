@@ -145,7 +145,7 @@ const PROJECT_DEFAULT_CARD_IDS: Record<string, string[]> = {
     'case:crm-redesign:project',
     'case:crm-redesign:impact',
     'stat:efficiency',
-    'image:crm',
+    'video:crm-prototype',
   ],
   'onboarding-redesign': [
     'case:onboarding-redesign:project',

@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Send, User, RotateCcw, ChevronDown, Smile, ChevronsRight } from 'lucide-react';
 import { AskAIPanel } from '@/components/ask-ai-panel';
+import { AnimatePresence } from 'framer-motion';
 import { Sheet, SheetContent, SheetClose } from '@/components/ui/sheet';
 import { PortfolioAgent, AgentState, PortfolioSection } from '@/lib/agent';
 import { resumeData } from '@/lib/resume-data';
@@ -218,6 +219,8 @@ interface SideAgentProps {
   resetRef?: React.MutableRefObject<(() => void) | null>;
   externalCollapsed?: boolean;
   variant?: 'floating' | 'sidebar';
+  /** Render chat filling parent (desktop OS window) instead of fixed rail. */
+  embedded?: boolean;
 }
 
 // --- 1. RICH CONTENT DATABASE (Source of Truth) ---
@@ -350,6 +353,7 @@ export function SideAgent({
   resetRef,
   externalCollapsed,
   variant = 'floating',
+  embedded = false,
 }: SideAgentProps) {
   const [agent] = useState(() => new PortfolioAgent());
   const [state, setState] = useState<AgentState>(agent.getState());
@@ -816,30 +820,36 @@ export function SideAgent({
   return (
     <>
       {/* Desktop chat */}
-      {mounted && !isCollapsed && (
-        variant === 'sidebar' ? (
-          <AskAIPanel
-            onClose={handleCollapseToggle}
-            promptLimitLabel={promptLimitLabel}
-            input={input}
-            inputDisabled={inputDisabled}
-            sendDisabled={sendDisabled}
-            suggestionsDisabled={suggestionsDisabled}
-            inputPlaceholder={inputPlaceholder}
-            onInputChange={setInput}
-            onSubmit={() => handleCommand(input)}
-            onKeyDown={handleKeyPress}
-            inputRef={inputRef}
-            onSuggestionClick={handleCommand}
-            emptyState={emptyState}
-            showSuggestionChips={showSuggestionChips}
-            messagesEndRef={messagesEndRef}
-          >
-            {messages.map((message, index) => (
-              <MessageBubble key={index} message={message} />
-            ))}
-          </AskAIPanel>
-        ) : (
+      {mounted && (
+        <AnimatePresence>
+          {!isCollapsed && variant === 'sidebar' ? (
+            <AskAIPanel
+              key="ask-ai-panel"
+              embedded={embedded}
+              onClose={handleCollapseToggle}
+              promptLimitLabel={promptLimitLabel}
+              input={input}
+              inputDisabled={inputDisabled}
+              sendDisabled={sendDisabled}
+              suggestionsDisabled={suggestionsDisabled}
+              inputPlaceholder={inputPlaceholder}
+              onInputChange={setInput}
+              onSubmit={() => handleCommand(input)}
+              onKeyDown={handleKeyPress}
+              inputRef={inputRef}
+              onSuggestionClick={handleCommand}
+              emptyState={emptyState}
+              showSuggestionChips={showSuggestionChips}
+              messagesEndRef={messagesEndRef}
+            >
+              {messages.map((message, index) => (
+                <MessageBubble key={index} message={message} />
+              ))}
+            </AskAIPanel>
+          ) : null}
+        </AnimatePresence>
+      )}
+      {mounted && !isCollapsed && variant !== 'sidebar' ? (
         <div className="fixed z-40 hidden lg:block bottom-8 right-6">
           <style>{`
             @keyframes corb1 {
@@ -1046,8 +1056,7 @@ export function SideAgent({
             </div>
           </div>
         </div>
-        )
-      )}
+      ) : null}
       
       {/* Mobile Chat - Bottom Sheet (floating variant only; Ask AI sidebar is desktop-only) */}
       {isMobile && variant !== 'sidebar' && (

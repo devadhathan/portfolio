@@ -6,12 +6,16 @@
   "nav": {
     "home": "Home",
     "about": "Home",
+    "aboutMe": "About me",
+    "caseStudies": "Case studies",
     "work": "Work",
     "contact": "Contact",
     "playground": "Playground",
     "projects": "Projects",
     "openProjectList": "Open project list",
-    "askAI": "Ask AI"
+    "askAI": "Ask AI",
+    "games": "Games",
+    "photos": "Photos"
   },
   "locale": {
     "label": "Language",
@@ -20,8 +24,18 @@
   "home": {
     "digitalHome": "Dev's digital home",
     "heroLine1": "Designer building experiences for humans.",
-    "devBio": "I design interfaces for the computer and experiences for the people.\n\nFour years in product design. Most recently <wordsmith>Wordsmith AI</wordsmith>, before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>.\n\nI think about interfaces and <i>what tickles us</i>. Research to find <i>the whys</i>, then obsess over details.\n\nBuilding something <i>simple, but better</i>.",
-    "devBioHero": "I design interfaces for the computer and experiences for the people.\n\nFour years in product design. Most recently <wordsmith>Wordsmith AI</wordsmith>, before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>.\n\nI think about interfaces and <i>what tickles us</i>. Research to find <i>the whys</i>, then obsess over details.\n\nBuilding something <i>simple, but better</i>.",
+    "intro": {
+      "name": "Devadhathan M D",
+      "updatedFallback": "Updated recently",
+      "p1": "I design interfaces for the computer and experiences for the people.",
+      "p2": "Most recently <wordsmith>Wordsmith AI</wordsmith>, before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>.",
+      "p3": "I think about interfaces and <i>what tickles us</i>. Research to find <i>the whys</i>, then obsess over details.",
+      "p4": "Building something <i>simple, but better</i>.",
+      "p5": "Based in Edinburgh. Available for work.",
+      "p6": "You can find me on <x>X</x>, <linkedin>LinkedIn</linkedin>, or reach me via <email>email</email>."
+    },
+    "devBio": "I design interfaces for the computer and experiences for the people.\n\nMost recently <wordsmith>Wordsmith AI</wordsmith>, before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>.\n\nI think about interfaces and <i>what tickles us</i>. Research to find <i>the whys</i>, then obsess over details.\n\nBuilding something <i>simple, but better</i>.",
+    "devBioHero": "I design interfaces for the computer and experiences for the people.\n\nMost recently <wordsmith>Wordsmith AI</wordsmith>, before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>.\n\nI think about interfaces and <i>what tickles us</i>. Research to find <i>the whys</i>, then obsess over details.\n\nBuilding something <i>simple, but better</i>.",
     "location": "Based in Edinburgh",
     "available": "Available for work",
     "availableOpportunities": "Available for opportunities",
@@ -77,8 +91,8 @@
       },
       "nesoi": {
         "title": "Nesoi.ai",
-        "description": "From form wizard to AI partner — turning internal material into interactive training for enterprise teams.",
-        "status": "Case study"
+        "description": "From form wizard to AI partner. Turning internal material into interactive training for enterprise teams.",
+        "status": "2025"
       }
     },
     "musicNotch": {
@@ -195,6 +209,12 @@
       }
     },
     "items": {
+      "botOrb": {
+        "title": "Bot orb",
+        "question": "A face for the agent — gaze, blink, and presence on a phone screen.",
+        "tags": ["Character", "Motion", "React"],
+        "accessibilityLabel": "Interactive bot orb on a phone screen"
+      },
       "dewAi": {
         "title": "Dew AI",
         "question": "An interactive AI character — a face for conversation, built with Whisper from ChatGPT, SwiftUI, Rive, and Xcode.",

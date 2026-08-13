@@ -116,11 +116,11 @@ export function MusicNotchCard({ title, comingSoon, tagline, tagLabel, previewOn
     >
       <div className="shrink-0 px-4 pt-4 pb-2">
         <div className="flex max-w-full flex-wrap items-center gap-2">
-          <span className="text-[15px] font-medium tracking-tight text-foreground">{title}</span>
-          {tagLabel ? <CardTag tone="glass">{tagLabel}</CardTag> : null}
-          <CardTag tone="amber">{comingSoon}</CardTag>
+          <span className="card-title-type">{title}</span>
+          {tagLabel ? <CardTag>{tagLabel}</CardTag> : null}
+          <CardTag>{comingSoon}</CardTag>
         </div>
-        {tagline ? <p className="mt-4 text-[13px] leading-5 text-muted-foreground/60">{tagline}</p> : null}
+        {tagline ? <p className="card-body-type mt-4">{tagline}</p> : null}
       </div>
 
       <div className="mt-auto px-4 pb-4 pt-2">

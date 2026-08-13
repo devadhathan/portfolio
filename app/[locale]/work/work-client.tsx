@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useRouter } from '@/i18n/navigation';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
@@ -12,6 +13,8 @@ import { ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useRegisterNavActions } from '@/contexts/nav-actions-context';
 import type { Project } from '@/lib/types/project';
 import { getProjectId, normalizeProjectSlug } from '@/lib/types/project';
+import { blurFadeUp, defaultTransition, easeOutExpo, fadeSlideUp } from '@/lib/motion';
+import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
 
 const ProjectDetailView = dynamic(
   () => import('@/components/project-detail-view').then(mod => ({ default: mod.ProjectDetailView })),
@@ -46,6 +49,9 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
   const t = useTranslations('work');
   const router = useRouter();
   const searchParams = useSearchParams();
+  const reduceMotion = useReducedMotion();
+  const desktopOs = useDesktopOsOptional();
+  const embedded = Boolean(desktopOs?.enabled);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
 
@@ -59,8 +65,12 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
   };
 
   const handleHomeClick = useCallback(() => {
+    if (desktopOs?.enabled) {
+      desktopOs.openWindow('home');
+      return;
+    }
     router.push('/');
-  }, [router]);
+  }, [router, desktopOs]);
 
   useRegisterNavActions({
     onHomeClick: handleHomeClick,
@@ -94,15 +104,35 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
   }, [selectedProject]);
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      <div className="flex pt-14 relative z-10">
-        <div className="flex-1 py-4 md:py-6 lg:py-8 pb-20 md:pb-24 lg:pb-8 overflow-x-hidden">
+    <div
+      className={`overflow-x-hidden bg-background ${
+        embedded ? 'min-h-0 bg-transparent' : 'min-h-screen lg:min-h-0 lg:bg-transparent'
+      }`}
+    >
+      <div className={`relative z-10 flex ${embedded ? 'pt-0' : 'pt-14 lg:pt-0'}`}>
+        <div
+          className={`flex-1 overflow-x-hidden ${
+            embedded ? 'py-4 pb-8' : 'py-4 md:py-6 lg:py-8 pb-20 md:pb-24 lg:pb-8'
+          }`}
+        >
+          <AnimatePresence mode="wait">
           {selectedProject ? (
-            <div className="px-4 md:px-6 lg:px-8">
+            <motion.div
+              key={`work-case-${selectedProject}`}
+              className="px-4 md:px-6 lg:px-8"
+              initial={reduceMotion ? false : fadeSlideUp.initial}
+              animate={fadeSlideUp.animate}
+              exit={fadeSlideUp.exit}
+              transition={defaultTransition}
+            >
               <div className="flex flex-col lg:flex-row gap-6 max-w-[1600px] mx-auto relative">
-            <div className="lg:fixed lg:left-8 lg:top-0 lg:w-64 lg:pr-4 w-full pr-0 h-auto z-40 hidden lg:block">
-              <div className="pt-20">
-                <div className="sticky top-20 z-50 p-4 pt-6">
+            <div
+              className={`w-full pr-0 h-auto z-40 hidden lg:block lg:w-64 lg:pr-4 ${
+                embedded ? 'lg:sticky lg:top-0 lg:self-start' : 'lg:fixed lg:left-8 lg:top-0'
+              }`}
+            >
+              <div className={embedded ? 'pt-4' : 'pt-20'}>
+                <div className={`p-4 pt-6 ${embedded ? '' : 'sticky top-20 z-50'}`}>
                   <Button
                     onClick={() => setSelectedProject(null)}
                     variant="ghost"
@@ -232,10 +262,17 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                 hideBackButton={true}
               />
             </div>
-          </div>
             </div>
+            </motion.div>
         ) : (
-          <div className="max-w-[1500px] mx-auto">
+          <motion.div
+            key="work-grid"
+            className="max-w-[1500px] mx-auto"
+            initial={reduceMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reduceMotion ? undefined : { opacity: 0 }}
+            transition={defaultTransition}
+          >
             <div className="mx-0 px-4 sm:mx-4 sm:px-5 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-[70px] xl:px-[90px]">
             <div className="mb-8 md:mb-10 text-left pt-8 md:pt-10 lg:pt-14">
               <h1 className="max-w-4xl whitespace-pre-line text-balance text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem] font-light text-foreground tracking-tight leading-[1.1] mb-8 md:mb-10 lg:mb-12">
@@ -253,19 +290,87 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                     {otherProjects.slice(0, 4).map((project, index) => {
                       const projectId = getProjectId(project.title);
                       return (
-                        <Card
+                        <motion.div
                           key={`other-${index}`}
+                          className="col-span-1 h-full min-h-0"
+                          initial={reduceMotion ? false : blurFadeUp.initial}
+                          animate={blurFadeUp.animate}
+                          transition={{
+                            duration: 0.55,
+                            delay: Math.min(index, 10) * 0.06,
+                            ease: easeOutExpo,
+                          }}
+                        >
+                          <Card
+                            data-cuelume-hover="tick"
+                            data-cuelume-press
+                            data-cuelume-release
+                            className="rounded-2xl border border-border/55 bg-card text-foreground cursor-pointer hover:border-border/80 transition-all group overflow-hidden h-full flex flex-col dark:border-border/40"
+                            onClick={() => setSelectedProject(projectId)}
+                          >
+                            <div className="flex flex-col h-full">
+                              <div className="relative w-full h-64 md:h-72 lg:h-80 bg-secondary/30 border-b border-border/40 overflow-hidden flex-shrink-0">
+                                <Image
+                                  src={getProjectThumbnail(project)}
+                                  alt={project.title}
+                                  fill
+                                  loading="lazy"
+                                  className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+                                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                />
+                              </div>
+                              <CardHeader className="pb-2 pt-3 px-4 flex-shrink-0">
+                                <CardTitle className="text-[16px] md:text-[17px]">
+                                  <span className="line-clamp-1">{project.title}</span>
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="flex flex-col gap-2 px-4 pb-4 pt-0 flex-1 justify-between">
+                                <div className="flex flex-wrap items-center gap-2 text-[11px] md:text-[12px] text-muted-foreground">
+                                  {project.type && (
+                                    <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] md:text-[12px]">
+                                      {project.type}
+                                    </span>
+                                  )}
+                                  {(project.company || project.institution) && (
+                                    <span className="truncate text-[11px] md:text-[12px]">
+                                      {project.company || project.institution}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-[13px] md:text-[14px] text-muted-foreground leading-relaxed line-clamp-2">
+                                  {getProjectSummary(project)}
+                                </p>
+                              </CardContent>
+                            </div>
+                          </Card>
+                        </motion.div>
+                      );
+                    })}
+
+                    {finshotsProject && (
+                      <motion.div
+                        key="finshots"
+                        className="col-span-1 lg:col-start-3 lg:col-span-1 lg:row-start-1 lg:row-span-2 h-full min-h-0"
+                        initial={reduceMotion ? false : blurFadeUp.initial}
+                        animate={blurFadeUp.animate}
+                        transition={{
+                          duration: 0.55,
+                          delay: 0.06,
+                          ease: easeOutExpo,
+                        }}
+                      >
+                        <Card
                           data-cuelume-hover="tick"
                           data-cuelume-press
                           data-cuelume-release
-                          className="col-span-1 rounded-2xl border border-border/55 bg-card text-foreground cursor-pointer hover:border-border/80 transition-all group overflow-hidden h-full flex flex-col dark:border-border/40"
-                          onClick={() => setSelectedProject(projectId)}
+                          className="rounded-2xl border border-border/55 bg-card text-foreground cursor-pointer hover:border-border/80 transition-all group overflow-hidden h-full flex flex-col dark:border-border/40"
+                          onClick={() => setSelectedProject(getProjectId(finshotsProject.title))}
                         >
                           <div className="flex flex-col h-full">
-                            <div className="relative w-full h-64 md:h-72 lg:h-80 bg-secondary/30 border-b border-border/40 overflow-hidden flex-shrink-0">
+                            <div className="relative w-full h-64 sm:h-80 md:h-96 lg:h-[700px] bg-secondary/30 border-b border-border/40 overflow-hidden flex-shrink-0">
                               <Image
-                                src={getProjectThumbnail(project)}
-                                alt={project.title}
+                                src={getProjectThumbnail(finshotsProject)}
+                                alt={finshotsProject.title}
                                 fill
                                 loading="lazy"
                                 className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
@@ -274,83 +379,38 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                             </div>
                             <CardHeader className="pb-2 pt-3 px-4 flex-shrink-0">
                               <CardTitle className="text-[16px] md:text-[17px]">
-                                <span className="line-clamp-1">{project.title}</span>
+                                <span className="line-clamp-1">{finshotsProject.title}</span>
                               </CardTitle>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-2 px-4 pb-4 pt-0 flex-1 justify-between">
                               <div className="flex flex-wrap items-center gap-2 text-[11px] md:text-[12px] text-muted-foreground">
-                                {project.type && (
+                                {finshotsProject.type && (
                                   <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] md:text-[12px]">
-                                    {project.type}
+                                    {finshotsProject.type}
                                   </span>
                                 )}
-                                {(project.company || project.institution) && (
+                                {(finshotsProject.company || finshotsProject.institution) && (
                                   <span className="truncate text-[11px] md:text-[12px]">
-                                    {project.company || project.institution}
+                                    {finshotsProject.company || finshotsProject.institution}
                                   </span>
                                 )}
                               </div>
-                              <p className="text-[13px] md:text-[14px] text-muted-foreground leading-relaxed line-clamp-2">
-                                {getProjectSummary(project)}
+                              <p className="text-[13px] md:text-[14px] text-muted-foreground leading-relaxed line-clamp-3">
+                                {getProjectSummary(finshotsProject)}
                               </p>
                             </CardContent>
                           </div>
                         </Card>
-                      );
-                    })}
-
-                    {finshotsProject && (
-                      <Card
-                        key="finshots"
-                        data-cuelume-hover="tick"
-                        data-cuelume-press
-                        data-cuelume-release
-                        className="col-span-1 lg:col-start-3 lg:col-span-1 lg:row-start-1 lg:row-span-2 rounded-2xl border border-border/55 bg-card text-foreground cursor-pointer hover:border-border/80 transition-all group overflow-hidden h-full flex flex-col dark:border-border/40"
-                        onClick={() => setSelectedProject(getProjectId(finshotsProject.title))}
-                      >
-                        <div className="flex flex-col h-full">
-                          <div className="relative w-full h-64 sm:h-80 md:h-96 lg:h-[700px] bg-secondary/30 border-b border-border/40 overflow-hidden flex-shrink-0">
-                            <Image
-                              src={getProjectThumbnail(finshotsProject)}
-                              alt={finshotsProject.title}
-                              fill
-                              loading="lazy"
-                              className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            />
-                          </div>
-                          <CardHeader className="pb-2 pt-3 px-4 flex-shrink-0">
-                            <CardTitle className="text-[16px] md:text-[17px]">
-                              <span className="line-clamp-1">{finshotsProject.title}</span>
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="flex flex-col gap-2 px-4 pb-4 pt-0 flex-1 justify-between">
-                            <div className="flex flex-wrap items-center gap-2 text-[11px] md:text-[12px] text-muted-foreground">
-                              {finshotsProject.type && (
-                                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] md:text-[12px]">
-                                  {finshotsProject.type}
-                                </span>
-                              )}
-                              {(finshotsProject.company || finshotsProject.institution) && (
-                                <span className="truncate text-[11px] md:text-[12px]">
-                                  {finshotsProject.company || finshotsProject.institution}
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-[13px] md:text-[14px] text-muted-foreground leading-relaxed line-clamp-3">
-                              {getProjectSummary(finshotsProject)}
-                            </p>
-                          </CardContent>
-                        </div>
-                      </Card>
+                      </motion.div>
                     )}
                   </>
                 );
               })()}
             </div>
             </div>
-          </div>
-        )}
+          </motion.div>
+          )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
@@ -360,7 +420,7 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
 function WorkPageFallback() {
   const t = useTranslations('work');
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="flex min-h-screen items-center justify-center bg-background lg:min-h-[50vh] lg:bg-transparent">
       <div className="animate-pulse text-muted-foreground">{t('loading')}</div>
     </div>
   );
