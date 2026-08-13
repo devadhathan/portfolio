@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import { ArrowUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useSiteContent } from '@/components/site-content-provider';
 import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
@@ -84,7 +85,6 @@ type ListItem = {
   year: number;
   dateLabel: string;
   sortKey: number;
-  isNew: boolean;
   /** Opens Wordsmith OS window when Desktop OS is on. */
   openWordsmith?: boolean;
   href?: string;
@@ -96,7 +96,6 @@ const WORDSMITH_ITEM: ListItem = {
   year: 2026,
   dateLabel: '01/06',
   sortKey: 2026 * 100 + 6,
-  isNew: true,
   openWordsmith: true,
   href: 'https://www.wordsmith.ai/products/blueprints',
 };
@@ -112,7 +111,6 @@ function buildItems(projects: Project[]): ListItem[] {
         year: meta.year,
         dateLabel: meta.dateLabel,
         sortKey: meta.sortKey,
-        isNew: false,
       };
     });
 
@@ -195,14 +193,15 @@ export function CaseStudiesList({ onProjectSelect, className }: CaseStudiesListP
               <span className="text-[13px] tabular-nums text-muted-foreground sm:text-sm">
                 {year && year > 0 ? year : ''}
               </span>
-              <span className="inline-flex min-w-0 flex-wrap items-center gap-2">
+              <span className="inline-flex min-w-0 flex-wrap items-center gap-1.5">
                 <span className="text-[14px] font-medium text-foreground transition-colors group-hover:text-foreground/80 sm:text-[15px]">
                   {item.title}
                 </span>
-                {item.isNew ? (
-                  <span className="rounded-full border border-orange-500/80 px-1.5 py-px text-[10px] font-medium leading-none text-orange-500">
-                    New
-                  </span>
+                {item.openWordsmith ? (
+                  <ArrowUpRight
+                    className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground/80"
+                    aria-hidden
+                  />
                 ) : null}
               </span>
               <span className="text-[13px] tabular-nums text-muted-foreground sm:text-sm">

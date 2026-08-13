@@ -3,12 +3,15 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { useSiteContent } from '@/components/site-content-provider';
+import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
+import { OsBackButton } from '@/components/os-back-button';
 import {
   DESKTOP_LINK_ICONS,
   GAMES_EMBED_URL,
   WORDSMITH_EMBED_URL,
   type DesktopLinkIconId,
 } from '@/lib/desktop-os';
+import { cn } from '@/lib/utils';
 
 /**
  * Window body adapters — mount page UIs inside OS windows.
@@ -82,12 +85,17 @@ export function EmbedWindowBody({
   allow = 'clipboard-read; clipboard-write',
   embeddable = true,
   thumbnail,
+  openLabel,
+  thumbnailClassName,
 }: {
   title: string;
   href: string;
   allow?: string;
   embeddable?: boolean;
   thumbnail?: string;
+  /** CTA when embeddable is false. Defaults to "Open {title}". */
+  openLabel?: string;
+  thumbnailClassName?: string;
 }) {
   const [shouldLoad, setShouldLoad] = useState(false);
 
@@ -109,7 +117,10 @@ export function EmbedWindowBody({
           <img
             src={thumbnail}
             alt=""
-            className="h-auto w-full max-w-md rounded-2xl object-cover shadow-[0_12px_40px_-16px_hsl(0_0%_0%_/_0.45)]"
+            className={cn(
+              'h-auto w-full rounded-2xl object-cover shadow-[0_12px_40px_-16px_hsl(0_0%_0%_/_0.45)]',
+              thumbnailClassName ?? 'max-w-md',
+            )}
           />
         ) : null}
         <a
@@ -118,7 +129,7 @@ export function EmbedWindowBody({
           rel="noopener noreferrer"
           className="rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
         >
-          Open on Medium
+          {openLabel ?? `Open ${title}`}
         </a>
       </div>
     );
@@ -191,7 +202,30 @@ export function GamesWindowBody() {
 }
 
 export function WordsmithWindowBody() {
-  return <EmbedWindowBody title="Wordsmith AI" href={WORDSMITH_EMBED_URL} />;
+  const desktopOs = useDesktopOsOptional();
+
+  // Wordsmith CSP: frame-ancestors 'self' studio.wordsmith.ai localhost:* —
+  // staging/prod portfolios cannot iframe it (localhost works).
+  return (
+    <div className="relative h-full min-h-0" data-os-embedded="true">
+      {desktopOs?.enabled ? (
+        <div className="absolute left-4 top-3 z-10 sm:left-5 sm:top-4">
+          <OsBackButton
+            onClick={() => desktopOs.openWindow('home', { syncUrl: false })}
+            aria-label="Back to Home"
+          />
+        </div>
+      ) : null}
+      <EmbedWindowBody
+        title="Wordsmith AI"
+        href={WORDSMITH_EMBED_URL}
+        embeddable={false}
+        thumbnail="/photos/wordsmith-preview.png"
+        thumbnailClassName="max-w-3xl sm:max-w-4xl"
+        openLabel="Open Wordsmith"
+      />
+    </div>
+  );
 }
 
 export function TrashWindowBody() {
@@ -310,6 +344,7 @@ export function createLinkWindowBody(id: DesktopLinkIconId) {
         href={link.href}
         embeddable={link.embeddable !== false}
         thumbnail={link.thumbnail}
+        openLabel={link.openLabel}
       />
     );
   };

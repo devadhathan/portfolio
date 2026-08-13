@@ -50,6 +50,8 @@ export type DesktopLinkIcon = {
   embeddable?: boolean;
   /** Preview image used when embeddable is false. */
   thumbnail?: string;
+  /** CTA label when embeddable is false. */
+  openLabel?: string;
 };
 
 export const GAMES_EMBED_URL = 'https://puzzlegig.vercel.app';
@@ -64,6 +66,7 @@ export const DESKTOP_LINK_ICONS: DesktopLinkIcon[] = [
     // Medium refuses iframe embedding (X-Frame-Options / CSP).
     embeddable: false,
     thumbnail: '/videos/dew-medium-thumb.jpg',
+    openLabel: 'Open on Medium',
   },
   {
     id: 'catalystic',
