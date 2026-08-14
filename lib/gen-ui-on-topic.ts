@@ -30,8 +30,18 @@ const LAYOUT_TOPIC =
 const ANSWERABLE_INTENT =
   /\b(skill|tools?|expertise|stack|impact|metrics?|numbers?|results?|measurable|strongest|best work|top work|award|flagship|ship code|production code|designer.?engineer|why hire|hire (?:him|dev)|certifications?|certs?|awards?|resume|cv|gen ui|gen-ui|this site|this page|how does this work|how do i use|playground|prototype|figma|cursor|claude|framer|developer|engineer|shipped|timeline|background|fintech|insurance|portfolio|project|work|design|ux|ui|product)\b/i;
 
-const ABOUT_DEV =
-  /\b(about|who is|introduce)\b.*\b(dev|him|he|designer)\b|\babout dev\b/i;
+/** Explicit bio / intro asks only — not "about his impact" or "projects he shipped". */
+export function isAboutDevQuery(prompt: string): boolean {
+  const p = prompt.trim().toLowerCase();
+  if (!p) return false;
+  if (/\bwho(?:'s| is)\s+(?:he|dev|devadhathan)\b/.test(p)) return true;
+  if (/\b(?:tell me )?about\s+(?:dev|him|devadhathan)(?:\s|$|[?.!,'])/.test(p)) return true;
+  if (/\bintroduce\s+(?:me\s+to\s+)?(?:him|dev|devadhathan)\b/.test(p)) return true;
+  if (/\bwhat(?:'s| is)\s+(?:his|dev(?:adhathan)?(?:'s)?)\s+(?:background|story|bio)\b/.test(p)) {
+    return true;
+  }
+  return false;
+}
 
 export function hasKnownPortfolioIntent(prompt: string): boolean {
   const trimmed = prompt.trim();
@@ -47,7 +57,7 @@ export function hasKnownPortfolioIntent(prompt: string): boolean {
   if (isSpecificTopicQuery(trimmed)) return true;
   if (isCaseStudyQuery(trimmed)) return true;
   if (LAYOUT_TOPIC.test(trimmed)) return true;
-  if (ABOUT_DEV.test(trimmed)) return true;
+  if (isAboutDevQuery(trimmed)) return true;
   if (ANSWERABLE_INTENT.test(trimmed)) return true;
   if (/\b(finshots|nesoi|falcon|crm|ditto|onboarding|wordsmith)\b/i.test(trimmed)) return true;
 

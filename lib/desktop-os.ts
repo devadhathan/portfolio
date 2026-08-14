@@ -82,6 +82,13 @@ export const DESKTOP_LINK_ICONS: DesktopLinkIcon[] = [
 
 export const DESKTOP_LINK_ICON_IDS: DesktopLinkIconId[] = DESKTOP_LINK_ICONS.map((i) => i.id);
 
+/** Bait file that lives in Trash — earnest thumbnail, classic link. */
+export const TRASH_BAIT_VIDEO = {
+  title: 'Three mistakes in my life',
+  href: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+  thumbnail: '/photos/Cafe-laptop.png',
+} as const;
+
 export const DESKTOP_WINDOW_IDS: DesktopWindowId[] = [
   'home',
   'work',

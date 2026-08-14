@@ -25,7 +25,7 @@ export function OsWindow({ id, title, children }: OsWindowProps) {
   return (
     <div
       className={cn(
-        'os-window absolute flex flex-col overflow-hidden rounded-2xl border border-border/40',
+        'os-window absolute flex flex-col overflow-hidden rounded-2xl border border-border/40 isolate',
         focusedId === id && isOpen && 'os-window--focused',
         win.covered ? 'os-window--covered' : 'os-window--stage-max',
         !isOpen && 'os-window--closed',

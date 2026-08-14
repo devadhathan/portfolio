@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
+import { useOrbHatEmoji } from '@/lib/orb-hat';
 import { cn } from '@/lib/utils';
 
 type AgentOrbProps = {
@@ -11,6 +12,11 @@ type AgentOrbProps = {
   onClick?: () => void;
   /** When set, pupils lock to this offset instead of random gaze. */
   lookAt?: { x: number; y: number } | null;
+  /**
+   * Optional hat emoji sits on top of the head (eyes stay).
+   * Omit to use the persisted hat; pass `null` to force no hat.
+   */
+  hatEmoji?: string | null;
 };
 
 const SIZE = { xs: 28, sm: 40, md: 56, lg: 72, xl: 96, '2xl': 128 } as const;
@@ -22,12 +28,18 @@ export function AgentOrb({
   creating = false,
   onClick,
   lookAt = null,
+  hatEmoji,
 }: AgentOrbProps) {
   const orbRef = useRef<HTMLButtonElement>(null);
   const filterId = useId().replace(/:/g, '');
   const [orbPupil, setOrbPupil] = useState({ x: 0, y: 0 });
   const [orbBlink, setOrbBlink] = useState(false);
+  const [storedHat] = useOrbHatEmoji();
   const px = SIZE[size];
+  const resolvedHat = hatEmoji === undefined ? storedHat : hatEmoji;
+  const showHat = Boolean(resolvedHat?.trim());
+  const hatSize =
+    size === 'xs' ? 14 : size === 'sm' ? 18 : size === 'md' ? 24 : size === 'lg' ? 30 : size === 'xl' ? 38 : 46;
 
   useEffect(() => {
     if (lookAt != null) return;
@@ -166,10 +178,25 @@ export function AgentOrb({
 
   const orbShell = (
     <div
-      className="relative rounded-full overflow-hidden flex-shrink-0"
+      className="relative flex-shrink-0 overflow-visible"
       style={{ width: px, height: px }}
     >
-      {orbBody}
+      {showHat ? (
+        <div
+          className="pointer-events-none absolute left-1/2 z-10 select-none"
+          aria-hidden
+          style={{
+            top: `-${Math.round(hatSize * 0.55)}px`,
+            fontSize: hatSize,
+            lineHeight: 1,
+            transform: 'translateX(-50%)',
+            filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.35))',
+          }}
+        >
+          {resolvedHat}
+        </div>
+      ) : null}
+      <div className="relative h-full w-full overflow-hidden rounded-full">{orbBody}</div>
     </div>
   );
 

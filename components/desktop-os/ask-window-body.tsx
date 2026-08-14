@@ -87,7 +87,7 @@ export function AskWindowBody() {
     <div className="os-window-content flex h-full min-h-0 flex-col overflow-hidden" data-os-embedded="true">
       <GenUIModeShell
         embedded
-        orbSize="lg"
+        orbSize="sm"
         subheadPlacement="below-chips"
         viewports={genUIViewports}
         activeViewportId={activeViewportId}
@@ -98,7 +98,7 @@ export function AskWindowBody() {
         promptCount={genUIPrompt.promptCount}
         promptLimitLoaded={genUIPrompt.promptLimitLoaded}
         hideMobileNav
-        headline="What would you like to explore?"
+        brandLabel="Ask AI"
         subhead=""
         onSubmit={genUIPrompt.submitPrompt}
         onActiveChange={setActiveViewportId}

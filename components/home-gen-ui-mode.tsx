@@ -106,6 +106,14 @@ export default function HomeGenUIMode({
     onStateChange,
   });
 
+  const handleBackToAsk = useCallback(() => {
+    setGenUIViewports([]);
+    setActiveViewportId(null);
+    setScrollToViewportId(null);
+    setIsAgentWorking(false);
+    genUIPrompt.reset();
+  }, [genUIPrompt.reset]);
+
   if (selectedProject) {
     return (
       <motion.div
@@ -159,11 +167,13 @@ export default function HomeGenUIMode({
         promptCount={genUIPrompt.promptCount}
         promptLimitLoaded={genUIPrompt.promptLimitLoaded}
         hideMobileNav
-        headline="What would you like to explore?"
+        showSidebar
+        brandLabel="Ask AI"
         subhead="Ask about my work — I'll build a custom view."
         onSubmit={genUIPrompt.submitPrompt}
         onActiveChange={setActiveViewportId}
         onCaseStudySelect={onSelectProject}
+        onBack={handleBackToAsk}
       />
     </div>
   );

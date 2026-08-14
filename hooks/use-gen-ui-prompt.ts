@@ -5,11 +5,18 @@ import { PortfolioAgent, type AgentState } from '@/lib/agent';
 import type { LayoutActionCommand } from '@/lib/agent-loop';
 import { resolveCardIds } from '@/lib/gen-ui-registry';
 import type { GenUIItem } from '@/lib/gen-ui-registry';
-import { enrichGenUIItems, isWordsmithQuery, stripMarkdown, WORDSMITH_LOCKED_MESSAGE } from '@/lib/enrich-gen-ui';
-import { inferGenUIBuild } from '@/lib/infer-gen-ui-build';
+import {
+  enrichGenUIItems,
+  formatLeadSummary,
+  isWordsmithQuery,
+  stripMarkdown,
+  WORDSMITH_LOCKED_MESSAGE,
+} from '@/lib/enrich-gen-ui';
+import { agentWasClarifying, inferGenUIBuild } from '@/lib/infer-gen-ui-build';
 import {
   isOffTopicGenUIPrompt,
   isInsufficientContextQuery,
+  isAboutDevQuery,
   offTopicGenUIMessage,
   offTopicGenUITitle,
   insufficientContextMessage,
@@ -183,9 +190,41 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
         });
 
         const wordsmithQuery = isWordsmithQuery(trimmed);
-        const finalText = wordsmithQuery
+        const rawMessage = wordsmithQuery
           ? WORDSMITH_LOCKED_MESSAGE
-          : (result.message || (shouldBuildViewport ? "Here's what I found." : '')).trim();
+          : (result.message || '').trim();
+
+        let parsedItems = resolveCardIds(result.cardIds || []);
+        // About / who-is must never land as a one-line clarifier with no cards.
+        if (isAboutDevQuery(trimmed) && parsedItems.length === 0) {
+          parsedItems = resolveCardIds([
+            'feature:career',
+            'feature:hire',
+            'chart:impact',
+            'case:finshots-news-app:project',
+            'case:nesoi-ai-dashboard:project',
+          ]);
+        }
+
+        // Prefer model prose when strong; otherwise fill a real portfolio narrative.
+        let finalText = wordsmithQuery
+          ? rawMessage
+          : formatLeadSummary(rawMessage, trimmed);
+        if (
+          !wordsmithQuery &&
+          !finalText &&
+          shouldBuildViewport &&
+          !isOffTopicGenUIPrompt(trimmed)
+        ) {
+          finalText = formatLeadSummary('', trimmed);
+        }
+        if (
+          !wordsmithQuery &&
+          agentWasClarifying(rawMessage) &&
+          (isAboutDevQuery(trimmed) || shouldBuildViewport)
+        ) {
+          finalText = formatLeadSummary('', trimmed);
+        }
 
         if (result.layoutCommands?.length) {
           const nextState = applyLayoutCommands(agentRef.current, result.layoutCommands);
@@ -194,16 +233,16 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
 
         setConversationHistory([
           ...nextHistory,
-          { role: 'assistant', content: stripMarkdown(finalText) },
+          { role: 'assistant', content: stripMarkdown(finalText || rawMessage) },
         ]);
 
-        const parsedItems = resolveCardIds(result.cardIds || []);
         const enrichedItems = isOffTopicGenUIPrompt(trimmed) ? [] : enrichGenUIItems(parsedItems, trimmed);
+        const narrative =
+          finalText ||
+          (enrichedItems.length > 0 ? formatLeadSummary('', trimmed) : 'Something went wrong. Please try again.');
 
-        if (enrichedItems.length > 0) {
-          await finishViewport('', enrichedItems);
-        } else if (finalText) {
-          await finishViewport(finalText, []);
+        if (enrichedItems.length > 0 || narrative) {
+          await finishViewport(narrative, enrichedItems);
         } else {
           await finishViewport('Something went wrong. Please try again.', []);
         }

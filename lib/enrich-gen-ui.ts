@@ -20,12 +20,26 @@ import {
   STARTER_CHIP_CARD_IDS,
   STARTER_CHIP_SUMMARIES,
 } from '@/lib/gen-ui-starter-chips';
-import { isOffTopicGenUIPrompt, isInsufficientContextQuery } from '@/lib/gen-ui-on-topic';
+import { isOffTopicGenUIPrompt, isInsufficientContextQuery, isAboutDevQuery } from '@/lib/gen-ui-on-topic';
 import { resumeData } from '@/lib/resume-data';
 
 export { MAX_VIEWPORT_CARDS };
 
 export const WORDSMITH_LOCKED_MESSAGE = `Wordsmith AI is a locked, confidential project. Please contact Dev at ${resumeData.email} or via LinkedIn to learn more.`;
+
+export const ABOUT_DEV_SUMMARY = `Devadhathan M D — Dev — is a product designer with a B.Tech in Computer Science who designs end-to-end and ships the result himself. He started on Finshots' mobile news app (Google Play Best App 2020, 100k+ downloads), then shaped insurance onboarding, CRM, and the Falcon design system at Ditto.
+
+At Nesoi.ai he led enterprise dashboards used by 15+ clients — engagement up 92%, course-creation time down 37%. He prototypes in Claude Code and Cursor so ideas become working React/Next.js UI, not handoff decks.
+
+Based between the UK and Europe, he's open to full-time product design roles where craft and engineering meet. The cards below cover career path, hire reasons, impact, and flagship work.`;
+
+const ABOUT_DEV_CARD_IDS = [
+  'feature:career',
+  'feature:hire',
+  'chart:impact',
+  'case:finshots-news-app:project',
+  'case:nesoi-ai-dashboard:project',
+] as const;
 
 export function isWordsmithQuery(prompt: string): boolean {
   return /\bwordsmith\b/i.test(prompt);
@@ -93,6 +107,7 @@ function ensureStarterChipCards(items: GenUIItem[], prompt: string): GenUIItem[]
 function ensureIntentCards(items: GenUIItem[], prompt: string): GenUIItem[] {
   if (isContactQuery(prompt)) return resolveRegistryCards(CONTACT_CARD_IDS);
   if (isEducationQuery(prompt)) return resolveRegistryCards(EDUCATION_CARD_IDS);
+  if (isAboutDevQuery(prompt)) return resolveRegistryCards(ABOUT_DEV_CARD_IDS);
   return items;
 }
 
@@ -106,6 +121,10 @@ export function enrichGenUIItems(items: GenUIItem[], prompt: string): GenUIItem[
   let next = filterRelevantItems(items, prompt);
   if (isStarterChipQuery(prompt)) {
     next = ensureStarterChipCards(next, prompt);
+    return normalizeGenUIItemsForGrid(next, prompt);
+  }
+  if (isAboutDevQuery(prompt)) {
+    next = ensureIntentCards(next, prompt);
     return normalizeGenUIItemsForGrid(next, prompt);
   }
   if (isContactQuery(prompt) || isEducationQuery(prompt)) {
@@ -430,21 +449,36 @@ export function formatLeadSummary(text: string, prompt?: string): string {
   }
 
   const s = stripMarkdown(text);
+  const wordCount = s ? s.split(/\s+/).filter(Boolean).length : 0;
+  const weak =
+    !s ||
+    wordCount < 40 ||
+    s.includes('###') ||
+    s.includes('**') ||
+    s.includes('__') ||
+    /^(here'?s what i (found|pulled)|i finished processing|explore the cards|see below|take a look)/i.test(
+      s,
+    );
 
-  if (!s || s.length < 80 || s.includes('###') || s.includes('**') || s.includes('__')) {
+  // Prefer a real model answer when it stands alone; only fall back when thin.
+  if (prompt && isAboutDevQuery(prompt) && weak) {
+    return ABOUT_DEV_SUMMARY;
+  }
+
+  if (weak) {
     return prompt ? fallbackStorySummary(prompt) : '';
   }
 
-  if (prompt && isCaseStudyQuery(prompt) && s.length < 180) {
+  if (prompt && isCaseStudyQuery(prompt) && wordCount < 80) {
     return fallbackStorySummary(prompt);
   }
 
   if (
     prompt &&
-    (/^(here'?s what i found|explore the cards|see below|take a look)/i.test(s) ||
-      s.split(/\s+/).length < 12)
+    isAboutDevQuery(prompt) &&
+    /project tour|impact numbers|background and career/i.test(s)
   ) {
-    return fallbackStorySummary(prompt);
+    return ABOUT_DEV_SUMMARY;
   }
 
   return s;
@@ -510,6 +544,7 @@ export function fallbackStorySummary(prompt: string): string {
     'falcon design system': "Falcon grew out of a familiar pain — teams shipping insurance flows without a shared language. Below is how a design system took root and scaled across products.",
     'nesoi.ai': "At Nesoi, dashboards had to earn trust fast — educators and operators making high-stakes calls from a single screen. Explore how that constraint shaped the work.",
     'gen ui': "Gen UI turns your question into a living viewport — narrative up top, then cards pulled from Dev's portfolio. Ask about a project, skill, or career thread and it assembles a focused view just for that.",
+    'about dev': ABOUT_DEV_SUMMARY,
     'why hire dev':
       "Hiring Dev means getting a product designer who ships — not someone who stops at mockups. Five years across fintech, insurance, and AI, with a CS degree and the ability to take ideas through to production.\n\nThe cards below spell out shipped products, measurable impact, and the designer-engineer range that sets his work apart.",
     'designer + engineer':
@@ -525,6 +560,9 @@ function contactStorySummary(): string {
 
 function fallbackFromPromptIntent(prompt: string): string {
   const p = prompt.toLowerCase();
+  if (isAboutDevQuery(prompt)) {
+    return ABOUT_DEV_SUMMARY;
+  }
   if (/\b(why hire|why should|hire (?:him|dev|as))\b/i.test(p)) {
     return STARTER_CHIP_SUMMARIES.hire;
   }

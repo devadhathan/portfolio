@@ -8,6 +8,7 @@ import { OsBackButton } from '@/components/os-back-button';
 import {
   DESKTOP_LINK_ICONS,
   GAMES_EMBED_URL,
+  TRASH_BAIT_VIDEO,
   WORDSMITH_EMBED_URL,
   type DesktopLinkIconId,
 } from '@/lib/desktop-os';
@@ -231,19 +232,54 @@ export function WordsmithWindowBody() {
 export function TrashWindowBody() {
   return (
     <div
-      className="os-window-content flex h-full min-h-[320px] flex-col items-center justify-center gap-3 px-6 text-center"
+      className="os-window-content flex h-full min-h-[320px] flex-col overflow-hidden"
       data-os-embedded="true"
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/icons/trash.svg"
-        alt=""
-        width={72}
-        height={72}
-        className="h-[4.5rem] w-[4.5rem] opacity-80"
-        draggable={false}
-      />
-      <p className="text-sm font-medium text-foreground/85">Trash is Empty</p>
+      <div className="flex shrink-0 items-center justify-between border-b border-border/30 px-4 py-2.5">
+        <p className="text-[12px] font-medium text-foreground/80">Trash</p>
+        <p className="text-[11px] tabular-nums text-muted-foreground">1 item</p>
+      </div>
+
+      <div className="grid grid-cols-[minmax(0,1fr)_88px_104px] gap-2 border-b border-border/20 px-4 py-1.5 text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground/70">
+        <span>Name</span>
+        <span>Kind</span>
+        <span className="text-right">Date deleted</span>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto px-2 py-1">
+        <a
+          href={TRASH_BAIT_VIDEO.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="grid grid-cols-[minmax(0,1fr)_88px_104px] items-center gap-2 rounded-lg px-2 py-2 outline-none transition-colors hover:bg-black/[0.05] focus-visible:bg-black/[0.05] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40 dark:hover:bg-white/[0.06] dark:focus-visible:bg-white/[0.06]"
+          aria-label={TRASH_BAIT_VIDEO.title}
+        >
+          <span className="flex min-w-0 items-center gap-2.5">
+            <span className="relative h-9 w-12 shrink-0 overflow-hidden rounded-md bg-black/40 ring-1 ring-black/10 dark:ring-white/10">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={TRASH_BAIT_VIDEO.thumbnail}
+                alt=""
+                width={48}
+                height={36}
+                className="h-full w-full object-cover"
+                draggable={false}
+              />
+              <span
+                className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25"
+                aria-hidden
+              >
+                <span className="ml-0.5 border-y-[4px] border-l-[6px] border-y-transparent border-l-white/95" />
+              </span>
+            </span>
+            <span className="min-w-0 truncate text-[13px] text-foreground/90">
+              {TRASH_BAIT_VIDEO.title}
+            </span>
+          </span>
+          <span className="truncate text-[12px] text-muted-foreground">Video</span>
+          <span className="text-right text-[12px] tabular-nums text-muted-foreground">Today</span>
+        </a>
+      </div>
     </div>
   );
 }

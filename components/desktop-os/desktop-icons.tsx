@@ -87,12 +87,10 @@ export function DesktopIcons(_props?: DesktopIconsProps) {
     windows,
     focusedId,
     openWindow,
-    closedStack,
     restoreFromTrash,
     isNarrow,
   } = useDesktopOs();
   const { iconPositions, moveIcon } = useDesktopIconLayout();
-  const trashEmpty = closedStack.length === 0;
   const positionsRef = useRef(iconPositions);
   positionsRef.current = iconPositions;
 
@@ -270,7 +268,6 @@ export function DesktopIcons(_props?: DesktopIconsProps) {
           >
             <span className="os-desktop-icon__well os-desktop-icon__well--asset">
               <DesktopAssetIcon src={item.src} alt="" />
-              {isOpen ? <span className="os-desktop-icon__dot" /> : null}
             </span>
             <span className="os-desktop-icon__label">{label}</span>
           </button>
@@ -299,7 +296,6 @@ export function DesktopIcons(_props?: DesktopIconsProps) {
           >
             <span className="os-desktop-icon__well os-desktop-icon__well--asset">
               <DesktopAssetIcon src={LINK_ICON_SRC[item.id]} alt="" />
-              {isOpen ? <span className="os-desktop-icon__dot" /> : null}
             </span>
             <span className="os-desktop-icon__label">{item.label}</span>
           </button>
@@ -316,7 +312,6 @@ export function DesktopIcons(_props?: DesktopIconsProps) {
       >
         <span className="os-desktop-icon__well os-desktop-icon__well--asset">
           <DesktopAssetIcon src="/icons/mailbox.svg" alt="" />
-          {windows.contact.open ? <span className="os-desktop-icon__dot" /> : null}
         </span>
         <span className="os-desktop-icon__label">{t('contact')}</span>
       </button>
@@ -331,10 +326,6 @@ export function DesktopIcons(_props?: DesktopIconsProps) {
       >
         <span className="os-desktop-icon__well os-desktop-icon__well--asset">
           <DesktopAssetIcon src="/icons/trash.svg" alt="" />
-          {windows.trash.open ? <span className="os-desktop-icon__dot" /> : null}
-          {!trashEmpty ? (
-            <span className="os-desktop-icon__badge">{Math.min(closedStack.length, 9)}</span>
-          ) : null}
         </span>
         <span className="os-desktop-icon__label">Trash</span>
       </button>

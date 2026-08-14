@@ -6,7 +6,7 @@ function isWordsmithQuery(prompt: string): boolean {
 }
 
 const SPECIFIC_REQUEST =
-  /\b(finshots|nesoi|crm|falcon|onboarding|ditto|wordsmith|impact|metrics?|skills?|career|education|resume|timeline|downloads|conversion|design system|strongest work|ship code|hire him|why hire|why should i hire|contact|email|linkedin|phone)\b/i;
+  /\b(finshots|nesoi|crm|falcon|onboarding|ditto|wordsmith|impact|metrics?|skills?|career|education|resume|timeline|downloads|conversion|design system|strongest work|ship code|hire him|why hire|why should i hire|contact|email|linkedin|phone|who is he|about dev|about him)\b/i;
 
 const VAGUE_REQUEST =
   /\b(projects?|works?|portfolio|case studies?|show me|tell me about|what has he|everything|all of)\b/i;

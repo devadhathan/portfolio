@@ -32,8 +32,9 @@ import { FeatureCard, FeatureSection } from '@/components/line-illustrations';
 import { AgentThinkingIndicator } from '@/components/agent-thinking-indicator';
 import type { LayoutActionCommand } from '@/lib/agent-loop';
 import { inferSkeletonFromPrompt, type CardSkeletonType } from '@/lib/infer-skeleton';
-import { enrichGenUIItems, isWordsmithQuery, WORDSMITH_LOCKED_MESSAGE } from '@/lib/enrich-gen-ui';
-import { inferGenUIBuild } from '@/lib/infer-gen-ui-build';
+import { enrichGenUIItems, formatLeadSummary, isWordsmithQuery, WORDSMITH_LOCKED_MESSAGE } from '@/lib/enrich-gen-ui';
+import { isAboutDevQuery } from '@/lib/gen-ui-on-topic';
+import { agentWasClarifying, inferGenUIBuild } from '@/lib/infer-gen-ui-build';
 import { ASK_AI_OFF_TOPIC_STRIKE_LIMIT } from '@/lib/ask-ai-conversational';
 import { MAX_GEN_UI_PROMPT_LENGTH } from '@/lib/gen-ui-prompt';
 
@@ -712,9 +713,20 @@ export function SideAgent({
         result.steps?.length > 0 && !wordsmithQuery && shouldBuildViewport
           ? `\n\n_${result.steps.length} tool step${result.steps.length === 1 ? '' : 's'} · ${result.iterations} loop iteration${result.iterations === 1 ? '' : 's'}_`
           : '';
-      const finalText = wordsmithQuery
+      const rawMessage = wordsmithQuery
         ? WORDSMITH_LOCKED_MESSAGE
-        : (result.message || (shouldBuildViewport ? "Here's what I found." : '')).trim() + stepNote;
+        : (result.message || '').trim();
+      let body = wordsmithQuery
+        ? rawMessage
+        : formatLeadSummary(rawMessage, trimmed);
+      if (
+        !wordsmithQuery &&
+        (agentWasClarifying(rawMessage) || !body) &&
+        (isAboutDevQuery(trimmed) || shouldBuildViewport)
+      ) {
+        body = formatLeadSummary('', trimmed);
+      }
+      const finalText = body + stepNote;
 
       const enrichedItems = shouldBuildViewport
         ? enrichGenUIItems(parsedItems, trimmed)
