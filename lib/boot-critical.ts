@@ -2,8 +2,13 @@
 
 const URL_IN_CSS = /url\(\s*['"]?([^'")]+)['"]?\s*\)/i;
 
-/** Sticky flag — child effects can signal before the splash listener attaches. */
+export const BOOT_READY_EVENT = 'portfolio:boot-ready';
+
+/** Splash has started fading — safe to run visible enter animations. */
+export const BOOT_REVEAL_EVENT = 'portfolio:boot-reveal';
+
 let bootReady = false;
+let bootRevealed = false;
 
 /** Pull the first image URL out of a CSS background value (wallpapers). */
 export function imageUrlFromBackground(background: string): string | null {
@@ -28,10 +33,12 @@ export function preloadImage(src: string): Promise<void> {
   });
 }
 
-export const BOOT_READY_EVENT = 'portfolio:boot-ready';
-
 export function isBootReady() {
   return bootReady;
+}
+
+export function isBootRevealed() {
+  return bootRevealed;
 }
 
 /** First paint of the active window body — safe to reveal the desktop. */
@@ -39,6 +46,14 @@ export function signalBootReady() {
   if (typeof window === 'undefined') return;
   bootReady = true;
   window.dispatchEvent(new CustomEvent(BOOT_READY_EVENT));
+}
+
+/** Splash fade begins — start line-by-line / enter motions. */
+export function signalBootReveal() {
+  if (typeof window === 'undefined') return;
+  if (bootRevealed) return;
+  bootRevealed = true;
+  window.dispatchEvent(new CustomEvent(BOOT_REVEAL_EVENT));
 }
 
 /**

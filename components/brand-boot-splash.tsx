@@ -8,6 +8,7 @@ import {
   imageUrlFromBackground,
   isBootReady,
   preloadImage,
+  signalBootReveal,
 } from '@/lib/boot-critical';
 import {
   DEFAULT_WALLPAPER_ID,
@@ -100,7 +101,10 @@ export function BrandBootSplash({ children }: { children: React.ReactNode }) {
       doneRef.current = true;
       bump(100);
       window.setTimeout(() => {
-        if (!cancelled) setPhase('fading');
+        if (!cancelled) {
+          setPhase('fading');
+          signalBootReveal();
+        }
       }, HOLD_AT_FULL_MS);
     };
 

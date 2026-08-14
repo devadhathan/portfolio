@@ -7,8 +7,9 @@ import { useTranslations } from 'next-intl';
 import { useSiteContent } from '@/components/site-content-provider';
 import { easeOutExpo } from '@/lib/motion';
 import { cn } from '@/lib/utils';
+import { BOOT_REVEAL_EVENT, isBootRevealed } from '@/lib/boot-critical';
 
-/** Start staggered enter only after a committed paint (Chromium needs this). */
+/** Start staggered enter only after splash reveal (and a committed paint). */
 export function useHomeIntroPlay(reduceMotion: boolean | null) {
   const [play, setPlay] = useState(false);
 
@@ -21,19 +22,33 @@ export function useHomeIntroPlay(reduceMotion: boolean | null) {
     let cancelled = false;
     let innerRaf = 0;
     let timeoutId = 0;
+    let outerRaf = 0;
+    let started = false;
 
-    // Paint the hidden state first, then animate — nested rAF alone can
-    // collapse into one frame on Chromium and skip the stagger.
-    const outerRaf = requestAnimationFrame(() => {
-      innerRaf = requestAnimationFrame(() => {
-        timeoutId = window.setTimeout(() => {
-          if (!cancelled) setPlay(true);
-        }, 32);
+    const begin = () => {
+      if (cancelled || started) return;
+      started = true;
+
+      // Paint the hidden state first, then animate — nested rAF alone can
+      // collapse into one frame on Chromium and skip the stagger.
+      outerRaf = requestAnimationFrame(() => {
+        innerRaf = requestAnimationFrame(() => {
+          timeoutId = window.setTimeout(() => {
+            if (!cancelled) setPlay(true);
+          }, 32);
+        });
       });
-    });
+    };
+
+    if (isBootRevealed()) {
+      begin();
+    } else {
+      window.addEventListener(BOOT_REVEAL_EVENT, begin);
+    }
 
     return () => {
       cancelled = true;
+      window.removeEventListener(BOOT_REVEAL_EVENT, begin);
       cancelAnimationFrame(outerRaf);
       cancelAnimationFrame(innerRaf);
       window.clearTimeout(timeoutId);
