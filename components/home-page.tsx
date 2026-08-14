@@ -53,9 +53,11 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [genUIMode, setGenUIMode] = useState(false);
   const [showProjectsList, setShowProjectsList] = useState(false);
-  const contentGutterClass = isSidebarCollapsed
-    ? 'mx-auto w-full max-w-[72rem] px-4 sm:px-6 md:px-8 lg:px-10'
-    : 'mx-auto w-full max-w-7xl px-4 sm:px-5 md:px-6 lg:px-8';
+  const contentGutterClass = embedded
+    ? 'mx-auto w-full max-w-none px-3 sm:px-4 md:px-5'
+    : isSidebarCollapsed
+      ? 'mx-auto w-full max-w-[72rem] px-4 sm:px-6 md:px-8 lg:px-10'
+      : 'mx-auto w-full max-w-7xl px-4 sm:px-5 md:px-6 lg:px-8';
 
   const handleStateChange = useCallback((state: AgentState) => {
     setAgentState(state);

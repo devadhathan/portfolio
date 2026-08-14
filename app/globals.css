@@ -1006,12 +1006,12 @@ html.light .os-desktop-icon__badge {
 /* Window: stage-fit max vs full desktop cover */
 .os-window {
   background:
-    linear-gradient(hsl(0 0% 0% / 0.46), hsl(0 0% 0% / 0.46)),
-    hsl(var(--background) / 0.78);
-  backdrop-filter: blur(36px) saturate(150%);
-  -webkit-backdrop-filter: blur(36px) saturate(150%);
+    linear-gradient(hsl(0 0% 0% / 0.38), hsl(0 0% 0% / 0.42)),
+    hsl(var(--background) / 0.62);
+  backdrop-filter: blur(42px) saturate(165%);
+  -webkit-backdrop-filter: blur(42px) saturate(165%);
   box-shadow:
-    0 1px 0 hsl(var(--foreground) / 0.04) inset,
+    0 1px 0 hsl(var(--foreground) / 0.05) inset,
     0 22px 56px -28px hsl(0 0% 0% / 0.5);
 }
 
@@ -1022,10 +1022,10 @@ html.light .os-desktop-icon__badge {
 
 html.light .os-window {
   background:
-    linear-gradient(hsl(0 0% 100% / 0.52), hsl(0 0% 100% / 0.52)),
-    hsl(var(--background) / 0.82);
+    linear-gradient(hsl(0 0% 100% / 0.42), hsl(0 0% 100% / 0.48)),
+    hsl(var(--background) / 0.68);
   box-shadow:
-    0 1px 0 hsl(0 0% 100% / 0.7) inset,
+    0 1px 0 hsl(0 0% 100% / 0.72) inset,
     0 24px 60px -32px hsl(30 20% 20% / 0.28);
 }
 
@@ -1036,22 +1036,22 @@ html.light .os-window {
     0 26px 64px -28px hsl(0 0% 0% / 0.55);
 }
 
-/* Centered stage-fit — a bit wider, tighter side gaps */
+/* Centered stage-fit — slightly wider chrome; content column (.os-col) unchanged */
 .os-window--stage-max {
   left: 0;
   right: 0;
   top: 3.25rem;
   bottom: 1.25rem;
-  width: min(1320px, calc(100% - 7rem));
+  width: min(1180px, calc(100% - 10rem));
   height: min(860px, calc(100% - 4.75rem));
   margin: auto;
 }
 
 .os-window--covered {
-  left: 0.75rem;
-  right: 0.75rem;
+  left: 0.25rem;
+  right: 0.25rem;
   top: 3rem;
-  bottom: 0.75rem;
+  bottom: 0.35rem;
   width: auto;
   height: auto;
   margin: 0;
@@ -1059,13 +1059,19 @@ html.light .os-window {
 }
 
 .os-window-titlebar {
-  background: hsl(0 0% 0% / 0.32);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background:
+    linear-gradient(hsl(0 0% 100% / 0.06), hsl(0 0% 100% / 0.02)),
+    hsl(0 0% 0% / 0.22);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.08);
 }
 
 html.light .os-window-titlebar {
-  background: hsl(0 0% 100% / 0.45);
+  background:
+    linear-gradient(hsl(0 0% 100% / 0.42), hsl(0 0% 100% / 0.22)),
+    hsl(var(--background) / 0.35);
+  box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.72);
 }
 
 /* Content width follows the OS window size (stage-max → cover) */
@@ -1079,35 +1085,35 @@ html.light .os-window-titlebar {
   width: 100%;
 }
 
-/* Home — slightly tighter than case studies. */
+/* Home — fill more of the window; cut large side auto-margins */
 .os-col {
   width: 100%;
-  max-width: min(40rem, 100%);
+  max-width: min(56rem, 90%);
   margin-inline: auto;
 }
 
-/* Case study — medium growth with window expand. */
+/* Case study — same idea, slightly wider */
 .os-col--case {
   width: 100%;
-  max-width: min(44rem, 100%);
+  max-width: min(60rem, 92%);
   margin-inline: auto;
 }
 
 @container os-win (min-width: 900px) {
   .os-col {
-    max-width: min(48rem, 92%);
+    max-width: min(64rem, 88%);
   }
   .os-col--case {
-    max-width: min(52rem, 92%);
+    max-width: min(68rem, 90%);
   }
 }
 
 @container os-win (min-width: 1200px) {
   .os-col {
-    max-width: min(50rem, 90%);
+    max-width: min(72rem, 86%);
   }
   .os-col--case {
-    max-width: min(56rem, 90%);
+    max-width: min(76rem, 88%);
   }
 }
 
@@ -1126,7 +1132,7 @@ html.light .os-window-titlebar {
 
 @media (max-width: 1280px) {
   .os-window--stage-max {
-    width: min(1320px, calc(100% - 6rem));
+    width: min(1180px, calc(100% - 8rem));
   }
 
   .os-desktop-icon {
@@ -1152,7 +1158,7 @@ html.light .os-window-titlebar {
 
 @media (max-width: 1100px) {
   .os-window--stage-max {
-    width: min(1320px, calc(100% - 5.25rem));
+    width: min(1180px, calc(100% - 6rem));
   }
 
   .os-logo-menu {
@@ -1256,38 +1262,59 @@ html.light .os-window-titlebar {
   user-select: none;
 }
 
-.os-window-control {
+/* macOS traffic lights — red close, blank yellow, green cover */
+.os-window-traffic {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.65rem;
-  height: 1.65rem;
+  width: 0.95rem;
+  height: 0.95rem;
+  padding: 0;
   border: none;
-  border-radius: 0.4rem;
-  background: transparent;
-  color: hsl(var(--muted-foreground));
+  border-radius: 9999px;
   cursor: pointer;
-  transition: background-color 0.12s ease, color 0.12s ease;
+  flex-shrink: 0;
+  transition: filter 0.12s ease, transform 0.12s ease;
 }
 
-.os-window-control:hover {
-  background: hsl(var(--secondary) / 0.7);
-  color: hsl(var(--foreground));
+.os-window-traffic:hover {
+  filter: brightness(1.08);
 }
 
-.os-window-control:focus-visible {
+.os-window-traffic:active {
+  filter: brightness(0.94);
+}
+
+.os-window-traffic:focus-visible {
   outline: none;
-  background: hsl(var(--secondary) / 0.7);
-  color: hsl(var(--foreground));
   box-shadow:
     0 0 0 2px hsl(var(--background)),
     0 0 0 4px hsl(var(--ring));
 }
 
-.os-window-control--close:hover,
-.os-window-control--close:focus-visible {
-  background: hsl(0 72% 55% / 0.9);
-  color: white;
+.os-window-traffic--close {
+  background: #ff5f57;
+  box-shadow: inset 0 0 0 0.5px hsl(0 60% 30% / 0.22);
+}
+
+.os-window-traffic--idle {
+  cursor: default;
+  pointer-events: none;
+  /* Blank yellow slot — muted, inactive */
+  background: hsl(0 0% 32%);
+  box-shadow: inset 0 0 0 0.5px hsl(0 0% 0% / 0.35);
+}
+
+.os-window-traffic--zoom {
+  background: #28c840;
+  box-shadow: inset 0 0 0 0.5px hsl(130 40% 18% / 0.22);
+}
+
+.os-window-traffic__glyph {
+  width: 0.55rem;
+  height: 0.55rem;
+  color: hsl(0 55% 18% / 0.78);
+  pointer-events: none;
 }
 
 /* Radix menus must sit above OS windows (z ≤ 180) and menubar (z 200) */

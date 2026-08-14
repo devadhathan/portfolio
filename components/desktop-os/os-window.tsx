@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Minus, Square, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { DesktopWindowId } from '@/lib/desktop-os';
 import { useDesktopOs } from '@/components/desktop-os/desktop-os-provider';
@@ -14,7 +14,7 @@ type OsWindowProps = {
 
 /**
  * Single-window chrome: opens stage-fit (max).
- * Zoom toggles full desktop cover. No drag, minimize, or edge resize.
+ * Green toggles desktop cover. Yellow is decorative (no minimize).
  * Closed windows stay mounted (hidden) so revisits skip Loading….
  */
 export function OsWindow({ id, title, children }: OsWindowProps) {
@@ -37,41 +37,38 @@ export function OsWindow({ id, title, children }: OsWindowProps) {
         focusWindow(id, { syncUrl: true });
       }}
     >
-      <div className="os-window-titlebar flex h-10 shrink-0 cursor-default items-center gap-3 border-b border-border/35 px-3">
-        <span className="pointer-events-none flex-1 select-none pl-1 text-left text-sm font-medium tracking-tight text-foreground/80">
-          {title}
-        </span>
-        <div className="flex items-center gap-1" data-os-controls>
-          <button
-            type="button"
-            aria-label={win.covered ? 'Restore window' : 'Cover desktop'}
-            title={win.covered ? 'Restore' : 'Cover desktop'}
-            className="os-window-control"
-            tabIndex={isOpen ? 0 : -1}
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleCover(id);
-            }}
-          >
-            {win.covered ? (
-              <Minus className="h-3.5 w-3.5" strokeWidth={1.75} />
-            ) : (
-              <Square className="h-3 w-3" strokeWidth={1.75} />
-            )}
-          </button>
+      <div className="os-window-titlebar flex h-10 shrink-0 cursor-default items-center gap-3 border-b border-border/25 px-3.5">
+        <div className="flex items-center gap-[0.35rem]" data-os-controls>
           <button
             type="button"
             aria-label="Close"
-            className="os-window-control os-window-control--close"
+            title="Close"
+            className="os-window-traffic os-window-traffic--close"
             tabIndex={isOpen ? 0 : -1}
             onClick={(e) => {
               e.stopPropagation();
               closeWindow(id);
             }}
           >
-            <X className="h-3.5 w-3.5" strokeWidth={1.75} />
+            <X className="os-window-traffic__glyph" strokeWidth={2.75} aria-hidden />
           </button>
+          {/* Minimize not supported — blank yellow slot */}
+          <span className="os-window-traffic os-window-traffic--idle" aria-hidden />
+          <button
+            type="button"
+            aria-label={win.covered ? 'Restore window' : 'Cover desktop'}
+            title={win.covered ? 'Restore' : 'Cover desktop'}
+            className="os-window-traffic os-window-traffic--zoom"
+            tabIndex={isOpen ? 0 : -1}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleCover(id);
+            }}
+          />
         </div>
+        <span className="pointer-events-none flex-1 select-none text-left text-sm font-medium tracking-tight text-foreground/80">
+          {title}
+        </span>
       </div>
       <div className="os-window-body min-h-0 flex-1 overflow-auto overscroll-contain">{children}</div>
     </div>
