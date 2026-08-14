@@ -15,6 +15,7 @@ import type { Project } from '@/lib/types/project';
 import { getProjectId, normalizeProjectSlug } from '@/lib/types/project';
 import { blurFadeUp, defaultTransition, easeOutExpo, fadeSlideUp } from '@/lib/motion';
 import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
+import { signalBootReady, afterNextPaint } from '@/lib/boot-critical';
 
 const ProjectDetailView = dynamic(
   () => import('@/components/project-detail-view').then(mod => ({ default: mod.ProjectDetailView })),
@@ -48,6 +49,8 @@ const getProjectThumbnail = (project: Project): string => {
 function WorkPageContent({ projects }: { projects: Project[] }) {
   const t = useTranslations('work');
   const router = useRouter();
+
+  useEffect(() => afterNextPaint(() => signalBootReady()), []);
   const searchParams = useSearchParams();
   const reduceMotion = useReducedMotion();
   const desktopOs = useDesktopOsOptional();

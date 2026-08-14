@@ -1,30 +1,30 @@
 'use client';
 
-import { LOADING_VIDEO_POSTER } from '@/lib/loading-video';
-
 type InitialLoadingOverlayProps = {
   fadingOut: boolean;
-  label: string;
+  label?: string;
 };
 
-export function InitialLoadingOverlay({ fadingOut, label }: InitialLoadingOverlayProps) {
+/** @deprecated Prefer BrandBootSplash — kept for any leftover imports. */
+export function InitialLoadingOverlay({ fadingOut, label = 'Loading' }: InitialLoadingOverlayProps) {
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center bg-black transition-opacity duration-700 ${fadingOut ? 'opacity-0' : 'opacity-100'}`}
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center gap-5 bg-black transition-opacity duration-700 ${fadingOut ? 'opacity-0' : 'opacity-100'}`}
+      aria-busy={!fadingOut}
+      aria-label={label}
     >
-      <div className="flex flex-col items-center gap-4">
-        <div className="relative w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={LOADING_VIDEO_POSTER}
-            alt=""
-            aria-hidden
-            className="h-full w-full object-contain"
-          />
-        </div>
-        <p className="text-base md:text-lg text-white font-normal font-mono animate-pulse">
-          {label}
-        </p>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/photos/Image@4x.png"
+        alt=""
+        aria-hidden
+        width={40}
+        height={40}
+        className="h-10 w-10 object-contain"
+        draggable={false}
+      />
+      <div className="brand-boot-line" role="progressbar" aria-label={label}>
+        <span className="brand-boot-line__fill" />
       </div>
     </div>
   );

@@ -13,6 +13,7 @@ import { CaseStudyLoading } from '@/components/case-study-loading';
 import { OsBackButton } from '@/components/os-back-button';
 import { blurFadeUp, easeOutExpo } from '@/lib/motion';
 import { cn } from '@/lib/utils';
+import { signalBootReady, afterNextPaint } from '@/lib/boot-critical';
 
 const caseStudyEnterTransition = {
   duration: 0.55,
@@ -47,6 +48,9 @@ function createDefaultAgentState(): AgentState {
 export default function HomePage({ embedded = false }: { embedded?: boolean }) {
   const { close: closeAskAI, resetAgent, registerStateChange } = useAskAI();
   const reduceMotion = useReducedMotion();
+
+  // First home paint is ready — splash can fade (don't wait on lazy photos).
+  useEffect(() => afterNextPaint(() => signalBootReady()), []);
 
   const [agentState, setAgentState] = useState<AgentState>(() => createDefaultAgentState());
   const [selectedProject, setSelectedProject] = useState<string | null>(null);

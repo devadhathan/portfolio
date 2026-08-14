@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
  */
 
 function BodySkeleton() {
-  // Keep the window calm on reload — no pulse bar flash while the page chunk loads.
+  // Full-screen boot splash covers first paint; keep window calm on later chunk loads.
   return <div className="min-h-[120px]" aria-hidden />;
 }
 

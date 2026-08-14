@@ -1841,3 +1841,29 @@ html.red .glass-chrome:hover {
     hsl(var(--background) / 0) 100%
   );
 }
+
+/* Full-screen boot: thin white progress line under logo (fill = load %) */
+.brand-boot-line {
+  position: relative;
+  width: 4.5rem;
+  height: 1px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: hsl(0 0% 100% / 0.18);
+}
+
+.brand-boot-line__fill {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 0%;
+  border-radius: inherit;
+  background: hsl(0 0% 100% / 0.92);
+  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-boot-line__fill {
+    transition: none;
+  }
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useRouter } from '@/i18n/navigation';
@@ -13,6 +13,7 @@ import {
 import { PLAYGROUND_ITEMS } from '@/lib/playground-items';
 import { blurFadeUp, easeOutExpo, fadeUpSoft } from '@/lib/motion';
 import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
+import { signalBootReady, afterNextPaint } from '@/lib/boot-critical';
 
 export default function PlaygroundPage() {
   const router = useRouter();
@@ -21,6 +22,8 @@ export default function PlaygroundPage() {
   const desktopOs = useDesktopOsOptional();
   const embedded = Boolean(desktopOs?.enabled);
   const [selection, setSelection] = useState<PlaygroundSelection | null>(null);
+
+  useEffect(() => afterNextPaint(() => signalBootReady()), []);
 
   const handleHomeClick = useCallback(() => {
     if (desktopOs?.enabled) {
