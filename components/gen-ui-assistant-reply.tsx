@@ -9,6 +9,7 @@ type GenUIAssistantReplyProps = {
   title: string;
   summary?: string;
   animate?: boolean;
+  mode?: 'word' | 'letter';
   onAnimationComplete?: () => void;
   className?: string;
 };
@@ -29,6 +30,7 @@ export function GenUIAssistantReply({
   title,
   summary,
   animate = false,
+  mode = 'word',
   onAnimationComplete,
   className,
 }: GenUIAssistantReplyProps) {
@@ -36,7 +38,11 @@ export function GenUIAssistantReply({
     () => (summary ? formatStoryParagraphs(summary) : []),
     [summary],
   );
-  const segments = useMemo(() => [title, ...paragraphs], [title, paragraphs]);
+  const hasTitle = Boolean(title.trim());
+  const segments = useMemo(
+    () => (hasTitle ? [title, ...paragraphs] : paragraphs),
+    [hasTitle, title, paragraphs],
+  );
   const [segmentIndex, setSegmentIndex] = useState(animate ? 0 : segments.length);
 
   useEffect(() => {
@@ -77,7 +83,7 @@ export function GenUIAssistantReply({
   if (!animate) {
     return (
       <article className={cn('max-w-3xl space-y-5 scroll-mt-24', className)}>
-        <h2 className={titleClass}>{title}</h2>
+        {hasTitle ? <h2 className={titleClass}>{title}</h2> : null}
         {paragraphs.length > 0 && (
           <div className="space-y-4">{paragraphs.map((p, i) => renderBlock(p, `block-${i}`))}</div>
         )}
@@ -86,25 +92,31 @@ export function GenUIAssistantReply({
   }
 
   const allDone = segmentIndex >= segments.length;
-  const doneParagraphs = paragraphs.slice(0, Math.max(0, segmentIndex - 1));
+  const titleOffset = hasTitle ? 1 : 0;
+  const doneParagraphs = paragraphs.slice(0, Math.max(0, segmentIndex - titleOffset));
 
   return (
     <article className={cn('max-w-3xl space-y-5 scroll-mt-24', className)}>
-      {segmentIndex > 0 && <h2 className={titleClass}>{title}</h2>}
+      {hasTitle && segmentIndex > 0 ? <h2 className={titleClass}>{title}</h2> : null}
 
       {doneParagraphs.length > 0 && (
         <div className="space-y-4">{doneParagraphs.map((p, i) => renderBlock(p, `done-${i}`))}</div>
       )}
 
-      {!allDone && segmentIndex === 0 && (
+      {!allDone && hasTitle && segmentIndex === 0 && (
         <h2 className={titleClass}>
-          <AnimatedWords text={segments[0]} onComplete={advance} delayMs={38} />
+          <AnimatedWords text={segments[0]} onComplete={advance} delayMs={mode === 'letter' ? 16 : 38} mode={mode} />
         </h2>
       )}
 
-      {!allDone && segmentIndex > 0 && (
+      {!allDone && segmentIndex >= titleOffset && (
         <div className="text-base md:text-lg text-muted-foreground leading-[1.75]">
-          <AnimatedWords text={segments[segmentIndex]} onComplete={advance} delayMs={32} />
+          <AnimatedWords
+            text={segments[segmentIndex]}
+            onComplete={advance}
+            delayMs={mode === 'letter' ? 12 : 32}
+            mode={mode}
+          />
         </div>
       )}
     </article>

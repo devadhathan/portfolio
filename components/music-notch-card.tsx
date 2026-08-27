@@ -54,7 +54,7 @@ export function MacBookNotchPreview() {
               'border-x border-b border-border/55',
               'rounded-b-[9px]',
               'h-[11px] w-[42px]',
-              'transition-[width,height,border-radius] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
+              'transition-[width,height,border-radius] duration-500 ease-out-expo',
               'group-hover/notch:h-[40px] group-hover/notch:w-[140px] group-hover/notch:rounded-b-[11px]',
             )}
           >

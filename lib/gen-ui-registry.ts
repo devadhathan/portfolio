@@ -139,7 +139,11 @@ const BASE_CARD_REGISTRY: Record<string, GenUIItem> = {
     role: 'Product Designer',
     company: 'Wordsmith AI',
     period: 'Apr 2026 – Jun 2026',
-    highlights: ['Confidential project — contact Dev for details'],
+    highlights: [
+      'I shipped contract review and versioning after research and internal prototyping',
+      'I owned discovery end to end with legal engineers',
+      'Deeper case study is NDA. Contact me for details',
+    ],
   },
   'timeline:nesoi': {
     type: 'timeline',
@@ -251,7 +255,7 @@ const BASE_CARD_REGISTRY: Record<string, GenUIItem> = {
   },
   'image:falcon': {
     type: 'image',
-    src: '/falcon design system/image.png',
+    src: '/falcon design system/image.webp',
     alt: 'Falcon Design System',
     caption: 'Falcon — Comprehensive design system for Ditto',
     link: '/work?project=falcon-design-system',
@@ -259,27 +263,27 @@ const BASE_CARD_REGISTRY: Record<string, GenUIItem> = {
   'video:crm-prototype': {
     type: 'video',
     src: '/CRM/prototype.mp4',
-    poster: '/CRM/prototype-poster.jpg',
+    poster: '/CRM/prototype-poster.webp',
     alt: 'CRM Redesign Prototype',
     caption: 'CRM Redesign — Interactive prototype',
     link: '/work?project=crm-redesign',
   },
   'image:ditto': {
     type: 'image',
-    src: '/ditto insurance/1.png',
+    src: '/ditto insurance/1.webp',
     alt: 'Ditto Insurance',
     caption: 'Ditto — Booking portal redesign',
     link: '/work?project=onboarding-redesign',
   },
   'image:nesoi': {
     type: 'image',
-    src: '/nesoi/final-prototype.png',
+    src: '/nesoi/final-prototype.webp',
     alt: 'Nesoi.ai Dashboard',
     caption: 'Nesoi.ai — Enterprise learning dashboard',
   },
   'image:portrait': {
     type: 'image',
-    src: '/photos/MEE.png',
+    src: '/photos/MEE.webp',
     alt: 'Devadhathan M D',
     caption: 'Devadhathan M D — Product Designer',
   },
@@ -521,19 +525,19 @@ const BASE_CARD_REGISTRY: Record<string, GenUIItem> = {
   'info:wordsmith-locked': {
     type: 'info',
     title: 'Wordsmith AI',
-    subtitle: 'Locked case study',
-    body: 'This project is confidential and under NDA. Contact Dev at devadhathanmd18@gmail.com or via LinkedIn to learn more.',
+    subtitle: 'Product Designer · 2026',
+    body: 'I worked as a product designer at Wordsmith AI. After a ton of research and internal prototyping, I shipped contract review and versioning for in-house legal teams. Most of the deeper work sits behind an NDA. Contact me at devadhathanmd18@gmail.com or via LinkedIn if you want the real story.',
     icon: '🔒',
     link: '/contact',
   },
   'feature:wordsmith-locked': {
     type: 'feature_section',
-    headline: 'Wordsmith AI is a locked, confidential project',
+    headline: 'I worked as a product designer at Wordsmith AI',
     features: [
       {
         illustration: 'system',
-        title: 'Contact Dev to learn more',
-        body: 'Details about this AI writing platform cannot be shared publicly. Reach out directly if you would like to discuss this work.',
+        title: 'Research, prototype, ship. Then NDA.',
+        body: 'After a ton of research and internal prototyping, we shipped contract review and versioning. I ran discovery end to end and stayed close to legal engineers through launch. Reach out if you want the full story.',
         link: '/contact',
       },
     ],

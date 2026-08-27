@@ -42,14 +42,14 @@ export function MenubarClock() {
       data-cuelume-hover="tick"
       onClick={toggleWidgets}
       className={cn(
-        'flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-2.5 font-mono text-sm font-medium tabular-nums text-foreground sm:gap-2 sm:px-3.5',
+        'flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-2.5 font-mono text-sm font-medium tabular-nums text-current sm:gap-2 sm:px-3.5',
         focusRing,
         widgetsOpen
           ? 'border-primary/40 bg-primary/10'
           : 'border-transparent hover:bg-secondary/50',
       )}
     >
-      <span className="hidden text-foreground/70 sm:inline">{dateLabel}</span>
+      <span className="hidden opacity-70 sm:inline">{dateLabel}</span>
       <span>{timeLabel}</span>
     </Button>
   );

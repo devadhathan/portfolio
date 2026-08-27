@@ -49,10 +49,10 @@ export function NesoiHomeCard({
       </button>
 
       <div className="relative min-h-0 flex-1 px-4 pb-4 pt-2">
-        <div className="h-full origin-center transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/nesoi:scale-[1.015]">
+        <div className="h-full origin-center transition-transform duration-500 ease-out-expo group-hover/nesoi:scale-[1.015]">
           <ImageComparison
-            beforeSrc="/CRM/initial image.png"
-            afterSrc="/CRM/nesoi-solution.png"
+            beforeSrc="/CRM/initial image.webp"
+            afterSrc="/CRM/nesoi-solution.webp"
             beforeAlt="Nesoi challenge framing"
             afterAlt="Nesoi AI creation tool"
             beforeLabel="Before"

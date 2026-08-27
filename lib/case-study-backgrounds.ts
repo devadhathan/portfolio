@@ -1,19 +1,19 @@
 /** Active painting backgrounds for case-study screen stages. */
 export const CASE_STUDY_BACKGROUNDS = [
-  '/photos/case-study-bg/castle-golden-hour.jpg',
-  '/photos/case-study-bg/coastal-fjord.jpg',
-  '/photos/case-study-bg/forth-bridge.jpg',
-  '/photos/case-study-bg/harbor-quay.jpg',
-  '/photos/case-study-bg/kuwasseg-riverside.jpg',
-  '/photos/case-study-bg/cliff-castle.jpg',
-  '/photos/case-study-bg/highland-mist.jpg',
-  '/photos/case-study-bg/riverside-town.jpg',
-  '/photos/case-study-bg/olavinlinna-castle.jpg',
-  '/photos/case-study-bg/mountain-sunset.jpg',
-  '/photos/case-study-bg/golden-valley.jpg',
-  '/photos/case-study-bg/river-boat.jpg',
-  '/photos/case-study-bg/manor-hill.jpg',
-  '/photos/case-study-bg/pastoral-stream.jpg',
+  '/photos/case-study-bg/castle-golden-hour.webp',
+  '/photos/case-study-bg/coastal-fjord.webp',
+  '/photos/case-study-bg/forth-bridge.webp',
+  '/photos/case-study-bg/harbor-quay.webp',
+  '/photos/case-study-bg/kuwasseg-riverside.webp',
+  '/photos/case-study-bg/cliff-castle.webp',
+  '/photos/case-study-bg/highland-mist.webp',
+  '/photos/case-study-bg/riverside-town.webp',
+  '/photos/case-study-bg/olavinlinna-castle.webp',
+  '/photos/case-study-bg/mountain-sunset.webp',
+  '/photos/case-study-bg/golden-valley.webp',
+  '/photos/case-study-bg/river-boat.webp',
+  '/photos/case-study-bg/manor-hill.webp',
+  '/photos/case-study-bg/pastoral-stream.webp',
 ] as const;
 
 /** Stable per-project slots so neighboring stages never share a painting. */
@@ -72,8 +72,12 @@ export function shouldStageCaseStudyMedia(opts: {
 
   // Nesoi: framing / system / validation / prototype.
   // Design gallery uses the comparison slider (no painting stage).
+  // System video stays unstaged; prototype video keeps the painting stage.
   if (id.includes('nesoi')) {
     if (opts.kind === 'design-gallery') return false;
+    if (opts.kind === 'detail-video') {
+      return opts.sectionId === 'prototype';
+    }
     if (opts.kind === 'detail-image' || opts.kind === 'detail-gif') {
       return ['framing', 'system', 'validation', 'prototype'].includes(opts.sectionId ?? '');
     }

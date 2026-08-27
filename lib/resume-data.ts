@@ -3,6 +3,7 @@ export const resumeData = {
   email: "devadhathanmd18@gmail.com",
   website: "devadhathan.com",
   linkedin: "in/devadhathan/",
+  xHandle: "MDdevaD",
   phone: "+447388289392",
 
   companyHistory: {
@@ -16,7 +17,7 @@ export const resumeData = {
       company: "Wordsmith AI",
       period: "April 2026 - June 2026",
       achievements: [
-        "Designed product experiences for Wordsmith AI, an AI-powered writing and content platform.",
+        "I worked as a product designer at Wordsmith AI. After research and internal prototyping, I shipped contract review and versioning for in-house legal teams. I ran discovery end to end and stayed close to legal engineers through launch. Most of the deeper work sits behind an NDA. Contact me if you want the real story.",
       ]
     },
     {
@@ -24,11 +25,11 @@ export const resumeData = {
       company: "Nesoi.ai",
       period: "July 2025 - November 2025",
       achievements: [
-        "Designed and shipped adviser/client-facing dashboards used by 15+ enterprise clients, enabling them to deliver interactive, AI-powered learning modules.",
-        "Led iterative UX improvements and introduced reusable Figma components that improved engagement by 92% and reduced course-creation time by 37%.",
-        "Developed scalable workflow and automation patterns, partnering closely with engineering to ensure consistent, reliable UI behaviour.",
-        "Integrated WCAG 2.1 AA accessibility into component and template design, conducting audits and ensuring all patterns met regulatory requirements.",
-        "Strengthened design-system foundations by documenting component behaviours, responsive rules, and accessibility guidelines."
+        "I designed and shipped adviser/client-facing dashboards used by 15+ enterprise clients, so they could deliver interactive, AI-powered learning modules.",
+        "I led iterative UX improvements and introduced reusable Figma components that lifted engagement by 92% and cut course-creation time by 37%.",
+        "I developed scalable workflow and automation patterns, partnering closely with engineering so the UI stayed consistent and reliable.",
+        "I baked WCAG 2.1 AA into component and template design, auditing patterns so they met regulatory requirements.",
+        "I strengthened the design-system foundations by documenting component behaviours, responsive rules, and accessibility guidelines."
       ]
     },
     {
@@ -36,9 +37,9 @@ export const resumeData = {
       company: "Finshots & Ditto",
       period: "August 2019 - December 2022",
       achievements: [
-        "Joined Finshots in 2019 as a product designer on the financial news platform and designed the Finshots mobile app (Google Play Best App 2020, 100k+ downloads).",
-        "Stayed with the company as it founded Ditto Insurance in 2021 and later rebranded under Ditto — Finshots remains a core product of the parent company.",
-        "Led Ditto booking portal redesign (+17% conversion), created the Falcon Design System (-30% design-to-dev time), and redesigned internal CRM (+20% efficiency).",
+        "I joined Finshots in 2019 as a product designer on the financial news platform and designed the Finshots mobile app (Google Play Best App 2020, 100k+ downloads).",
+        "I stayed with the company as it founded Ditto Insurance in 2021 and later rebranded under Ditto — Finshots remains a core product of the parent company.",
+        "I led the Ditto booking portal redesign (+17% conversion), created the Falcon Design System (-30% design-to-dev time), and redesigned the internal CRM (+20% efficiency).",
       ]
     },
   ],
@@ -72,66 +73,83 @@ export const resumeData = {
       company: "Nesoi.ai",
       period: "July to November 2025",
       description:
-        "Nesoi is an AI learning platform used by Amazon, the University of Toronto and Bain & Company to turn internal material into interactive training.\n\nProblem: Creators arrive to turn a document, deck or video into an interactive learning video. Everything else is overhead. The old flow made them do the thinking: upload, configure, wait, hope. AI sat off to the side, treated as a novelty rather than the fastest path.\n\nGoal: If the AI already understands the material, why assemble it by hand? Raw asset to finished video needed fewer decisions than doing it manually. A partner that reads the upload, proposes a plan, and shows its work.",
-      cardSubtext: "From form wizard to AI partner",
+        "Nesoi turns internal material into interactive training. I redesigned the creation experience so the AI reads your upload, proposes a plan, and shows its work.\n\nNesoi is an AI learning platform running across 15 enterprise deployments, including Amazon, the University of Toronto and Bain & Company. I led the creation experience end to end, from framing through a working React prototype that engineering built from.",
+      cardSubtext: "Raw file to finished video, in two moves.",
+      problem:
+        "V1 made the creator do the thinking.\n\nPeople arrive to turn a document, deck or video into an interactive learning video. Everything else is overhead. V1 asked them to upload, configure, wait and hope. The AI sat off to the side, treated as a novelty rather than the fastest path.\n\nThe closest competitor had the same gap. Plenty of status, no reasoning.",
+      hmw: "Fewer decisions than doing it by hand, not more.",
+      approach:
+        "That moved the target from an interface to a partner. Something that reads the upload, forms a view, proposes it, and shows its work.",
       detailSections: [
         {
-          id: "framing",
-          title: "Framing",
-          description:
-            "The brief was not \"add a chat box.\" The bar was seamlessness: fewer decisions than doing it by hand, not more.\n\nThat moved the target from an interface to a partner. Something that reads the upload, forms a view, proposes it, and shows its work.",
-          image: "/CRM/comparison.png"
-        },
-        {
-          id: "what-changed",
-          title: "What I changed, and why",
-          description:
-            "Show the thinking, not just the steps. V1 jumped into creation with progress labels and no visibility. Users could not tell if the AI understood their material. The same gap showed up in the closest competitor: plenty of status, no reasoning. The new design surfaces what the AI read, inferred, and intends to build, so people correct early instead of discarding the output.\n\nStart from motivation, not a blank prompt. The AI opens with what it found and what it thinks you are making, then asks the one question that changes the output. Confirm or redirect. Two moves instead of ten. Testing rewarded this most.\n\nTemplates and freeform on the same surface. People pick a template, then talk their way out of it. Structured actions and freeform prompts share one input, so switching costs nothing.\n\nVersions that do not punish iteration. Every refinement keeps the previous output alive and comparable."
-        },
-        {
           id: "decisions",
-          title: "The calls, and what they cost",
+          title: "Decisions, why, and what they cost",
           description:
-            "Surface the AI's reasoning while it works, instead of progress states only. Users catch a wrong read early. The cost is perceived speed; visible thinking reads slower than a spinner.\n\nOpen with an interpretation of the upload, instead of a blank prompt. Removes translation work. The risk is guessing wrong, so redirecting had to be cheap.\n\nOne input for templates and freeform, instead of separate modes. People switch mid task. A forced mode choice makes them commit too early.\n\nExtend shadcn/ui, instead of bespoke chat components. Faster, and everything fed one shared library. Less visual distinctiveness in return.\n\nCut multi user chat from v1. Prove the happy path before designing for teams.\n\nPrototype in Cursor, instead of a Figma click through. Tests the real interaction and doubles as a reference for engineering."
+            "Surface the AI's reasoning while it works\nWhy: instead of progress states only, so people catch a wrong read early, not after the output is done.\nCost: perceived speed. Visible thinking reads slower than a spinner.\n\nOpen with an interpretation of the upload\nWhy: instead of a blank prompt. Removes the translation work of figuring out what to ask.\nCost: the AI can guess wrong, so redirecting had to be cheap enough that a wrong guess costs one click.\n\nOne input for templates and freeform\nWhy: instead of separate modes. People switch mid task, and a forced mode choice makes them commit too early.\nCost: structured actions are less discoverable when they share a field.\n\nExtend shadcn/ui\nWhy: instead of building bespoke chat components. Faster, and everything fed one shared library.\nCost: less visual distinctiveness, in exchange for speed.",
         },
         {
-          id: "system",
+          id: "system-video",
           title: "System",
-          description:
-            "Built on shadcn/ui and extended for chat: message and thinking states, prompt patterns, long conversation layout, and content type variants. All of it went back into the shared library so dashboard and creation tools stayed on one system.",
-          image: "/CRM/Figma.png",
-          images: ["/CRM/shadcn-system.png"]
+          description: "",
+          video: "/videos/Scene_no_watermark_hq.mp4",
+          videoControls: false,
         },
         {
-          id: "constraints",
-          title: "Constraints",
+          id: "not-built",
+          title: "Not built",
           description:
-            "Model capability was moving under us. Patterns had to hold when the AI got better, not just at current quality.\n\nCompetitors shipped fast. We took what worked and ignored the decoration.\n\nThe timeline forced a happy path. Multi user chat was scoped out on purpose.\n\nDesigned with tool and MCP integrations coming, so the thinking view had room for tool calls we had not built yet."
+            "Multi user chat. Scoped out of v1 on purpose. Prove the happy path before designing for teams.\n\nA separate templates mode. Dropped once testing showed people pick a template and then talk their way out of it.\n\nProgress only creation. Kept as the control in the study rather than shipped, so the trust claim had something to beat.",
         },
         {
           id: "validation",
           title: "Validation",
           description:
-            "Every change was a claim, so we tested rather than shipping on taste.\n\nGuerrilla study with five participants in a cafe: Static Form against Agent Variant. Confidence and trust measured qualitatively; engagement and chat volume measured quantitatively. Mean SUS 82.5. Sentiment via an in product PostHog survey.\n\nUsers trusted the Agent variant more. The interview pause created a sense of higher quality before generation even started. Asking the right question up front bought credibility the output had not yet earned.\n\nA React prototype in Cursor simulated real LLM latency and states. Engineering got working code, not a walkthrough. It cleared the hard states: thinking, typing, error loops.",
-          image: "/CRM/validation.png"
+            "Users trusted the agent variant more. The interview pause created a sense of higher quality before generation even started.\n\nAsking the right question up front bought credibility the output had not yet earned.\n\n82.5 mean SUS · 5 participants, cafe study · 2 variants tested\n\nStatic form against agent variant. Confidence and trust measured qualitatively, engagement and chat volume quantitatively, sentiment through an in product PostHog survey.",
+          image: "/CRM/validation.webp",
         },
         {
           id: "prototype",
           title: "Prototype",
           description:
-            "Interactive React prototype of the AI creation experience, with real latency and states, built in Cursor as a reference for engineering.",
+            "The prototype was React, built in Cursor, simulating real LLM latency and states. Engineering got working code instead of a walkthrough, which cleared the hard states before they became tickets: thinking, typing, error loops.",
           video: "/CRM/prototype.mp4",
-          videoPoster: "/CRM/prototype-poster.jpg"
-        }
+          videoPoster: "/CRM/prototype-poster.webp",
+        },
+        {
+          id: "system",
+          title: "System",
+          description:
+            "Everything went back into the library.\n\nBuilt on shadcn/ui and extended for chat: message and thinking states, prompt patterns, long conversation layout, content type variants. The dashboard and the creation tools stayed on one system.",
+          image: "/CRM/Figma.webp",
+        },
+        {
+          id: "constraints",
+          title: "Constraints",
+          description:
+            "Model capability was moving under us. Patterns had to hold when the AI got better, not just at current quality.\n\nCompetitors shipped fast. We took what worked and ignored the decoration.\n\nTool and MCP integrations were coming. The thinking view left room for calls we had not built yet.",
+        },
+        {
+          id: "shipped",
+          title: "Shipped",
+          description:
+            "Engineering built from the prototype rather than a written spec. I created the PR and it was finally merged to main.\n\nI left Nesoi in November, before post launch instrumentation matured, so the numbers here are pre ship.\n\nWhat I would have watched: completion rate from upload to published video, and how often creators redirect on the first question. If the second number stayed low, the interpretation was doing its job.",
+        },
       ],
 
       learnings: [
         "Embedded beats adjacent. Conversational AI only helps when it lives inside the workflow the user came for.",
         "Enterprise users will trade speed for legibility. Show the reasoning and they let the AI do more.",
-        "Trust is a UX problem before it is a model problem."
+        "Trust is a UX problem before it is a model problem.",
       ],
       role: "Product Designer",
-      tools: ["Figma", "Design systems", "shadcn/ui", "Prototyping in Cursor", "PostHog"]
+      team: "1 designer, 2 developers",
+      tools: [
+        "Figma",
+        "Design systems",
+        "shadcn/ui",
+        "Prototyping in Cursor",
+        "PostHog",
+      ],
     },
     {
       title: "Falcon Design System",
@@ -149,12 +167,12 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       problem: "How might we develop a unified design system that streamlines workflows, ensures consistent and accessible user experiences, and empowers cross-functional teams to rapidly iterate and innovate?",
       targetAudience: "Internal designers and developers who craft and implement digital interfaces, product managers and stakeholders who need to maintain alignment and a cohesive brand experience, cross-functional teams such as marketing, content, and customer support, as well as external partners and agencies looking for a consistent design language.",
       targetAudienceImage: {
-        src: '/falcon design system/image copy 2.png',
+        src: '/falcon design system/image copy 2.webp',
         alt: 'Falcon design system preview',
         caption: '3D icons created for the use cases.'
       },
       keyFeatureImage: {
-        src: '/falcon design system/image copy.png',
+        src: '/falcon design system/image copy.webp',
         alt: 'Falcon design system key feature modules',
         caption: 'Iconography, documentation, and component samples beside the tokens.'
       },
@@ -166,7 +184,7 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       ],
       keyFeatures: ["Reusable components", "Typography system", "Color palettes", "Icons library", "Interactive components", "Accessibility compliance"],
       problemImage: {
-        src: '/falcon design system/image copy.png',
+        src: '/falcon design system/image copy.webp',
         alt: 'Falcon design system overview',
         caption: 'Design tools, tokens, and guidelines that make Falcon cohesive.'
       }
@@ -212,7 +230,7 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       description: `In 2022, Ditto Insurance — launched in 2021 as an insurance spin-off from Finshots — presented significant opportunities for improvement. Collaborating with my product manager, I reimagined the onboarding experience to reduce friction for new users. As a product designer, I leveraged data-driven insights and iterative design methods to pinpoint user pain points and develop tailored solutions that enhanced both functionality and user satisfaction.`,
       problem: `Users were dropping off before completing the slot booking process, resulting in low conversion rates. A major challenge was aligning our design solutions with the business goal of increasing conversions while maintaining a user-centric approach. Understanding the root causes of abandonment in a relatively new product required continuous collaboration across design, product, and technical teams.`,
       problemImage: {
-        src: '/ditto insurance/image copy.png',
+        src: '/ditto insurance/image copy.webp',
         alt: 'Booking abandonment snapshot',
         caption: 'Users were abandoning the slot booking flow before completing their purchase.'
       },
@@ -262,21 +280,21 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
           title: "Users Unable to Reach Desired Time Slots",
           problem: "In the original workflow, advisor capacity limited users from booking their preferred slots and expanding the schedule wasn’t feasible.",
           solution: "We added WhatsApp support, clearer exit points, and proactive messaging that guided users toward alternative assistance when slots were full.",
-          image: '/ditto insurance/1.png'
+          image: '/ditto insurance/1.webp'
         },
         {
           tag: "Problem #2",
           title: "Trust Issues with Sharing Phone Numbers",
           problem: "Users dropped off at the phone number stage because they feared spam calls, undermining the momentum of the flow.",
           solution: "Collaborating with policy writers, we emphasized ‘We never spam’ via badge, tooltip, and nudge treatments, ultimately shipping a mobile-friendly nudge design that reinforced this promise.",
-          image: '/ditto insurance/2.png'
+          image: '/ditto insurance/2.webp'
         },
         {
           tag: "Problem #3",
           title: "Lost Data on Accidental Exit",
           problem: "Users were frustrated when accidental exits erased their progress, creating a counterintuitive experience.",
           solution: "We introduced confirmation pop-ups that preserved in-progress data and guided users to WhatsApp when slots were unavailable, preventing unexpected data loss.",
-          image: '/ditto insurance/3.png'
+          image: '/ditto insurance/3.webp'
         }
       ],
       impactOverview: `The redesign had broad effects: Ditto now sees over one lakh monthly visitors, with around 600+ people booking through the portal on an average day. Thanks to the energy and passion of the team, we drove key business metrics upward.`,
@@ -296,7 +314,7 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       ],
       designGallery: [
         {
-          src: '/ditto insurance/image.png',
+          src: '/ditto insurance/image.webp',
           title: 'Booking confirmation',
           description: 'Guided flows with progress indicators and WhatsApp assistance.'
         }
@@ -324,7 +342,7 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       cardSubtext: "Insurance CRM",
       description: `Over the course of four months, I partnered with the Ditto team to build a CRM that streamlined sales operations and delivered intuitive, actionable reporting. Ditto started as a no-spam insurance platform in 2021 with the goal of simplifying insurance selection across India, and the growing lead volume made it clear that the early Excel-based workflows needed a more scalable foundation.`,
       problem: "Manual lead tracking with Excel became unsustainable as the lead volume increased, and the existing CRM lacked role-specific workflows, real-time insight, and a cohesive, customizable interface.",
-      approach: `Based on user feedback, I envisioned a CRM built for seamless usability, role-specific dashboards, personalized workflows, and integrated communication tools. The redesign prioritized streamlined navigation, centralized communications, and dashboards that surfaced the right data for each role.`,
+      approach: `Based on user feedback, we envisioned a CRM built for seamless usability, role-specific dashboards, personalized workflows, and integrated communication tools. The redesign prioritized streamlined navigation, centralized communications, and dashboards that surfaced the right data for each role.`,
       detailSections: [
         {
           id: 'adding-notes',
@@ -367,7 +385,7 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       ],
       designGallery: [
         {
-          src: '/CRM/image.png',
+          src: '/CRM/image.webp',
           title: 'CRM dashboard',
           description: 'Role-aware dashboards and tagging for leads.'
         }

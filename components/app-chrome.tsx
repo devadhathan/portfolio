@@ -6,26 +6,28 @@ import { CuelumeBind } from '@/components/cuelume-bind';
 import { DesktopOsProvider, useDesktopOs } from '@/components/desktop-os/desktop-os-provider';
 import { DesktopOsShell } from '@/components/desktop-os/desktop-os-shell';
 import { useNavActions } from '@/contexts/nav-actions-context';
-import { BrandBootSplash } from '@/components/brand-boot-splash';
+import { installPerfDebug } from '@/lib/perf-debug';
+import { useEffect } from 'react';
 
 function AppChromeInner({ children }: { children: React.ReactNode }) {
   const { hideTopBar, hideMobileNav } = useNavActions();
   const { enabled } = useDesktopOs();
 
+  // No-op unless the URL carries ?perf=1
+  useEffect(() => installPerfDebug(), []);
+
   return (
-    <BrandBootSplash>
-      <div className="desktop-stage min-h-screen overflow-x-hidden">
-        <CuelumeBind />
-        <ScrollToTopOnNavigate />
-        {!hideTopBar && <TopBar />}
-        {enabled ? (
-          <DesktopOsShell />
-        ) : (
-          <div className="desktop-stage-inset">{children}</div>
-        )}
-        {!hideMobileNav && !enabled ? <MobileBottomNav /> : null}
-      </div>
-    </BrandBootSplash>
+    <div className="desktop-stage min-h-screen overflow-x-hidden">
+      <CuelumeBind />
+      <ScrollToTopOnNavigate />
+      {!hideTopBar ? <TopBar /> : null}
+      {enabled ? (
+        <DesktopOsShell />
+      ) : (
+        <div className="desktop-stage-inset">{children}</div>
+      )}
+      {!hideMobileNav && !enabled ? <MobileBottomNav /> : null}
+    </div>
   );
 }
 

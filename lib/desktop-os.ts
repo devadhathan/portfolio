@@ -1,15 +1,51 @@
 export type DesktopLinkIconId = 'writings' | 'catalystic' | 'bigBang';
 
+/** Finder sidebar locations (Favourites section + color Tags). */
+export type FinderLocation =
+  | 'recents'
+  | 'applications'
+  | 'desktop'
+  | 'documents'
+  | 'sideProjects'
+  | 'favourites'
+  | 'trash'
+  | 'tag-red'
+  | 'tag-orange'
+  | 'tag-yellow'
+  | 'tag-green'
+  | 'tag-blue'
+  | 'tag-purple'
+  | 'tag-gray';
+
+export type FinderTagId =
+  | 'tag-red'
+  | 'tag-orange'
+  | 'tag-yellow'
+  | 'tag-green'
+  | 'tag-blue'
+  | 'tag-purple'
+  | 'tag-gray';
+
+export type OpenWindowOpts = {
+  syncUrl?: boolean;
+  /** When opening Finder, land on this sidebar location. */
+  finderLocation?: FinderLocation;
+};
+
 export type DesktopWindowId =
+  | 'finder'
   | 'home'
   | 'work'
   | 'playground'
   | 'ask'
   | 'games'
+  | 'drawesome'
   | 'photos'
   | 'wordsmith'
   | 'trash'
   | 'contact'
+  | 'about'
+  | 'colophon'
   | DesktopLinkIconId;
 
 export type DesktopIconId = DesktopWindowId;
@@ -33,13 +69,27 @@ export type DesktopIconPosition = {
   edge?: 'left' | 'right';
 };
 
-export type WallpaperId = 'vista' | 'bloom' | 'dusk' | 'forth';
+export type WallpaperId =
+  | 'bloom'
+  | 'forth'
+  | 'painting'
+  | 'loch'
+  | 'mountain'
+  | 'green'
+  | 'heather'
+  | 'dunes'
+  | 'bridge'
+  | 'clouds';
 
 export type WallpaperPreset = {
   id: WallpaperId;
   label: string;
   /** CSS background value (image url or gradient). */
   background: string;
+  /** Optional lighter asset for narrow viewports (mobile LCP). */
+  mobileBackground?: string;
+  /** Menubar label color that contrasts with this wallpaper’s top band. */
+  menubarContrast: 'light' | 'dark';
 };
 
 export type DesktopLinkIcon = {
@@ -61,7 +111,7 @@ export const WORDSMITH_EMBED_URL = 'https://www.wordsmith.ai/products/blueprints
 export const DESKTOP_LINK_ICONS: DesktopLinkIcon[] = [
   {
     id: 'writings',
-    label: 'Writings',
+    label: 'Favourites',
     href: 'https://medium.com/@devadhathanmd18',
     // Medium refuses iframe embedding (X-Frame-Options / CSP).
     embeddable: false,
@@ -90,33 +140,51 @@ export const TRASH_BAIT_VIDEO = {
 } as const;
 
 export const DESKTOP_WINDOW_IDS: DesktopWindowId[] = [
+  'finder',
   'home',
   'work',
   'playground',
   'ask',
   'games',
+  'drawesome',
   'photos',
   'wordsmith',
   'trash',
   'contact',
+  'about',
+  'colophon',
   ...DESKTOP_LINK_ICON_IDS,
 ];
+
+/** Shared icon assets for dock, desktop, and menubar open-app strip. */
+export const WINDOW_ICON_SRC: Partial<Record<DesktopWindowId, string>> = {
+  finder: '/icons/dark-finder.svg',
+  home: '/icons/home.svg',
+  work: '/icons/briefcase.svg',
+  playground: '/icons/playgroundd.svg',
+  games: '/icons/gamess.svg',
+  drawesome: '/icons/pen.svg',
+  ask: '/icons/sparkles.svg',
+  photos: '/icons/image.svg',
+  wordsmith: '/icons/sparkles.svg',
+  trash: '/icons/trash.svg',
+  contact: '/icons/mailbox.svg',
+  about: '/icons/user.svg',
+  colophon: '/icons/info-bubble.svg',
+  writings: '/icons/folder.svg',
+  catalystic: '/icons/lightbulb.svg',
+  bigBang: '/icons/lightbulb.svg',
+};
 
 export function getDesktopLinkIcon(id: DesktopWindowId): DesktopLinkIcon | undefined {
   return DESKTOP_LINK_ICONS.find((item) => item.id === id);
 }
 
+/** Desktop icons on the right rail — primary apps live in the bottom dock. */
 export const DESKTOP_ICON_IDS: DesktopIconId[] = [
-  'home',
-  'work',
-  'playground',
   'ask',
-  'games',
-  'photos',
   'writings',
-  'catalystic',
-  'bigBang',
-  'contact',
+  'drawesome',
   'trash',
 ];
 
@@ -133,109 +201,185 @@ export function pathToWindowId(pathname: string): DesktopWindowId {
   return 'home';
 }
 
-export const DESKTOP_OS_ICON_STORAGE_KEY = 'portfolio-desktop-os-icons-v7';
-export const DESKTOP_OS_WALLPAPER_KEY = 'portfolio-desktop-os-wallpaper-v7';
+export const DESKTOP_OS_ICON_STORAGE_KEY = 'portfolio-desktop-os-icons-v13';
+export const DESKTOP_OS_WALLPAPER_KEY = 'portfolio-desktop-os-wallpaper-v10';
 
 /** One visible window at a time. */
 export const MAX_OPEN_WINDOWS = 1;
 
 export const WALLPAPER_PRESETS: WallpaperPreset[] = [
   {
-    id: 'forth',
-    label: 'Forth',
+    id: 'bridge',
+    label: 'Bridge',
     background:
-      "#0a0a0a center / cover no-repeat url('/wallpapers/forth.webp')",
-  },
-  {
-    id: 'vista',
-    label: 'Vista',
-    background:
-      "#0a0a0a center / cover no-repeat url('/wallpapers/vista.webp')",
+      "#000000 center / cover no-repeat url('/wallpapers/bridge.webp')",
+    mobileBackground:
+      "#000000 center / cover no-repeat url('/wallpapers/bridge-mobile.webp')",
+    menubarContrast: 'light',
   },
   {
     id: 'bloom',
     label: 'Bloom',
+    /* Bias crop downward so mountain mass sits under the icon rails */
     background:
-      "#0a0a0a center / cover no-repeat url('/wallpapers/bloom.webp')",
+      "#0a0a0a center 68% / cover no-repeat url('/wallpapers/bloom.webp')",
+    mobileBackground:
+      "#0a0a0a center 68% / cover no-repeat url('/wallpapers/bloom-mobile.jpg')",
+    menubarContrast: 'dark',
   },
   {
-    id: 'dusk',
-    label: 'Dusk',
-    /* Soft blue sky → warm peach/amber horizon glow (no land silhouette) */
-    background: [
-      'radial-gradient(ellipse 130% 58% at 48% 92%, hsl(32 95% 62%) 0%, hsl(22 88% 55% / 0.85) 18%, hsl(350 55% 62% / 0.28) 42%, transparent 62%)',
-      'radial-gradient(ellipse 90% 45% at 62% 78%, hsl(18 80% 58% / 0.45) 0%, transparent 55%)',
-      'linear-gradient(180deg, hsl(205 48% 36%) 0%, hsl(200 42% 46%) 28%, hsl(198 38% 58%) 48%, hsl(190 30% 68%) 58%, hsl(40 55% 72%) 70%, hsl(28 75% 58%) 82%, hsl(215 28% 22%) 100%)',
-    ].join(', '),
+    id: 'forth',
+    label: 'Forth',
+    background:
+      "#0a0a0a center / cover no-repeat url('/wallpapers/forth.webp')",
+    mobileBackground:
+      "#0a0a0a center / cover no-repeat url('/wallpapers/forth-mobile.webp')",
+    menubarContrast: 'dark',
+  },
+  {
+    id: 'painting',
+    label: 'Painting',
+    background:
+      "#0a0a0a center / cover no-repeat url('/wallpapers/painting.webp')",
+    mobileBackground:
+      "#0a0a0a center / cover no-repeat url('/wallpapers/painting-mobile.webp')",
+    menubarContrast: 'dark',
+  },
+  {
+    id: 'loch',
+    label: 'Loch',
+    background:
+      "#0a0a0a center / cover no-repeat url('/wallpapers/loch.webp')",
+    mobileBackground:
+      "#0a0a0a center / cover no-repeat url('/wallpapers/loch-mobile.webp')",
+    menubarContrast: 'light',
+  },
+  {
+    id: 'mountain',
+    label: 'Mountain',
+    background:
+      "#0a0a0a center / cover no-repeat url('/wallpapers/mountain.webp')",
+    mobileBackground:
+      "#0a0a0a center / cover no-repeat url('/wallpapers/mountain-mobile.webp')",
+    menubarContrast: 'dark',
+  },
+  {
+    id: 'green',
+    label: 'Green',
+    background:
+      "#0a0a0a center / cover no-repeat url('/wallpapers/green.webp')",
+    mobileBackground:
+      "#0a0a0a center / cover no-repeat url('/wallpapers/green-mobile.jpg')",
+    menubarContrast: 'light',
+  },
+  {
+    id: 'heather',
+    label: 'Heather',
+    background:
+      "#0a0a0a center / cover no-repeat url('/wallpapers/heather.webp')",
+    mobileBackground:
+      "#0a0a0a center / cover no-repeat url('/wallpapers/heather-mobile.webp')",
+    menubarContrast: 'light',
+  },
+  {
+    id: 'dunes',
+    label: 'Dunes',
+    background:
+      "#0a0a0a center / cover no-repeat url('/wallpapers/dunes.webp')",
+    menubarContrast: 'light',
+  },
+  {
+    id: 'clouds',
+    label: 'Clouds',
+    background:
+      "#0a0a0a center / cover no-repeat url('/wallpapers/clouds.webp')",
+    mobileBackground:
+      "#0a0a0a center / cover no-repeat url('/wallpapers/clouds-mobile.webp')",
+    menubarContrast: 'light',
   },
 ];
 
-export const DEFAULT_WALLPAPER_ID: WallpaperId = 'bloom';
+export const DEFAULT_WALLPAPER_ID: WallpaperId = 'bridge';
 
 /** Applied on `<html>` before paint so reload doesn't flash the default wallpaper. */
 export const OS_WALLPAPER_CSS_VAR = '--os-wallpaper';
 
-export function wallpaperBackgroundFor(id: WallpaperId): string {
+/** `data-os-menubar` on `<html>` — ink color for the transparent menubar. */
+export const OS_MENUBAR_CONTRAST_ATTR = 'data-os-menubar';
+
+export function wallpaperBackgroundFor(
+  id: WallpaperId,
+  opts?: { narrow?: boolean },
+): string {
+  const preset =
+    WALLPAPER_PRESETS.find((p) => p.id === id) ??
+    WALLPAPER_PRESETS.find((p) => p.id === DEFAULT_WALLPAPER_ID) ??
+    WALLPAPER_PRESETS[0];
+  if (opts?.narrow && preset.mobileBackground) return preset.mobileBackground;
+  return preset.background;
+}
+
+export function menubarContrastFor(id: WallpaperId): 'light' | 'dark' {
   return (
-    WALLPAPER_PRESETS.find((p) => p.id === id)?.background ??
-    WALLPAPER_PRESETS.find((p) => p.id === DEFAULT_WALLPAPER_ID)?.background ??
-    WALLPAPER_PRESETS[0].background
+    WALLPAPER_PRESETS.find((p) => p.id === id)?.menubarContrast ??
+    WALLPAPER_PRESETS.find((p) => p.id === DEFAULT_WALLPAPER_ID)?.menubarContrast ??
+    'light'
   );
 }
 
-/** Inline boot script for `<head>` — reads localStorage and sets `--os-wallpaper`. */
-export function getWallpaperBootScript(): string {
-  const presets = Object.fromEntries(
-    WALLPAPER_PRESETS.map((preset) => [preset.id, preset.background]),
-  );
-  return `(function(){try{var k=${JSON.stringify(DESKTOP_OS_WALLPAPER_KEY)};var id=localStorage.getItem(k);var p=${JSON.stringify(presets)};var bg=(id&&p[id])?p[id]:p[${JSON.stringify(DEFAULT_WALLPAPER_ID)}];if(bg)document.documentElement.style.setProperty(${JSON.stringify(OS_WALLPAPER_CSS_VAR)},bg);}catch(e){}})();`;
-}
+/* Boot script moved to lib/os-settings.ts — it now applies every stored setting. */
 
-const COL_INSET = 24;
-const ROW = 92;
+const COL_INSET = 22;
+const ROW = 100;
 const START_Y = 56;
 
-const NARROW_COL_INSET = 6;
-const NARROW_ROW = 58;
-const NARROW_START_Y = 48;
+const NARROW_COL_INSET = 8;
+const NARROW_ROW = 100;
+const NARROW_START_Y = 40;
 
 /**
- * Default desktop icon layout (PostHog-style rails):
- * Left  — primary apps + media
- * Right — side projects, Trash at the bottom
+ * Desktop icons sit on the right — primary apps live in the bottom dock.
+ * Visible rail (top → bottom): Ask AI → Favourites → Draw → Trash.
  */
 export const DEFAULT_ICON_POSITIONS: Record<DesktopIconId, DesktopIconPosition> = {
-  // Left rail
-  home: { x: COL_INSET, y: START_Y, edge: 'left' },
-  work: { x: COL_INSET, y: START_Y + ROW, edge: 'left' },
-  playground: { x: COL_INSET, y: START_Y + ROW * 2, edge: 'left' },
-  ask: { x: COL_INSET, y: START_Y + ROW * 3, edge: 'left' },
-  games: { x: COL_INSET, y: START_Y + ROW * 4, edge: 'left' },
-  photos: { x: COL_INSET, y: START_Y + ROW * 5, edge: 'left' },
-  writings: { x: COL_INSET, y: START_Y + ROW * 6, edge: 'left' },
-  contact: { x: COL_INSET, y: START_Y + ROW * 7, edge: 'left' },
-  // Opened from Case studies list — no desktop icon rail entry
-  wordsmith: { x: COL_INSET, y: START_Y + ROW * 5, edge: 'left' },
-  // Right rail
-  catalystic: { x: COL_INSET, y: START_Y, edge: 'right' },
-  bigBang: { x: COL_INSET, y: START_Y + ROW, edge: 'right' },
-  trash: { x: COL_INSET, y: START_Y + ROW * 7, edge: 'right' },
+  // Visible right-rail stack
+  ask: { x: COL_INSET, y: START_Y, edge: 'right' },
+  writings: { x: COL_INSET, y: START_Y + ROW, edge: 'right' },
+  drawesome: { x: COL_INSET, y: START_Y + ROW * 2, edge: 'right' },
+  trash: { x: COL_INSET, y: START_Y + ROW * 3, edge: 'right' },
+  // Dock / menu apps — kept for layout typing, not shown on the rail
+  finder: { x: COL_INSET, y: START_Y, edge: 'right' },
+  home: { x: COL_INSET, y: START_Y, edge: 'right' },
+  work: { x: COL_INSET, y: START_Y + ROW, edge: 'right' },
+  playground: { x: COL_INSET, y: START_Y + ROW * 2, edge: 'right' },
+  games: { x: COL_INSET, y: START_Y + ROW * 3, edge: 'right' },
+  photos: { x: COL_INSET, y: START_Y + ROW, edge: 'right' },
+  contact: { x: COL_INSET, y: START_Y + ROW * 3, edge: 'right' },
+  catalystic: { x: COL_INSET, y: START_Y + ROW * 4, edge: 'right' },
+  bigBang: { x: COL_INSET, y: START_Y + ROW * 5, edge: 'right' },
+  wordsmith: { x: COL_INSET, y: START_Y + ROW * 5, edge: 'right' },
+  about: { x: COL_INSET, y: START_Y + ROW * 6, edge: 'right' },
+  colophon: { x: COL_INSET, y: START_Y + ROW * 6, edge: 'right' },
 };
 
-/** Fixed compact rails for phone / tablet OS (no drag). */
+/** Fixed compact right rail for phone / tablet OS (no drag). Dock holds primaries. */
 export const NARROW_ICON_POSITIONS: Record<DesktopIconId, DesktopIconPosition> = {
-  home: { x: NARROW_COL_INSET, y: NARROW_START_Y, edge: 'left' },
-  work: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW, edge: 'left' },
-  playground: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 2, edge: 'left' },
-  ask: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 3, edge: 'left' },
-  games: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 4, edge: 'left' },
-  photos: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 5, edge: 'left' },
-  writings: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 6, edge: 'left' },
-  contact: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 7, edge: 'left' },
-  wordsmith: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 5, edge: 'left' },
-  catalystic: { x: NARROW_COL_INSET, y: NARROW_START_Y, edge: 'right' },
-  bigBang: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW, edge: 'right' },
-  trash: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 7, edge: 'right' },
+  ask: { x: NARROW_COL_INSET, y: NARROW_START_Y, edge: 'right' },
+  writings: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW, edge: 'right' },
+  drawesome: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 2, edge: 'right' },
+  trash: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 3, edge: 'right' },
+  finder: { x: NARROW_COL_INSET, y: NARROW_START_Y, edge: 'right' },
+  home: { x: NARROW_COL_INSET, y: NARROW_START_Y, edge: 'right' },
+  work: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW, edge: 'right' },
+  playground: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 2, edge: 'right' },
+  games: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 3, edge: 'right' },
+  photos: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW, edge: 'right' },
+  contact: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 3, edge: 'right' },
+  catalystic: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 4, edge: 'right' },
+  bigBang: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 5, edge: 'right' },
+  wordsmith: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 5, edge: 'right' },
+  about: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 6, edge: 'right' },
+  colophon: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 6, edge: 'right' },
 };
 
 export function createInitialWindows(

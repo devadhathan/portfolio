@@ -2,7 +2,11 @@
 
 import { useEffect, useRef, type ReactNode } from 'react';
 import { MoreHorizontal } from 'lucide-react';
+import { XLogo } from '@/components/x-logo';
+import { X_PROFILE_URL } from '@/lib/social-links';
 import { cn } from '@/lib/utils';
+
+const CONNECT_PREVIEW_POSTER = '/videos/connect-preview-poster.webp';
 
 type ConnectMiniPostProps = {
   name: string;
@@ -11,7 +15,10 @@ type ConnectMiniPostProps = {
   body: string;
   profileHref?: string;
   videoSrc?: string;
+  videoPoster?: string;
   className?: string;
+  /** Keep the media fully inside the card (no peek crop). */
+  flushMedia?: boolean;
   socialLinks?: Array<{
     label: string;
     href: string;
@@ -24,9 +31,11 @@ export function ConnectMiniPost({
   handle,
   avatarSrc,
   body,
-  profileHref = 'https://x.com/mddevadhathan',
+  profileHref = X_PROFILE_URL,
   videoSrc = '/videos/connect-preview.mp4',
+  videoPoster = CONNECT_PREVIEW_POSTER,
   className,
+  flushMedia = false,
   socialLinks,
 }: ConnectMiniPostProps) {
   const paragraphs = body.split(/\n\n+/).filter(Boolean);
@@ -37,6 +46,13 @@ export function ConnectMiniPost({
     const root = rootRef.current;
     const video = videoRef.current;
     if (!root || !video) return;
+
+    const allowPlay =
+      !window.matchMedia('(max-width: 1023px)').matches &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
+      !(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+
+    if (!allowPlay) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -78,9 +94,11 @@ export function ConnectMiniPost({
                   aria-label={`${link.label}: ${tooltip}`}
                   data-cuelume-hover="tick"
                   data-cuelume-press
-                  className="group/social relative flex h-10 w-10 items-center justify-center rounded-full border border-border/40 bg-secondary/30 text-primary transition-colors hover:border-primary/40 hover:bg-primary/10"
+                  className="group/social relative flex h-10 w-10 items-center justify-center rounded-full border border-border/40 bg-secondary/30 text-foreground/85 transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-foreground"
                 >
-                  {link.icon}
+                  <span className="flex shrink-0 items-center justify-center [&_svg]:shrink-0">
+                    {link.icon}
+                  </span>
                   <span
                     role="tooltip"
                     className={cn(
@@ -150,11 +168,20 @@ export function ConnectMiniPost({
         </div>
 
         <div className="mt-auto pt-4">
-          <div className="relative -mb-6 w-full shrink-0 overflow-hidden rounded-2xl border border-border/40 bg-secondary/15 aspect-video shadow-none transition-[transform,box-shadow] duration-500 ease-out will-change-transform group-hover/connect:-translate-y-1.5 group-hover/connect:shadow-[0_10px_24px_rgba(0,0,0,0.16)] sm:-mb-8 dark:group-hover/connect:shadow-[0_12px_28px_rgba(0,0,0,0.4)]">
+          <div
+            className={cn(
+              'relative w-full shrink-0 overflow-hidden rounded-2xl border border-border/40 bg-secondary/15 aspect-video shadow-none transition-[transform,box-shadow] duration-500 ease-out will-change-transform group-hover/connect:-translate-y-1.5 group-hover/connect:shadow-[0_10px_24px_rgba(0,0,0,0.16)] dark:group-hover/connect:shadow-[0_12px_28px_rgba(0,0,0,0.4)]',
+              flushMedia ? 'mb-0' : '-mb-6 sm:-mb-8',
+            )}
+          >
             <video
               ref={videoRef}
               src={videoSrc}
-              className="absolute left-0 top-0 h-[125%] w-full object-cover object-top"
+              poster={videoPoster}
+              className={cn(
+                'absolute inset-0 h-full w-full object-cover',
+                flushMedia ? 'object-center' : 'object-top',
+              )}
               muted
               loop
               playsInline

@@ -57,7 +57,7 @@ function DocStackGraphic({ gathered, className }: { gathered: boolean; className
         {FOLDER_STACK.map((folder, index) => (
           <div
             key={index}
-            className="absolute left-1/2 top-1/2 h-[82px] w-[100px] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            className="absolute left-1/2 top-1/2 h-[82px] w-[100px] transition-transform duration-500 ease-out-expo"
             style={{
               zIndex: index + 1,
               transform: `translate(-50%, -50%) ${gathered ? folder.gathered : folder.idle}`,

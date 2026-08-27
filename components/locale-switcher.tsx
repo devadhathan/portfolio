@@ -39,7 +39,7 @@ export function LocaleSwitcher() {
           <Languages className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-36 bg-card/65 backdrop-blur-2xl border border-white/[0.08]">
+      <DropdownMenuContent align="end" className="w-36">
         {routing.locales.map((code) => (
           <DropdownMenuItem
             key={code}

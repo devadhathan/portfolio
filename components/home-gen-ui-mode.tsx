@@ -10,7 +10,6 @@ import { useGenUIPrompt } from '@/hooks/use-gen-ui-prompt';
 import { scrollPageToTop } from '@/lib/scroll-page';
 import { OsBackButton } from '@/components/os-back-button';
 import { blurFadeUp, easeOutExpo } from '@/lib/motion';
-import { CaseStudyLoading } from '@/components/case-study-loading';
 
 const GenUIModeShell = dynamic(
   () => import('@/components/gen-ui-mode-shell').then((mod) => ({ default: mod.GenUIModeShell })),
@@ -18,7 +17,7 @@ const GenUIModeShell = dynamic(
 );
 const ProjectDetailView = dynamic(
   () => import('@/components/project-detail-view').then((mod) => ({ default: mod.ProjectDetailView })),
-  { ssr: false, loading: () => <CaseStudyLoading /> },
+  { ssr: false },
 );
 const GenUIChatWidget = dynamic(
   () => import('@/components/gen-ui-chat-widget').then((mod) => ({ default: mod.GenUIChatWidget })),

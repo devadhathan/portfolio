@@ -13,6 +13,8 @@ import {
 
 export type NavActions = {
   onProjectSelect?: (projectSlug: string) => void;
+  /** Case study open in this window, so the menu bar can offer next / previous. */
+  selectedProjectId?: string | null;
   onHomeClick?: () => void;
   hideTopBar?: boolean;
   hideMobileNav?: boolean;
@@ -29,6 +31,8 @@ type NavVisibility = {
 
 type NavActionsContextValue = {
   onProjectSelectRef: React.MutableRefObject<NavActions['onProjectSelect']>;
+  selectedProjectId: string | null;
+  setSelectedProjectId: (id: string | null) => void;
   onHomeClickRef: React.MutableRefObject<NavActions['onHomeClick']>;
   onOpenWidgetsRef: React.MutableRefObject<NavActions['onOpenWidgets']>;
   hideTopBar: boolean;
@@ -55,6 +59,11 @@ export function NavActionsProvider({ children }: { children: ReactNode }) {
     showWidgetsToggle: false,
     widgetsCollapsed: true,
   });
+  const [selectedProjectId, setSelectedProjectIdState] = useState<string | null>(null);
+
+  const setSelectedProjectId = useCallback((id: string | null) => {
+    setSelectedProjectIdState((prev) => (prev === id ? prev : id));
+  }, []);
 
   const setVisibility = useCallback((next: Partial<NavVisibility>) => {
     setVisibilityState((prev) => {
@@ -93,10 +102,14 @@ export function NavActionsProvider({ children }: { children: ReactNode }) {
       hideMobileNav: visibility.hideMobileNav,
       showWidgetsToggle: widgetsChrome.showWidgetsToggle,
       widgetsCollapsed: widgetsChrome.widgetsCollapsed,
+      selectedProjectId,
+      setSelectedProjectId,
       setVisibility,
       setWidgetsChrome,
     }),
     [
+      selectedProjectId,
+      setSelectedProjectId,
       visibility.hideTopBar,
       visibility.hideMobileNav,
       widgetsChrome.showWidgetsToggle,
@@ -126,6 +139,7 @@ export function useRegisterNavActions(actions: NavActions) {
     onProjectSelectRef,
     onHomeClickRef,
     onOpenWidgetsRef,
+    setSelectedProjectId,
     setVisibility,
     setWidgetsChrome,
   } = useNavActions();
@@ -153,4 +167,10 @@ export function useRegisterNavActions(actions: NavActions) {
     actions.showWidgetsToggle,
     actions.widgetsCollapsed,
   ]);
+
+  // Lets the menu bar know which case study is on screen.
+  useEffect(() => {
+    setSelectedProjectId(actions.selectedProjectId ?? null);
+    return () => setSelectedProjectId(null);
+  }, [setSelectedProjectId, actions.selectedProjectId]);
 }

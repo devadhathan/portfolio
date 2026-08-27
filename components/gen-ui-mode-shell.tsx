@@ -34,12 +34,6 @@ type GenUIModeShellProps = {
   showSidebar?: boolean;
 };
 
-function promptLimitLabel(promptLimitLoaded: boolean, limitReached: boolean, promptCount: number) {
-  if (!promptLimitLoaded) return 'Checking prompt limit…';
-  if (limitReached) return 'No prompts remaining';
-  return `${promptCount} prompt${promptCount === 1 ? '' : 's'} remaining`;
-}
-
 export function GenUIModeShell({
   viewports,
   activeViewportId,
@@ -65,7 +59,6 @@ export function GenUIModeShell({
   const limitReached = promptLimitLoaded && promptCount <= 0;
   const showCenterSearch = !hasPrompted && viewports.length === 0 && !isAgentWorking && !isLoading;
   const showBottomSearch = hasPrompted || viewports.length > 0 || isAgentWorking || isLoading;
-  const limitText = promptLimitLabel(promptLimitLoaded, limitReached, promptCount);
   const sidebarEnabled = showSidebar ?? (embedded && Boolean(onBack));
 
   const handleSelectViewport = (id: string) => {
@@ -108,7 +101,6 @@ export function GenUIModeShell({
               subhead={subhead}
               subheadPlacement={subheadPlacement}
               orbSize={orbSize}
-              limitLabel={sidebarEnabled ? undefined : limitText}
             />
           </div>
         </div>
@@ -169,7 +161,6 @@ export function GenUIModeShell({
                   subhead={subhead}
                   subheadPlacement={subheadPlacement}
                   orbSize={orbSize}
-                  limitLabel={sidebarEnabled ? undefined : limitText}
                 />
               </div>
             )}
@@ -192,9 +183,6 @@ export function GenUIModeShell({
                   promptCount={promptCount}
                   disabled={limitReached || !promptLimitLoaded}
                 />
-                {!sidebarEnabled ? (
-                  <p className="text-xs tabular-nums text-muted-foreground/50">{limitText}</p>
-                ) : null}
               </div>
             </div>
           )}
@@ -232,7 +220,6 @@ export function GenUIModeShell({
         viewports={viewports}
         activeViewportId={activeViewportId}
         isEmpty={showCenterSearch}
-        limitLabel={limitText}
         onNewChat={onBack}
         onSelectViewport={handleSelectViewport}
         className="hidden sm:flex"

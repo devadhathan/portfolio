@@ -16,7 +16,6 @@ export const PHOTOS_WINDOW_ITEMS = [
   { src: '/photos/optimized/edinburgh-street.jpg', alt: 'Edinburgh street' },
   { src: '/photos/optimized/daffodils-squirrel.jpg', alt: 'Daffodils' },
   { src: '/photos/optimized/Cafe-laptop.jpg', alt: 'Cafe' },
-  { src: '/photos/wordsmith-sea.jpg', alt: 'Wordsmith sea' },
 ] as const;
 
 export function PhotosWindowBody() {
@@ -52,7 +51,7 @@ export function PhotosWindowBody() {
 
       {active ? (
         <div
-          className="absolute inset-0 z-20 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+          className="os-photos-lightbox absolute inset-0 z-20 flex items-center justify-center p-4"
           role="dialog"
           aria-modal
           aria-label={active.alt}
@@ -62,7 +61,7 @@ export function PhotosWindowBody() {
             type="button"
             aria-label="Close photo"
             className={cn(
-              'absolute right-3 top-3 rounded-full bg-black/50 p-2 text-white hover:bg-black/70',
+              'os-photos-lightbox__close absolute right-3 top-3 rounded-full p-2 text-foreground',
               focusRing,
             )}
             onClick={() => setActive(null)}

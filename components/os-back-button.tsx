@@ -21,6 +21,9 @@ export function OsBackButton({
     <button
       type="button"
       onClick={onClick}
+      data-cuelume-hover="tick"
+      data-cuelume-press
+      data-cuelume-release
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-background/70 px-3 py-1.5 text-sm text-foreground/80 shadow-sm backdrop-blur-md transition-colors hover:bg-background/90 hover:text-foreground',
         className,

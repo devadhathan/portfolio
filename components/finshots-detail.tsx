@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Users, ExternalLink, X, ZoomIn, Smartphone } from 'lucide-react';
+import { Briefcase, Calendar, ExternalLink, X, ZoomIn, Smartphone } from 'lucide-react';
 import { findProjectBySlug } from '@/lib/types/project';
 import { useSiteContent } from '@/components/site-content-provider';
 import { OsBackButton } from '@/components/os-back-button';
@@ -15,9 +15,10 @@ interface FinshotsDetailProps {
   projectId: string;
   onBack: () => void;
   hideBackButton?: boolean;
+  layout?: 'page' | 'work-rail';
 }
 
-const infoGraphicsImagePath = encodeURI('/finshots/Info graphics.png');
+const infoGraphicsImagePath = encodeURI('/finshots/Info graphics.webp');
 
 const finshotsImages = [
   { src: '/finshots/n3pGQMdpISBs8GNixqX0HtgFg.png.webp', title: 'Highlights', description: 'Article view with engagement features' },
@@ -35,7 +36,7 @@ type FeatureMedia =
 const finshotsFeatureMedia: Record<string, FeatureMedia> = {
   Navigation: {
     type: 'image',
-    src: '/finshots/navigation.png',
+    src: '/finshots/navigation.webp',
     alt: 'Navigation flow with categories and search',
   },
   Infographics: {
@@ -47,16 +48,21 @@ const finshotsFeatureMedia: Record<string, FeatureMedia> = {
     type: 'video',
     src: '/finshots/acess.mp4',
     alt: 'Accessibility adjustments showcasing dark mode and font controls',
-    backgroundImage: '/finshots/Bg.png',
+    backgroundImage: '/finshots/Bg.webp',
   },
   'Custom Notifications': {
     type: 'image',
-    src: '/finshots/Notifications.png',
+    src: '/finshots/Notifications.webp',
     alt: 'Custom notification preferences view',
   },
 };
 
-export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: FinshotsDetailProps) {
+export function FinshotsDetail({
+  projectId,
+  onBack,
+  hideBackButton = false,
+  layout = 'page',
+}: FinshotsDetailProps) {
   const t = useTranslations('caseStudy');
   const { projects } = useSiteContent();
   const project = findProjectBySlug(projects, projectId);
@@ -83,8 +89,9 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
   }
 
   return (
-    <div className="os-col--case mt-3 pb-20 text-foreground md:mt-4 lg:pb-0">
-      {/* Header */}
+    <div
+      className={`${layout === 'work-rail' ? 'os-col--work-case' : 'os-col--case'} mt-2 pb-20 text-foreground sm:mt-3 md:mt-4 lg:pb-0`}
+    >      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-12 lg:mb-16">
         <div>
           {!hideBackButton && (
@@ -93,26 +100,26 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
             </div>
           )}
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{project.title}</h1>
-            <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-[12px] font-medium border border-red-500/30">
+            <h1 className="cs-display text-foreground">{project.title}</h1>
+            <span className="inline-flex items-center rounded-full border border-red-500/30 bg-red-500/20 px-2 py-0.5 text-[11px] font-medium leading-none text-red-400 md:text-[12px]">
               {t('shipped')}
             </span>
           </div>
-          <div className="mt-4 flex flex-wrap items-center gap-4 text-[13px] leading-5 text-muted-foreground">
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-muted-foreground md:text-sm">
             {(project.company || project.institution) && (
-              <span className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
+              <span className="flex items-center gap-1.5">
+                <Briefcase className="h-3.5 w-3.5 shrink-0" />
                 {project.company || project.institution}
               </span>
             )}
             {project.period && (
-              <span className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
+              <span className="flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5 shrink-0" />
                 {project.period}
               </span>
             )}
             {project.type && (
-              <span className="px-2 py-1 bg-primary/20 text-primary rounded-full text-[12px] font-medium">
+              <span className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-medium leading-none text-primary md:text-[12px]">
                 {project.type}
               </span>
             )}
@@ -124,10 +131,10 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 mb-24 lg:mb-32">
         {/* Left Content - Description */}
         <div className="lg:col-span-2 space-y-8">
-          <p className="text-[15px] leading-7 case-study-body text-muted-foreground">
+          <p className="cs-body text-muted-foreground">
             {t('finshotsIntro1')}
           </p>
-          <p className="text-[15px] leading-7 case-study-body text-muted-foreground">
+          <p className="cs-body text-muted-foreground">
             {t('finshotsIntro2')}
           </p>
           {project.url && (
@@ -138,7 +145,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
               >
-                <span className="text-[13px] font-medium">{t('viewProject')}</span>
+                <span className="cs-body font-medium">{t('viewProject')}</span>
                 <Smartphone className="h-4 w-4" />
                 <ExternalLink className="h-4 w-4" />
               </a>
@@ -150,17 +157,17 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
         <div className="lg:col-span-1 space-y-0 border-l border-border/50 pl-8">
           {project.type && (
             <div className="pb-6 border-b border-border/50">
-              <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">{t('product')}</h3>
-              <p className="text-[13px] leading-5 text-foreground">{project.type}</p>
+              <h3 className="cs-label uppercase text-muted-foreground mb-2">{t('product')}</h3>
+              <p className="cs-body text-foreground">{project.type}</p>
             </div>
           )}
           
           {project.tools && project.tools.length > 0 && (
             <div className="py-6 border-b border-border/50">
-              <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">{t('skills')}</h3>
+              <h3 className="cs-label uppercase text-muted-foreground mb-2">{t('skills')}</h3>
               <div className="space-y-2">
                 {project.tools.map((tool, idx) => (
-                  <p key={idx} className="text-[13px] leading-5 text-foreground">{tool}</p>
+                  <p key={idx} className="cs-body text-foreground">{tool}</p>
                 ))}
               </div>
             </div>
@@ -168,22 +175,22 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
           
           {project.role && (
             <div className="py-6 border-b border-border/50">
-              <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">{t('myRole')}</h3>
-              <p className="text-[13px] leading-5 text-foreground">{project.role}</p>
+              <h3 className="cs-label uppercase text-muted-foreground mb-2">{t('myRole')}</h3>
+              <p className="cs-body text-foreground">{project.role}</p>
             </div>
           )}
           
           {project.period && (
             <div className="py-6 border-b border-border/50">
-              <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">{t('timeline')}</h3>
-              <p className="text-[13px] leading-5 text-foreground">{project.period}</p>
+              <h3 className="cs-label uppercase text-muted-foreground mb-2">{t('timeline')}</h3>
+              <p className="cs-body text-foreground">{project.period}</p>
             </div>
           )}
           
           {project.team && (
             <div className="pt-6">
-              <h3 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">{t('team')}</h3>
-              <p className="text-[13px] leading-5 text-foreground">{project.team}</p>
+              <h3 className="cs-label uppercase text-muted-foreground mb-2">{t('team')}</h3>
+              <p className="cs-body text-foreground">{project.team}</p>
             </div>
           )}
         </div>
@@ -191,7 +198,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
 
       {/* Bento Grid - Images Section */}
       <div className="mb-24 lg:mb-32">
-        <h2 className="text-xl md:text-2xl font-normal text-foreground mb-8 lg:mb-12">{t('designGallery')}</h2>
+        <h2 className="cs-heading text-foreground mb-8 lg:mb-12">{t('designGallery')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {finshotsImages.map((image, idx) => (
             <div key={idx}>
@@ -200,7 +207,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
               onClick={() => handleImageClick(image.src)}
             >
               <CardHeader className="pb-4">
-                <CardTitle className="text-[15px] font-medium tracking-tight flex items-center gap-2">
+                <CardTitle className="cs-body font-medium flex items-center gap-2">
                   {image.title}
                   <ZoomIn className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                 </CardTitle>
@@ -225,9 +232,9 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {/* Problem Section */}
       {project.problem && (
         <div id={`${projectId}-problem`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
-          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('problem')}</h2>
+          <h2 className="cs-heading text-foreground lg:col-span-2">{t('problem')}</h2>
           <div className="lg:col-span-3">
-            <p className="text-[15px] leading-7 case-study-body text-muted-foreground">
+            <p className="cs-body text-muted-foreground">
               {project.problem}
             </p>
             <div className="mt-6">
@@ -240,7 +247,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
                         muted
                         loop
                         playsInline
-                        poster="/finshots/Bg.png"
+                        poster="/finshots/Bg.webp"
                       >
                         <source src="/finshots/first.mp4" type="video/mp4" />
                         Your browser does not support the video tag.
@@ -256,9 +263,9 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {/* Research Section */}
       {project.research && (
         <div id={`${projectId}-research`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
-          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('research')}</h2>
+          <h2 className="cs-heading text-foreground lg:col-span-2">{t('research')}</h2>
           <div className="lg:col-span-3">
-            <p className="text-[15px] leading-7 case-study-body text-muted-foreground">
+            <p className="cs-body text-muted-foreground">
               {project.research}
             </p>
           </div>
@@ -268,9 +275,9 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {/* HMW Section */}
       {project.hmw && (
         <div id={`${projectId}-hmw`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
-          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('hmw')}</h2>
+          <h2 className="cs-heading text-foreground lg:col-span-2">{t('hmw')}</h2>
           <div className="lg:col-span-3">
-            <p className="text-[15px] leading-7 case-study-body text-muted-foreground font-medium">
+            <p className="cs-body font-medium text-muted-foreground">
               {project.hmw}
             </p>
           </div>
@@ -279,9 +286,9 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
 
       {/* Possible Solutions */}
       <div id={`${projectId}-possible-solutions`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
-        <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('possibleSolutions')}</h2>
+        <h2 className="cs-heading text-foreground lg:col-span-2">{t('possibleSolutions')}</h2>
         <div className="lg:col-span-3">
-          <p className="text-[15px] leading-7 case-study-body text-muted-foreground">
+          <p className="cs-body text-muted-foreground">
             {t('finshotsPossibleSolutions')}
           </p>
         </div>
@@ -291,7 +298,7 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {project.keyFeatures && project.keyFeatures.length > 0 && (
         <div id={`${projectId}-key-features`} className="mb-24 lg:mb-32">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12 mb-8">
-            <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('keyFeaturesShipped')}</h2>
+            <h2 className="cs-heading text-foreground lg:col-span-2">{t('keyFeaturesShipped')}</h2>
           </div>
           <div className="space-y-12">
             {project.keyFeatures.map((feature, idx) => {
@@ -303,9 +310,9 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
               return (
                 <div key={idx} className="space-y-4">
                   <div>
-                    <h3 className="text-[15px] font-medium tracking-tight text-foreground mb-4">{featureName}</h3>
+                    <h3 className="cs-body font-medium text-foreground mb-4">{featureName}</h3>
                     {featureDesc && (
-                      <p className="text-[15px] leading-7 case-study-body text-muted-foreground">
+                      <p className="cs-body text-muted-foreground">
                         {featureDesc}
                       </p>
                     )}
@@ -366,16 +373,16 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {/* Results Section */}
       {project.results && project.results.length > 0 && (
         <div id={`${projectId}-stats`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
-          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('result')}</h2>
+          <h2 className="cs-heading text-foreground lg:col-span-2">{t('result')}</h2>
           <div className="lg:col-span-3">
-            <p className="text-[15px] leading-7 case-study-body text-muted-foreground mb-8">
+            <p className="cs-body text-muted-foreground mb-8">
               {t('finshotsResultsIntro')}
             </p>
             <div className="space-y-8">
               {project.results.map((result, idx) => (
                 <div key={idx} className="flex items-start gap-4">
                   <span className="text-primary mt-1">→</span>
-                  <p className="text-[15px] leading-7 case-study-body text-muted-foreground">{result}</p>
+                  <p className="cs-body text-muted-foreground">{result}</p>
                 </div>
               ))}
             </div>
@@ -386,18 +393,18 @@ export function FinshotsDetail({ projectId, onBack, hideBackButton = false }: Fi
       {/* Learnings Section */}
       {project.learnings && (
         <div id={`${projectId}-learnings`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
-          <h2 className="text-xl md:text-2xl font-normal text-foreground lg:col-span-2">{t('whatDidILearn')}</h2>
+          <h2 className="cs-heading text-foreground lg:col-span-2">{t('whatDidILearn')}</h2>
           <div className="lg:col-span-3">
             {Array.isArray(project.learnings) ? (
               <div className="space-y-8">
                 {project.learnings.map((learning, idx) => (
-                  <p key={idx} className="text-[15px] leading-7 case-study-body text-muted-foreground">
+                  <p key={idx} className="cs-body text-muted-foreground">
                     {learning}
                   </p>
                 ))}
               </div>
             ) : (
-              <p className="text-[15px] leading-7 case-study-body text-muted-foreground">
+              <p className="cs-body text-muted-foreground">
                 {project.learnings}
               </p>
             )}

@@ -2,18 +2,24 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { useRegisterNavActions } from '@/contexts/nav-actions-context';
 import { useAskAI } from '@/components/ask-ai-provider';
 import { AgentState, PortfolioAgent } from '@/lib/agent';
 import { scrollPageToTop } from '@/lib/scroll-page';
 import { PortfolioSections } from '@/components/portfolio-sections';
-import { CaseStudyLoading } from '@/components/case-study-loading';
 import { OsBackButton } from '@/components/os-back-button';
+import { useOsWindowAutoExpand, useOsWindowClose } from '@/components/desktop-os/os-window-scope';
+import { useCaseStudyTracking } from '@/hooks/use-case-study-tracking';
+import { useCaseStudyDocumentTitle } from '@/hooks/use-case-study-document-title';
+import { buildCaseStudySections } from '@/lib/case-study-sections';
+import { CaseStudyOnPageNav } from '@/components/case-study-on-page-nav';
+import { useSiteContent } from '@/components/site-content-provider';
+import { getProjectId, normalizeProjectSlug } from '@/lib/types/project';
 import { blurFadeUp, easeOutExpo } from '@/lib/motion';
 import { cn } from '@/lib/utils';
-import { signalBootReady, afterNextPaint } from '@/lib/boot-critical';
+import { useTranslations } from 'next-intl';
 
 const caseStudyEnterTransition = {
   duration: 0.55,
@@ -26,10 +32,7 @@ const DesktopSidebar = dynamic(
 );
 const ProjectDetailView = dynamic(
   () => import('@/components/project-detail-view').then((mod) => ({ default: mod.ProjectDetailView })),
-  {
-    ssr: false,
-    loading: () => <CaseStudyLoading />,
-  },
+  { ssr: false },
 );
 const ProjectsListView = dynamic(
   () => import('@/components/projects-list-view').then((mod) => ({ default: mod.ProjectsListView })),
@@ -38,7 +41,6 @@ const ProjectsListView = dynamic(
 /** Loaded only after the user enters Gen UI — keeps agent/prompt JS off first paint. */
 const HomeGenUIMode = dynamic(() => import('@/components/home-gen-ui-mode'), {
   ssr: false,
-  loading: () => <div className="flex h-full min-h-[240px] items-center justify-center" aria-hidden />,
 });
 
 function createDefaultAgentState(): AgentState {
@@ -48,9 +50,8 @@ function createDefaultAgentState(): AgentState {
 export default function HomePage({ embedded = false }: { embedded?: boolean }) {
   const { close: closeAskAI, resetAgent, registerStateChange } = useAskAI();
   const reduceMotion = useReducedMotion();
-
-  // First home paint is ready — splash can fade (don't wait on lazy photos).
-  useEffect(() => afterNextPaint(() => signalBootReady()), []);
+  const { projects } = useSiteContent();
+  const tWork = useTranslations('work');
 
   const [agentState, setAgentState] = useState<AgentState>(() => createDefaultAgentState());
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
@@ -58,10 +59,14 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
   const [genUIMode, setGenUIMode] = useState(false);
   const [showProjectsList, setShowProjectsList] = useState(false);
   const contentGutterClass = embedded
-    ? 'mx-auto w-full max-w-none px-3 sm:px-4 md:px-5'
+    ? 'mx-auto w-full max-w-none px-6 sm:px-8 md:px-10'
     : isSidebarCollapsed
       ? 'mx-auto w-full max-w-[72rem] px-4 sm:px-6 md:px-8 lg:px-10'
       : 'mx-auto w-full max-w-7xl px-4 sm:px-5 md:px-6 lg:px-8';
+  /** Home feed sits narrower than the window — `.home-col` owns the max width. */
+  const homeFeedGutterClass = embedded
+    ? 'home-col mx-auto w-full'
+    : contentGutterClass;
 
   const handleStateChange = useCallback((state: AgentState) => {
     setAgentState(state);
@@ -137,6 +142,7 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
 
   useRegisterNavActions({
     onProjectSelect: selectProject,
+    selectedProjectId: genUIMode ? null : selectedProject,
     onHomeClick: handleHomeClick,
     hideMobileNav: genUIMode,
     showWidgetsToggle: !genUIMode && !embedded,
@@ -146,13 +152,65 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
 
   const showHomeFeed = !selectedProject && !genUIMode && !showProjectsList;
 
+  // Case studies want the full desktop — cover while one is open, restore on back.
+  useOsWindowAutoExpand(Boolean(selectedProject) && !genUIMode);
+
+  // Case studies have no URL, so pageviews cannot see them.
+  useCaseStudyTracking(genUIMode ? null : selectedProject, 'home');
+  useCaseStudyDocumentTitle(genUIMode ? null : selectedProject, projects);
+
+  const activeProject = selectedProject
+    ? projects.find(
+        (project) => getProjectId(project.title) === normalizeProjectSlug(selectedProject),
+      )
+    : undefined;
+  const activeSections = activeProject
+    ? buildCaseStudySections(activeProject, {
+        designGallery: tWork('sections.designGallery'),
+        problem: tWork('sections.problem'),
+        targetAudience: tWork('sections.targetAudience'),
+        research: tWork('sections.research'),
+        exploring: tWork('sections.exploring'),
+        prototype: tWork('sections.prototype'),
+        hmw: tWork('sections.hmw'),
+        possibleSolutions: tWork('sections.possibleSolutions'),
+        result: tWork('sections.result'),
+        stats: tWork('sections.stats'),
+        keyFeatures: tWork('sections.keyFeatures'),
+        business: tWork('sections.business'),
+        learnings: tWork('sections.learnings'),
+        impact: tWork('sections.impact'),
+      })
+    : [];
+
+  // Closing the window drops the case study, so reopening Home lands on Home.
+  useOsWindowClose(
+    useCallback(() => {
+      setSelectedProject(null);
+      setShowProjectsList(false);
+    }, []),
+  );
+
+  const embeddedCaseOpen = Boolean(embedded && selectedProject && !genUIMode);
+
   return (
     <div
-      className={`relative overflow-x-hidden bg-background antialiased ${
-        embedded ? 'min-h-0 bg-transparent' : 'min-h-screen lg:min-h-0 lg:bg-transparent'
-      }`}
+      className={cn(
+        'relative antialiased',
+        embedded
+          ? embeddedCaseOpen
+            ? 'flex h-full min-h-0 flex-col overflow-hidden bg-transparent'
+            : 'min-h-0 overflow-x-clip bg-transparent'
+          : 'min-h-screen overflow-x-hidden bg-background lg:min-h-0 lg:bg-transparent',
+      )}
     >
-      <div className={`relative z-10 flex ${embedded ? 'pt-0' : 'pt-14 lg:pt-0'}`}>
+      <div
+        className={cn(
+          'relative z-10 flex',
+          embedded ? 'min-h-0 pt-0' : 'pt-14 lg:pt-0',
+          embeddedCaseOpen && 'h-full min-h-0 flex-1 flex-col',
+        )}
+      >
         {!embedded && (
           <div
             className={`fixed left-0 top-14 z-20 hidden h-[calc(100vh-3.5rem)] transition-all duration-300 lg:block ${
@@ -170,23 +228,36 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
         )}
 
         <div
-          className={`flex-1 w-full relative z-10 transition-[margin-left] duration-500 ease-in-out overflow-x-hidden ${
+          className={`flex-1 w-full relative z-10 transition-[margin-left] duration-500 ease-in-out ${
+            embedded ? 'overflow-x-clip' : 'overflow-x-hidden'
+          } ${
             embedded || isSidebarCollapsed ? 'lg:ml-0' : 'lg:ml-80'
           } ${
             genUIMode
               ? embedded
                 ? 'h-full min-h-0 overflow-hidden p-0'
                 : 'h-[calc(100vh-3.5rem)] min-h-0 overflow-hidden p-0'
-              : embedded
-                ? 'py-4 px-1 pb-8'
-                : 'py-4 md:py-6 lg:py-8 pb-20 md:pb-24 lg:pb-8'
+              : embeddedCaseOpen
+                ? 'flex min-h-0 flex-col overflow-hidden py-3 px-0'
+                : embedded
+                  ? 'py-4 px-0 pb-8'
+                  : 'py-4 md:py-6 lg:py-8 pb-20 md:pb-24 lg:pb-8'
           }`}
         >
           <div
-            className={`transition-[max-width,margin] duration-500 ease-in-out ${isSidebarCollapsed ? 'max-w-[1500px] mx-auto' : 'max-w-7xl mx-auto'}${genUIMode ? ' h-full' : ''}`}
+            className={cn(
+              'transition-[max-width,margin] duration-500 ease-in-out',
+              embeddedCaseOpen
+                ? 'flex h-full min-h-0 w-full max-w-none flex-col'
+                : genUIMode
+                  ? 'mx-auto h-full max-w-7xl'
+                  : isSidebarCollapsed
+                    ? 'mx-auto max-w-[1500px]'
+                    : 'mx-auto max-w-7xl',
+            )}
           >
             <div
-              className={cn(contentGutterClass, !showHomeFeed && 'hidden')}
+              className={cn(homeFeedGutterClass, !showHomeFeed && 'hidden')}
               aria-hidden={!showHomeFeed}
             >
               <ErrorBoundary>
@@ -201,27 +272,85 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
               </ErrorBoundary>
             </div>
 
-            <AnimatePresence mode="sync">
-              {selectedProject && !genUIMode ? (
-                <motion.div
+            {selectedProject && !genUIMode ? (
+                <div
                   key={`case-${selectedProject}`}
-                  className={cn('w-full', contentGutterClass)}
-                  initial={reduceMotion ? false : blurFadeUp.initial}
-                  animate={blurFadeUp.animate}
-                  exit={reduceMotion ? undefined : blurFadeUp.exit}
-                  transition={caseStudyEnterTransition}
+                  className={
+                    embedded
+                      ? 'flex h-full min-h-0 w-full max-w-none flex-col px-0'
+                      : 'w-full max-w-none px-0'
+                  }
+                  data-os-home-case={embedded ? 'true' : undefined}
                 >
-                  <div className="os-col--case sticky top-0 z-50 mb-2 pt-3 md:pt-4">
-                    <OsBackButton onClick={backFromCaseStudy} aria-label="Back to Home" />
+                  <div
+                    className={
+                      embedded
+                        ? 'os-home-case-row relative h-full min-h-0 w-full'
+                        : 'home-case-row relative mx-auto w-full max-w-[1500px]'
+                    }
+                  >
+                    <div
+                      className={
+                        embedded
+                          ? 'os-home-case-main flex min-h-0 min-w-0 flex-col'
+                          : 'os-home-case-main min-w-0'
+                      }
+                    >
+                      <div
+                        className={
+                          embedded
+                            ? 'os-home-case-inner flex h-full min-h-0 w-full min-w-0 flex-col'
+                            : 'os-home-case-inner w-full min-w-0'
+                        }
+                      >
+                        {/* Pinned above the case scroller — not sticky (avoids zoom+sticky jitter). */}
+                        <div className="os-case-back z-50 mb-4 shrink-0 px-3 py-2.5 sm:px-0">
+                          <OsBackButton
+                            onClick={backFromCaseStudy}
+                            aria-label="Back to Home"
+                          />
+                        </div>
+                        <div
+                          className={
+                            embedded
+                              ? 'os-case-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain'
+                              : undefined
+                          }
+                        >
+                          <motion.div
+                            initial={reduceMotion ? false : blurFadeUp.initial}
+                            animate={blurFadeUp.animate}
+                            transition={caseStudyEnterTransition}
+                          >
+                            <ProjectDetailView
+                              projectId={selectedProject}
+                              projects={projects}
+                              hideBackButton
+                              onBack={backFromCaseStudy}
+                              layout="work-rail"
+                            />
+                          </motion.div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <aside
+                      className={
+                        embedded
+                          ? 'os-home-case-toc z-30 min-h-0 shrink-0'
+                          : 'home-case-toc z-30 hidden shrink-0 lg:block'
+                      }
+                      aria-label={tWork('onThisPage')}
+                    >
+                      <CaseStudyOnPageNav
+                        label={tWork('onThisPage')}
+                        projectId={selectedProject}
+                        sections={activeSections}
+                      />
+                    </aside>
                   </div>
-                  <ProjectDetailView
-                    projectId={selectedProject}
-                    hideBackButton
-                    onBack={backFromCaseStudy}
-                  />
-                </motion.div>
+                </div>
               ) : null}
-            </AnimatePresence>
 
             {showProjectsList && !selectedProject && !genUIMode ? (
               <div key="projects-list" className="w-full h-full">

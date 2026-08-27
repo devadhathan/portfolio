@@ -1,61 +1,14 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { useSiteContent } from '@/components/site-content-provider';
-import { easeOutExpo } from '@/lib/motion';
+import { X_PROFILE_URL } from '@/lib/social-links';
 import { cn } from '@/lib/utils';
-import { BOOT_REVEAL_EVENT, isBootRevealed } from '@/lib/boot-critical';
 
-/** Start staggered enter only after splash reveal (and a committed paint). */
-export function useHomeIntroPlay(reduceMotion: boolean | null) {
-  const [play, setPlay] = useState(false);
-
-  useEffect(() => {
-    if (reduceMotion) {
-      setPlay(true);
-      return;
-    }
-
-    let cancelled = false;
-    let innerRaf = 0;
-    let timeoutId = 0;
-    let outerRaf = 0;
-    let started = false;
-
-    const begin = () => {
-      if (cancelled || started) return;
-      started = true;
-
-      // Paint the hidden state first, then animate — nested rAF alone can
-      // collapse into one frame on Chromium and skip the stagger.
-      outerRaf = requestAnimationFrame(() => {
-        innerRaf = requestAnimationFrame(() => {
-          timeoutId = window.setTimeout(() => {
-            if (!cancelled) setPlay(true);
-          }, 32);
-        });
-      });
-    };
-
-    if (isBootRevealed()) {
-      begin();
-    } else {
-      window.addEventListener(BOOT_REVEAL_EVENT, begin);
-    }
-
-    return () => {
-      cancelled = true;
-      window.removeEventListener(BOOT_REVEAL_EVENT, begin);
-      cancelAnimationFrame(outerRaf);
-      cancelAnimationFrame(innerRaf);
-      window.clearTimeout(timeoutId);
-    };
-  }, [reduceMotion]);
-
-  return play;
+/** Kept for call sites that still gate on “intro play” — always ready under boot. */
+export function useHomeIntroPlay(_reduceMotion: boolean | null) {
+  return true;
 }
 
 function introLink(href: string, chunks: ReactNode) {
@@ -71,7 +24,7 @@ function introLink(href: string, chunks: ReactNode) {
   );
 }
 
-const LINE_KEYS = ['p1', 'p2', 'p3', 'p4'] as const;
+const LINE_KEYS = ['p1', 'p2'] as const;
 
 export const HOME_INTRO_LINE_STAGGER = 0.1;
 export const HOME_INTRO_LINE_DURATION = 0.42;
@@ -80,20 +33,23 @@ export const HOME_INTRO_LINE_DURATION = 0.42;
 export const HOME_INTRO_CARDS_DELAY =
   (1 + LINE_KEYS.length) * HOME_INTRO_LINE_STAGGER + HOME_INTRO_LINE_DURATION * 0.25;
 
+const ASCII_PREVIEW_SRC = '/videos/ascii-preview.mp4';
+const ASCII_PREVIEW_POSTER = '/videos/ascii-preview-poster.jpg';
+
 type HomeIntroProps = {
   className?: string;
 };
 
 export function HomeIntro({ className }: HomeIntroProps) {
   const t = useTranslations('home.intro');
+  const tHome = useTranslations('home');
   const { settings } = useSiteContent();
-  const reduceMotion = useReducedMotion();
-  const play = useHomeIntroPlay(reduceMotion);
 
   const linkedinUrl = settings.linkedin?.startsWith('http')
     ? settings.linkedin
     : `https://www.linkedin.com/${settings.linkedin || 'in/devadhathan/'}`;
   const emailHref = `mailto:${settings.email || 'devadhathanmd18@gmail.com'}`;
+  const emailLabel = settings.email || 'devadhathanmd18@gmail.com';
 
   const richTags = {
     i: (chunks: ReactNode) => <em className="italic">{chunks}</em>,
@@ -101,61 +57,63 @@ export function HomeIntro({ className }: HomeIntroProps) {
     nesoi: (chunks: ReactNode) => introLink('https://nesoi.ai', chunks),
     ditto: (chunks: ReactNode) => introLink('https://joinditto.in', chunks),
     finshots: (chunks: ReactNode) => introLink('https://finshots.in', chunks),
-    x: (chunks: ReactNode) => introLink('https://x.com/mddevadhathan', chunks),
-    linkedin: (chunks: ReactNode) => introLink(linkedinUrl, chunks),
-    email: (chunks: ReactNode) => (
-      <a
-        href={emailHref}
-        className="text-foreground underline decoration-foreground/35 underline-offset-[3px] transition-colors hover:decoration-foreground"
-      >
-        {chunks}
-      </a>
-    ),
   };
 
-  const lines: { key: string; content: ReactNode }[] = [
-    {
-      key: 'header',
-      content: (
-        <div className="space-y-1 sm:space-y-1.5">
-          <h1 className="text-[1.2rem] font-medium tracking-tight text-foreground sm:text-[1.35rem] md:text-[1.5rem]">
-            {t('name')}
-          </h1>
-          <p className="text-[13px] text-muted-foreground sm:text-[14px]">{t('role')}</p>
-        </div>
-      ),
-    },
-    ...LINE_KEYS.map((key) => ({
-      key,
-      content: (
-        <p className="text-[14px] leading-[1.65] text-foreground/90 sm:text-[15px] sm:leading-[1.7] md:text-[16px] md:leading-[1.75]">
-          {t.rich(key, richTags)}
-        </p>
-      ),
-    })),
-  ];
-
-  const hidden = { opacity: 0, y: 10 };
-  const shown = { opacity: 1, y: 0 };
+  const contactLinks = [
+    { label: 'LinkedIn', href: linkedinUrl, external: true },
+    { label: 'Email', href: emailHref, external: false },
+    { label: 'X', href: X_PROFILE_URL, external: true },
+  ] as const;
 
   return (
-    <header className={cn('home-intro os-col w-full pt-4 sm:pt-6 md:pt-8 lg:pt-10', className)}>
-      <div className="flex flex-col gap-4 sm:gap-5 md:gap-6">
-        {lines.map((line, index) => (
-          <motion.div
-            key={line.key}
-            className={index === 0 ? 'mb-1 sm:mb-2 md:mb-3' : undefined}
-            initial={reduceMotion ? false : hidden}
-            animate={reduceMotion || play ? shown : hidden}
-            transition={{
-              duration: reduceMotion ? 0 : HOME_INTRO_LINE_DURATION,
-              delay: reduceMotion || !play ? 0 : index * HOME_INTRO_LINE_STAGGER,
-              ease: easeOutExpo,
-            }}
-          >
-            {line.content}
-          </motion.div>
-        ))}
+    <header className={cn('home-intro os-col w-full', className)}>
+      <div className="home-intro__copy flex w-full flex-col gap-10 sm:gap-12 md:gap-14">
+        <h1 className="home-intro__title tracking-tight text-foreground">
+          {tHome('heroLine1')}
+        </h1>
+        <div className="home-intro__body flex w-full flex-col gap-8 sm:flex-row sm:items-start sm:justify-between sm:gap-10 md:gap-14">
+          <div className="flex max-w-xl flex-col gap-7 sm:max-w-[34rem] sm:gap-8 md:gap-9">
+            {LINE_KEYS.map((key) => (
+              <p
+                key={key}
+                className="text-[15px] font-normal leading-[1.65] text-foreground/90 sm:text-base sm:leading-[1.7]"
+              >
+                {t.rich(key, richTags)}
+              </p>
+            ))}
+            <nav
+              className="home-intro__contacts flex flex-wrap gap-x-5 gap-y-2 pt-1"
+              aria-label="Contact"
+            >
+              {contactLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  {...(link.external
+                    ? { target: '_blank', rel: 'noopener noreferrer' }
+                    : {})}
+                  className="text-[15px] font-normal text-foreground underline decoration-foreground/35 underline-offset-[3px] transition-colors hover:decoration-foreground sm:text-base"
+                  {...(link.label === 'Email' ? { title: emailLabel } : {})}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+          </div>
+          <div className="mx-auto w-full max-w-[22rem] shrink-0 overflow-hidden rounded-xl sm:mx-0 sm:max-w-[28rem]">
+            <video
+              src={ASCII_PREVIEW_SRC}
+              poster={ASCII_PREVIEW_POSTER}
+              className="h-auto w-full object-cover"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              aria-label="ASCII magic preview"
+            />
+          </div>
+        </div>
       </div>
     </header>
   );

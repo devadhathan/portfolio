@@ -7,6 +7,7 @@ import { GenUIAssistantReply } from '@/components/gen-ui-assistant-reply';
 import { GenUIUserMessage } from '@/components/gen-ui-user-message';
 import { GenUIWaveLoader } from '@/components/gen-ui-wave-loader';
 import { GenUIThinkingRow } from '@/components/gen-ui-thinking-row';
+import { cn } from '@/lib/utils';
 
 type ViewPhase = 'awaiting' | 'story' | 'building' | 'content';
 
@@ -25,7 +26,9 @@ export function GenUIViewportSection({ viewport: vp, onCaseStudySelect }: GenUIV
   const skipStory = willBuildUI && !vp.summary?.trim();
   const [phase, setPhase] = useState<ViewPhase>(() => {
     if (vp.status === 'loading') return 'awaiting';
-    if (textOnlyReply || skipStory) return 'content';
+    if (skipStory) return 'content';
+    // Fresh text-only replies animate; hydrated history stays static.
+    if (textOnlyReply) return 'content';
     return vp.status === 'ready' ? 'story' : 'content';
   });
 
@@ -38,8 +41,12 @@ export function GenUIViewportSection({ viewport: vp, onCaseStudySelect }: GenUIV
 
     if (vp.status === 'ready') {
       if (textOnlyReply) {
-        playedRef.current = false;
-        setPhase('content');
+        if (playedRef.current) {
+          playedRef.current = false;
+          setPhase('story');
+        } else {
+          setPhase('content');
+        }
         return;
       }
 
@@ -81,10 +88,27 @@ export function GenUIViewportSection({ viewport: vp, onCaseStudySelect }: GenUIV
   return (
     <section
       id={`gen-ui-viewport-${vp.id}`}
-      className="min-h-[min(100%,calc(100vh-5.5rem))] flex flex-col border-b border-border/10"
+      className={cn(
+        'flex flex-col border-b border-border/10 last:border-b-0',
+        textOnlyReply
+          ? 'min-h-0'
+          : 'min-h-[min(100%,calc(100vh-5.5rem))]',
+      )}
     >
-      <div className="w-full flex-1 pt-20 md:pt-24 pb-12">
-        <div className="mx-auto max-w-3xl px-4 md:px-6 flex flex-col gap-7 md:gap-8">
+      <div
+        className={cn(
+          'w-full',
+          textOnlyReply
+            ? 'px-0 py-5 md:py-6'
+            : 'flex-1 pt-20 md:pt-24 pb-12',
+        )}
+      >
+        <div
+          className={cn(
+            'mx-auto max-w-3xl px-4 md:px-6 flex flex-col',
+            textOnlyReply ? 'gap-3 md:gap-4' : 'gap-7 md:gap-8',
+          )}
+        >
           <GenUIUserMessage prompt={vp.prompt} />
 
           {showTitleOnly && (
@@ -97,7 +121,8 @@ export function GenUIViewportSection({ viewport: vp, onCaseStudySelect }: GenUIV
             <GenUIAssistantReply
               title={vp.title}
               summary={vp.summary}
-              animate={phase === 'story' && !textOnlyReply}
+              animate={phase === 'story'}
+              mode={textOnlyReply ? 'letter' : 'word'}
               onAnimationComplete={handleStoryComplete}
             />
           )}

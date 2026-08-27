@@ -40,6 +40,8 @@ export function CaseStudyScreenStage({
     <div
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
+      data-cuelume-hover={onClick ? 'tick' : undefined}
+      data-cuelume-press={onClick ? true : undefined}
       onClick={onClick}
       onKeyDown={
         onClick
@@ -52,10 +54,11 @@ export function CaseStudyScreenStage({
           : undefined
       }
       className={cn(
-        'relative w-full overflow-hidden rounded-2xl border border-border/40 shadow-lg',
+        'relative w-full overflow-hidden shadow-lg',
         onClick && 'cursor-pointer group',
         className,
       )}
+      data-case-bleed
     >
       <div className="absolute inset-0" aria-hidden>
         <Image
@@ -71,7 +74,7 @@ export function CaseStudyScreenStage({
 
       <div className="relative z-10 flex items-center justify-center p-4 sm:p-6 md:p-8">
         {isPhone ? (
-          <div className="relative w-[min(280px,72%)] aspect-[9/16] overflow-hidden rounded-[22px] border border-white/35 shadow-[0_18px_50px_rgba(0,0,0,0.45)] transition-transform duration-500 group-hover:scale-[1.02]">
+          <div className="relative w-[min(280px,72%)] aspect-[9/16] overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.45)] transition-transform duration-500 group-hover:scale-[1.02]">
             {media.type === 'image' ? (
               <Image
                 src={media.src}
@@ -96,7 +99,7 @@ export function CaseStudyScreenStage({
             )}
           </div>
         ) : (
-          <div className="relative w-full max-w-5xl overflow-hidden rounded-xl border border-white/30 shadow-[0_18px_50px_rgba(0,0,0,0.35)] transition-transform duration-500 group-hover:scale-[1.01]">
+          <div className="relative w-full max-w-5xl overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.35)] transition-transform duration-500 group-hover:scale-[1.01]">
             {media.type === 'image' ? (
               <Image
                 src={media.src}

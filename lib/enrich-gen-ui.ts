@@ -25,7 +25,7 @@ import { resumeData } from '@/lib/resume-data';
 
 export { MAX_VIEWPORT_CARDS };
 
-export const WORDSMITH_LOCKED_MESSAGE = `Wordsmith AI is a locked, confidential project. Please contact Dev at ${resumeData.email} or via LinkedIn to learn more.`;
+export const WORDSMITH_LOCKED_MESSAGE = `I worked as a product designer at Wordsmith AI. After a ton of research and internal prototyping, I shipped contract review and versioning. Most of the deeper work sits behind an NDA. Contact me at ${resumeData.email} or via LinkedIn if you want the real story.`;
 
 export const ABOUT_DEV_SUMMARY = `Devadhathan M D — Dev — is a product designer with a B.Tech in Computer Science who designs end-to-end and ships the result himself. He started on Finshots' mobile news app (Google Play Best App 2020, 100k+ downloads), then shaped insurance onboarding, CRM, and the Falcon design system at Ditto.
 
@@ -538,7 +538,7 @@ export function fallbackStorySummary(prompt: string): string {
     'selected work': "These projects trace a line from early mobile news design to enterprise dashboards and design systems. Each one carries a problem, a bet, and an outcome — explore the cards below to follow that thread.",
     'impact at a glance': "Numbers only matter when they sit inside a story. What follows are the metrics that moved — conversion lifts, user growth, and efficiency gains from work Dev led or shaped directly.",
     'career journey': "Dev's path runs through Finshots and Ditto in Bangalore, then Nesoi in San Francisco, and onward into AI product work. The timeline below maps roles to the moments that defined each chapter.",
-    'wordsmith ai': "Wordsmith sits behind a closed door — confidential AI writing infrastructure Dev helped shape. What can be shared is here; for the rest, reach out directly.",
+    'wordsmith ai': "I worked as a product designer at Wordsmith AI. After a ton of research and internal prototyping, I shipped contract review and versioning. Most of the deeper work sits behind an NDA. Contact me if you want the real story.",
     'education & credentials': "Before the shipped products came the foundations — degrees, certifications, and awards that grounded Dev's practice in research and craft.",
     finshots: "Finshots began as a question: how do you make financial news feel alive on a phone? What follows is the story of that mobile product — the design choices, the impact, and the work that still echoes in Dev's portfolio.",
     'falcon design system': "Falcon grew out of a familiar pain — teams shipping insurance flows without a shared language. Below is how a design system took root and scaled across products.",

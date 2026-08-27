@@ -15,26 +15,42 @@ import { usePathname, useRouter } from '@/i18n/navigation';
 import {
   createInitialWindows,
   DEFAULT_ICON_POSITIONS,
-  DEFAULT_WALLPAPER_ID,
   DESKTOP_OS_ICON_STORAGE_KEY,
-  DESKTOP_OS_WALLPAPER_KEY,
   DESKTOP_WINDOW_IDS,
   MAX_OPEN_WINDOWS,
+  menubarContrastFor,
+  OS_MENUBAR_CONTRAST_ATTR,
   OS_WALLPAPER_CSS_VAR,
   pathToWindowId,
-  WALLPAPER_PRESETS,
   wallpaperBackgroundFor,
   WINDOW_PATH,
   type DesktopIconId,
   type DesktopIconPosition,
   type DesktopWindowId,
   type DesktopWindowState,
+  type FinderLocation,
+  type OpenWindowOpts,
   type WallpaperId,
 } from '@/lib/desktop-os';
+import {
+  DEFAULT_OS_SETTINGS,
+  MAX_RECENTS,
+  readOsSettings,
+  resolveWallpaperId,
+  writeOsSettings,
+  ZOOM_MAX,
+  ZOOM_MIN,
+  ZOOM_STEP,
+  type OsSettings,
+} from '@/lib/os-settings';
+import { setEnabled as setSoundEnabled, setVolume as setSoundVolume } from '@/lib/sound';
+import { trackEvent } from '@/lib/analytics';
 
 type DesktopOsContextValue = {
   /** Desktop OS is always on; kept for call-site compatibility. */
   enabled: true;
+  /** False until localStorage prefs are applied — avoids SSR default → saved flash. */
+  prefsReady: boolean;
   /** Touch / narrow layout: fixed icon rails, no drag, full-bleed windows. */
   isNarrow: boolean;
   windows: Record<DesktopWindowId, DesktopWindowState>;
@@ -43,14 +59,37 @@ type DesktopOsContextValue = {
   closedStack: DesktopWindowId[];
   wallpaperId: WallpaperId;
   wallpaperBackground: string;
-  openWindow: (id: DesktopWindowId, opts?: { syncUrl?: boolean }) => void;
+  openWindow: (id: DesktopWindowId, opts?: OpenWindowOpts) => void;
   closeWindow: (id: DesktopWindowId) => void;
   toggleCover: (id: DesktopWindowId) => void;
-  focusWindow: (id: DesktopWindowId, opts?: { syncUrl?: boolean }) => void;
+  /** Cover / restore without stealing focus — used by auto-expand. */
+  setCovered: (id: DesktopWindowId, covered: boolean) => void;
+  focusWindow: (id: DesktopWindowId, opts?: OpenWindowOpts) => void;
+  /** Finder sidebar selection — set when opening Favourites from the desktop. */
+  finderLocation: FinderLocation;
+  setFinderLocation: (location: FinderLocation) => void;
   toggleWidgets: () => void;
   setWidgetsOpen: (open: boolean) => void;
   restoreFromTrash: () => void;
   setWallpaperId: (id: WallpaperId) => void;
+  /** Menu-extra settings — wallpaper lives above, the rest here. */
+  shuffleDaily: boolean;
+  setShuffleDaily: (on: boolean) => void;
+  soundsEnabled: boolean;
+  setSoundsEnabled: (on: boolean) => void;
+  soundVolume: number;
+  setSoundVolumeLevel: (percent: number) => void;
+  /** View menu */
+  iconLabels: boolean;
+  setIconLabels: (on: boolean) => void;
+  zoom: number;
+  setZoom: (percent: number) => void;
+  stepZoom: (direction: 1 | -1) => void;
+  /** File > Open Recent — newest first, focused window excluded. */
+  recents: DesktopWindowId[];
+  clearRecents: () => void;
+  /** Logo menu — close everything and restore defaults. */
+  resetDesktop: () => void;
 };
 
 /** Isolated so icon drag commits don’t re-render windows / chrome. */
@@ -61,6 +100,9 @@ type DesktopIconLayoutValue = {
 
 const DesktopOsContext = createContext<DesktopOsContextValue | null>(null);
 const DesktopIconLayoutContext = createContext<DesktopIconLayoutValue | null>(null);
+
+/** Survives Strict Mode remounts — shell should not unmount once prefs have been read. */
+let osPrefsUnlocked = false;
 
 const NARROW_QUERY = '(max-width: 1023px)';
 
@@ -94,24 +136,11 @@ function writeIconPositions(positions: Record<DesktopIconId, DesktopIconPosition
   }
 }
 
-function readWallpaperId(): WallpaperId {
-  if (typeof window === 'undefined') return DEFAULT_WALLPAPER_ID;
-  try {
-    const raw = localStorage.getItem(DESKTOP_OS_WALLPAPER_KEY);
-    if (raw && WALLPAPER_PRESETS.some((p) => p.id === raw)) return raw as WallpaperId;
-  } catch {
-    /* ignore */
-  }
-  return DEFAULT_WALLPAPER_ID;
-}
 
 export function DesktopOsProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isNarrow, setIsNarrow] = useState(() =>
-    typeof window !== 'undefined' ? window.matchMedia(NARROW_QUERY).matches : false,
-  );
-  const [widgetsOpen, setWidgetsOpen] = useState(false);
+  const [isNarrow, setIsNarrow] = useState(false);
   const zCounter = useRef(50);
   const syncingUrl = useRef(false);
   const isNarrowRef = useRef(isNarrow);
@@ -120,21 +149,80 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
   const [windows, setWindows] = useState<Record<DesktopWindowId, DesktopWindowState>>(() =>
     createInitialWindows(pathToWindowId(pathname)),
   );
+  /** Read-only mirror so callbacks can check state without re-creating. */
+  const windowsRef = useRef(windows);
+  windowsRef.current = windows;
   const [focusedId, setFocusedId] = useState<DesktopWindowId | null>(() =>
     pathToWindowId(pathname),
   );
+  const [finderLocation, setFinderLocation] = useState<FinderLocation>('applications');
   const [closedStack, setClosedStack] = useState<DesktopWindowId[]>([]);
   const [iconPositions, setIconPositions] = useState<Record<DesktopIconId, DesktopIconPosition>>(
     () => DEFAULT_ICON_POSITIONS,
   );
-  const [wallpaperId, setWallpaperIdState] = useState<WallpaperId>(() => readWallpaperId());
+  // SSR always defaults; localStorage is applied in useLayoutEffect before paint.
+  // If the module already unlocked prefs (Strict Mode remount), re-read storage so
+  // wallpaperBackground is never the SSR default while prefsReady is true.
+  const [settings, setSettings] = useState<OsSettings>(() =>
+    typeof window !== 'undefined' && osPrefsUnlocked ? readOsSettings() : DEFAULT_OS_SETTINGS,
+  );
+  const [prefsReady, setPrefsReady] = useState(() => osPrefsUnlocked);
+  const wallpaperId = resolveWallpaperId(settings);
+
+  /** Widgets visibility is a View-menu setting, so it survives a reload. */
+  const widgetsOpen = settings.widgets;
+
+  /** Single writer — every setting lands in one localStorage object. */
+  const updateSettings = useCallback((patch: Partial<OsSettings>) => {
+    setSettings((prev) => {
+      const next = { ...prev, ...patch };
+      writeOsSettings(next);
+      return next;
+    });
+  }, []);
+
+  // Apply saved prefs before first paint — never write SSR defaults over the boot script.
+  // Module flag keeps the shell mounted across Strict Mode provider remounts.
+  useLayoutEffect(() => {
+    const stored = readOsSettings();
+    setSettings(stored);
+    const id = resolveWallpaperId(stored);
+    const narrow = window.matchMedia(NARROW_QUERY).matches;
+    setIsNarrow(narrow);
+    const bg = wallpaperBackgroundFor(id, { narrow });
+    const root = document.documentElement;
+    root.style.setProperty(OS_WALLPAPER_CSS_VAR, bg);
+    root.style.background = bg;
+    root.style.backgroundAttachment = 'fixed';
+    root.setAttribute(OS_MENUBAR_CONTRAST_ATTR, menubarContrastFor(id));
+    osPrefsUnlocked = true;
+    setPrefsReady(true);
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia(NARROW_QUERY);
     const onChange = () => setIsNarrow(mq.matches);
+    onChange();
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
   }, []);
+
+  // Mobile — force every open window into fullscreen cover.
+  useEffect(() => {
+    if (!isNarrow) return;
+    setWindows((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const id of DESKTOP_WINDOW_IDS) {
+        const w = next[id];
+        if (w.open && !w.covered) {
+          next[id] = { ...w, covered: true, maximized: true };
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [isNarrow]);
 
   useEffect(() => {
     const stored = readIconPositions();
@@ -142,11 +230,13 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useLayoutEffect(() => {
-    document.documentElement.style.setProperty(
-      OS_WALLPAPER_CSS_VAR,
-      wallpaperBackgroundFor(wallpaperId),
-    );
-  }, [wallpaperId]);
+    if (!prefsReady) return;
+    const bg = wallpaperBackgroundFor(wallpaperId, { narrow: isNarrow });
+    const root = document.documentElement;
+    root.style.setProperty(OS_WALLPAPER_CSS_VAR, bg);
+    root.style.background = bg;
+    root.style.backgroundAttachment = 'fixed';
+  }, [wallpaperId, prefsReady, isNarrow]);
 
   const bumpZ = useCallback(() => {
     // Stay below OS menubar (z-200) and widgets panel (z-190)
@@ -168,18 +258,27 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
   );
 
   const focusWindow = useCallback(
-    (id: DesktopWindowId, opts?: { syncUrl?: boolean }) => {
+    (id: DesktopWindowId, opts?: OpenWindowOpts) => {
+      if (opts?.finderLocation) {
+        setFinderLocation(opts.finderLocation);
+      }
+
       setWindows((prev) => {
         const current = prev[id];
         const alreadyOpen = Boolean(current?.open);
+        // Keep fullscreen when hopping apps from the dock (or re-focusing).
+        const inheritCovered =
+          isNarrowRef.current ||
+          (alreadyOpen
+            ? Boolean(current.covered)
+            : DESKTOP_WINDOW_IDS.some((wid) => prev[wid]?.open && prev[wid]?.covered));
         const next: Record<DesktopWindowId, DesktopWindowState> = {
           ...prev,
           [id]: {
             ...current,
             open: true,
             maximized: true,
-            // Keep cover/expand when re-focusing (e.g. clicking a case study).
-            covered: alreadyOpen ? current.covered : false,
+            covered: inheritCovered,
             everOpened: true,
             zIndex: bumpZ(),
           },
@@ -195,11 +294,11 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
             const victim = victims[i];
             if (!victim) break;
             // Swap away without sending to Trash — only explicit Close goes to trash.
+            // Keep cover so a later reopen via dock can still inherit fullscreen.
             next[victim] = {
               ...next[victim],
               open: false,
               maximized: true,
-              covered: false,
             };
           }
         }
@@ -207,8 +306,21 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
         return next;
       });
 
+      // Only a real open — refocusing an open window is not a new visit.
+      if (!windowsRef.current[id]?.open) trackEvent('window_opened', { window: id });
+
       setClosedStack((prev) => prev.filter((x) => x !== id));
       setFocusedId(id);
+      // Open Recent lists what you were in before this one.
+      setSettings((prev) => {
+        const recents = [id, ...prev.recents.filter((x) => x !== id)].slice(0, MAX_RECENTS);
+        if (recents.length === prev.recents.length && recents.every((x, i) => x === prev.recents[i])) {
+          return prev;
+        }
+        const next = { ...prev, recents };
+        writeOsSettings(next);
+        return next;
+      });
       if (opts?.syncUrl !== false) {
         syncUrl(id);
       }
@@ -220,7 +332,7 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
   focusWindowRef.current = focusWindow;
 
   const openWindow = useCallback(
-    (id: DesktopWindowId, opts?: { syncUrl?: boolean }) => {
+    (id: DesktopWindowId, opts?: OpenWindowOpts) => {
       focusWindow(id, opts);
     },
     [focusWindow],
@@ -237,14 +349,9 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
     setClosedStack((prev) => [id, ...prev.filter((x) => x !== id)]);
   }, []);
 
-  const emptyTrash = useCallback(() => {
-    setClosedStack([]);
-  }, []);
-
   const openTrash = useCallback(() => {
-    emptyTrash();
-    openWindow('trash', { syncUrl: false });
-  }, [emptyTrash, openWindow]);
+    openWindow('finder', { syncUrl: false, finderLocation: 'trash' });
+  }, [openWindow]);
 
   const restoreFromTrash = useCallback(() => {
     openTrash();
@@ -254,6 +361,14 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
     setWindows((prev) => {
       const w = prev[id];
       if (!w.open) return prev;
+      // Mobile stays fullscreen — green traffic light is a no-op for restore.
+      if (isNarrowRef.current) {
+        if (w.covered) return prev;
+        return {
+          ...prev,
+          [id]: { ...w, covered: true, maximized: true, zIndex: bumpZ() },
+        };
+      }
       return {
         ...prev,
         [id]: {
@@ -266,6 +381,19 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
     });
     setFocusedId(id);
   }, [bumpZ]);
+
+  const setCovered = useCallback((id: DesktopWindowId, covered: boolean) => {
+    setWindows((prev) => {
+      const w = prev[id];
+      if (!w.open) return prev;
+      const nextCovered = isNarrowRef.current ? true : covered;
+      if (w.covered === nextCovered) return prev;
+      return {
+        ...prev,
+        [id]: { ...w, covered: nextCovered, maximized: true },
+      };
+    });
+  }, []);
 
   const moveIcon = useCallback((id: DesktopIconId, x: number, y: number) => {
     setIconPositions((prev) => {
@@ -285,18 +413,114 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const setWallpaperId = useCallback((id: WallpaperId) => {
-    setWallpaperIdState(id);
+  /** Picking a wallpaper is an explicit choice — it ends the daily shuffle. */
+  const setWallpaperId = useCallback(
+    (id: WallpaperId) => updateSettings({ wallpaperId: id, shuffleDaily: false }),
+    [updateSettings],
+  );
+
+  const setShuffleDaily = useCallback(
+    (on: boolean) => updateSettings({ shuffleDaily: on }),
+    [updateSettings],
+  );
+
+  const setSoundsEnabled = useCallback(
+    (on: boolean) => updateSettings({ sounds: on }),
+    [updateSettings],
+  );
+
+  const setSoundVolumeLevel = useCallback(
+    (percent: number) =>
+      updateSettings({ soundVolume: Math.min(100, Math.max(0, Math.round(percent))) }),
+    [updateSettings],
+  );
+
+  const setIconLabels = useCallback(
+    (on: boolean) => updateSettings({ iconLabels: on }),
+    [updateSettings],
+  );
+
+  const setZoom = useCallback(
+    (percent: number) =>
+      updateSettings({ zoom: Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(percent))) }),
+    [updateSettings],
+  );
+
+  const stepZoom = useCallback(
+    (direction: 1 | -1) =>
+      setSettings((prev) => {
+        const zoom = Math.min(
+          ZOOM_MAX,
+          Math.max(ZOOM_MIN, prev.zoom + direction * ZOOM_STEP),
+        );
+        if (zoom === prev.zoom) return prev;
+        const next = { ...prev, zoom };
+        writeOsSettings(next);
+        return next;
+      }),
+    [],
+  );
+
+  const clearRecents = useCallback(() => updateSettings({ recents: [] }), [updateSettings]);
+
+  const resetDesktop = useCallback(() => {
+    setWindows(() => createInitialWindows('home'));
+    setFocusedId(null);
+    setClosedStack([]);
+    setIconPositions(DEFAULT_ICON_POSITIONS);
     try {
-      localStorage.setItem(DESKTOP_OS_WALLPAPER_KEY, id);
+      sessionStorage.removeItem(DESKTOP_OS_ICON_STORAGE_KEY);
     } catch {
       /* ignore */
     }
+    setSettings(() => {
+      const next: OsSettings = { ...DEFAULT_OS_SETTINGS };
+      writeOsSettings(next);
+      return next;
+    });
   }, []);
 
-  const toggleWidgets = useCallback(() => {
-    setWidgetsOpen((v) => !v);
-  }, []);
+  // Icon labels ride on the root so the CSS can hide them without a re-render.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (settings.iconLabels) root.removeAttribute('data-os-hide-icon-labels');
+    else root.setAttribute('data-os-hide-icon-labels', 'true');
+  }, [settings.iconLabels]);
+
+  useEffect(() => {
+    if (!prefsReady) return;
+    document.documentElement.setAttribute(
+      OS_MENUBAR_CONTRAST_ATTR,
+      menubarContrastFor(wallpaperId),
+    );
+  }, [wallpaperId, prefsReady]);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--os-zoom', String(settings.zoom / 100));
+  }, [settings.zoom]);
+
+  useEffect(() => {
+    setSoundEnabled(settings.sounds);
+  }, [settings.sounds]);
+
+  useEffect(() => {
+    setSoundVolume(settings.soundVolume / 100);
+  }, [settings.soundVolume]);
+
+  const setWidgetsOpen = useCallback(
+    (open: boolean) => updateSettings({ widgets: open }),
+    [updateSettings],
+  );
+
+  const toggleWidgets = useCallback(
+    () =>
+      setSettings((prev) => {
+        const next = { ...prev, widgets: !prev.widgets };
+        writeOsSettings(next);
+        return next;
+      }),
+    [],
+  );
 
   // Client navigations only — initial window already set in useState initializer.
   const pathnameRef = useRef(pathname);
@@ -308,11 +532,14 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
     focusWindowRef.current(id, { syncUrl: false });
   }, [pathname]);
 
-  const wallpaperBackground = wallpaperBackgroundFor(wallpaperId);
+  const wallpaperBackground = wallpaperBackgroundFor(wallpaperId, {
+    narrow: isNarrow,
+  });
 
   const osValue = useMemo<DesktopOsContextValue>(
     () => ({
       enabled: true,
+      prefsReady,
       isNarrow,
       windows,
       focusedId,
@@ -323,13 +550,31 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
       openWindow,
       closeWindow,
       toggleCover,
+      setCovered,
       focusWindow,
+      finderLocation,
+      setFinderLocation,
       toggleWidgets,
       setWidgetsOpen,
       restoreFromTrash,
       setWallpaperId,
+      shuffleDaily: settings.shuffleDaily,
+      setShuffleDaily,
+      soundsEnabled: settings.sounds,
+      setSoundsEnabled,
+      soundVolume: settings.soundVolume,
+      setSoundVolumeLevel,
+      iconLabels: settings.iconLabels,
+      setIconLabels,
+      zoom: settings.zoom,
+      setZoom,
+      stepZoom,
+      recents: settings.recents,
+      clearRecents,
+      resetDesktop,
     }),
     [
+      prefsReady,
       isNarrow,
       windows,
       focusedId,
@@ -340,10 +585,27 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
       openWindow,
       closeWindow,
       toggleCover,
+      setCovered,
       focusWindow,
+      finderLocation,
       toggleWidgets,
+      setWidgetsOpen,
       restoreFromTrash,
       setWallpaperId,
+      settings.shuffleDaily,
+      setShuffleDaily,
+      settings.sounds,
+      setSoundsEnabled,
+      settings.soundVolume,
+      setSoundVolumeLevel,
+      settings.iconLabels,
+      setIconLabels,
+      settings.zoom,
+      setZoom,
+      stepZoom,
+      settings.recents,
+      clearRecents,
+      resetDesktop,
     ],
   );
 

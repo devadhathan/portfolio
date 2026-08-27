@@ -134,7 +134,7 @@ export function CatalysticCard({
       <div className="relative mt-4 min-h-0 flex-1 overflow-hidden">
         <div
           className={cn(
-            'absolute inset-x-3 bottom-[-18%] top-[8%] origin-center transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:inset-x-4',
+            'absolute inset-x-3 bottom-[-18%] top-[8%] origin-center transition-transform duration-500 ease-out-expo sm:inset-x-4',
             revealed ? 'rotate-[-7deg]' : 'rotate-[-2deg]',
           )}
         >

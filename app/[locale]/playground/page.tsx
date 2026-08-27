@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useRouter } from '@/i18n/navigation';
@@ -13,7 +13,7 @@ import {
 import { PLAYGROUND_ITEMS } from '@/lib/playground-items';
 import { blurFadeUp, easeOutExpo, fadeUpSoft } from '@/lib/motion';
 import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
-import { signalBootReady, afterNextPaint } from '@/lib/boot-critical';
+import { LinedPageFrame } from '@/components/lined-page-frame';
 
 export default function PlaygroundPage() {
   const router = useRouter();
@@ -22,8 +22,6 @@ export default function PlaygroundPage() {
   const desktopOs = useDesktopOsOptional();
   const embedded = Boolean(desktopOs?.enabled);
   const [selection, setSelection] = useState<PlaygroundSelection | null>(null);
-
-  useEffect(() => afterNextPaint(() => signalBootReady()), []);
 
   const handleHomeClick = useCallback(() => {
     if (desktopOs?.enabled) {
@@ -87,15 +85,25 @@ export default function PlaygroundPage() {
               embedded ? 'py-4 pb-8' : 'py-4 md:py-6 lg:py-8 pb-20 md:pb-24 lg:pb-8'
             }`}
           >
-            <div className="max-w-[1500px] mx-auto">
-              <div className="mx-0 px-4 sm:mx-4 sm:px-5 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-[70px] xl:px-[90px]">
-              <div className={`mb-8 md:mb-10 text-left ${embedded ? 'pt-4' : 'pt-8 md:pt-10 lg:pt-14'}`}>
-                <h1 className="max-w-4xl whitespace-pre-line text-balance text-2xl sm:text-3xl md:text-4xl lg:text-[2.5rem] font-light text-foreground tracking-tight leading-[1.1] mb-8 md:mb-10 lg:mb-12">
-                  {t('heroLine')}
-                </h1>
-              </div>
-
-              <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-4 lg:gap-5 auto-rows-[minmax(220px,auto)] w-full pb-4 md:pb-0">
+            <div className={embedded ? 'w-full min-w-0' : 'max-w-[1500px] mx-auto'}>
+              <div
+                className={
+                  embedded
+                    ? 'os-work-grid home-col mx-auto w-full min-w-0'
+                    : 'mx-0 px-4 sm:mx-4 sm:px-5 md:mx-4 md:px-5 lg:mx-5 lg:px-6 xl:mx-[70px] xl:px-[90px]'
+                }
+              >
+              <LinedPageFrame
+                title={t('heroLine')}
+                className={embedded ? 'mb-0' : undefined}
+              >
+              <section
+                className={
+                  embedded
+                    ? 'os-work-grid__cards grid w-full min-w-0 pb-4 md:pb-0'
+                    : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-4 lg:gap-5 auto-rows-[minmax(220px,auto)] w-full pb-4 md:pb-0'
+                }
+              >
                 {PLAYGROUND_ITEMS.map((item, index) => {
                   const copy = getCopy(item.id);
                   const enter =
@@ -124,6 +132,7 @@ export default function PlaygroundPage() {
                   );
                 })}
               </section>
+              </LinedPageFrame>
               </div>
             </div>
           </main>

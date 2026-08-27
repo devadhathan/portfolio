@@ -10,35 +10,66 @@ import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import { HighlightedText } from './highlighted-text';
 import { HeroBio } from './hero-bio';
-import { HomeIntro } from './home-intro';
-import { CaseStudiesList, getHomeAfterCaseStudiesDelay } from './case-studies-list';
+import { HomeHero } from './home-hero';
+// Temporary: portrait swapped for lined frame — re-import when restoring
+// import { HomePortrait } from './home-portrait';
+import { CaseStudiesList } from './case-studies-list';
+import { StatusPet } from './status-pet';
+import { CardHoverGlowOverlay, HOME_CARD_BORDER } from '@/components/card-hover-glow';
+import { XLogo } from '@/components/x-logo';
+import { X_PROFILE_URL } from '@/lib/social-links';
 import { useSiteContent } from '@/components/site-content-provider';
 import { useTheme } from '@/contexts/theme-context';
 import { useTranslations } from 'next-intl';
 import { FINSHOTS_APP_SCREEN } from '@/lib/build-case-study-cards';
+import dynamic from 'next/dynamic';
 import { ProjectTreeCard } from '@/components/project-tree-card';
 import { SideProjectCard } from '@/components/side-project-card';
 import { NesoiHomeCard } from '@/components/nesoi-home-card';
-import { MusicNotchCard } from '@/components/music-notch-card';
-import { PhotoCarousel } from '@/components/photo-carousel';
-import { AgentOrbCard } from '@/components/agent-orb-card';
-import { DewVideoPhone, resolveDewVideoSrc } from '@/components/dew-video-phone';
-import { DEW_MEDIUM_THUMB, DEW_MEDIUM_URL } from '@/hooks/use-in-view-video-prefetch';
-import { GrainBrandAnimation } from '@/components/grain-brand-animation';
+import { DEW_MEDIUM_THUMB, DEW_MEDIUM_URL, DEW_VIDEO_SRC } from '@/hooks/use-in-view-video-prefetch';
 import { SiteUpdateNote } from '@/components/site-update-note';
-import { HeroVideo } from '@/components/hero-video';
-import { WordsmithCard } from '@/components/wordsmith-card';
-import { ConnectMiniPost } from '@/components/connect-mini-post';
 import { motion, useReducedMotion } from 'framer-motion';
 import { easeOutExpo, fadeUpSoft } from '@/lib/motion';
 
-function XLogo({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden className={className} fill="currentColor">
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.227-8.451L1.61 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" />
-    </svg>
-  );
+function resolveDewVideoSrc(content?: string): string {
+  if (!content || content.includes('2tUv4Phgglg0Cvb9dLfZYDnN1k')) {
+    return DEW_VIDEO_SRC;
+  }
+  return content;
 }
+
+const MusicNotchCard = dynamic(
+  () => import('@/components/music-notch-card').then((m) => m.MusicNotchCard),
+  { ssr: false },
+);
+const PhotoCarousel = dynamic(
+  () => import('@/components/photo-carousel').then((m) => m.PhotoCarousel),
+  { ssr: false },
+);
+const AgentOrbCard = dynamic(
+  () => import('@/components/agent-orb-card').then((m) => m.AgentOrbCard),
+  { ssr: false },
+);
+const DewVideoPhone = dynamic(
+  () => import('@/components/dew-video-phone').then((m) => m.DewVideoPhone),
+  { ssr: false },
+);
+const GrainBrandAnimation = dynamic(
+  () => import('@/components/grain-brand-animation').then((m) => m.GrainBrandAnimation),
+  { ssr: false },
+);
+const HeroVideo = dynamic(
+  () => import('@/components/hero-video').then((m) => m.HeroVideo),
+  { ssr: false },
+);
+const WordsmithCard = dynamic(
+  () => import('@/components/wordsmith-card').then((m) => m.WordsmithCard),
+  { ssr: false },
+);
+const ConnectMiniPost = dynamic(
+  () => import('@/components/connect-mini-post').then((m) => m.ConnectMiniPost),
+  { ssr: false },
+);
 
 const SECTION_ICON_MAP: Record<string, LucideIcon> = {
   hero: User,
@@ -81,8 +112,8 @@ const PHOTO_BLOCKLIST = new Set([
   '/brand-mark.png',
   '/photos/Image@4x.png',
   '/photos/.png',
-  '/photos/image.png',
-  '/photos/MEE.png',
+  '/photos/image.webp',
+  '/photos/MEE.webp',
   '/photos/plant.png',
 ]);
 
@@ -104,6 +135,7 @@ interface PortfolioSectionsProps {
 
 export function PortfolioSections({ agentState, hideHeaderText = false, onProjectSelect, onShowProjectsList, onEnterGenUI, selectedProjectId }: PortfolioSectionsProps) {
   const t = useTranslations('home');
+  const tNav = useTranslations('nav');
   const { theme } = useTheme();
   const reduceMotion = useReducedMotion();
   const { settings, projects } = useSiteContent();
@@ -214,7 +246,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
       'finshots-award': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1',
       'projects': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2 h-full min-h-[640px] sm:min-h-[560px]',
       'photos': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 min-h-[400px] sm:min-h-[380px]',
-      'video': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-2 min-h-[320px]',
+      'video': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 h-full min-h-[400px] sm:min-h-[380px]',
       'contact': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 ',
       'experience': 'col-span-1 sm:col-span-1 lg:col-span-1 row-span-1 self-start h-auto',
     };
@@ -241,11 +273,10 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
   };
 
   const getPriorityStyles = (priority: SectionPriority, sectionType?: SectionType) => {
-    // Supabase-style cards: thin subtle border, deep near-black surface,
-    // border gently brightens on hover.
-    const baseStyles = 'rounded-lg border border-border/55 hover:border-border/80 dark:border-border/40 dark:hover:border-border/70 cursor-pointer transition-all duration-500 ease-out relative overflow-hidden group';
+    // Same border language as About / Connect / Selected Work cards.
+    const baseStyles = `${HOME_CARD_BORDER} cursor-pointer relative overflow-hidden group`;
 
-    const bgStyles = 'bg-card dark:bg-[#1C1A12]';
+    const bgStyles = 'bg-transparent';
 
     const borderStyles: Record<Exclude<SectionPriority, 'hidden'>, string> = {
       high: '',
@@ -260,9 +291,9 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     };
 
     const shadowStyles: Record<Exclude<SectionPriority, 'hidden'>, string> = {
-      high: 'shadow-[0_1px_2px_rgba(0,0,0,0.04),0_6px_20px_rgba(0,0,0,0.05)] dark:shadow-md',
-      medium: 'shadow-[0_1px_2px_rgba(0,0,0,0.04),0_6px_20px_rgba(0,0,0,0.05)] dark:shadow-md',
-      low: 'shadow-[0_1px_2px_rgba(0,0,0,0.04),0_6px_20px_rgba(0,0,0,0.05)] dark:shadow-md',
+      high: '',
+      medium: '',
+      low: '',
     };
 
     // Combine all styles - handle 'hidden' priority by defaulting to 'low'
@@ -284,19 +315,10 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
     const mousePos = mousePositions[section.id];
     const isHovered = mousePos !== null && mousePos !== undefined && typeof mousePos.x === 'number' && typeof mousePos.y === 'number';
     
-    // Border reveal that follows cursor
-    // Increased radius to 200px for larger effect area
-    const borderReveal = isHovered && mousePos ? (
-      <div 
-        className="absolute inset-0 pointer-events-none rounded-lg z-[1]"
-        style={{
-          border: '1px solid hsl(var(--primary) / 0.5)',
-          WebkitMaskImage: `radial-gradient(circle 200px at ${mousePos.x}px ${mousePos.y}px, black 30%, transparent 75%)`,
-          maskImage: `radial-gradient(circle 200px at ${mousePos.x}px ${mousePos.y}px, black 30%, transparent 75%)`,
-          transition: 'none',
-        }}
-      />
-    ) : null;
+    const borderReveal =
+      isHovered && mousePos ? (
+        <CardHoverGlowOverlay x={mousePos.x} y={mousePos.y} />
+      ) : null;
     
     const SectionIcon = getSectionIcon(section.id);
     switch (section.id) {
@@ -345,7 +367,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             <div className="flex-1 flex justify-center">
               <div className="relative w-full max-w-[560px] rounded-lg overflow-hidden border border-border/40 dark:border-border/60 hero-illustration">
                 <div className="relative w-full h-[272px] sm:h-[332px] md:h-[372px] max-h-[372px]">
-                  {theme === 'dark' ? (
+                  {theme === 'dark' || theme === 'clear' ? (
                     <HeroVideo />
                   ) : theme === 'blue' || theme === 'green' || theme === 'red' ? (
                     <img
@@ -401,15 +423,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           typeof experienceMousePos.y === 'number';
         const experienceBorderReveal =
           experienceHovered && experienceMousePos ? (
-            <div
-              className="absolute inset-0 pointer-events-none rounded-lg z-[1]"
-              style={{
-                border: '1px solid hsl(var(--primary) / 0.5)',
-                WebkitMaskImage: `radial-gradient(circle 200px at ${experienceMousePos.x}px ${experienceMousePos.y}px, black 30%, transparent 75%)`,
-                maskImage: `radial-gradient(circle 200px at ${experienceMousePos.x}px ${experienceMousePos.y}px, black 30%, transparent 75%)`,
-                transition: 'none',
-              }}
-            />
+            <CardHoverGlowOverlay x={experienceMousePos.x} y={experienceMousePos.y} />
           ) : null;
 
         return (
@@ -545,6 +559,8 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             <CardContent className="relative z-10 h-full p-0">
               <WordsmithCard
                 title={t('wordsmithCard.title')}
+                tagLabel="New"
+                tagTone="orange"
                 yearLabel={t('wordsmithCard.year')}
                 description={t('wordsmithCard.description')}
               />
@@ -981,7 +997,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
           },
           {
             label: 'X',
-            href: 'https://x.com/mddevadhathan',
+            href: X_PROFILE_URL,
             icon: <XLogo className="h-3.5 w-3.5" />,
           },
           {
@@ -1011,7 +1027,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 handle={t('connectPost.handle')}
                 avatarSrc="/photos/sideprojects/avatar-face.jpg"
                 body={t('connectPost.body')}
-                profileHref="https://x.com/mddevadhathan"
+                profileHref={X_PROFILE_URL}
                 socialLinks={socialLinks}
               />
             </CardContent>
@@ -1023,37 +1039,135 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
 
   return (
     <>
-      {!hideHeaderText && (
-        <>
-          <HomeIntro className="mb-8 sm:mb-10 md:mb-12 lg:mb-14" />
-          <CaseStudiesList
-            className="mb-10 sm:mb-12 md:mb-16 lg:mb-20"
-            onProjectSelect={onProjectSelect}
-          />
-        </>
-      )}
-      <div className="grid w-full grid-cols-1 gap-3 auto-rows-[minmax(0,auto)] pb-4 sm:grid-cols-2 sm:gap-4 md:pb-0 lg:grid-cols-3">
-        {displaySections.map((section, index) => {
-          const bentoSize = getBentoSize(section.priority, section.id, section.type, section.order);
-          return (
-            <motion.div
-              key={section.id}
-              className={`${bentoSize} min-h-0`}
-              initial={reduceMotion ? false : fadeUpSoft.initial}
-              animate={fadeUpSoft.animate}
-              transition={{
-                duration: 0.4,
-                delay:
-                  (reduceMotion ? 0 : getHomeAfterCaseStudiesDelay(projects.length + 1)) +
-                  Math.min(index, 10) * 0.04,
-                ease: easeOutExpo,
-              }}
+      {!hideHeaderText ? (
+        <div className="home-intro-cafe home-intro-cafe--lined os-col">
+          <div className="home-intro-frame">
+            <span className="home-intro-frame__plus home-intro-frame__plus--tl" aria-hidden>
+              +
+            </span>
+            <span className="home-intro-frame__plus home-intro-frame__plus--br" aria-hidden>
+              +
+            </span>
+
+            <div className="home-intro-frame__section">
+              <HomeHero className="mb-0" />
+            </div>
+
+            <div className="home-intro-frame__rule-pair" aria-hidden>
+              <div className="home-intro-frame__rule" />
+              <div className="home-intro-frame__rule" />
+            </div>
+
+            <div className="home-intro-frame__section">
+              <CaseStudiesList
+                className="home-intro-frame__cards mb-0"
+                onProjectSelect={onProjectSelect}
+              />
+            </div>
+
+            <div className="home-intro-frame__rule-pair" aria-hidden>
+              <div className="home-intro-frame__rule" />
+              <div className="home-intro-frame__rule" />
+            </div>
+
+            <section
+              className="home-intro-frame__section home-intro-frame__misc"
+              aria-label={tNav('misc')}
             >
-              {renderSection(section, index)}
-            </motion.div>
-          );
-        })}
-      </div>
+              <div className="mb-5 flex items-baseline justify-between gap-3 sm:mb-6">
+                <h2 className="text-[15px] font-medium text-muted-foreground sm:text-base">
+                  {tNav('misc')}
+                </h2>
+              </div>
+              <div className="grid w-full grid-cols-1 gap-3 auto-rows-[minmax(0,auto)] pb-1 sm:grid-cols-2 sm:gap-4 md:pb-0 lg:grid-cols-3">
+                {displaySections
+                  .filter((section) => section.id !== 'connect')
+                  .map((section, index) => {
+                    const bentoSize = getBentoSize(
+                      section.priority,
+                      section.id,
+                      section.type,
+                      section.order,
+                    );
+                    return (
+                      <motion.div
+                        key={section.id}
+                        className={`${bentoSize} min-h-0`}
+                        initial={false}
+                        animate={fadeUpSoft.animate}
+                        transition={{
+                          duration: reduceMotion ? 0 : 0.35,
+                          delay: reduceMotion ? 0 : Math.min(index, 8) * 0.03,
+                          ease: easeOutExpo,
+                        }}
+                      >
+                        {renderSection(section, index)}
+                      </motion.div>
+                    );
+                  })}
+              </div>
+            </section>
+
+            <div className="home-intro-frame__rule" aria-hidden />
+
+            <div className="home-intro-frame__section home-intro-frame__status flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+              <span className="whitespace-nowrap font-mono tracking-tight">Build - DevOS 12.4</span>
+              <span aria-hidden className="text-muted-foreground/50">
+                ·
+              </span>
+              <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
+                Available for work
+                <StatusPet />
+              </span>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <section className="os-col w-full" aria-label={tNav('misc')}>
+          <div className="mb-5 flex items-baseline justify-between gap-3 sm:mb-6">
+            <h2 className="text-[15px] font-medium text-muted-foreground sm:text-base">
+              {tNav('misc')}
+            </h2>
+          </div>
+          <div className="grid w-full grid-cols-1 gap-3 auto-rows-[minmax(0,auto)] pb-4 sm:grid-cols-2 sm:gap-4 md:pb-0 lg:grid-cols-3">
+            {displaySections.map((section, index) => {
+              const bentoSize = getBentoSize(
+                section.priority,
+                section.id,
+                section.type,
+                section.order,
+              );
+              return (
+                <motion.div
+                  key={section.id}
+                  className={`${bentoSize} min-h-0`}
+                  initial={false}
+                  animate={fadeUpSoft.animate}
+                  transition={{
+                    duration: reduceMotion ? 0 : 0.35,
+                    delay: reduceMotion ? 0 : Math.min(index, 8) * 0.03,
+                    ease: easeOutExpo,
+                  }}
+                >
+                  {renderSection(section, index)}
+                </motion.div>
+              );
+            })}
+          </div>
+          <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 pb-6 text-[11px] text-muted-foreground md:mt-6">
+            <span className="whitespace-nowrap font-mono tracking-tight">Build - DevOS 12.4</span>
+            <span aria-hidden className="text-muted-foreground/50">
+              ·
+            </span>
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
+              Available for work
+              <StatusPet />
+            </span>
+          </div>
+        </section>
+      )}
       
       {/* Detail Dialog - Exclude projects section */}
       <Dialog open={!!selectedSection && selectedSection.id !== 'projects'} onOpenChange={(open) => !open && setSelectedSection(null)}>
@@ -1215,6 +1329,12 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                                   <span>April 2026 - June 2026</span>
                                 </div>
                               </div>
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                I worked as a product designer at Wordsmith AI. After research and
+                                internal prototyping, I shipped contract review and versioning. I ran
+                                discovery end to end and stayed close to legal engineers through launch.
+                                Contact me for the deeper case study.
+                              </p>
                             </div>
 
                             <div className="p-4 rounded-lg bg-secondary/30 border border-border/30">
@@ -1227,7 +1347,8 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                                 </div>
                               </div>
                               <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-                                Designing innovative solutions and user-centered experiences for AI-powered products.
+                                I designed and shipped AI learning dashboards for 15+ enterprise clients —
+                                engagement up 92%, course creation time down 37%.
                               </p>
                               <div className="flex flex-wrap gap-1.5">
                                 {['Prototyping', 'Design Systems', 'UX Research'].map((tag) => (
@@ -1248,7 +1369,10 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                                 </div>
                               </div>
                               <p className="text-sm text-muted-foreground leading-relaxed mb-3">
-                                Joined Finshots in 2019 as a product designer on the financial news platform and designed the award-winning Finshots app (Google Play Best App 2020, 100k+ downloads). Stayed with the company as it founded Ditto Insurance in 2021 and rebranded under Ditto — Finshots remains a product of the parent company. Also led Ditto booking portal (+17% conversion), Falcon Design System, and CRM redesign (+20% efficiency).
+                                I joined Finshots in 2019 and designed the Finshots app (Google Play Best App
+                                2020, 100k+ downloads). I stayed as the company founded Ditto Insurance, and
+                                later led the booking portal (+17% conversion), Falcon Design System, and CRM
+                                redesign (+20% efficiency).
                               </p>
                               <div className="flex flex-wrap gap-1.5">
                                 {['Design Systems', 'Mobile Design', 'UX Research', 'Prototyping'].map((tag) => (

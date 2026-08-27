@@ -1,6 +1,5 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Cloud, Droplets, Wind } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -21,20 +20,12 @@ export function WeatherWidget({ className }: WeatherWidgetProps) {
   const Icon = weather.icon;
 
   return (
-    <Card
-      data-cuelume-card-hover
-      className={cn(
-        'border-0 bg-transparent text-white shadow-none [&_.text-muted-foreground]:text-white/55',
-        className,
-      )}
-    >
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-sm font-medium">
-          <Icon className="h-4 w-4 text-primary" />
-          Weather
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2 pt-0">
+    <div data-cuelume-card-hover className={className}>
+      <div className="mb-3 flex items-center gap-2">
+        <Icon className="h-4 w-4 shrink-0 text-primary" />
+        <span className="text-sm font-medium text-foreground/90">Weather</span>
+      </div>
+      <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xl font-semibold">{weather.temp}°F</p>
@@ -42,7 +33,7 @@ export function WeatherWidget({ className }: WeatherWidgetProps) {
           </div>
           <Icon className="h-8 w-8 text-primary/60" />
         </div>
-        <div className="flex items-center gap-4 border-t border-white/15 pt-2">
+        <div className="flex items-center gap-4 border-t border-foreground/10 pt-2">
           <div className="flex items-center gap-1.5">
             <Droplets className="h-3 w-3 text-muted-foreground" />
             <span className="text-xs text-muted-foreground">{weather.humidity}%</span>
@@ -53,7 +44,7 @@ export function WeatherWidget({ className }: WeatherWidgetProps) {
           </div>
         </div>
         <p className="text-xs text-muted-foreground">{weather.location}</p>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

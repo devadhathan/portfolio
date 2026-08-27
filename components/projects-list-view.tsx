@@ -34,6 +34,9 @@ export function ProjectsListView({ onBack, onProjectSelect, selectedProjectId }:
                 <button
                   key={projectId}
                   onClick={() => onProjectSelect(projectId)}
+                  data-cuelume-hover="tick"
+                  data-cuelume-press
+                  data-cuelume-release
                   className={`w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ${
                     isSelected
                       ? 'border-primary bg-primary/10 hover:bg-primary/15'

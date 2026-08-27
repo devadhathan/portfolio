@@ -12,7 +12,6 @@ type GenUIAskSidebarProps = {
   viewports: GenUIViewport[];
   activeViewportId: string | null;
   isEmpty: boolean;
-  limitLabel?: string;
   onNewChat: () => void;
   onSelectViewport: (id: string) => void;
   className?: string;
@@ -32,7 +31,6 @@ export function GenUIAskSidebar({
   viewports,
   activeViewportId,
   isEmpty,
-  limitLabel,
   onNewChat,
   onSelectViewport,
   className,
@@ -183,12 +181,6 @@ export function GenUIAskSidebar({
           )}
         </div>
       </ScrollArea>
-
-      {limitLabel ? (
-        <p className="shrink-0 border-t border-black/[0.05] px-4 py-3 text-[11px] tabular-nums text-muted-foreground/55 dark:border-white/[0.06]">
-          {limitLabel}
-        </p>
-      ) : null}
     </aside>
   );
 }

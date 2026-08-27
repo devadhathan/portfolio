@@ -44,9 +44,15 @@ export function DewVideoPhone({
     <div
       ref={containerRef}
       data-cuelume-card-hover
-      className="relative z-10 flex h-full w-full items-center justify-center p-4"
+      className="relative z-10 flex h-full min-h-0 w-full items-center justify-center p-4"
     >
-      <div className="relative aspect-[9/19.5] w-full max-w-[250px] rounded-[2.25rem] bg-black p-2 shadow-2xl">
+      {/*
+        Height-driven, not width-driven. Sizing from width (250px → ~541px tall)
+        made the phone taller than the card's own height, so the card grew past
+        its neighbours in the bento row. Now the card height wins and the phone
+        fits inside it.
+      */}
+      <div className="relative aspect-[9/19.5] h-full max-h-full w-auto max-w-full rounded-[2.25rem] bg-black p-2 shadow-2xl">
         <div className="absolute left-1/2 top-0 z-20 h-6 w-28 -translate-x-1/2 rounded-b-2xl bg-black" />
         <div className="relative h-full w-full overflow-hidden rounded-[1.85rem] bg-black">
           {!isReady && (

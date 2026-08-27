@@ -165,7 +165,7 @@ export function ParticleImageCard({ className }: ParticleImageCardProps) {
           <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-transparent blur-2xl animate-pulse" />
           <div className="relative w-full h-full rounded-full overflow-hidden border-4 border-primary/30 shadow-2xl transform transition-transform duration-300 hover:scale-105">
             <Image
-              src="/photos/MEE.png"
+              src="/photos/MEE.webp"
               alt="Devadhathan M D"
               fill
               className="object-cover"

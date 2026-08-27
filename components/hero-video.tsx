@@ -8,8 +8,11 @@ type HeroVideoProps = {
 };
 
 export function HeroVideo({ className }: HeroVideoProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
   const introRef = useRef<HTMLVideoElement>(null);
   const loopRef = useRef<HTMLVideoElement>(null);
+  const showLoopRef = useRef(false);
+  const visibleRef = useRef(true);
   const [showLoop, setShowLoop] = useState(false);
   const [introReady, setIntroReady] = useState(false);
   const [loopReady, setLoopReady] = useState(false);
@@ -22,6 +25,10 @@ export function HeroVideo({ className }: HeroVideoProps) {
   }, []);
 
   useEffect(() => {
+    showLoopRef.current = showLoop;
+  }, [showLoop]);
+
+  useEffect(() => {
     setShowLoop(false);
     setIntroReady(false);
     setLoopReady(false);
@@ -32,10 +39,49 @@ export function HeroVideo({ className }: HeroVideoProps) {
     intro?.load();
   }, [muteVideo]);
 
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+
+    const pauseAll = () => {
+      introRef.current?.pause();
+      loopRef.current?.pause();
+    };
+
+    const resumeActive = () => {
+      const active = showLoopRef.current ? loopRef.current : introRef.current;
+      muteVideo(active);
+      void active?.play().catch(() => undefined);
+    };
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        const on = Boolean(entry?.isIntersecting);
+        visibleRef.current = on;
+        if (on) resumeActive();
+        else pauseAll();
+      },
+      { threshold: 0.15 },
+    );
+    io.observe(root);
+
+    const onVisibility = () => {
+      if (document.hidden) pauseAll();
+      else if (visibleRef.current) resumeActive();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      io.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
+      pauseAll();
+    };
+  }, [muteVideo]);
+
   const handleIntroReady = () => {
     muteVideo(introRef.current);
     setIntroReady(true);
-    void introRef.current?.play().catch(() => undefined);
+    if (visibleRef.current) void introRef.current?.play().catch(() => undefined);
 
     const loop = loopRef.current;
     if (loop && loop.networkState === HTMLMediaElement.NETWORK_EMPTY) {
@@ -52,7 +98,10 @@ export function HeroVideo({ className }: HeroVideoProps) {
   const activeReady = showLoop ? loopReady : introReady;
 
   return (
-    <div className={`relative h-full w-full overflow-hidden bg-[#1D1807] ${className ?? ''}`}>
+    <div
+      ref={rootRef}
+      className={`relative h-full w-full overflow-hidden bg-[#1D1807] ${className ?? ''}`}
+    >
       {/* Poster only until the active clip can play — never stacked under a playing video */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {!activeReady && (
@@ -85,7 +134,7 @@ export function HeroVideo({ className }: HeroVideoProps) {
         onEnded={() => {
           setShowLoop(true);
           muteVideo(loopRef.current);
-          void loopRef.current?.play().catch(() => undefined);
+          if (visibleRef.current) void loopRef.current?.play().catch(() => undefined);
         }}
       />
 

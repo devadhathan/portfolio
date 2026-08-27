@@ -1,30 +1,31 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
+import { ArrowUpRight, Briefcase, Calendar } from 'lucide-react';
+import HomePage from '@/components/home-page';
 import { useSiteContent } from '@/components/site-content-provider';
-import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
+import { useDesktopOs, useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
 import { OsBackButton } from '@/components/os-back-button';
+import { useOsWindowId } from '@/components/desktop-os/os-window-scope';
 import {
   DESKTOP_LINK_ICONS,
   GAMES_EMBED_URL,
-  TRASH_BAIT_VIDEO,
   WORDSMITH_EMBED_URL,
   type DesktopLinkIconId,
 } from '@/lib/desktop-os';
-import { cn } from '@/lib/utils';
+import { trackEvent } from '@/lib/analytics';
+import { X_PROFILE_HANDLE, X_PROFILE_URL } from '@/lib/social-links';
+import { cn, focusRing } from '@/lib/utils';
 
 /**
  * Window body adapters — mount page UIs inside OS windows.
  * `embedded` strips full-page chrome (top padding, competing sidebars).
+ *
+ * Home is a static import so featured thumbs mount once under the boot splash
+ * (no dynamic skeleton → remount that restarted videos).
  */
 
-function BodySkeleton() {
-  // Full-screen boot splash covers first paint; keep window calm on later chunk loads.
-  return <div className="min-h-[120px]" aria-hidden />;
-}
-
-const homePageImport = () => import('@/components/home-page');
 const workPageImport = () => import('@/app/[locale]/work/work-client');
 const playgroundPageImport = () => import('@/app/[locale]/playground/page');
 const askWindowImport = () =>
@@ -33,16 +34,19 @@ const photosBodyImport = () =>
   import('@/components/desktop-os/photos-window-body').then((m) => ({
     default: m.PhotosWindowBody,
   }));
+const drawesomeBodyImport = () =>
+  import('@/components/desktop-os/drawesome-window-body').then((m) => ({
+    default: m.DrawesomeWindowBody,
+  }));
 
-const HomePage = dynamic(homePageImport, { ssr: false, loading: BodySkeleton });
-const WorkPageClient = dynamic(workPageImport, { ssr: false, loading: BodySkeleton });
-const PlaygroundPage = dynamic(playgroundPageImport, { ssr: false, loading: BodySkeleton });
+const WorkPageClient = dynamic(workPageImport, { ssr: false });
+const PlaygroundPage = dynamic(playgroundPageImport, { ssr: false });
 /** Lazy — keeps Gen UI / agent stack off the initial OS shell chunk. */
-export const AskWindowBody = dynamic(askWindowImport, { ssr: false, loading: BodySkeleton });
+export const AskWindowBody = dynamic(askWindowImport, { ssr: false });
+export const DrawesomeWindowBody = dynamic(drawesomeBodyImport, { ssr: false });
 
 /** Warm common window chunks in idle time. Ask/Gen UI is hover-prefetched only. */
 export function prefetchDesktopWindowBodies() {
-  void homePageImport();
   void workPageImport();
   void playgroundPageImport();
   void photosBodyImport();
@@ -51,7 +55,6 @@ export function prefetchDesktopWindowBodies() {
 export function prefetchDesktopWindow(id: string) {
   switch (id) {
     case 'home':
-      void homePageImport();
       break;
     case 'work':
       void workPageImport();
@@ -65,6 +68,9 @@ export function prefetchDesktopWindow(id: string) {
       break;
     case 'photos':
       void photosBodyImport();
+      break;
+    case 'drawesome':
+      void drawesomeBodyImport();
       break;
     default:
       break;
@@ -98,14 +104,20 @@ export function EmbedWindowBody({
   openLabel?: string;
   thumbnailClassName?: string;
 }) {
+  const windowId = useOsWindowId();
+  const os = useDesktopOsOptional();
+  const hostOpen = windowId ? Boolean(os?.windows[windowId]?.open) : true;
   const [shouldLoad, setShouldLoad] = useState(false);
 
-  // Load third-party iframe only after this body is on screen (first open).
+  // Load third-party iframe only while the host window is open; tear down on close.
   useEffect(() => {
-    if (!embeddable) return;
+    if (!embeddable || !hostOpen) {
+      setShouldLoad(false);
+      return;
+    }
     const id = window.requestAnimationFrame(() => setShouldLoad(true));
     return () => window.cancelAnimationFrame(id);
-  }, [embeddable]);
+  }, [embeddable, hostOpen]);
 
   if (!embeddable) {
     return (
@@ -128,6 +140,7 @@ export function EmbedWindowBody({
           href={href}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackEvent('outbound_link', { destination: title, surface: 'window_cta' })}
           className="rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
         >
           {openLabel ?? `Open ${title}`}
@@ -144,6 +157,7 @@ export function EmbedWindowBody({
           href={href}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackEvent('outbound_link', { destination: title, surface: 'window_header' })}
           className="shrink-0 underline decoration-border underline-offset-2 transition-colors hover:text-foreground"
         >
           Open externally
@@ -169,7 +183,7 @@ export function EmbedWindowBody({
 
 export function HomeWindowBody() {
   return (
-    <div className="os-window-content" data-os-embedded="true">
+    <div className="os-window-content os-window-content--fill" data-os-embedded="true">
       <HomePage embedded />
     </div>
   );
@@ -178,7 +192,7 @@ export function HomeWindowBody() {
 export function WorkWindowBody() {
   const { projects } = useSiteContent();
   return (
-    <div className="os-window-content" data-os-embedded="true">
+    <div className="os-window-content os-window-content--fill" data-os-embedded="true">
       <WorkPageClient projects={projects} />
     </div>
   );
@@ -186,7 +200,7 @@ export function WorkWindowBody() {
 
 export function PlaygroundWindowBody() {
   return (
-    <div className="os-window-content" data-os-embedded="true">
+    <div className="os-window-content os-window-content--fill" data-os-embedded="true">
       <PlaygroundPage />
     </div>
   );
@@ -205,83 +219,111 @@ export function GamesWindowBody() {
 export function WordsmithWindowBody() {
   const desktopOs = useDesktopOsOptional();
 
+  useEffect(() => {
+    const previous = document.title;
+    document.title = 'Dev | Wordsmith AI';
+    return () => {
+      document.title = previous;
+    };
+  }, []);
+
   // Wordsmith CSP: frame-ancestors 'self' studio.wordsmith.ai localhost:* —
   // staging/prod portfolios cannot iframe it (localhost works).
   return (
-    <div className="relative h-full min-h-0" data-os-embedded="true">
-      {desktopOs?.enabled ? (
-        <div className="absolute left-4 top-3 z-10 sm:left-5 sm:top-4">
-          <OsBackButton
-            onClick={() => desktopOs.openWindow('home', { syncUrl: false })}
-            aria-label="Back to Home"
+    <div className="relative flex h-full min-h-0 flex-col" data-os-embedded="true">
+      <div className="os-window-content flex min-h-0 flex-1 flex-col overflow-y-auto pb-20 pt-4 sm:pt-5 md:pt-6">
+        <div className="os-col--case text-foreground">
+          {desktopOs?.enabled ? (
+            <div className="mb-5">
+              <OsBackButton
+                onClick={() => desktopOs.openWindow('home', { syncUrl: false })}
+                aria-label="Back to Home"
+              />
+            </div>
+          ) : null}
+
+          <div className="mb-8 lg:mb-10">
+            <h1 className="cs-display text-foreground" style={{ fontWeight: 600 }}>
+              Wordsmith AI
+            </h1>
+            <p className="mt-2 max-w-2xl text-balance cs-body font-medium text-foreground">
+              I designed experiences for legal AI.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-muted-foreground md:text-sm">
+              <span className="flex items-center gap-1.5">
+                <Briefcase className="h-3.5 w-3.5 shrink-0" />
+                Wordsmith AI
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5 shrink-0" />
+                April 2026 – June 2026
+              </span>
+              <span className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-medium leading-none text-primary md:text-[12px]">
+                Product Design
+              </span>
+            </div>
+          </div>
+
+          <div className="mb-10 max-w-3xl space-y-5 lg:mb-12">
+            <p className="cs-body text-muted-foreground">
+              I worked as a product designer at Wordsmith AI. After research and internal
+              prototyping, I shipped contract review and versioning for in-house legal teams. I ran
+              discovery end to end and stayed close to legal engineers through launch. Most of the
+              deeper work sits behind an NDA. If you want the real story, contact me.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-2.5 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  trackEvent('nav_click', { destination: 'contact', surface: 'wordsmith' });
+                  if (desktopOs?.enabled) {
+                    desktopOs.openWindow('contact', { syncUrl: false });
+                    return;
+                  }
+                  window.location.href = 'mailto:devadhathanmd18@gmail.com';
+                }}
+                className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+              >
+                Contact me
+              </button>
+              <a
+                href={WORDSMITH_EMBED_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() =>
+                  trackEvent('outbound_link', { destination: 'wordsmith', surface: 'window_cta' })
+                }
+                className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-transparent px-4 py-2 text-sm font-medium text-foreground/85 transition-colors hover:bg-foreground/[0.04] hover:text-foreground"
+              >
+                Feature
+                <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+              </a>
+            </div>
+          </div>
+
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/photos/wordsmith-preview.webp"
+            alt="Wordsmith AI Blueprints"
+            className="h-auto w-full object-cover shadow-lg"
           />
         </div>
-      ) : null}
-      <EmbedWindowBody
-        title="Wordsmith AI"
-        href={WORDSMITH_EMBED_URL}
-        embeddable={false}
-        thumbnail="/photos/wordsmith-preview.png"
-        thumbnailClassName="max-w-3xl sm:max-w-4xl"
-        openLabel="Open Wordsmith"
-      />
+      </div>
     </div>
   );
 }
 
+/** If Trash is opened as its own window id, bounce into Finder. */
 export function TrashWindowBody() {
-  return (
-    <div
-      className="os-window-content flex h-full min-h-[320px] flex-col overflow-hidden"
-      data-os-embedded="true"
-    >
-      <div className="flex shrink-0 items-center justify-between border-b border-border/30 px-4 py-2.5">
-        <p className="text-[12px] font-medium text-foreground/80">Trash</p>
-        <p className="text-[11px] tabular-nums text-muted-foreground">1 item</p>
-      </div>
+  const { openWindow, closeWindow } = useDesktopOs();
 
-      <div className="grid grid-cols-[minmax(0,1fr)_88px_104px] gap-2 border-b border-border/20 px-4 py-1.5 text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground/70">
-        <span>Name</span>
-        <span>Kind</span>
-        <span className="text-right">Date deleted</span>
-      </div>
+  useLayoutEffect(() => {
+    closeWindow('trash');
+    openWindow('finder', { syncUrl: false, finderLocation: 'trash' });
+  }, [closeWindow, openWindow]);
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-2 py-1">
-        <a
-          href={TRASH_BAIT_VIDEO.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="grid grid-cols-[minmax(0,1fr)_88px_104px] items-center gap-2 rounded-lg px-2 py-2 outline-none transition-colors hover:bg-black/[0.05] focus-visible:bg-black/[0.05] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40 dark:hover:bg-white/[0.06] dark:focus-visible:bg-white/[0.06]"
-          aria-label={TRASH_BAIT_VIDEO.title}
-        >
-          <span className="flex min-w-0 items-center gap-2.5">
-            <span className="relative h-9 w-12 shrink-0 overflow-hidden rounded-md bg-black/40 ring-1 ring-black/10 dark:ring-white/10">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={TRASH_BAIT_VIDEO.thumbnail}
-                alt=""
-                width={48}
-                height={36}
-                className="h-full w-full object-cover"
-                draggable={false}
-              />
-              <span
-                className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25"
-                aria-hidden
-              >
-                <span className="ml-0.5 border-y-[4px] border-l-[6px] border-y-transparent border-l-white/95" />
-              </span>
-            </span>
-            <span className="min-w-0 truncate text-[13px] text-foreground/90">
-              {TRASH_BAIT_VIDEO.title}
-            </span>
-          </span>
-          <span className="truncate text-[12px] text-muted-foreground">Video</span>
-          <span className="text-right text-[12px] tabular-nums text-muted-foreground">Today</span>
-        </a>
-      </div>
-    </div>
-  );
+  return null;
 }
 
 export function ContactWindowBody() {
@@ -302,8 +344,8 @@ export function ContactWindowBody() {
     },
     {
       label: 'X',
-      detail: '@mddevadhathan',
-      href: 'https://x.com/mddevadhathan',
+      detail: X_PROFILE_HANDLE,
+      href: X_PROFILE_URL,
       external: true,
     },
     {
@@ -355,6 +397,7 @@ export function ContactWindowBody() {
             href={link.href}
             target={link.external ? '_blank' : undefined}
             rel={link.external ? 'noopener noreferrer' : undefined}
+            onClick={() => trackEvent('contact_clicked', { channel: link.label })}
             className="flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-foreground/[0.03] px-4 py-3 transition-colors hover:bg-foreground/[0.06]"
           >
             <span className="text-sm font-medium text-foreground">{link.label}</span>
@@ -384,4 +427,70 @@ export function createLinkWindowBody(id: DesktopLinkIconId) {
       />
     );
   };
+}
+
+/** If Favourites is ever opened as its own window id, bounce into Finder. */
+export function WritingsFolderWindowBody() {
+  const { openWindow, closeWindow } = useDesktopOs();
+
+  useLayoutEffect(() => {
+    closeWindow('writings');
+    openWindow('finder', { syncUrl: false, finderLocation: 'favourites' });
+  }, [closeWindow, openWindow]);
+
+  return null;
+}
+
+/** Logo menu → About Me. */
+export function AboutWindowBody() {
+  const paragraphs = [
+    "I got here sideways. Engineering degree, and the only subject I actually loved was soft computing. Neural networks, node weights, backpropagation. I remember the specific feeling of watching a network get less wrong over iterations and thinking that was the most interesting thing anyone had shown me in four years. Then I graduated into a design job and spent a few years pretending that part of me didn't exist. It came back.",
+    "Chess. I'm not good. That's not false modesty, I'm genuinely mid. What I like is that chess punishes exactly the thing I'm worst at, which is falling in love with a plan. You can build a beautiful position and lose to a move you didn't look at because you were busy admiring your own idea. I've shipped features that way. Now when a design feels too clean I go looking for the move I'm not considering.",
+    "The Lord of the Rings. The maps. Tolkien built the languages and the geography before he built the plot, and you can feel it, because the world holds weight even in scenes where nothing happens. That's the same reason a good product feels solid before you've used half of it. Someone built the system underneath, not just the screen you're looking at. I read the appendices. I know what that says about me.",
+    "Meditation. I sit most days. Not for calm, or not only for that. What it actually trains is the gap between something happening and me reacting to it, and that gap is where all the good design decisions live. Ship the thing. Care enormously about the craft and not much about whether it lands, because the second one isn't yours to control. It's the only reason I can keep putting work into the world after it's been rejected.",
+    "Right now I'm in Edinburgh, building tools for designers and developers, and looking for a team where design and code aren't separate departments.",
+  ];
+
+  return (
+    <div className="mx-auto w-full max-w-2xl px-5 py-8 sm:px-8">
+      <p className="text-[17px] leading-8 text-foreground">
+        I&rsquo;m Dev. I design products and then I build them, which used to be two jobs and is
+        increasingly one.
+      </p>
+
+      <div className="mt-6 space-y-5 text-[15px] leading-7 text-foreground/85">
+        {paragraphs.map((paragraph) => (
+          <p key={paragraph.slice(0, 24)}>{paragraph}</p>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Logo menu → Colophon. Stack and type, nothing more. */
+export function ColophonWindowBody() {
+  const rows: [string, string][] = [
+    ['Built with', 'Next.js · React · TypeScript'],
+    ['Styling', 'Tailwind CSS'],
+    ['Type', 'Geist Sans · Geist Mono'],
+    ['Case-study stages', 'Public-domain landscape paintings'],
+  ];
+
+  return (
+    <div className="mx-auto w-full max-w-2xl px-5 py-8 sm:px-8">
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground">Colophon</h1>
+
+      <dl className="mt-6">
+        {rows.map(([label, value]) => (
+          <div
+            key={label}
+            className="flex items-baseline justify-between gap-4 border-b border-border/30 py-2.5 last:border-b-0"
+          >
+            <dt className="text-[13px] text-muted-foreground">{label}</dt>
+            <dd className="text-right text-[13px] text-foreground/90">{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
 }

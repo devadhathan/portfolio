@@ -5,7 +5,8 @@ export function scrollPageToTop() {
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
   // Desktop OS windows scroll inside `.os-window-body`, not the page.
-  document.querySelectorAll('.os-window-body').forEach((node) => {
+  // Case studies use a nested `.os-case-scroll` column instead.
+  document.querySelectorAll('.os-case-scroll, .os-window-body').forEach((node) => {
     if (node instanceof HTMLElement) node.scrollTop = 0;
   });
 }

@@ -35,8 +35,8 @@ import { inferSkeletonFromPrompt, type CardSkeletonType } from '@/lib/infer-skel
 import { enrichGenUIItems, formatLeadSummary, isWordsmithQuery, WORDSMITH_LOCKED_MESSAGE } from '@/lib/enrich-gen-ui';
 import { isAboutDevQuery } from '@/lib/gen-ui-on-topic';
 import { agentWasClarifying, inferGenUIBuild } from '@/lib/infer-gen-ui-build';
-import { ASK_AI_OFF_TOPIC_STRIKE_LIMIT } from '@/lib/ask-ai-conversational';
 import { MAX_GEN_UI_PROMPT_LENGTH } from '@/lib/gen-ui-prompt';
+import { trackEvent } from '@/lib/analytics';
 
 export type { GenUIItem, GenUIStat, GenUIProject, GenUITimeline, GenUISkills, GenUIQuote, GenUIChart, GenUIImage, GenUIVideo, GenUIInfo, GenUIFeature, GenUIFeatureSection };
 
@@ -494,23 +494,6 @@ export function SideAgent({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
   const [isLoading, setIsLoading] = useState(false);
-  const consecutiveOffTopicRef = useRef(0);
-  const [offTopicBlocked, setOffTopicBlocked] = useState(false);
-  const prevCollapsedRef = useRef(externalCollapsed);
-
-  const resetOffTopicStrikes = () => {
-    consecutiveOffTopicRef.current = 0;
-    setOffTopicBlocked(false);
-  };
-
-  useEffect(() => {
-    if (variant !== 'sidebar') return;
-    const wasCollapsed = prevCollapsedRef.current;
-    prevCollapsedRef.current = externalCollapsed;
-    if (wasCollapsed && !externalCollapsed) {
-      resetOffTopicStrikes();
-    }
-  }, [externalCollapsed, variant]);
 
   useEffect(() => {
     onStateChange(state);
@@ -545,7 +528,10 @@ export function SideAgent({
 
   const handleCommand = async (command: string) => {
     const trimmed = command.trim();
-    if (!trimmed || !promptLimitLoaded) return;
+    if (!trimmed || !promptLimitLoaded || promptCount <= 0) return;
+
+    /* Length and turn only — never the prompt text. */
+    trackEvent('ask_ai_prompt', { characters: trimmed.length, turn: messages.length + 1 });
 
     setMessages((prev) => [...prev, { role: 'user', content: trimmed }]);
     setInput('');
@@ -638,27 +624,11 @@ export function SideAgent({
         iterations: number;
         buildViewport?: boolean;
         promptRemaining?: number;
-        offTopic?: boolean;
-        offTopicBlocked?: boolean;
-        offTopicStrikes?: number;
         conversational?: boolean;
         insufficientContext?: boolean;
       };
 
-      if (variant === 'sidebar') {
-        if (result.offTopic) {
-          if (result.offTopicBlocked) {
-            consecutiveOffTopicRef.current = ASK_AI_OFF_TOPIC_STRIKE_LIMIT;
-            setOffTopicBlocked(true);
-          } else if (typeof result.offTopicStrikes === 'number') {
-            consecutiveOffTopicRef.current = result.offTopicStrikes;
-          }
-        } else {
-          resetOffTopicStrikes();
-        }
-      }
-
-      if (result.offTopic || result.conversational) {
+      if (result.conversational) {
         setMessages((prev) => {
           const withoutThinking = prev.filter((m) => m.content !== 'Thinking…' && !m.isStreaming);
           return [
@@ -769,7 +739,6 @@ export function SideAgent({
 
   const handleReset = () => {
     setMessages(variant === 'sidebar' ? [] : [{ role: 'agent', content: ASK_WELCOME }]);
-    if (variant === 'sidebar') resetOffTopicStrikes();
   };
 
   // Expose reset function via ref
@@ -806,28 +775,17 @@ export function SideAgent({
     setInput(e.target.value);
   };
 
-  const composeDisabled =
-    isLoading || !promptLimitLoaded || (variant === 'sidebar' && offTopicBlocked);
-  const suggestionsDisabled = isLoading || !promptLimitLoaded;
+  const composeDisabled = isLoading || !promptLimitLoaded || promptCount <= 0;
+  const suggestionsDisabled = isLoading || !promptLimitLoaded || promptCount <= 0;
   const inputDisabled = composeDisabled;
   const sendDisabled = composeDisabled;
   const inputPlaceholder = !promptLimitLoaded
     ? 'Loading…'
-    : variant === 'sidebar' && offTopicBlocked
-      ? 'Too many off-topic questions — try a suggestion below'
-      : isLoading
-        ? 'Thinking...'
-        : 'Ask a question…';
-  const promptLimitLabel = !promptLimitLoaded
-    ? 'Checking prompt limit…'
-    : variant === 'sidebar' && offTopicBlocked
-      ? 'Off-topic limit reached'
-      : promptCount <= 0
-        ? 'No prompts remaining'
-        : `${promptCount} prompt${promptCount === 1 ? '' : 's'} remaining`;
+    : isLoading
+      ? 'Thinking...'
+      : 'Ask a question…';
   const emptyState = variant === 'sidebar' && messages.length === 0 && !isLoading;
-  const showSuggestionChips =
-    emptyState || (variant === 'sidebar' && offTopicBlocked && !isLoading);
+  const showSuggestionChips = emptyState;
 
   return (
     <>
@@ -839,7 +797,6 @@ export function SideAgent({
               key="ask-ai-panel"
               embedded={embedded}
               onClose={handleCollapseToggle}
-              promptLimitLabel={promptLimitLabel}
               input={input}
               inputDisabled={inputDisabled}
               sendDisabled={sendDisabled}
@@ -849,7 +806,16 @@ export function SideAgent({
               onSubmit={() => handleCommand(input)}
               onKeyDown={handleKeyPress}
               inputRef={inputRef}
-              onSuggestionClick={handleCommand}
+              onSuggestionClick={(prompt) => {
+                setInput(prompt);
+                requestAnimationFrame(() => {
+                  const el = inputRef.current;
+                  if (!el) return;
+                  el.focus();
+                  const len = prompt.length;
+                  el.setSelectionRange(len, len);
+                });
+              }}
               emptyState={emptyState}
               showSuggestionChips={showSuggestionChips}
               messagesEndRef={messagesEndRef}
@@ -1154,11 +1120,6 @@ export function SideAgent({
                             {input.length > 0 && (
                               <span className="text-xs text-muted-foreground/40 font-mono">
                                 {input.split('\n').length}L
-                              </span>
-                            )}
-                            {promptCount > 0 && (
-                              <span className="text-xs text-muted-foreground/60 font-mono">
-                                {promptCount}
                               </span>
                             )}
                           </div>

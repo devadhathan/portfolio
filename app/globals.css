@@ -12,7 +12,8 @@ body {
 }
 
 /* Theme variables - outside @layer for proper specificity */
-.dark {
+.dark,
+.clear {
   --background: 53 31% 6%;
   --foreground: 0 0% 98%;
   --card: 47 20% 9%;
@@ -254,7 +255,8 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply text-foreground font-sans;
+    background: var(--os-wallpaper, #0a0a0a);
     font-size: 14px;
     font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -298,7 +300,8 @@ body {
     --chart-5: 27 87% 67%;
     --radius: 0.75rem;
   }
-  .dark {
+  .dark,
+  .clear {
     --background: 53 31% 6%;
     --foreground: 0 0% 98%;
     --card: 47 20% 9%;
@@ -597,32 +600,59 @@ body {
 }
 
 /* Case study body copy — matches design spec */
+/*
+ * Case-study type scale — three sizes, full stop. Anything that needs to feel
+ * more important gets weight or colour, never a fourth size. Leading was 28px
+ * on 15px text (1.87), which read as a wall; 1.6 holds the paragraph together.
+ */
+.cs-display {
+  /* Fluid against the OS window, not the viewport — the window is the measure. */
+  font-size: clamp(1.75rem, 1.35rem + 2.2cqi, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+}
+
+.cs-heading {
+  font-size: clamp(1.125rem, 1rem + 0.6cqi, 1.5rem);
+  line-height: 1.32;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+}
+
+/* Vercel-ish body: Geist at 16-18px, generous but not airy, faint negative tracking. */
+.cs-body {
+  font-size: clamp(1rem, 0.94rem + 0.3cqi, 1.125rem);
+  line-height: 1.65;
+  letter-spacing: -0.011em;
+}
+
+/* Body size, label behaviour — a style, not another size. */
+.cs-label {
+  font-size: clamp(1rem, 0.94rem + 0.3cqi, 1.125rem);
+  line-height: 1.65;
+  letter-spacing: 0.01em;
+  font-weight: 500;
+}
+
 .case-study-body {
-  line-height: 28px;
-  letter-spacing: -0.09px;
+  line-height: 1.65;
+  letter-spacing: -0.011em;
 }
 
-/* Dynamic background gradient based on theme */
-html.dark body {
-  background: hsl(53 31% 6%);
-}
-
-html.light body {
-  background:
-    radial-gradient(ellipse 120% 70% at 50% -20%, hsl(40 35% 90% / 0.55) 0%, transparent 60%),
-    linear-gradient(180deg, hsl(var(--background)) 0%, hsl(40 16% 94.5%) 100%);
-}
-
-html.blue body {
-  background: radial-gradient(ellipse at top, hsl(var(--background)) 0%, hsl(230 50% 2%) 100%);
-}
-
-html.green body {
-  background: radial-gradient(ellipse at top, hsl(var(--background)) 0%, hsl(110 30% 1%) 100%);
-}
-
+/* Dynamic background — wallpaper from boot script when set. */
+html.clear body,
+html.dark body,
+html.light body,
+html.blue body,
+html.green body,
 html.red body {
-  background: radial-gradient(ellipse at top, hsl(var(--background)) 0%, hsl(7 50% 2%) 100%);
+  background: var(--os-wallpaper, #0a0a0a);
+}
+
+/* Case-study back — pinned chrome above the case scroller */
+.os-case-back {
+  background: transparent;
 }
 
 /* Desktop stage + multi-window OS canvas (lg+). Mobile stays full-bleed. */
@@ -671,17 +701,12 @@ html.red body {
   }
 
   html.light .desktop-stage {
-    background:
-      radial-gradient(ellipse 100% 60% at 50% -15%, hsl(40 35% 88% / 0.65) 0%, transparent 55%),
-      radial-gradient(ellipse 50% 40% at 90% 90%, hsl(var(--muted) / 0.5) 0%, transparent 50%),
-      linear-gradient(180deg, hsl(var(--background)) 0%, hsl(40 16% 93%) 100%);
+    background: var(--os-wallpaper, #f5f0e8);
   }
 
-  html.dark .desktop-stage {
-    background:
-      radial-gradient(ellipse 90% 55% at 50% -10%, hsl(45 20% 18% / 0.45) 0%, transparent 55%),
-      radial-gradient(ellipse 55% 45% at 100% 100%, hsl(53 20% 10% / 0.8) 0%, transparent 50%),
-      hsl(53 28% 5%);
+  html.dark .desktop-stage,
+  html.clear .desktop-stage {
+    background: var(--os-wallpaper, #0a0a0a);
   }
 
   html.blue .desktop-stage {
@@ -709,10 +734,24 @@ html.red body {
 }
 
 /* Desktop OS chrome — all breakpoints (was incorrectly gated to lg+) */
+/*
+ * Desktop OS is a fixed stage, never a scrolling page. `min-height: 100vh` from
+ * .desktop-stage outranks this height on mobile — 100vh is the *large* viewport,
+ * taller than 100dvh — which let the whole desktop scroll behind the chrome.
+ */
 .desktop-stage:has(.desktop-os-canvas) {
   height: 100dvh;
+  min-height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
+}
+
+html:has(.desktop-os-canvas),
+html:has(.desktop-os-canvas) body {
+  height: 100%;
+  overflow: hidden;
+  /* No rubber-band on the document behind the windows */
+  overscroll-behavior: none;
 }
 
 .desktop-os-canvas {
@@ -724,13 +763,863 @@ html.red body {
 }
 
 .desktop-os-canvas--wallpaper {
-  background: var(--os-wallpaper, hsl(var(--background)));
+  background: var(--os-wallpaper, #0a0a0a);
+}
+
+/*
+ * Home case studies — the rail stops short of the feed's right edge so the
+ * dates stay near the titles. Half the portrait width: past the image's left
+ * edge, well short of the full column. Raise the divisor to pull them in.
+ */
+.case-study-rail {
+  width: 100%;
+  max-width: calc(100% - var(--home-portrait-w, 0rem) / 2);
+}
+
+.case-study-feature {
+  transition:
+    border-color 0.3s ease,
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.45s ease;
+}
+
+.case-study-feature:hover {
+  box-shadow: 0 12px 32px hsl(0 0% 0% / 0.18);
+}
+
+.case-study-bento {
+  align-items: stretch;
+}
+
+@container os-win (min-width: 1024px) {
+  .case-study-bento {
+    min-height: 28rem;
+  }
+}
+
+.case-study-feature__media {
+  isolation: isolate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-study-feature,
+  .case-study-feature__asset {
+    transition: none !important;
+  }
+}
+
+/* Home case studies — hovering one row drops the others back */
+.case-study-rail__row {
+  opacity: 1;
+  will-change: opacity;
+  transition: opacity 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.case-study-rail:hover .case-study-rail__row {
+  opacity: 0.4;
+}
+
+.case-study-rail .case-study-rail__row:hover,
+.case-study-rail .case-study-rail__row:focus-within {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-study-rail__row {
+    transition: none;
+  }
+}
+
+/*
+ * Focus scrim — the desktop drops back behind a covered window (case studies
+ * auto-cover). Sits above the icons (z-20) and below the windows (z-50+).
+ */
+.desktop-os-canvas::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  background: hsl(0 0% 0% / 0);
+  transition: background 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.desktop-os-canvas[data-os-dimmed='true']::after {
+  background: hsl(0 0% 0% / 0.82);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desktop-os-canvas::after {
+    transition: none;
+  }
 }
 
 .desktop-os-stage-windows {
   position: absolute;
   inset: 0;
   pointer-events: none;
+}
+
+/*
+ * macOS-style bottom dock — frosted well, primary apps left of a divider,
+ * Trash on the right. In fullscreen it auto-hides and reappears over the window.
+ */
+.os-dock {
+  position: absolute;
+  left: 50%;
+  bottom: max(0.55rem, env(safe-area-inset-bottom, 0px));
+  /* Above stage windows (≤180) so labels paint over Home / Work; below menubar (200) */
+  z-index: 190;
+  /* x centering + y/opacity hide are spring-animated in dock.tsx */
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* Fullscreen reveal still uses the same stacking — kept as an explicit hook */
+.os-dock--autohide {
+  z-index: 190;
+}
+
+.os-dock__hotzone {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: max(14px, env(safe-area-inset-bottom, 0px));
+  z-index: 185;
+  pointer-events: auto;
+}
+
+.os-dock__well {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.65rem;
+  /* Horizontal padding is spring-animated inline — always equal L/R. */
+  padding-top: 0.55rem;
+  padding-bottom: 0.48rem;
+  padding-left: 0.9rem;
+  padding-right: 0.9rem;
+  border-radius: 1.4rem;
+  /* Clear frost — same readable glass at rest and while magnifying */
+  border: 1px solid hsl(0 0% 100% / 0.2);
+  background:
+    linear-gradient(hsl(0 0% 100% / 0.14), hsl(0 0% 100% / 0.06)),
+    hsl(0 0% 16% / 0.42);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / 0.14),
+    0 8px 28px hsl(0 0% 0% / 0.22);
+  overflow: visible;
+}
+
+html.light .os-dock__well {
+  border-color: hsl(0 0% 0% / 0.14);
+  background:
+    linear-gradient(hsl(0 0% 100% / 0.28), hsl(0 0% 100% / 0.12)),
+    hsl(0 0% 18% / 0.55);
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / 0.35),
+    0 10px 28px hsl(0 0% 0% / 0.18);
+}
+
+.os-dock__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.16rem;
+  width: 3.2rem;
+  /* Room for the open-dot under a transform-scaled icon (scale doesn’t eat layout). */
+  height: 4.35rem;
+  padding: 0 0 0.72rem;
+  border: none;
+  background: transparent;
+  color: hsl(0 0% 100% / 0.95);
+  cursor: pointer;
+  border-radius: 0.85rem;
+  /* Width stays fixed; side margins spring with magnification so L/R grow evenly */
+  flex: 0 0 auto;
+  overflow: visible;
+}
+
+.os-dock__magnify {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.85rem;
+  height: 2.85rem;
+  overflow: hidden;
+  border-radius: 0.8rem;
+  transform-origin: bottom center;
+  will-change: transform;
+}
+
+/* macOS-style name bubble above the icon on hover — spring via framer variants */
+.os-dock__tooltip {
+  position: absolute;
+  /* Just above the lifted icon — not too high */
+  bottom: calc(100% + 3.15rem);
+  left: 50%;
+  z-index: 5;
+  padding: 0.32rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid hsl(0 0% 100% / 0.14);
+  background: hsl(0 0% 18% / 0.92);
+  color: hsl(0 0% 100% / 0.96);
+  font-size: 0.75rem;
+  font-weight: 510;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow:
+    0 4px 14px hsl(0 0% 0% / 0.28),
+    inset 0 1px 0 hsl(0 0% 100% / 0.08);
+}
+
+.os-dock__tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  margin-left: -5px;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid hsl(0 0% 18% / 0.92);
+}
+
+/* When the dock sits over a covered window, keep the bubble above that chrome */
+.os-dock--autohide .os-dock__tooltip {
+  z-index: 20;
+}
+
+html.light .os-dock__tooltip {
+  border-color: hsl(0 0% 0% / 0.1);
+  background: hsl(0 0% 22% / 0.9);
+  color: hsl(0 0% 100% / 0.96);
+}
+
+html.light .os-dock__tooltip::after {
+  border-top-color: hsl(0 0% 22% / 0.9);
+}
+
+.os-dock__icon-well {
+  --os-icon-glass-rim: linear-gradient(
+    145deg,
+    hsl(0 0% 100% / 0.45) 0%,
+    hsl(0 0% 100% / 0.1) 42%,
+    hsl(0 0% 100% / 0.03) 58%,
+    hsl(0 0% 100% / 0.22) 100%
+  );
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.85rem;
+  height: 2.85rem;
+  border-radius: 0.8rem;
+  border: 1px solid transparent;
+  /* Clear glass — barely any fill, wallpaper shows through */
+  background-image:
+    linear-gradient(hsl(0 0% 100% / 0.06), hsl(0 0% 100% / 0.02)),
+    var(--os-icon-glass-rim);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  backdrop-filter: blur(18px) saturate(155%);
+  -webkit-backdrop-filter: blur(18px) saturate(155%);
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / 0.28),
+    inset 0 -1px 0 hsl(0 0% 0% / 0.08),
+    0 3px 10px hsl(0 0% 0% / 0.16);
+  transform-origin: bottom center;
+  will-change: transform;
+  overflow: hidden;
+}
+
+html.light .os-dock__icon-well {
+  --os-icon-glass-rim: linear-gradient(
+    145deg,
+    hsl(0 0% 100% / 0.4) 0%,
+    hsl(0 0% 100% / 0.1) 42%,
+    hsl(0 0% 100% / 0.04) 58%,
+    hsl(0 0% 100% / 0.22) 100%
+  );
+  /* Darker wells so white glyphs stay readable in Light */
+  background-image:
+    linear-gradient(hsl(0 0% 12% / 0.55), hsl(0 0% 8% / 0.72)),
+    var(--os-icon-glass-rim);
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / 0.28),
+    inset 0 -1px 0 hsl(0 0% 0% / 0.2),
+    0 3px 10px hsl(0 0% 0% / 0.16);
+}
+
+html.light .os-dock__icon--bare {
+  filter: drop-shadow(0 2px 6px hsl(0 0% 0% / 0.35))
+    drop-shadow(0 0 1px hsl(0 0% 0% / 0.25));
+}
+
+html.light .os-dock__icon:not(.os-dock__icon--bare) {
+  filter: drop-shadow(0 1px 2px hsl(0 0% 0% / 0.35));
+}
+
+.os-dock__icon {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  border-radius: inherit;
+}
+
+/* Theme wash on dock icons — matches desktop icon tint */
+.os-dock__tint {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: var(--theme-color);
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+
+html.blue .os-dock__tint,
+html.green .os-dock__tint,
+html.red .os-dock__tint {
+  opacity: 0.32;
+}
+
+html.blue .os-dock__item--bare .os-dock__tint,
+html.green .os-dock__item--bare .os-dock__tint,
+html.red .os-dock__item--bare .os-dock__tint {
+  border-radius: 0.55rem;
+  opacity: 0.26;
+}
+
+.os-dock__item--bare .os-dock__magnify {
+  overflow: visible;
+}
+
+/* Full-bleed assets (Finder) — no glass shell; size comes from parent spring */
+.os-dock__icon--bare {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 10px hsl(0 0% 0% / 0.28));
+}
+
+.os-dock__item--bare {
+  justify-content: flex-end;
+}
+
+.os-dock__icon--trash {
+  width: 88%;
+  height: 88%;
+}
+
+.os-dock__dot {
+  position: absolute;
+  left: 50%;
+  bottom: 0.22rem;
+  z-index: 2;
+  width: 0.28rem;
+  height: 0.28rem;
+  margin: 0;
+  border-radius: 9999px;
+  background: transparent;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.os-dock__dot--on {
+  background: hsl(0 0% 100% / 0.85);
+}
+
+/* Dock busy: lighter tray blur only — icon wells already use clear static glass */
+html[data-os-dock-busy] .os-dock__well {
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+}
+
+/* Freeze plate blur while magnifying — keep wash clear, not light/white */
+html[data-os-dock-busy] .os-dock__icon-well {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-image:
+    linear-gradient(hsl(0 0% 100% / 0.08), hsl(0 0% 100% / 0.02)),
+    var(--os-icon-glass-rim);
+}
+
+html.light[data-os-dock-busy] .os-dock__icon-well {
+  background-image:
+    linear-gradient(hsl(0 0% 12% / 0.6), hsl(0 0% 8% / 0.75)),
+    var(--os-icon-glass-rim);
+}
+
+html[data-os-dock-busy] .os-dock__icon--bare {
+  filter: none;
+}
+
+html.light[data-os-dock-busy] .os-dock__icon--bare {
+  filter: drop-shadow(0 2px 6px hsl(0 0% 0% / 0.35))
+    drop-shadow(0 0 1px hsl(0 0% 0% / 0.25));
+}
+
+html.light[data-os-dock-busy] .os-dock__icon:not(.os-dock__icon--bare) {
+  filter: drop-shadow(0 1px 2px hsl(0 0% 0% / 0.35));
+}
+
+html.light .os-dock__dot--on {
+  background: hsl(0 0% 12% / 0.75);
+}
+
+.os-dock__divider {
+  align-self: stretch;
+  width: 1px;
+  margin: 0.55rem 0.4rem;
+  background: hsl(0 0% 100% / 0.22);
+}
+
+html.light .os-dock__divider {
+  background: hsl(0 0% 0% / 0.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-dock,
+  .os-dock__icon-well,
+  .os-dock__icon--bare,
+  .os-dock__tooltip {
+    transition: none !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  /*
+   * Mobile: window fills down to the bottom edge; dock sits on the bottom
+   * and paints above the window (z-index), not under the menubar.
+   */
+  .desktop-os-canvas--narrow,
+  .desktop-os-canvas {
+    --os-mobile-menubar: 2.65rem;
+    --os-mobile-dock-clearance: calc(5.15rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .os-dock {
+    bottom: max(0.35rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .os-dock--compact .os-dock__well {
+    padding: 0.28rem 0.45rem 0.26rem;
+    gap: 0.25rem;
+    border-radius: 1rem;
+  }
+
+  .os-dock__item,
+  .os-dock__item--compact {
+    width: auto;
+    height: 3.45rem;
+    gap: 0.12rem;
+    padding-bottom: 0.55rem;
+    flex: 0 0 auto;
+  }
+
+  .os-dock__dot {
+    bottom: 0.16rem;
+  }
+
+  .os-dock__icon-well {
+    border-radius: 0.68rem;
+  }
+
+  .os-dock__icon--bare {
+    width: 100%;
+    height: 100%;
+  }
+
+  .os-dock__icon--trash {
+    width: 88%;
+    height: 88%;
+  }
+
+  .os-dock__tooltip {
+    bottom: calc(100% + 1.15rem);
+    font-size: 0.6875rem;
+    padding: 0.22rem 0.55rem;
+  }
+
+  .os-dock__divider {
+    margin: 0.3rem 0.15rem;
+  }
+
+  /* Trash lives on the desktop only; divider still separates open desktop apps */
+  .os-dock__item--trash {
+    display: none;
+  }
+
+  .os-dock__hotzone {
+    bottom: 0;
+    height: max(14px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .os-window--stage-max,
+  .os-window--finder.os-window--stage-max,
+  .os-window--covered {
+    left: 0.35rem;
+    right: 0.35rem;
+    top: calc(var(--os-mobile-menubar) + 0.35rem);
+    bottom: calc(5.15rem + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    height: auto;
+    margin: 0;
+    border-radius: 0.85rem;
+    border-left: 1px solid hsl(var(--border) / 0.4);
+    border-right: 1px solid hsl(var(--border) / 0.4);
+    border-bottom: 1px solid hsl(var(--border) / 0.4);
+    clip-path: inset(0 round 0.85rem);
+    -webkit-clip-path: inset(0 round 0.85rem);
+  }
+
+  .os-window--stage-max > .os-window-body,
+  .os-window--covered > .os-window-body {
+    padding-bottom: 0.75rem;
+  }
+
+  /* Traffic lights always “on” — no hover on touch */
+  .os-window-traffic-group .os-window-traffic--close {
+    --os-traffic-fill: #f13342;
+  }
+
+  .os-window-traffic-group .os-window-traffic--idle {
+    --os-traffic-fill: hsl(0 0% 38% / 0.55);
+  }
+
+  .os-window-traffic-group .os-window-traffic--zoom {
+    --os-traffic-fill: #009e87;
+  }
+
+  .os-window-traffic-group .os-window-traffic__glyph {
+    opacity: 1;
+  }
+
+  html.light .os-window-traffic-group .os-window-traffic--close {
+    --os-traffic-fill: #f13342;
+  }
+
+  html.light .os-window-traffic-group .os-window-traffic--idle {
+    --os-traffic-fill: hsl(0 0% 72% / 0.7);
+  }
+
+  html.light .os-window-traffic-group .os-window-traffic--zoom {
+    --os-traffic-fill: #009e87;
+  }
+}
+
+/*
+ * Control centre panel — same material as the window chrome, one step lighter
+ * so it reads as chrome sitting on top rather than a second window.
+ */
+.os-control-panel {
+  background:
+    linear-gradient(hsl(0 0% 0% / 0.34), hsl(0 0% 0% / 0.38)),
+    hsl(var(--background) / 0.88);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid hsl(0 0% 100% / 0.1);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 1px 0 hsl(0 0% 100% / 0.06) inset,
+    0 18px 44px -20px hsl(0 0% 0% / 0.55);
+}
+
+html.light .os-control-panel {
+  background:
+    linear-gradient(hsl(0 0% 100% / 0.5), hsl(0 0% 100% / 0.4)),
+    hsl(var(--background) / 0.9);
+  border-color: hsl(0 0% 0% / 0.08);
+}
+
+.os-control-divider {
+  height: 1px;
+  margin-top: 0.5rem;
+  background: hsl(0 0% 100% / 0.08);
+}
+
+html.light .os-control-divider {
+  background: hsl(0 0% 0% / 0.08);
+}
+
+.os-volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: hsl(0 0% 100% / 0.14);
+  outline: none;
+}
+
+html.light .os-volume-slider {
+  background: hsl(0 0% 0% / 0.1);
+}
+
+.os-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: none;
+  background: hsl(var(--foreground));
+  box-shadow: 0 1px 3px hsl(0 0% 0% / 0.35);
+  cursor: pointer;
+}
+
+.os-volume-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: none;
+  background: hsl(var(--foreground));
+  box-shadow: 0 1px 3px hsl(0 0% 0% / 0.35);
+  cursor: pointer;
+}
+
+.os-volume-slider:disabled {
+  cursor: not-allowed;
+}
+
+/*
+ * Wallpaper crossfade — both layers stay mounted and permanently promoted, so
+ * the windows' backdrop-filter never sees its backdrop root torn down.
+ */
+.desktop-os-wallpaper-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 400ms ease-out;
+}
+
+/*
+ * Promotion only while a swap is in flight. Permanent `will-change` pinned two
+ * full-screen textures in GPU memory for the whole session, which costs more
+ * than it saves on a throttled device.
+ */
+.desktop-os-canvas[data-wallpaper-swapping='true'] .desktop-os-wallpaper-layer {
+  will-change: opacity;
+}
+
+.desktop-os-wallpaper-layer[data-front='true'] {
+  opacity: 1;
+}
+
+/*
+ * Bridge wallpaper water — soft perspective wave strokes (no hit target).
+ * Sit above the wallpaper layers, under icons / windows / dock.
+ */
+.os-bridge-water {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.os-bridge-water__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Theme switch: colour-only crossfade — see control-center.tsx for why */
+html.theme-crossfade,
+html.theme-crossfade *,
+html.theme-crossfade *::before,
+html.theme-crossfade *::after {
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease !important;
+}
+
+/* Control centre as a bottom sheet on the narrow OS layout */
+@keyframes os-sheet-in {
+  from {
+    transform: translateY(14%);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes os-scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.os-sheet-in {
+  animation: os-sheet-in 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.os-sheet-scrim {
+  animation: os-scrim-in 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-sheet-in,
+  .os-sheet-scrim {
+    animation: none;
+  }
+}
+
+/* Menu bar dropdowns — same material as the control centre panel */
+.os-menu-content {
+  min-width: 220px;
+  padding: 4px;
+  background:
+    linear-gradient(hsl(0 0% 0% / 0.34), hsl(0 0% 0% / 0.38)),
+    hsl(var(--background) / 0.88);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid hsl(0 0% 100% / 0.1);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 1px 0 hsl(0 0% 100% / 0.06) inset,
+    0 18px 44px -20px hsl(0 0% 0% / 0.55);
+}
+
+html.light .os-menu-content {
+  background:
+    linear-gradient(hsl(0 0% 100% / 0.5), hsl(0 0% 100% / 0.4)),
+    hsl(var(--background) / 0.9);
+  border-color: hsl(0 0% 0% / 0.08);
+}
+
+.os-menu-divider {
+  height: 1px;
+  margin: 4px 0;
+  background: hsl(0 0% 100% / 0.08);
+}
+
+html.light .os-menu-divider {
+  background: hsl(0 0% 0% / 0.08);
+}
+
+.os-menu-row[data-disabled] {
+  opacity: 0.3;
+}
+
+/* Bar labels sit full height so the hit area is the whole bar */
+.os-menubar-row .os-menu-label {
+  height: 100%;
+}
+
+.os-menu-heading {
+  padding: 6px 12px 2px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: hsl(var(--foreground) / 0.5);
+}
+
+/* Responsive: ≥900 full bar, 640–900 collapse to one overflow menu */
+@media (max-width: 899px) {
+  .os-menubar-full {
+    display: none;
+  }
+  .os-menubar-overflow {
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+}
+
+/* Phones: no menus at all — the mark stays, the icon rail is the navigation */
+@media (max-width: 639px) {
+  .os-menubar-menus,
+  .os-menubar-logo {
+    display: none !important;
+  }
+  .os-menubar-logo-plain {
+    display: flex;
+  }
+}
+
+/* Desktop icon labels — View > Show Icon Labels */
+html[data-os-hide-icon-labels='true'] .os-desktop-icon__label {
+  display: none;
+}
+
+/* View > Zoom — scales the focused window's content, not the browser */
+.os-window-body {
+  zoom: var(--os-zoom, 1);
+}
+
+/* Print — only the focused window's content reaches paper */
+@media print {
+  .os-menubar,
+  .os-desktop-icons,
+  .desktop-os-wallpaper-layer,
+  .os-window-titlebar,
+  .os-widgets-panel,
+  .desktop-os-canvas::after {
+    display: none !important;
+  }
+
+  .desktop-os-canvas,
+  .os-window,
+  .os-window-body {
+    position: static !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #fff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    zoom: 1 !important;
+    clip-path: none !important;
+  }
+
+  .os-window--closed {
+    display: none !important;
+  }
+}
+
+/* Control centre trigger glyph — masked so it takes the menubar's colour */
+.os-control-glyph {
+  display: block;
+  width: 1.05rem;
+  height: 1.05rem;
+  background-color: currentColor;
+  -webkit-mask-image: url('/icons/control-center.svg');
+  mask-image: url('/icons/control-center.svg');
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
 }
 
 /* Cap window stacking below the OS menubar (z-200) */
@@ -741,20 +1630,30 @@ html.red body {
 
 .os-menubar {
   z-index: 200;
-  border-bottom: 1px solid hsl(var(--border) / 0.16);
-  background:
-    linear-gradient(hsl(0 0% 0% / 0.08), hsl(0 0% 0% / 0.08)),
-    hsl(var(--background) / 0.28);
-  backdrop-filter: blur(36px) saturate(150%);
-  -webkit-backdrop-filter: blur(36px) saturate(150%);
-  box-shadow: inset 0 1px 0 hsl(var(--foreground) / 0.04);
+  border-bottom: none;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  /* Default: light ink for dark wallpaper tops (matches DEFAULT bridge) */
+  color: hsl(0 0% 100% / 0.96);
+  text-shadow:
+    0 1px 1px hsl(0 0% 0% / 0.45),
+    0 0 10px hsl(0 0% 0% / 0.25);
 }
 
-html.light .os-menubar {
-  background:
-    linear-gradient(hsl(0 0% 100% / 0.18), hsl(0 0% 100% / 0.18)),
-    hsl(var(--background) / 0.32);
-  box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.7);
+html[data-os-menubar='light'] .os-menubar {
+  color: hsl(0 0% 100% / 0.96);
+  text-shadow:
+    0 1px 1px hsl(0 0% 0% / 0.45),
+    0 0 10px hsl(0 0% 0% / 0.25);
+}
+
+html[data-os-menubar='dark'] .os-menubar {
+  color: hsl(0 0% 8% / 0.9);
+  text-shadow:
+    0 1px 1px hsl(0 0% 100% / 0.7),
+    0 0 8px hsl(0 0% 100% / 0.35);
 }
 
 /* Free-position rounded desktop icons */
@@ -772,15 +1671,18 @@ html.light .os-menubar {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.45rem;
-  width: 5.5rem;
+  gap: 0.55rem;
+  width: 5.75rem;
   padding: 0.25rem;
   border: none;
   background: transparent;
-  color: hsl(0 0% 100% / 0.92);
+  color: hsl(0 0% 100% / 0.96);
   cursor: grab;
   border-radius: 0.75rem;
-  text-shadow: 0 1px 3px hsl(0 0% 0% / 0.55);
+  text-shadow:
+    0 1px 1px hsl(0 0% 0% / 0.75),
+    0 0 6px hsl(0 0% 0% / 0.45),
+    0 2px 8px hsl(0 0% 0% / 0.35);
   user-select: none;
   touch-action: none;
   contain: layout style;
@@ -801,8 +1703,8 @@ html.light .os-menubar {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 2.85rem;
+  height: 2.85rem;
   border-radius: 9999px;
   border: 1px solid transparent;
   background-image:
@@ -824,11 +1726,11 @@ html.light .os-menubar {
 }
 
 .os-desktop-icon__label {
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   line-height: 1.2;
   font-weight: 560;
   text-align: center;
-  max-width: 5.5rem;
+  max-width: 5.75rem;
   transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
 }
 
@@ -925,9 +1827,9 @@ html.light .os-menubar {
 
 /* Full squircle assets — frosted pad behind the SVG glass plate */
 .os-desktop-icon__well--asset {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 1.15rem;
+  width: 3.15rem;
+  height: 3.15rem;
+  border-radius: 0.95rem;
   border: 1px solid transparent;
   background-image:
     linear-gradient(hsl(0 0% 100% / 0.1), hsl(0 0% 100% / 0.04)),
@@ -943,6 +1845,33 @@ html.light .os-menubar {
     0 6px 14px hsl(0 0% 0% / 0.28);
   overflow: visible;
   isolation: isolate;
+}
+
+/* Full bitmap icons (macOS .icns exports) — no frosted shell; match asset well size */
+.os-desktop-icon__well--bitmap,
+html.light .os-desktop-icon__well--bitmap {
+  width: 3.15rem;
+  height: 3.15rem;
+  border-radius: 0;
+  border: none !important;
+  background: none !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  /* Kill inset glass highlight — it reads as a stray line above the folder */
+  box-shadow: none !important;
+  overflow: visible;
+}
+
+.os-desktop-icon:hover:not(.os-desktop-icon--dragging) .os-desktop-icon__well--bitmap,
+.os-desktop-icon:focus-visible:not(.os-desktop-icon--dragging) .os-desktop-icon__well--bitmap,
+html.light .os-desktop-icon:hover:not(.os-desktop-icon--dragging) .os-desktop-icon__well--bitmap,
+html.light .os-desktop-icon:focus-visible:not(.os-desktop-icon--dragging) .os-desktop-icon__well--bitmap,
+.os-desktop-icon--active .os-desktop-icon__well--bitmap,
+.os-desktop-icon--active:hover:not(.os-desktop-icon--dragging) .os-desktop-icon__well--bitmap {
+  background-image: none !important;
+  box-shadow: none !important;
+  transform: scale(1.08) translateZ(0);
 }
 
 .os-desktop-icon__asset {
@@ -978,7 +1907,7 @@ html.red .os-desktop-icon__tint {
 }
 
 /*
- * Assets are authored with light glyphs — keep them white in light too.
+ * Light mode: keep white glyphs + labels; frosted white wells for contrast.
  */
 html.light .os-desktop-icon__tint {
   opacity: 0;
@@ -988,52 +1917,64 @@ html.light .os-desktop-icon__asset {
   filter: none;
 }
 
-html.dark .os-desktop-icon__asset {
+html.dark .os-desktop-icon__asset,
+html.clear .os-desktop-icon__asset {
   filter: none;
 }
 
 html.light .os-desktop-icon {
-  color: hsl(0 0% 12% / 0.9);
-  text-shadow: 0 1px 2px hsl(0 0% 100% / 0.7);
+  color: hsl(0 0% 100% / 0.96);
+  text-shadow:
+    0 1px 1px hsl(0 0% 0% / 0.55),
+    0 0 6px hsl(0 0% 0% / 0.35),
+    0 2px 8px hsl(0 0% 0% / 0.28);
 }
 
 html.light .os-desktop-icon__well {
   --os-icon-glass-rim: linear-gradient(
     145deg,
-    hsl(0 0% 100% / 0.95) 0%,
-    hsl(0 0% 100% / 0.35) 42%,
-    hsl(30 20% 40% / 0.12) 58%,
-    hsl(0 0% 100% / 0.7) 100%
+    hsl(0 0% 100% / 0.55) 0%,
+    hsl(0 0% 100% / 0.16) 42%,
+    hsl(30 16% 40% / 0.12) 58%,
+    hsl(0 0% 100% / 0.32) 100%
   );
-  color: hsl(0 0% 15%);
+  color: hsl(0 0% 100%);
   background-image:
-    linear-gradient(hsl(0 0% 100% / 0.78), hsl(0 0% 100% / 0.62)),
+    linear-gradient(hsl(0 0% 100% / 0.32), hsl(0 0% 100% / 0.2)),
     var(--os-icon-glass-rim);
   background-origin: border-box;
   background-clip: padding-box, border-box;
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / 0.45),
+    inset 0 -1px 0 hsl(30 20% 20% / 0.1),
+    0 4px 12px hsl(30 20% 20% / 0.16);
 }
 
 html.light .os-desktop-icon:hover:not(.os-desktop-icon--dragging) .os-desktop-icon__well,
 html.light .os-desktop-icon:focus-visible:not(.os-desktop-icon--dragging) .os-desktop-icon__well {
   --os-icon-glass-rim: linear-gradient(
     145deg,
-    hsl(0 0% 100% / 1) 0%,
-    hsl(0 0% 100% / 0.5) 42%,
-    hsl(30 20% 40% / 0.14) 58%,
-    hsl(0 0% 100% / 0.82) 100%
+    hsl(0 0% 100% / 0.7) 0%,
+    hsl(0 0% 100% / 0.24) 42%,
+    hsl(30 16% 40% / 0.14) 58%,
+    hsl(0 0% 100% / 0.42) 100%
   );
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / 0.55),
+    inset 0 -1px 0 hsl(30 20% 20% / 0.08),
+    0 8px 18px hsl(30 20% 20% / 0.2);
 }
 
 html.light .os-desktop-icon__well--asset {
   background-image:
-    linear-gradient(hsl(0 0% 100% / 0.42), hsl(0 0% 100% / 0.22)),
-    linear-gradient(hsl(var(--background) / 0.36), hsl(var(--background) / 0.36)),
+    linear-gradient(hsl(0 0% 100% / 0.26), hsl(0 0% 100% / 0.12)),
+    linear-gradient(hsl(0 0% 100% / 0.16), hsl(0 0% 100% / 0.08)),
     var(--os-icon-glass-rim);
   background-origin: border-box;
   background-clip: padding-box, padding-box, border-box;
   box-shadow:
-    inset 0 1px 0 hsl(0 0% 100% / 0.85),
-    inset 0 -1px 0 hsl(30 20% 20% / 0.06),
+    inset 0 1px 0 hsl(0 0% 100% / 0.5),
+    inset 0 -1px 0 hsl(30 20% 20% / 0.08),
     0 6px 16px hsl(30 20% 20% / 0.16);
 }
 
@@ -1166,7 +2107,8 @@ html.light .os-desktop-icon__well--asset {
   pointer-events: none;
 }
 
-html.dark .os-desktop-icon__external {
+html.dark .os-desktop-icon__external,
+html.clear .os-desktop-icon__external {
   background: hsl(0 0% 12% / 0.92);
   color: hsl(0 0% 100% / 0.95);
 }
@@ -1194,11 +2136,9 @@ html.light .os-desktop-icon__badge {
   /* WebKit: backdrop-filter on children can paint past overflow — force clip */
   clip-path: inset(0 round 1rem);
   -webkit-clip-path: inset(0 round 1rem);
-  background:
-    linear-gradient(hsl(0 0% 0% / 0.38), hsl(0 0% 0% / 0.42)),
-    hsl(var(--background) / 0.62);
-  backdrop-filter: blur(42px) saturate(165%);
-  -webkit-backdrop-filter: blur(42px) saturate(165%);
+  background: #000;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow:
     0 1px 0 hsl(var(--foreground) / 0.05) inset,
     0 22px 56px -28px hsl(0 0% 0% / 0.5);
@@ -1210,11 +2150,9 @@ html.light .os-desktop-icon__badge {
 }
 
 html.light .os-window {
-  background:
-    linear-gradient(hsl(0 0% 100% / 0.42), hsl(0 0% 100% / 0.48)),
-    hsl(var(--background) / 0.68);
+  background: #000;
   box-shadow:
-    0 1px 0 hsl(0 0% 100% / 0.72) inset,
+    0 1px 0 hsl(0 0% 100% / 0.06) inset,
     0 24px 60px -32px hsl(30 20% 20% / 0.28);
 }
 
@@ -1225,46 +2163,56 @@ html.light .os-window {
     0 26px 64px -28px hsl(0 0% 0% / 0.55);
 }
 
-/* Centered stage-fit — slightly wider chrome; content column (.os-col) unchanged */
+/* Centered stage-fit — stop above the dock so the tray stays fully visible */
 .os-window--stage-max {
   left: 0;
   right: 0;
-  top: 3.25rem;
-  bottom: 1.25rem;
-  width: min(1180px, calc(100% - 10rem));
-  height: min(860px, calc(100% - 4.75rem));
-  margin: auto;
+  top: calc(2.75rem + 6px);
+  bottom: calc(5.65rem + env(safe-area-inset-bottom, 0px));
+  width: min(1280px, calc(100% - 8rem));
+  height: auto;
+  margin-inline: auto;
+  margin-block: 0;
+  transition: width 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Small end pad only — window chrome already clears the dock */
+.os-window--stage-max > .os-window-body {
+  padding-bottom: 1rem;
 }
 
 .os-window--covered {
   left: 0.25rem;
   right: 0.25rem;
-  top: 3rem;
-  bottom: 0.35rem;
+  top: 2.75rem;
+  bottom: 0.25rem;
   width: auto;
   height: auto;
   margin: 0;
-  border-radius: 1rem;
-  clip-path: inset(0 round 1rem);
-  -webkit-clip-path: inset(0 round 1rem);
+  border-radius: 0;
+  clip-path: inset(0);
+  -webkit-clip-path: inset(0);
 }
 
 .os-window-titlebar {
   border-top-left-radius: inherit;
   border-top-right-radius: inherit;
-  background:
-    linear-gradient(hsl(0 0% 100% / 0.06), hsl(0 0% 100% / 0.02)),
-    hsl(0 0% 0% / 0.22);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
-  box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.08);
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  border-bottom: 1px solid hsl(0 0% 100% / 0.12);
+}
+
+.os-window-title {
+  font-size: 1.125rem; /* 18px — explicit so Tailwind utilities can’t lose */
+  line-height: 1.25;
 }
 
 html.light .os-window-titlebar {
-  background:
-    linear-gradient(hsl(0 0% 100% / 0.42), hsl(0 0% 100% / 0.22)),
-    hsl(var(--background) / 0.35);
-  box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.72);
+  background: transparent;
+  box-shadow: none;
+  border-bottom-color: hsl(0 0% 0% / 0.1);
 }
 
 /* Content width follows the OS window size (stage-max → cover) */
@@ -1278,80 +2226,1346 @@ html.light .os-window-titlebar {
   width: 100%;
 }
 
-/* Home — fill more of the window; cut large side auto-margins */
-.os-col {
-  width: 100%;
-  max-width: min(56rem, 90%);
-  margin-inline: auto;
+/* Work / Playground — stretch to the window body so grids can fill height */
+.os-window-content--fill {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  min-width: 0;
 }
 
-/* Case study — same idea, slightly wider */
-.os-col--case {
+/* Finder — compact panel, centered on the desktop */
+.os-window--finder.os-window--stage-max {
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: min(920px, calc(100% - 5.5rem));
+  height: min(620px, calc(100vh - 8rem));
+  margin: auto;
+}
+
+/*
+ * Home / Work / Playground column — padding via --os-col-pad.
+ * Cover mode keeps this measure (no widen / no shrink).
+ */
+.home-col {
   width: 100%;
-  max-width: min(60rem, 92%);
+  max-width: min(72rem, 92%);
   margin-inline: auto;
+  box-sizing: border-box;
+  --os-col-pad: 1.5rem;
+  padding-inline: var(--os-col-pad);
+  /*
+   * Width of the intro portrait. Drives both the image itself and how far the
+   * case-studies rail falls short of the right edge.
+   * 0 while the intro is stacked — the rail runs full width there.
+   */
+  --home-portrait-w: 0rem;
+}
+
+@media (min-width: 640px) {
+  .home-col {
+    --os-col-pad: 2rem;
+    max-width: min(72rem, 94%);
+  }
+}
+
+@container os-win (min-width: 840px) {
+  .home-col {
+    /* Fixed — must not change when Home covers / restores. */
+    --home-portrait-w: 24rem;
+  }
 }
 
 @container os-win (min-width: 900px) {
-  .os-col {
-    max-width: min(64rem, 88%);
+  .home-col {
+    /* Match widened intro measure so the rail lines up. */
+    max-width: min(76rem, 94%);
   }
+}
+
+/* Cover keeps the same column measure + padding as stage — no shrink. */
+
+.os-window--covered [data-os-work-case='true'] {
+  width: 100%;
+  max-width: 100%;
+  margin-inline: 0;
+}
+
+/*
+ * Home — fills its column so the intro, the case-studies rail and the bento
+ * grid all start on the same line. `.home-col` owns the measure.
+ */
+.os-col {
+  width: 100%;
+  max-width: 100%;
+  margin-inline: 0;
+}
+
+/* Case study — full bleed on narrow windows; measured column on larger ones */
+.os-col--case,
+.os-col--work-case {
+  width: 100%;
+  max-width: 100%;
+  margin-inline: 0;
+  padding-inline: 0.5rem;
+}
+
+/* Media / stages go edge-to-edge on phones */
+.os-col--case [data-case-bleed],
+.os-col--work-case [data-case-bleed] {
+  margin-inline: -0.5rem;
+  width: calc(100% + 1rem);
+  max-width: none;
+}
+
+@media (min-width: 640px) {
+  .os-col--case {
+    padding-inline: 0;
+  }
+  .os-col--case [data-case-bleed],
+  .os-col--work-case [data-case-bleed] {
+    margin-inline: 0;
+    width: 100%;
+  }
+}
+
+@container os-win (min-width: 640px) {
+  .os-col--case {
+    max-width: min(60rem, 94%);
+    margin-inline: auto;
+    padding-inline: 0;
+  }
+  .os-col--work-case {
+    max-width: 100%;
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+  .os-col--case [data-case-bleed],
+  .os-col--work-case [data-case-bleed] {
+    margin-inline: 0;
+    width: 100%;
+  }
+}
+
+@container os-win (min-width: 900px) {
   .os-col--case {
     max-width: min(68rem, 90%);
+  }
+  .os-col--work-case {
+    max-width: 100%;
+    padding-inline: 0;
+  }
+}
+
+@container os-win (min-width: 1100px) {
+  .os-col--work-case {
+    max-width: 100%;
+    padding-inline: 0;
+  }
+}
+
+@container os-win (min-width: 1300px) {
+  .os-col--case {
+    max-width: min(76rem, 88%);
+  }
+  .os-col--work-case {
+    max-width: 100%;
+    padding-inline: 0;
+  }
+}
+
+@container os-win (min-width: 1500px) {
+  .os-col--work-case {
+    max-width: 100%;
+  }
+}
+
+/* Home case study — content + right “On this page” only (no left project list).
+ * Embedded OS: split-pane scroll (main scrolls; rails stay put). Sticky + CSS
+ * zoom on `.os-window-body` causes Chromium sticky vibration. */
+.os-window-body:has([data-os-home-case='true']),
+.os-window-body:has([data-os-work-case='true']) {
+  overflow: hidden;
+}
+
+[data-os-home-case='true'],
+[data-os-work-case='true'] {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+[data-os-home-case] .os-home-case-row,
+[data-os-work-case] .os-work-case-row {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+[data-os-home-case] .os-home-case-main,
+[data-os-work-case] .os-work-case-main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+[data-os-home-case] .os-home-case-toc {
+  display: none;
+}
+
+@container os-win (min-width: 880px) {
+  /* Equal side rails so the case column sits in the window center */
+  [data-os-home-case] .os-home-case-row {
+    display: grid;
+    grid-template-columns: minmax(7.5rem, 9.5rem) minmax(0, 1fr) minmax(7.5rem, 9.5rem);
+    align-items: stretch;
+    column-gap: 1.5rem;
+    padding-top: 0.5rem;
+    padding-inline: 0.75rem;
+  }
+
+  [data-os-home-case] .os-home-case-main {
+    grid-column: 2;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+  }
+
+  [data-os-home-case] .os-home-case-inner {
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    max-width: min(72rem, 100%);
+    margin-inline: auto;
+  }
+
+  [data-os-home-case] .os-home-case-toc {
+    display: block;
+    grid-column: 3;
+    position: relative;
+    top: auto;
+    align-self: stretch;
+    height: 100%;
+    max-height: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+@container os-win (min-width: 1100px) {
+  [data-os-home-case] .os-home-case-row {
+    grid-template-columns: minmax(8rem, 10rem) minmax(0, 1fr) minmax(8rem, 10rem);
+    column-gap: 2rem;
+    padding-inline: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-case-row {
+    display: grid;
+    grid-template-columns: minmax(8rem, 10rem) minmax(0, 1fr) minmax(8rem, 10rem);
+    align-items: start;
+    column-gap: 1.75rem;
+    padding-inline: 1.5rem;
+  }
+
+  .home-case-row .os-home-case-main {
+    grid-column: 2;
+  }
+
+  .home-case-toc {
+    display: block;
+    grid-column: 3;
+    position: sticky;
+    top: 5rem;
+    align-self: flex-start;
+    max-height: calc(100dvh - 6rem);
+    overflow-y: auto;
+  }
+}
+
+/* Work case layout — respond to OS window width, not just the viewport */
+[data-os-work-case] .os-work-sidebar {
+  display: none;
+}
+
+[data-os-work-case] .os-work-mobile-back {
+  display: block;
+}
+
+[data-os-work-case] .os-work-case-toc {
+  display: none;
+}
+
+@container os-win (min-width: 880px) {
+  [data-os-work-case] .os-work-case-row {
+    display: grid;
+    grid-template-columns: minmax(11rem, 12.5rem) minmax(0, 1fr) minmax(7.5rem, 9rem);
+    align-items: stretch;
+    column-gap: 1.5rem;
+    padding-top: 0.5rem;
+  }
+
+  [data-os-work-case] .os-work-sidebar {
+    display: block;
+    position: relative;
+    top: auto;
+    align-self: stretch;
+    width: auto;
+    flex-shrink: 0;
+    order: -1;
+    margin-left: 0;
+    padding-left: 0;
+    height: 100%;
+    max-height: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  [data-os-work-case] .os-work-sidebar-inner {
+    min-height: min-content;
+  }
+
+  [data-os-work-case] .os-work-case-main {
+    width: 100%;
+    height: 100%;
+    align-items: center;
+  }
+
+  [data-os-work-case] .os-work-case-inner {
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    max-width: min(72rem, 100%);
+    margin-inline: auto;
+  }
+
+  [data-os-work-case] .os-work-case-toc {
+    display: block;
+    position: relative;
+    top: auto;
+    align-self: stretch;
+    height: 100%;
+    max-height: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  [data-os-work-case] .os-work-mobile-back {
+    display: none;
+  }
+}
+
+@container os-win (min-width: 1100px) {
+  [data-os-work-case] .os-work-case-row {
+    grid-template-columns: minmax(11.5rem, 13rem) minmax(0, 1fr) minmax(8rem, 9.5rem);
+    column-gap: 1.75rem;
+  }
+}
+
+@container os-win (min-width: 1300px) {
+  [data-os-work-case] .os-work-case-row {
+    grid-template-columns: minmax(12rem, 13.5rem) minmax(0, 1fr) minmax(8.5rem, 10rem);
+    column-gap: 2rem;
+  }
+}
+
+/* Docs-style TOC track + active white bar */
+.os-work-toc-nav {
+  position: relative;
+}
+
+.os-work-toc-track {
+  position: absolute;
+  left: 0;
+  top: 0.15rem;
+  bottom: 0.15rem;
+  width: 1px;
+  background: hsl(0 0% 100% / 0.22);
+  pointer-events: none;
+  z-index: 0;
+}
+
+html.light .os-work-toc-track {
+  background: hsl(0 0% 0% / 0.18);
+}
+
+.os-work-toc-link {
+  position: relative;
+  z-index: 1;
+}
+
+.os-work-toc-indicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  width: 2px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px hsl(0 0% 100% / 0.2);
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform;
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.18s ease;
+}
+
+.os-work-toc-indicator[data-visible='true'] {
+  opacity: 1;
+}
+
+html.light .os-work-toc-indicator {
+  background: #111111;
+  box-shadow: none;
+}
+
+.os-work-toc-link[data-active='true'] {
+  color: hsl(var(--foreground));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-work-toc-indicator {
+    transition: none;
+  }
+}
+
+/* Standalone /work case study — docs-style 3-column grid */
+@media (min-width: 1024px) {
+  .work-case-row {
+    display: grid;
+    grid-template-columns: minmax(11.5rem, 13rem) minmax(0, 1fr) minmax(7.5rem, 9rem);
+    align-items: start;
+    column-gap: 1.75rem;
+    padding-top: 0.75rem;
+  }
+
+  .work-case-sidebar {
+    width: auto;
+    position: sticky;
+    top: 5.5rem;
+    align-self: flex-start;
+    margin-left: 0;
+    padding-left: 0;
+    max-height: calc(100dvh - 6rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .work-case-main {
+    min-width: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .work-case-inner {
+    width: 100%;
+    max-width: min(72rem, 100%);
+  }
+
+  .work-case-inner .os-col--work-case {
+    max-width: 100%;
+    margin-inline: 0;
+  }
+
+  .work-case-toc {
+    position: sticky;
+    top: 5.5rem;
+    align-self: flex-start;
+    max-height: calc(100dvh - 6rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+@media (min-width: 1280px) {
+  .work-case-row {
+    grid-template-columns: minmax(12rem, 13.5rem) minmax(0, 1fr) minmax(8rem, 9.5rem);
+    column-gap: 2rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .work-case-row {
+    column-gap: 1.25rem;
+  }
+}
+
+@container os-win (max-width: 999px) {
+  [data-os-work-case] .os-col--work-case .grid.lg\:grid-cols-3,
+  [data-os-work-case] .os-col--work-case .grid.lg\:grid-cols-5 {
+    grid-template-columns: 1fr !important;
+  }
+
+  [data-os-work-case] .os-col--work-case .lg\:col-span-2,
+  [data-os-work-case] .os-col--work-case .lg\:col-span-4 {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+[data-os-embedded='true'] .home-intro-cafe {
+  padding-top: 3.5rem;
+}
+
+/* No side padding — the intro starts on the same line as the rail below it. */
+[data-os-embedded='true'] .home-intro-cafe__intro {
+  padding-inline: 0;
+}
+
+/* Intro + freestanding portrait (no card) */
+.home-intro-cafe {
+  width: 100%;
+  max-width: min(56rem, 100%);
+  margin-inline: auto;
+  margin-bottom: 2rem;
+  padding-top: 2.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+/* Temporary lined hero — full home-col width (same as Misc), intro → cards → misc */
+.home-intro-cafe--lined {
+  max-width: none;
+  width: 100%;
+  margin-inline: 0;
+  margin-bottom: 2.5rem;
+  align-items: stretch;
+}
+
+.home-intro-frame {
+  --frame-pad-x: clamp(1.35rem, 3.5vw, 2.5rem);
+  --frame-pad-y: clamp(1.75rem, 4vw, 2.75rem);
+  --frame-line: hsl(var(--foreground) / 0.12);
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--frame-line);
+  padding: 0;
+}
+
+.home-intro-frame__section {
+  padding: var(--frame-pad-y) var(--frame-pad-x);
+}
+
+/* Tiny ASCII pet next to “Available for work” */
+.status-pet {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  margin-left: 0.35rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  color: hsl(var(--muted-foreground));
+  transform: translateY(-1px);
+  user-select: none;
+  animation: status-pet-bob 3.6s ease-in-out infinite;
+}
+
+.status-pet__ears,
+.status-pet__face {
+  display: block;
+  white-space: pre;
+}
+
+.status-pet__face {
+  position: relative;
+  height: 1.05em;
+}
+
+.status-pet__eyes {
+  display: block;
+  white-space: pre;
+}
+
+.status-pet__eyes--blink {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: status-pet-blink 4.2s steps(1, end) infinite;
+}
+
+.status-pet__eyes--open {
+  animation: status-pet-open 4.2s steps(1, end) infinite;
+}
+
+@keyframes status-pet-bob {
+  0%,
+  100% {
+    transform: translateY(-1px);
+  }
+  50% {
+    transform: translateY(-2.5px);
+  }
+}
+
+@keyframes status-pet-blink {
+  0%,
+  88%,
+  96%,
+  100% {
+    opacity: 0;
+  }
+  90%,
+  94% {
+    opacity: 1;
+  }
+}
+
+@keyframes status-pet-open {
+  0%,
+  88%,
+  96%,
+  100% {
+    opacity: 1;
+  }
+  90%,
+  94% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-pet,
+  .status-pet__eyes--blink,
+  .status-pet__eyes--open {
+    animation: none;
+  }
+
+  .status-pet__eyes--blink {
+    opacity: 0;
+  }
+
+  .status-pet__eyes--open {
+    opacity: 1;
+  }
+}
+
+.home-intro-frame__plus {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  color: hsl(var(--foreground) / 0.88);
+  font-size: 1.75rem;
+  font-weight: 400;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Center of + sits on the frame corner */
+.home-intro-frame__plus--tl {
+  top: 0;
+  left: 0;
+  transform: translate(-50%, -50%);
+}
+
+.home-intro-frame__plus--br {
+  top: auto;
+  bottom: 0;
+  left: auto;
+  right: 0;
+  transform: translate(50%, 50%);
+  font-size: 1.75rem;
+}
+
+/* Horizontal rules span edge-to-edge of the box */
+.home-intro-frame__rule {
+  position: relative;
+  height: 0;
+  margin: 0;
+  border-top: 1px solid var(--frame-line);
+}
+
+/* Double rule — 16px between lines; section padding handles equal top/bottom space */
+.home-intro-frame__rule-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+}
+
+.home-intro-frame__rule-pair .home-intro-frame__rule {
+  margin: 0;
+}
+
+.home-intro-cafe--lined .home-intro-cafe__intro.os-col {
+  max-width: none;
+  width: 100%;
+}
+
+.home-intro-cafe--lined .home-intro__copy {
+  align-items: flex-start;
+}
+
+.home-intro-cafe--lined .home-intro__title {
+  max-width: 18ch;
+}
+
+/* Work / Playground — same lined frame, slightly smaller title than Home */
+.page-lined-title {
+  font-size: clamp(1.75rem, 3.4cqi, 2.85rem);
+  font-weight: 300;
+  line-height: 1.12;
+  max-width: 22ch;
+  white-space: pre-line;
+}
+
+.home-intro-frame__section--title {
+  padding-bottom: calc(var(--frame-pad-y) * 0.85);
+}
+
+.home-intro-frame__section--body {
+  padding-top: calc(var(--frame-pad-y) * 0.85);
+}
+
+/* Cards fill the full-width rectangle; misc keeps frame padding */
+.home-intro-frame__cards.os-col {
+  max-width: none;
+  width: 100%;
+  padding-inline: 0;
+}
+
+.home-intro-frame__misc {
+  max-width: none;
+  width: 100%;
+  padding: calc(var(--frame-pad-y) * 1.15) calc(var(--frame-pad-x) * 1.15);
+}
+
+.home-intro-frame__cards .case-study-bento {
+  max-width: none;
+}
+
+.home-intro__title {
+  font-size: clamp(2.25rem, 4.5cqi, 3.75rem); /* up to text-6xl */
+  font-weight: 300;
+  line-height: 1.1;
+  max-width: none;
+  white-space: pre-line; /* honor \n — keep exactly two lines */
+}
+
+.home-intro__copy {
+  width: 100%;
+  max-width: none;
+}
+
+/* Mobile home — larger title; keep content gutters inside the padded window */
+@media (max-width: 1023px) {
+  [data-os-embedded='true'] .home-col {
+    max-width: none;
+    width: 100%;
+    --os-col-pad: 1.25rem;
+    margin-inline: 0;
+  }
+
+  [data-os-embedded='true'] .home-intro__title {
+    /* Small enough that “Designing experiences” stays one line on phones */
+    font-size: clamp(2.15rem, 8.6vw, 2.55rem);
+    line-height: 1.12;
+    max-width: none;
+    text-align: left;
+    white-space: pre-line;
+  }
+
+  [data-os-embedded='true'] .home-hero__title {
+    font-size: clamp(1.65rem, 6.5vw, 3rem);
+    line-height: 1.15;
+    max-width: 18ch;
+    white-space: normal;
+  }
+
+  [data-os-embedded='true'] .home-intro-cafe--lined {
+    margin-bottom: 1.25rem;
+  }
+
+  [data-os-embedded='true'] .home-intro-frame {
+    --frame-pad-x: 1.25rem;
+    --frame-pad-y: 1.35rem;
+    width: 100%;
+  }
+
+  [data-os-embedded='true'] .home-intro-cafe--lined .home-intro-frame > .home-intro-frame__section:first-of-type {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 0;
+    padding-bottom: 1.25rem;
+    text-align: left;
+  }
+
+  [data-os-embedded='true'] .home-intro-cafe--lined .home-intro__copy {
+    gap: 1.75rem;
+  }
+
+  [data-os-embedded='true'] .home-intro-cafe--lined .home-intro__body {
+    gap: 1.5rem;
+  }
+
+  [data-os-embedded='true'] .home-intro-cafe--lined .home-intro__copy,
+  [data-os-embedded='true'] .home-intro-cafe--lined .home-intro__body,
+  [data-os-embedded='true'] .home-intro-cafe--lined .home-intro__contacts {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  [data-os-embedded='true'] .home-intro-cafe--lined .home-intro__body p {
+    text-align: left;
+  }
+}
+
+.home-intro-cafe__intro.os-col {
+  max-width: none;
+  margin-inline: 0;
+  width: 100%;
+  padding-top: 0.5rem;
+}
+
+/* Home feed — About + Connect hero, then work / misc */
+.home-feed {
+  width: 100%;
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.home-feed__rule {
+  height: 1px;
+  margin: 1.75rem 0 1.5rem;
+  background: hsl(var(--border) / 0.55);
+}
+
+.home-feed__rule--thin {
+  margin: 1.25rem 0 1rem;
+  opacity: 0.7;
+}
+
+.home-feed__status {
+  padding-bottom: 0.25rem;
+}
+
+.home-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.home-hero__title {
+  margin: 0;
+  font-size: 3rem; /* 48px — smaller than the old hero */
+  font-weight: 300;
+  line-height: 1.15;
+  max-width: 18ch;
+  white-space: normal;
+}
+
+.home-hero__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
+  width: 100%;
+  align-items: stretch;
+}
+
+.home-hero__about,
+.home-hero__connect {
+  /* Border + hover glow come from CardHoverGlow / HOME_CARD_BORDER */
+  min-height: 0;
+  background: transparent;
+}
+
+.home-hero__about {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding: 1.25rem;
+  align-items: start;
+}
+
+.home-hero__about-copy {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+  height: 100%;
+  align-self: stretch;
+}
+
+.home-hero__ascii {
+  grid-column: 1;
+  grid-row: 2;
+  width: min(14rem, 55vw);
+  max-width: 14rem;
+  margin-inline: 0 0;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  aspect-ratio: 4 / 3;
+  justify-self: end;
+  align-self: end;
+}
+
+.home-hero__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.home-hero__p {
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: hsl(var(--muted-foreground));
+  max-width: 36rem;
+}
+
+.home-hero__p a {
+  color: hsl(var(--muted-foreground));
+  text-decoration-color: hsl(var(--muted-foreground) / 0.45);
+}
+
+.home-hero__p a:hover {
+  color: hsl(var(--foreground) / 0.9);
+  text-decoration-color: hsl(var(--foreground) / 0.55);
+}
+
+.home-hero__p em {
+  color: hsl(var(--muted-foreground));
+}
+
+.home-hero__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  list-style: none;
+  font-size: 0.8125rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.home-hero__meta li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.home-hero__ascii-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+.home-hero__connect-inner {
+  min-height: 0 !important;
+}
+
+@container os-win (min-width: 880px) {
+  .home-hero__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .home-hero__about {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1.35rem;
+    align-items: stretch;
+    padding: 1.35rem 1.35rem 1.35rem 1.5rem;
+  }
+
+  .home-hero__about-copy {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: stretch;
+    min-height: 100%;
+  }
+
+  .home-hero__ascii {
+    grid-column: 2;
+    grid-row: 1;
+    width: 15.5rem;
+    max-width: 15.5rem;
+    align-self: end;
+    justify-self: end;
+  }
+
+  .home-hero__connect-inner {
+    min-height: 100% !important;
+  }
+}
+
+@container os-win (min-width: 1100px) {
+  .home-hero__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(17rem, 24rem);
+    gap: 1.15rem;
+  }
+
+  .home-hero__about {
+    gap: 1.5rem;
+  }
+
+  .home-hero__ascii {
+    width: 17.5rem;
+    max-width: 17.5rem;
+  }
+
+  .home-hero__p {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+}
+
+.home-portrait {
+  width: min(24rem, 88%);
+  margin-inline-start: auto;
+  margin-top: auto;
+  pointer-events: none;
+  user-select: none;
+}
+
+.home-portrait__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 339 / 294;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.home-portrait__img--on-light {
+  display: none;
+}
+
+html.light .home-portrait__img--on-dark {
+  display: none;
+}
+
+html.light .home-portrait__img--on-light {
+  display: block;
+}
+
+@media (min-width: 840px) {
+  .home-intro-cafe {
+    display: grid;
+    /* Wider text column so 6xl title can hold two lines */
+    grid-template-columns: minmax(0, 1.4fr) 22rem;
+    gap: clamp(1rem, 2.5vw, 1.75rem);
+    /* Portrait bottom lines up with intro copy bottom */
+    align-items: end;
+    max-width: min(76rem, 100%);
+    margin-bottom: 2.75rem;
+    padding-top: 3.5rem;
+    min-height: 0;
+  }
+
+  .home-intro-cafe--lined {
+    display: flex;
+    flex-direction: column;
+    max-width: none;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .home-intro-cafe__intro.os-col {
+    padding-top: 0.75rem;
+    align-self: end;
+    min-width: 0;
+  }
+
+  .home-portrait {
+    width: 22rem;
+    max-width: 22rem;
+    justify-self: end;
+    align-self: end;
+    margin-top: 0;
+    transform: none;
+  }
+}
+
+@media (min-width: 1200px) {
+  .home-intro-cafe {
+    max-width: min(84rem, 100%);
+    margin-bottom: 3.25rem;
+    padding-top: 4rem;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1.5fr) 24rem;
+  }
+
+  .home-intro-cafe--lined {
+    display: flex;
+    max-width: none;
+    width: 100%;
+  }
+
+  .home-intro__title {
+    font-size: 3.75rem; /* text-6xl */
+    font-weight: 300;
+  }
+
+  .home-hero__title {
+    font-size: 3rem; /* 48px */
+  }
+
+  .home-portrait {
+    width: 24rem;
+    max-width: 24rem;
+  }
+}
+
+@container os-win (max-width: 839px) {
+  [data-os-embedded='true'] .home-intro-cafe {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    max-width: none;
+    min-height: 0;
+  }
+
+  [data-os-embedded='true'] .home-portrait {
+    width: 22rem;
+    max-width: min(22rem, 82%);
+    margin-inline-start: auto;
+    margin-top: 1.5rem;
+    align-self: flex-end;
+  }
+}
+
+@container os-win (min-width: 840px) {
+  [data-os-embedded='true'] .home-intro-cafe {
+    display: grid;
+    /* Wider text column so 6xl title holds two lines */
+    grid-template-columns: minmax(0, 1.4fr) 22rem;
+    gap: clamp(1rem, 2.5cqi, 1.75rem);
+    align-items: end;
+    max-width: min(76rem, 100%);
+    padding-top: 3.5rem;
+    min-height: 0;
+  }
+
+  [data-os-embedded='true'] .home-intro-cafe--lined {
+    display: flex;
+    flex-direction: column;
+    max-width: none;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  [data-os-embedded='true'] .home-intro-cafe__intro.os-col {
+    align-self: end;
+    min-width: 0;
+  }
+
+  [data-os-embedded='true'] .home-portrait {
+    width: 22rem;
+    max-width: 22rem;
+    justify-self: end;
+    align-self: end;
+    margin-top: 0;
+    transform: none;
   }
 }
 
 @container os-win (min-width: 1200px) {
-  .os-col {
-    max-width: min(72rem, 86%);
+  [data-os-embedded='true'] .home-intro-cafe {
+    max-width: min(84rem, 100%);
+    grid-template-columns: minmax(0, 1.5fr) 24rem;
+    padding-top: 4rem;
+    min-height: 0;
   }
-  .os-col--case {
-    max-width: min(76rem, 88%);
+
+  [data-os-embedded='true'] .home-intro-cafe--lined {
+    display: flex;
+    max-width: none;
+    width: 100%;
+  }
+
+  [data-os-embedded='true'] .home-portrait {
+    width: 24rem;
+    max-width: 24rem;
   }
 }
 
-[data-os-embedded='true'] .home-intro {
-  padding-inline: 0.25rem;
+/* Work project grid — desktop fills the window; mobile scrolls card-by-card */
+[data-os-embedded='true'] .os-work-shell {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
 }
 
-/* Shorter / narrower lg desktops: keep window clear of menubar + icon column */
-@media (max-height: 820px) {
+[data-os-embedded='true'] .os-work-grid {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  /* Keep .home-col max-width — don’t stretch to the window edge. */
+  min-height: 0;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+[data-os-embedded='true'] .os-work-grid__cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: auto;
+  gap: 0.85rem;
+  align-items: stretch;
+}
+
+/* Mobile / narrow window — natural card heights, scroll in the window body */
+@container os-win (max-width: 719px) {
+  [data-os-embedded='true'] .os-work-shell,
+  [data-os-embedded='true'] .os-work-grid {
+    height: auto;
+    flex: 0 0 auto;
+    min-height: 0;
+  }
+
+  [data-os-embedded='true'] .os-work-grid__cards {
+    flex: none;
+    min-height: 0;
+    padding-bottom: 1.25rem;
+  }
+
+  [data-os-embedded='true'] .os-work-grid__cards > * {
+    height: auto;
+    min-height: 0;
+  }
+
+  [data-os-embedded='true'] .os-work-card__media,
+  [data-os-embedded='true'] .os-work-card__media--tall {
+    flex: 0 0 auto;
+    aspect-ratio: 16 / 10;
+    min-height: 11rem;
+    max-height: 16rem;
+  }
+
+  [data-os-embedded='true'] .os-work-card--tall {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
+@container os-win (min-width: 520px) and (max-width: 719px) {
+  [data-os-embedded='true'] .os-work-grid__cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Wide window — 3-col grid, natural card heights (same breathing room as Home) */
+@container os-win (min-width: 720px) {
+  [data-os-embedded='true'] .os-work-shell,
+  [data-os-embedded='true'] .os-work-grid {
+    height: auto;
+    flex: 0 0 auto;
+    min-height: 0;
+  }
+
+  [data-os-embedded='true'] .os-work-grid__cards {
+    flex: none;
+    min-height: 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: auto;
+  }
+
+  [data-os-embedded='true'] .os-work-grid__cards > * {
+    height: auto;
+    min-height: 0;
+  }
+
+  [data-os-embedded='true'] .os-work-card__media,
+  [data-os-embedded='true'] .os-work-card__media--tall {
+    flex: 0 0 auto;
+    aspect-ratio: 16 / 10;
+    min-height: 11rem;
+    max-height: none;
+  }
+
+  [data-os-embedded='true'] .os-work-card--tall {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    align-self: stretch;
+    height: auto;
+    min-height: 0;
+  }
+
+  [data-os-embedded='true'] .os-work-card--tall .os-work-card__media--tall {
+    /* Grow into spare row space, but never eat the title / meta block. */
+    aspect-ratio: auto;
+    flex: 1 1 auto;
+    min-height: 14rem;
+    height: auto;
+    max-height: none;
+  }
+}
+
+/* Shorter / narrower lg desktops: still clear the dock */
+@media (max-height: 820px) and (min-width: 1024px) {
   .os-window--stage-max {
-    top: 3rem;
-    bottom: 0.75rem;
-    height: min(860px, calc(100% - 4rem));
+    top: calc(2.75rem + 6px);
+    bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+    height: auto;
   }
 }
 
 @media (max-width: 1280px) {
   .os-window--stage-max {
-    width: min(1180px, calc(100% - 8rem));
+    width: min(1280px, calc(100% - 6.5rem));
   }
 
   .os-desktop-icon {
-    width: 5rem;
+    width: 5.5rem;
   }
 
   .os-desktop-icon__well {
-    width: 3.15rem;
-    height: 3.15rem;
+    width: 2.65rem;
+    height: 2.65rem;
   }
 
   .os-desktop-icon__well--asset {
-    width: 3.65rem;
-    height: 3.65rem;
-    border-radius: 0.95rem;
+    width: 2.95rem;
+    height: 2.95rem;
+    border-radius: 0.85rem;
   }
 
   .os-desktop-icon__label {
-    max-width: 5rem;
-    font-size: 0.75rem;
+    max-width: 5.5rem;
+    font-size: 0.875rem;
   }
 }
 
 @media (max-width: 1100px) {
   .os-window--stage-max {
-    width: min(1180px, calc(100% - 6rem));
+    width: min(1280px, calc(100% - 5rem));
   }
 
   .os-logo-menu {
@@ -1374,32 +3588,13 @@ html.light .os-window-titlebar {
     z-index: 40; /* windows always paint above icon rails */
   }
 
-  .os-window--stage-max {
-    left: 0;
-    right: 0;
-    top: 2.85rem;
-    bottom: max(0.4rem, env(safe-area-inset-bottom, 0px));
-    width: auto;
-    height: auto;
-    margin: 0;
-    border-radius: 0.85rem 0.85rem 0 0;
-  }
-
-  .os-window--covered {
-    left: 0;
-    right: 0;
-    top: 2.65rem;
-    bottom: 0;
-    border-radius: 0;
-  }
-
   .os-desktop-icons--narrow .os-desktop-icon,
   .os-desktop-icon--fixed {
     cursor: pointer;
     touch-action: manipulation;
-    width: 3.85rem;
-    gap: 0.25rem;
-    padding: 0.15rem;
+    width: 4.25rem;
+    gap: 0.35rem;
+    padding: 0.2rem;
   }
 
   .os-desktop-icons--narrow .os-desktop-icon:active,
@@ -1414,10 +3609,17 @@ html.light .os-window-titlebar {
   }
 
   .os-desktop-icons--narrow .os-desktop-icon__well--asset,
-  .os-desktop-icon--fixed .os-desktop-icon__well--asset {
+  .os-desktop-icon--fixed .os-desktop-icon__well--asset,
+  .os-desktop-icons--narrow .os-desktop-icon__well--bitmap,
+  .os-desktop-icon--fixed .os-desktop-icon__well--bitmap {
     width: 3.15rem;
     height: 3.15rem;
     border-radius: 0.8rem;
+  }
+
+  .os-desktop-icons--narrow .os-desktop-icon__well--bitmap,
+  .os-desktop-icon--fixed .os-desktop-icon__well--bitmap {
+    border-radius: 0;
   }
 
   .os-desktop-icons--narrow .os-desktop-icon__well svg,
@@ -1428,9 +3630,9 @@ html.light .os-window-titlebar {
 
   .os-desktop-icons--narrow .os-desktop-icon__label,
   .os-desktop-icon--fixed .os-desktop-icon__label {
-    max-width: 3.75rem;
-    font-size: 0.625rem;
-    line-height: 1.1;
+    font-size: 0.65rem;
+    line-height: 1.15;
+    max-width: 4.5rem;
   }
 
   .os-logo-menu button {
@@ -1450,24 +3652,173 @@ html.light .os-window-titlebar {
   }
 }
 
+/* Widget cards carry the window material, not bare glass */
+.os-widget-card {
+  background:
+    linear-gradient(hsl(0 0% 0% / 0.52), hsl(0 0% 0% / 0.56)),
+    hsl(var(--background) / 0.72);
+  backdrop-filter: blur(42px) saturate(165%);
+  -webkit-backdrop-filter: blur(42px) saturate(165%);
+  border: 1px solid hsl(var(--border) / 0.4);
+  box-shadow:
+    0 1px 0 hsl(var(--foreground) / 0.05) inset,
+    0 22px 56px -28px hsl(0 0% 0% / 0.5);
+}
+
+.os-widget-card--on-dark {
+  color: hsl(0 0% 100% / 0.94);
+}
+
+.os-widget-card--on-light {
+  background:
+    linear-gradient(hsl(0 0% 100% / 0.52), hsl(0 0% 100% / 0.58)),
+    hsl(var(--background) / 0.74);
+  border-color: hsl(0 0% 100% / 0.45);
+  color: hsl(0 0% 8% / 0.9);
+  box-shadow:
+    0 1px 0 hsl(0 0% 100% / 0.72) inset,
+    0 22px 56px -28px hsl(30 20% 20% / 0.22);
+}
+
+.os-widget-card--on-light .text-muted-foreground {
+  color: hsl(0 0% 8% / 0.55);
+}
+
+html.light .os-widget-card {
+  background:
+    linear-gradient(hsl(0 0% 100% / 0.42), hsl(0 0% 100% / 0.48)),
+    hsl(var(--background) / 0.68);
+  box-shadow:
+    0 1px 0 hsl(0 0% 100% / 0.72) inset,
+    0 24px 60px -32px hsl(30 20% 20% / 0.28);
+}
+
+/* iOS-style notification widget inside the widgets panel */
+.os-notification-widget {
+  display: block;
+  width: 100%;
+  border-radius: 1.35rem;
+  padding: 0.85rem 0.9rem 0.95rem;
+  border: 1px solid hsl(0 0% 100% / 0.1);
+  backdrop-filter: blur(44px) saturate(180%);
+  -webkit-backdrop-filter: blur(44px) saturate(180%);
+  box-shadow:
+    0 1px 0 hsl(0 0% 100% / 0.08) inset,
+    0 16px 40px -18px hsl(0 0% 0% / 0.55);
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.os-notification-widget--dark-glass {
+  background: hsl(0 0% 12% / 0.72);
+  color: hsl(0 0% 100% / 0.96);
+}
+
+.os-notification-widget--light-glass {
+  background: hsl(0 0% 100% / 0.74);
+  border-color: hsl(0 0% 100% / 0.55);
+  color: hsl(0 0% 8% / 0.92);
+  box-shadow:
+    0 1px 0 hsl(0 0% 100% / 0.85) inset,
+    0 16px 40px -18px hsl(30 20% 20% / 0.2);
+}
+
+.os-notification-widget--static {
+  cursor: default;
+}
+
+.os-notification-widget--dark-glass .text-muted-foreground {
+  color: hsl(0 0% 100% / 0.62);
+}
+
+.os-notification-widget--light-glass .text-muted-foreground {
+  color: hsl(0 0% 8% / 0.55);
+}
+
+.os-notification-widget:hover {
+  border-color: hsl(0 0% 100% / 0.18);
+}
+
+.os-notification-widget--light-glass:hover {
+  border-color: hsl(0 0% 100% / 0.72);
+}
+
+.os-notification-widget__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.os-notification-widget__icon {
+  box-shadow: 0 4px 14px hsl(0 0% 0% / 0.28);
+}
+
+.os-notification-widget__copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.os-notification-widget__title {
+  font-size: 0.8125rem;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.os-notification-widget__time {
+  margin-top: 0.05rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  opacity: 0.62;
+  white-space: nowrap;
+}
+
+.os-notification-widget__body {
+  margin-top: 0.1rem;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  opacity: 0.72;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-notification-widget {
+    transition: none;
+  }
+}
+
 .os-window--dragging {
   will-change: left, top, width, height;
   user-select: none;
 }
 
-/* macOS traffic lights — red close, blank yellow, green cover */
+/* macOS traffic lights — empty discs until group hover, then color + glyphs */
+.os-window-traffic-group {
+  min-height: 1.05rem;
+}
+
 .os-window-traffic {
+  --os-traffic-fill: hsl(0 0% 38% / 0.55);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 0.95rem;
-  height: 0.95rem;
+  width: 1.05rem;
+  height: 1.05rem;
   padding: 0;
   border: none;
   border-radius: 9999px;
   cursor: pointer;
   flex-shrink: 0;
-  transition: filter 0.12s ease, transform 0.12s ease;
+  background: var(--os-traffic-fill);
+  backdrop-filter: blur(12px) saturate(170%);
+  -webkit-backdrop-filter: blur(12px) saturate(170%);
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / 0.18),
+    inset 0 -0.5px 0 hsl(0 0% 0% / 0.2);
+  transition:
+    background 0.14s ease,
+    filter 0.12s ease,
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
 }
 
 .os-window-traffic:hover {
@@ -1476,6 +3827,7 @@ html.light .os-window-titlebar {
 
 .os-window-traffic:active {
   filter: brightness(0.94);
+  transform: scale(0.94);
 }
 
 .os-window-traffic:focus-visible {
@@ -1485,29 +3837,132 @@ html.light .os-window-titlebar {
     0 0 0 4px hsl(var(--ring));
 }
 
-.os-window-traffic--close {
-  background: #ff5f57;
-  box-shadow: inset 0 0 0 0.5px hsl(0 60% 30% / 0.22);
-}
-
+/* Middle stays empty — no fill color, no glyph (web + mobile) */
 .os-window-traffic--idle {
   cursor: default;
   pointer-events: none;
-  /* Blank yellow slot — muted, inactive */
-  background: hsl(0 0% 32%);
-  box-shadow: inset 0 0 0 0.5px hsl(0 0% 0% / 0.35);
 }
 
-.os-window-traffic--zoom {
-  background: #28c840;
-  box-shadow: inset 0 0 0 0.5px hsl(130 40% 18% / 0.22);
+/* Color fills only while the traffic group is hovered / focused */
+.os-window-traffic-group:hover .os-window-traffic--close,
+.os-window-traffic-group:focus-within .os-window-traffic--close {
+  --os-traffic-fill: #f13342;
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / 0.38),
+    inset 0 -0.5px 0 hsl(0 0% 0% / 0.14);
+}
+
+.os-window-traffic-group:hover .os-window-traffic--zoom,
+.os-window-traffic-group:focus-within .os-window-traffic--zoom {
+  --os-traffic-fill: #009e87;
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / 0.38),
+    inset 0 -0.5px 0 hsl(0 0% 0% / 0.14);
 }
 
 .os-window-traffic__glyph {
   width: 0.55rem;
   height: 0.55rem;
-  color: hsl(0 55% 18% / 0.78);
+  color: hsl(0 0% 12% / 0.78);
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.os-window-traffic-group:hover .os-window-traffic__glyph,
+.os-window-traffic-group:focus-within .os-window-traffic__glyph {
+  opacity: 1;
+}
+
+html.light .os-window-traffic {
+  --os-traffic-fill: hsl(0 0% 72% / 0.7);
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / 0.45),
+    inset 0 -0.5px 0 hsl(0 0% 0% / 0.08);
+}
+
+html.light .os-window-traffic-group:hover .os-window-traffic--close,
+html.light .os-window-traffic-group:focus-within .os-window-traffic--close {
+  --os-traffic-fill: #f13342;
+}
+
+html.light .os-window-traffic-group:hover .os-window-traffic--zoom,
+html.light .os-window-traffic-group:focus-within .os-window-traffic--zoom {
+  --os-traffic-fill: #009e87;
+}
+
+html.light .os-window-traffic__glyph {
+  color: hsl(0 0% 10% / 0.75);
+}
+
+/* Menubar / dropdown panels — same frosted glass as OS windows */
+.os-glass-menu {
+  border: 1px solid hsl(var(--border) / 0.4) !important;
+  border-radius: 0.85rem !important;
+  background:
+    linear-gradient(hsl(0 0% 0% / 0.38), hsl(0 0% 0% / 0.42)),
+    hsl(var(--background) / 0.62) !important;
+  backdrop-filter: blur(42px) saturate(165%);
+  -webkit-backdrop-filter: blur(42px) saturate(165%);
+  box-shadow:
+    0 1px 0 hsl(var(--foreground) / 0.05) inset,
+    0 18px 48px -24px hsl(0 0% 0% / 0.55);
+  color: hsl(var(--foreground));
+}
+
+html.light .os-glass-menu {
+  background:
+    linear-gradient(hsl(0 0% 100% / 0.42), hsl(0 0% 100% / 0.48)),
+    hsl(var(--background) / 0.68) !important;
+  box-shadow:
+    0 1px 0 hsl(0 0% 100% / 0.72) inset,
+    0 18px 48px -24px hsl(30 20% 20% / 0.28);
+}
+
+/* Photos lightbox — frosted glass around the image, not opaque black */
+.os-photos-lightbox {
+  background:
+    linear-gradient(hsl(0 0% 0% / 0.28), hsl(0 0% 0% / 0.34)),
+    hsl(var(--background) / 0.42);
+  backdrop-filter: blur(36px) saturate(160%);
+  -webkit-backdrop-filter: blur(36px) saturate(160%);
+}
+
+html.light .os-photos-lightbox {
+  background:
+    linear-gradient(hsl(0 0% 100% / 0.38), hsl(0 0% 100% / 0.46)),
+    hsl(var(--background) / 0.5);
+}
+
+.os-photos-lightbox__close {
+  border: 1px solid hsl(var(--border) / 0.45);
+  background:
+    linear-gradient(hsl(0 0% 0% / 0.28), hsl(0 0% 0% / 0.34)),
+    hsl(var(--background) / 0.55);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: 0 1px 0 hsl(var(--foreground) / 0.06) inset;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.os-photos-lightbox__close:hover {
+  background:
+    linear-gradient(hsl(0 0% 0% / 0.36), hsl(0 0% 0% / 0.42)),
+    hsl(var(--background) / 0.65);
+  border-color: hsl(var(--border) / 0.6);
+}
+
+html.light .os-photos-lightbox__close {
+  background:
+    linear-gradient(hsl(0 0% 100% / 0.5), hsl(0 0% 100% / 0.58)),
+    hsl(var(--background) / 0.6);
+  box-shadow: 0 1px 0 hsl(0 0% 100% / 0.7) inset;
+}
+
+html.light .os-photos-lightbox__close:hover {
+  background:
+    linear-gradient(hsl(0 0% 100% / 0.62), hsl(0 0% 100% / 0.7)),
+    hsl(var(--background) / 0.72);
 }
 
 /* Radix menus must sit above OS windows (z ≤ 180) and menubar (z 200) */
@@ -1699,7 +4154,8 @@ html.light .os-window-titlebar {
   will-change: filter;
 }
 
-.dark .svg-theme-aware {
+.dark .svg-theme-aware,
+.clear .svg-theme-aware {
   filter: brightness(0) saturate(100%) invert(27%) sepia(100%) saturate(2000%) hue-rotate(228deg) brightness(1.26) contrast(1.2) !important;
 }
 
@@ -1816,6 +4272,8 @@ html.light .os-window-titlebar {
 
 .dark .pixel-draw-cursor,
 .dark .pixel-draw-cursor button,
+.clear .pixel-draw-cursor,
+.clear .pixel-draw-cursor button,
 .blue .pixel-draw-cursor,
 .blue .pixel-draw-cursor button,
 .green .pixel-draw-cursor,
@@ -1834,6 +4292,7 @@ html.light .os-window-titlebar {
 }
 
 .dark .pixl-artwork-svg,
+.clear .pixl-artwork-svg,
 .blue .pixl-artwork-svg,
 .green .pixl-artwork-svg,
 .red .pixl-artwork-svg {
@@ -1919,6 +4378,7 @@ html.light .os-window-titlebar {
 }
 
 .dark .glass-nav-pill,
+.clear .glass-nav-pill,
 html.blue .glass-nav-pill,
 html.green .glass-nav-pill,
 html.red .glass-nav-pill {
@@ -1940,6 +4400,7 @@ html.red .glass-nav-pill {
 }
 
 .dark .glass-nav-pill::before,
+.clear .glass-nav-pill::before,
 html.blue .glass-nav-pill::before,
 html.green .glass-nav-pill::before,
 html.red .glass-nav-pill::before {
@@ -1950,6 +4411,7 @@ html.red .glass-nav-pill::before {
 }
 
 .dark .glass-nav-pill::after,
+.clear .glass-nav-pill::after,
 html.blue .glass-nav-pill::after,
 html.green .glass-nav-pill::after,
 html.red .glass-nav-pill::after {
@@ -1973,6 +4435,7 @@ html.red .glass-nav-pill::after {
 }
 
 .dark .glass-chrome,
+.clear .glass-chrome,
 html.blue .glass-chrome,
 html.green .glass-chrome,
 html.red .glass-chrome {
@@ -1984,6 +4447,7 @@ html.red .glass-chrome {
 }
 
 .dark .glass-chrome:hover,
+.clear .glass-chrome:hover,
 html.blue .glass-chrome:hover,
 html.green .glass-chrome:hover,
 html.red .glass-chrome:hover {
@@ -2007,7 +4471,8 @@ html.red .glass-chrome:hover {
   );
 }
 
-.dark .progressive-blur-tint {
+.dark .progressive-blur-tint,
+.clear .progressive-blur-tint {
   background: linear-gradient(
     to bottom,
     hsl(var(--background) / 0.82) 0%,
@@ -2026,37 +4491,12 @@ html.red .glass-chrome:hover {
   );
 }
 
-.dark .progressive-blur-tint--mobile {
+.dark .progressive-blur-tint--mobile,
+.clear .progressive-blur-tint--mobile {
   background: linear-gradient(
     to bottom,
     hsl(var(--background) / 0.88) 0%,
     hsl(var(--background) / 0.36) 42%,
     hsl(var(--background) / 0) 100%
   );
-}
-
-/* Full-screen boot: thin white progress line under logo (fill = load %) */
-.brand-boot-line {
-  position: relative;
-  width: 4.5rem;
-  height: 1px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: hsl(0 0% 100% / 0.18);
-}
-
-.brand-boot-line__fill {
-  position: absolute;
-  inset-block: 0;
-  left: 0;
-  width: 0%;
-  border-radius: inherit;
-  background: hsl(0 0% 100% / 0.92);
-  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .brand-boot-line__fill {
-    transition: none;
-  }
 }

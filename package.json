@@ -28,6 +28,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cuelume": "^0.2.2",
+    "drawesome": "^0.1.1",
     "framer-motion": "^13.1.0",
     "geist": "^1.7.2",
     "lucide-react": "^0.424.0",

@@ -182,7 +182,7 @@ export function SideProjectCard({
       <div className="mt-4 flex min-h-0 flex-1 flex-col px-4">
         <div className="relative pl-5">
           <ChevronRight
-            className="pointer-events-none absolute left-0 h-3 w-3 text-foreground transition-[top] duration-500 ease-[cubic-bezier(0.22,1.4,0.36,1)]"
+            className="pointer-events-none absolute left-0 h-3 w-3 text-foreground transition-[top] duration-500 ease-out-back"
             style={{ top: arrowTop }}
             strokeWidth={2.5}
             aria-hidden

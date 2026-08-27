@@ -13,17 +13,13 @@ import {
   WORDSMITH_LOCKED_MESSAGE,
 } from '@/lib/enrich-gen-ui';
 import { agentWasClarifying, inferGenUIBuild } from '@/lib/infer-gen-ui-build';
-import {
-  isOffTopicGenUIPrompt,
-  isInsufficientContextQuery,
-  isAboutDevQuery,
-  offTopicGenUIMessage,
-  offTopicGenUITitle,
-  insufficientContextMessage,
-  insufficientContextTitle,
-} from '@/lib/gen-ui-on-topic';
+import { isAboutDevQuery } from '@/lib/gen-ui-on-topic';
 import { createGenUIViewport, type GenUIViewport } from '@/lib/gen-ui-viewport';
 import { genUIPromptLengthError, MAX_GEN_UI_PROMPT_LENGTH } from '@/lib/gen-ui-prompt';
+import {
+  askAIConversationalReply,
+  isAskAIConversationalPrompt,
+} from '@/lib/ask-ai-conversational';
 import { resumeData } from '@/lib/resume-data';
 
 function applyLayoutCommands(agent: PortfolioAgent, commands: LayoutActionCommand[]): AgentState {
@@ -118,30 +114,6 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
       };
 
       try {
-        if (isOffTopicGenUIPrompt(trimmed)) {
-          const redirect = offTopicGenUIMessage(trimmed);
-          setConversationHistory([
-            ...nextHistory,
-            { role: 'assistant', content: stripMarkdown(redirect) },
-          ]);
-          await finishViewport(redirect, [], { title: offTopicGenUITitle(), rawSummary: true });
-          return;
-        }
-
-        if (isInsufficientContextQuery(trimmed)) {
-          const reply = insufficientContextMessage(trimmed);
-          const contactCards = resolveCardIds(['feature:connect']);
-          setConversationHistory([
-            ...nextHistory,
-            { role: 'assistant', content: stripMarkdown(reply) },
-          ]);
-          await finishViewport(reply, contactCards, {
-            title: insufficientContextTitle(),
-            rawSummary: true,
-          });
-          return;
-        }
-
         const sectionSnapshot = agentRef.current.getState().sections.map((s) => ({
           id: s.id,
           title: s.title,
@@ -176,10 +148,25 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
           steps: Array<{ tool: string; args: Record<string, unknown>; result: string }>;
           iterations: number;
           promptRemaining?: number;
+          conversational?: boolean;
         };
 
         if (typeof result.promptRemaining === 'number') {
           setPromptCount(result.promptRemaining);
+        }
+
+        const conversational =
+          Boolean(result.conversational) || isAskAIConversationalPrompt(trimmed);
+
+        if (conversational) {
+          const reply =
+            (result.message || '').trim() || askAIConversationalReply(trimmed);
+          setConversationHistory([
+            ...nextHistory,
+            { role: 'assistant', content: stripMarkdown(reply) },
+          ]);
+          await finishViewport(reply, [], { rawSummary: true, title: '' });
+          return;
         }
 
         const shouldBuildViewport = inferGenUIBuild({
@@ -210,12 +197,7 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
         let finalText = wordsmithQuery
           ? rawMessage
           : formatLeadSummary(rawMessage, trimmed);
-        if (
-          !wordsmithQuery &&
-          !finalText &&
-          shouldBuildViewport &&
-          !isOffTopicGenUIPrompt(trimmed)
-        ) {
+        if (!wordsmithQuery && !finalText && shouldBuildViewport) {
           finalText = formatLeadSummary('', trimmed);
         }
         if (
@@ -236,16 +218,21 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
           { role: 'assistant', content: stripMarkdown(finalText || rawMessage) },
         ]);
 
-        const enrichedItems = isOffTopicGenUIPrompt(trimmed) ? [] : enrichGenUIItems(parsedItems, trimmed);
+        const enrichedItems = shouldBuildViewport
+          ? enrichGenUIItems(parsedItems, trimmed)
+          : [];
+
+        if (!shouldBuildViewport && enrichedItems.length === 0) {
+          const reply = (finalText || rawMessage).trim() || 'Something went wrong. Please try again.';
+          await finishViewport(reply, [], { rawSummary: true, title: '' });
+          return;
+        }
+
         const narrative =
           finalText ||
           (enrichedItems.length > 0 ? formatLeadSummary('', trimmed) : 'Something went wrong. Please try again.');
 
-        if (enrichedItems.length > 0 || narrative) {
-          await finishViewport(narrative, enrichedItems);
-        } else {
-          await finishViewport('Something went wrong. Please try again.', []);
-        }
+        await finishViewport(narrative, enrichedItems);
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'Something went wrong. Please try again.';

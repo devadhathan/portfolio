@@ -11,7 +11,6 @@ import { cn } from '@/lib/utils';
 
 type AskAIPanelProps = {
   onClose: () => void;
-  promptLimitLabel: string;
   input: string;
   inputDisabled: boolean;
   sendDisabled?: boolean;
@@ -32,7 +31,6 @@ type AskAIPanelProps = {
 
 export function AskAIPanel({
   onClose,
-  promptLimitLabel,
   input,
   inputDisabled,
   sendDisabled,
@@ -128,7 +126,6 @@ export function AskAIPanel({
           </div>
         )}
 
-        <p className="mb-2.5 text-center text-[10px] text-muted-foreground/65 tabular-nums">{promptLimitLabel}</p>
         <div className="relative rounded-xl border border-border/60 bg-card shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:border-border dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
           <textarea
             ref={inputRef}
@@ -137,9 +134,9 @@ export function AskAIPanel({
             onKeyDown={onKeyDown}
             placeholder={inputPlaceholder}
             disabled={inputDisabled}
-            rows={3}
+            rows={1}
             maxLength={MAX_GEN_UI_PROMPT_LENGTH}
-            className="block w-full resize-none bg-transparent px-3.5 pt-3.5 pb-12 text-sm text-foreground placeholder:text-muted-foreground/55 outline-none min-h-[88px] max-h-[160px]"
+            className="block w-full resize-none overflow-y-auto bg-transparent px-3.5 pt-3.5 pb-12 text-sm text-foreground placeholder:text-muted-foreground/55 outline-none min-h-[88px] max-h-[220px]"
           />
           <button
             type="button"

@@ -213,9 +213,9 @@ export function buildCaseStudyCards(projects: Project[] = resumeData.projects as
 
     if (slug === 'finshots-news-app') {
       addImage(cards, 'image:case:finshots-news-app:hero', FINSHOTS_APP_SCREEN, 'Finshots News App', 'Award-winning fintech news app', slug);
-      addImage(cards, 'image:case:finshots-news-app:navigation', '/finshots/navigation.png', 'Navigation', 'Categories, filters, and search', slug);
-      addImage(cards, 'image:case:finshots-news-app:infographics', encodeURI('/finshots/Info graphics.png'), 'Infographics', 'Illustrated data visualization', slug);
-      addImage(cards, 'image:case:finshots-news-app:notifications', '/finshots/Notifications.png', 'Custom Notifications', 'Personalized alert preferences', slug);
+      addImage(cards, 'image:case:finshots-news-app:navigation', '/finshots/navigation.webp', 'Navigation', 'Categories, filters, and search', slug);
+      addImage(cards, 'image:case:finshots-news-app:infographics', encodeURI('/finshots/Info graphics.webp'), 'Infographics', 'Illustrated data visualization', slug);
+      addImage(cards, 'image:case:finshots-news-app:notifications', '/finshots/Notifications.webp', 'Custom Notifications', 'Personalized alert preferences', slug);
 
       FINSHOTS_GALLERY.forEach((img, i) => {
         addImage(cards, `image:case:finshots-news-app:screen-${i}`, img.src, img.title, img.description, slug);

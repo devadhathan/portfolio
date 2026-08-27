@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 
-type CardTagTone = 'glass' | 'accent' | 'sky' | 'amber' | 'emerald' | 'mono';
+type CardTagTone = 'glass' | 'accent' | 'sky' | 'amber' | 'emerald' | 'orange' | 'mono';
 
 type CardTagProps = {
   children: React.ReactNode;
@@ -19,6 +19,8 @@ const TONE_CLASS: Record<CardTagTone, string> = {
   sky: PILL_CLASS,
   amber: PILL_CLASS,
   emerald: PILL_CLASS,
+  orange:
+    'rounded-full border border-orange-500/80 px-1.5 py-px text-[10px] font-medium leading-none tracking-wide text-orange-500 dark:border-orange-400/80 dark:text-orange-400',
   mono:
     'font-mono text-[11px] font-normal tracking-wide text-muted-foreground transition-colors duration-200 hover:text-primary group-hover:text-primary group-hover/row:text-primary group-hover/nesoi:text-primary group-hover/cat:text-primary group-hover/ws:text-primary group-hover/notch:text-primary',
 };
@@ -36,3 +38,5 @@ export function CardTag({ children, className, tone = 'glass' }: CardTagProps) {
     </span>
   );
 }
+
+export type { CardTagTone };

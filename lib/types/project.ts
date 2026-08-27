@@ -16,6 +16,8 @@ export type ProjectDetailSection = {
   video?: string
   /** Poster image for `video` (and for legacy `prototypeGif` when migrated to mp4). */
   videoPoster?: string
+  /** Player chrome on `video`. Off for ambient loops. Defaults to on. */
+  videoControls?: boolean
   prototypeGif?: string
 }
 

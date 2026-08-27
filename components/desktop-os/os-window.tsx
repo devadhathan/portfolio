@@ -1,10 +1,11 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { X } from 'lucide-react';
+import { Maximize2, Minimize2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { DesktopWindowId } from '@/lib/desktop-os';
 import { useDesktopOs } from '@/components/desktop-os/desktop-os-provider';
+import { OsWindowIdProvider } from '@/components/desktop-os/os-window-scope';
 
 type OsWindowProps = {
   id: DesktopWindowId;
@@ -21,6 +22,7 @@ export function OsWindow({ id, title, children }: OsWindowProps) {
   const { windows, focusedId, focusWindow, closeWindow, toggleCover } = useDesktopOs();
   const win = windows[id];
   const isOpen = win.open;
+  const isFinder = id === 'finder';
 
   return (
     <div
@@ -28,6 +30,7 @@ export function OsWindow({ id, title, children }: OsWindowProps) {
         'os-window absolute flex flex-col overflow-hidden rounded-2xl border border-border/40 isolate',
         focusedId === id && isOpen && 'os-window--focused',
         win.covered ? 'os-window--covered' : 'os-window--stage-max',
+        isFinder && !win.covered && 'os-window--finder',
         !isOpen && 'os-window--closed',
       )}
       style={{ zIndex: isOpen ? win.zIndex : 0 }}
@@ -37,8 +40,8 @@ export function OsWindow({ id, title, children }: OsWindowProps) {
         focusWindow(id, { syncUrl: true });
       }}
     >
-      <div className="os-window-titlebar flex h-10 shrink-0 cursor-default items-center gap-3 border-b border-border/25 px-3.5">
-        <div className="flex items-center gap-[0.35rem]" data-os-controls>
+      <div className="os-window-titlebar flex h-11 shrink-0 cursor-default items-center gap-3 border-b border-border/30 px-3.5">
+        <div className="os-window-traffic-group flex items-center gap-1.5" data-os-controls>
           <button
             type="button"
             aria-label="Close"
@@ -52,7 +55,7 @@ export function OsWindow({ id, title, children }: OsWindowProps) {
           >
             <X className="os-window-traffic__glyph" strokeWidth={2.75} aria-hidden />
           </button>
-          {/* Minimize not supported — blank yellow slot */}
+          {/* Minimize not supported — empty inactive slot */}
           <span className="os-window-traffic os-window-traffic--idle" aria-hidden />
           <button
             type="button"
@@ -64,13 +67,26 @@ export function OsWindow({ id, title, children }: OsWindowProps) {
               e.stopPropagation();
               toggleCover(id);
             }}
-          />
+          >
+            {win.covered ? (
+              <Minimize2 className="os-window-traffic__glyph" strokeWidth={2.75} aria-hidden />
+            ) : (
+              <Maximize2 className="os-window-traffic__glyph" strokeWidth={2.75} aria-hidden />
+            )}
+          </button>
         </div>
-        <span className="pointer-events-none flex-1 select-none text-left text-sm font-medium tracking-tight text-foreground/80">
+        <span className="os-window-title pointer-events-none flex-1 select-none text-left font-medium tracking-tight text-foreground/85">
           {title}
         </span>
       </div>
-      <div className="os-window-body min-h-0 flex-1 overflow-auto overscroll-contain">{children}</div>
+      <div
+        className={cn(
+          'os-window-body min-h-0 flex-1 overscroll-contain',
+          isFinder ? 'overflow-hidden' : 'overflow-auto',
+        )}
+      >
+        <OsWindowIdProvider value={id}>{children}</OsWindowIdProvider>
+      </div>
     </div>
   );
 }

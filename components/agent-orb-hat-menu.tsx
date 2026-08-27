@@ -41,7 +41,7 @@ export function AgentOrbHatMenu({
       <DropdownMenuContent
         align={align}
         sideOffset={10}
-        className="w-[220px] rounded-2xl border border-border/60 bg-background/95 p-3 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-[#161616]/95"
+        className="w-[220px] p-3"
       >
         <DropdownMenuLabel className="px-1 pb-2 pt-0 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground/70">
           Hat

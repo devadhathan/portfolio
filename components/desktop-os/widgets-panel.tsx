@@ -1,25 +1,17 @@
 'use client';
 
 import { WeatherWidget } from '@/components/widgets/weather-widget';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DevOsWelcomeWidget } from '@/components/desktop-os/dev-os-welcome-widget';
+import { useOsNotificationGlassClass } from '@/components/desktop-os/os-widget-glass';
 import { Button } from '@/components/ui/button';
-import { Clock, Calendar, FolderKanban, ChevronRight, X } from 'lucide-react';
+import { Clock, Calendar, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useSiteContent } from '@/components/site-content-provider';
-import { getProjectId } from '@/lib/types/project';
 import { useDesktopOs } from '@/components/desktop-os/desktop-os-provider';
 import { cn } from '@/lib/utils';
 
-type WidgetsPanelProps = {
-  onProjectSelect?: (projectSlug: string) => void;
-};
-
-const widgetCardClass =
-  'rounded-2xl border border-white/10 bg-black/45 shadow-[0_12px_32px_-20px_rgba(0,0,0,0.55)] backdrop-blur-2xl backdrop-saturate-150 dark:bg-black/55';
-
-export function WidgetsPanel({ onProjectSelect }: WidgetsPanelProps) {
-  const { widgetsOpen, setWidgetsOpen } = useDesktopOs();
-  const { projects } = useSiteContent();
+export function WidgetsPanel() {
+  const { widgetsOpen, setWidgetsOpen, isNarrow } = useDesktopOs();
+  const glassClass = useOsNotificationGlassClass({ interactive: false });
   const [time, setTime] = useState<Date | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -68,30 +60,28 @@ export function WidgetsPanel({ onProjectSelect }: WidgetsPanelProps) {
           title="Close widgets"
           data-cuelume-press
           data-cuelume-hover="tick"
-          className={cn(
-            'h-8 w-8 rounded-full text-white/80 shadow-none transition-colors hover:bg-white/10 hover:text-white',
-            widgetCardClass,
-          )}
+          className="h-8 w-8 rounded-full text-foreground/80 shadow-none transition-colors hover:bg-foreground/10 hover:text-foreground"
           onClick={() => setWidgetsOpen(false)}
         >
           <X className="h-4 w-4" />
         </Button>
       </div>
 
+      {!isNarrow ? <DevOsWelcomeWidget /> : null}
+
       {/* 1. Weather */}
-      <WeatherWidget className={cn('text-white shadow-none', widgetCardClass)} />
+      <WeatherWidget className={glassClass} />
 
       {/* 2. Clock */}
-      <Card className={cn('border-0 text-white shadow-none', widgetCardClass)}>
-        <CardContent className="p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <Clock className="h-4 w-4 shrink-0 text-primary" />
-            <span className="text-xs font-medium text-white/90">Time</span>
-          </div>
-          {mounted && time instanceof Date ? (
-            <div className="space-y-3">
-              <div className="relative mx-auto aspect-square w-full max-w-[180px]">
-                <svg className="h-full w-full drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]" viewBox="0 0 200 200">
+      <div className={glassClass}>
+        <div className="mb-3 flex items-center gap-2">
+          <Clock className="h-4 w-4 shrink-0 text-primary" />
+          <span className="text-xs font-medium text-foreground/90">Time</span>
+        </div>
+        {mounted && time instanceof Date ? (
+          <div className="space-y-3">
+            <div className="relative mx-auto aspect-square w-full max-w-[180px]">
+              <svg className="h-full w-full drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]" viewBox="0 0 200 200">
                   <circle
                     cx="100"
                     cy="100"
@@ -176,61 +166,17 @@ export function WidgetsPanel({ onProjectSelect }: WidgetsPanelProps) {
                 </svg>
               </div>
               <div className="space-y-1 text-center">
-                <p className="text-lg font-semibold text-white/95">{formatTime(time)}</p>
-                <div className="flex items-center justify-center gap-1.5 text-xs text-white/60">
+                <p className="text-lg font-semibold text-foreground/95">{formatTime(time)}</p>
+                <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
                   <Calendar className="h-3 w-3" />
                   <span>{formatDate(time)}</span>
                 </div>
               </div>
             </div>
           ) : (
-            <p className="text-2xl font-semibold text-white/90">--:--:--</p>
+            <p className="text-2xl font-semibold text-foreground/90">--:--:--</p>
           )}
-        </CardContent>
-      </Card>
-
-      {/* 3. Case studies / Projects — hug content height */}
-      <Card className={cn('shrink-0 border-0 text-white shadow-none', widgetCardClass)}>
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-sm text-white/95">
-            <FolderKanban className="h-4 w-4 shrink-0 text-primary" />
-            Projects
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="space-y-0.5">
-            {projects.map((project, index) => {
-              const projectSlug = getProjectId(project.title);
-              return (
-                <div key={index} className="group relative">
-                  <div
-                    data-cuelume-hover="tick"
-                    data-cuelume-press
-                    className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 transition-colors hover:bg-white/10"
-                    onClick={() => {
-                      onProjectSelect?.(projectSlug);
-                      setWidgetsOpen(false);
-                    }}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <div className="mt-0.5 h-1 w-1 flex-shrink-0 rounded-full bg-white/60 transition-colors group-hover:bg-primary" />
-                        <p className="truncate text-sm font-medium text-white/95">
-                          {project.title}
-                        </p>
-                      </div>
-                      <p className="ml-3 truncate text-xs text-white/55">
-                        {project.company || project.institution} • {project.period}
-                      </p>
-                    </div>
-                    <ChevronRight className="h-3 w-3 flex-shrink-0 text-white/50 opacity-0 transition-opacity group-hover:opacity-100" />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      </div>
     </aside>
   );
 }

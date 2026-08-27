@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "title": "Devadhathan - Product Designer",
+    "title": "Dev",
     "description": "Portfolio of Devadhathan, Product Designer"
   },
   "nav": {
@@ -8,6 +8,9 @@
     "about": "Home",
     "aboutMe": "About me",
     "caseStudies": "Case studies",
+    "selectedCaseStudies": "Selected Work",
+    "misc": "Misc",
+    "allWork": "All work",
     "work": "Work",
     "contact": "Contact",
     "playground": "Playground",
@@ -15,7 +18,9 @@
     "openProjectList": "Open project list",
     "askAI": "Ask AI",
     "games": "Games",
-    "photos": "Photos"
+    "drawesome": "Draw",
+    "photos": "Photos",
+    "dock": "Dock"
   },
   "locale": {
     "label": "Language",
@@ -23,18 +28,19 @@
   },
   "home": {
     "digitalHome": "Dev's digital home",
-    "heroLine1": "Designer building experiences for humans.",
+    "heroLine1": "I'm Dev, a product designer who builds products.",
     "intro": {
       "name": "Devadhathan M D",
       "role": "Product designer",
-      "p1": "Hi, I'm a designer based in Edinburgh.",
-      "p2": "Most recently I worked on <wordsmith>Wordsmith AI</wordsmith>, and before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>. I have a master's in design and a bachelor's in computer engineering.",
-      "p3": "I design interfaces for the computer and experiences for the people, and I'm building something <i>simple, but better</i>.",
-      "p4": "You can find me on <x>X</x>, <linkedin>LinkedIn</linkedin>, or reach me via <email>email</email>."
+      "p1": "I design interfaces for the computer and experiences for the people.",
+      "p2": "Four years in product design. Most recently <wordsmith>Wordsmith AI</wordsmith>, before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>.",
+      "p3": "I think about interfaces and <i>what tickles us</i>. Research to find <i>the whys</i>, then obsess over details.",
+      "p4": "Building something <i>simple, but better</i>."
     },
-    "devBio": "Hi, I'm a designer based in Edinburgh.\n\nMost recently I worked on <wordsmith>Wordsmith AI</wordsmith>, and before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>. I have a master's in design and a bachelor's in computer engineering.\n\nI design interfaces for the computer and experiences for the people, and I'm building something <i>simple, but better</i>.",
-    "devBioHero": "Hi, I'm a designer based in Edinburgh.\n\nMost recently I worked on <wordsmith>Wordsmith AI</wordsmith>, and before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>. I have a master's in design and a bachelor's in computer engineering.\n\nI design interfaces for the computer and experiences for the people, and I'm building something <i>simple, but better</i>.",
+    "devBio": "Hi, I'm a designer based in Edinburgh.\n\nMost recently I worked on <wordsmith>Wordsmith AI</wordsmith>, and before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>. I came to design from computer engineering.\n\nI design interfaces for the computer and experiences for the people, and I'm building something <i>simple, but better</i>.",
+    "devBioHero": "Hi, I'm a designer based in Edinburgh.\n\nMost recently I worked on <wordsmith>Wordsmith AI</wordsmith>, and before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>. I came to design from computer engineering.\n\nI design interfaces for the computer and experiences for the people, and I'm building something <i>simple, but better</i>.",
     "location": "Hi, I'm a designer based in Edinburgh",
+    "basedIn": "Based in Edinburgh",
     "available": "Available for work",
     "availableOpportunities": "Available for opportunities",
     "loadingPortfolio": "Loading Dev's Portfolio",
@@ -42,7 +48,7 @@
     "connect": "Connect",
     "connectPost": {
       "name": "Dev MD",
-      "handle": "@mddevadhathan",
+      "handle": "@MDdevaD",
       "body": "Connect with me on LinkedIn or X — let’s build something great 💪"
     },
     "designPreferences": "Design Preferences",
@@ -89,7 +95,7 @@
       },
       "nesoi": {
         "title": "Nesoi.ai",
-        "description": "From form wizard to AI partner. Turning internal material into interactive training for enterprise teams.",
+        "description": "Raw file to finished video, in two moves.",
         "status": "2025"
       }
     },
@@ -120,7 +126,7 @@
       "title": "Wordsmith AI",
       "tag": "Latest experience",
       "year": "2026",
-      "description": "Designed contract review and workflow blueprint flows for in-house legal teams. Shipped end-to-end UX, partnering with legal engineers and developers, and ran the end-to-end discovery research behind it."
+      "description": "I worked as a product designer at Wordsmith AI. After research and internal prototyping, I shipped contract review and versioning. I ran discovery end to end and stayed close to legal engineers through launch. Contact me for the deeper case study."
     },
     "philosophy": {
       "userCenteredTitle": "User-Centered Design",
@@ -153,13 +159,14 @@
   },
   "work": {
     "title": "Work",
-    "heroLine": "Selected case studies.",
+    "heroLine": "All work.",
     "subtitle": "My projects",
     "loadingProject": "Loading project...",
     "loading": "Loading...",
     "viewCaseStudy": "View case study",
     "back": "Back",
     "projects": "Projects",
+    "onThisPage": "On this page",
     "sections": {
       "designGallery": "Design gallery",
       "problem": "Problem",

@@ -36,7 +36,9 @@ import { ProgressiveBlurTop } from '@/components/progressive-blur-top';
 import { navPillTransition } from '@/lib/motion';
 import { playAfterActivation } from '@/lib/sound';
 import { MenubarClock } from '@/components/desktop-os/menubar-clock';
-import { WallpaperPicker } from '@/components/desktop-os/wallpaper-picker';
+import { MenuBar } from '@/components/desktop-os/menu-bar';
+import { ControlCenter } from '@/components/desktop-os/control-center';
+import { MenubarOpenApps } from '@/components/desktop-os/menubar-open-apps';
 import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
 
 const MobileSidebar = dynamic(
@@ -175,7 +177,12 @@ export function TopBar() {
       )}
     >
       {osEnabled ? null : <ProgressiveBlurTop heightClassName="h-20 sm:h-24" />}
-      <div className="relative z-10 w-full px-3 md:px-5 lg:px-6">
+      <div
+        className={cn(
+          'relative z-10 w-full',
+          osEnabled ? 'pl-3 pr-3 md:px-5 lg:px-6' : 'px-3 md:px-5 lg:px-6',
+        )}
+      >
         <div
           className={cn(
             'relative flex items-center justify-between',
@@ -229,7 +236,9 @@ export function TopBar() {
                 </Sheet>
               </div>
             )}
-            <div className="relative flex min-w-0 items-center gap-1 sm:gap-2">
+            <div className="relative flex h-full min-w-0 items-center gap-1 sm:gap-2">
+              {osEnabled ? <MenuBar /> : null}
+              {!osEnabled ? (
               <button
                 type="button"
                 onClick={handleLogoClick}
@@ -248,71 +257,8 @@ export function TopBar() {
                   priority
                 />
               </button>
-
-              {osEnabled ? (
-                <nav
-                  className="os-logo-menu ml-0.5 hidden max-w-[min(100%,18rem)] items-center gap-0 overflow-x-auto sm:ml-1 sm:max-w-none sm:gap-0.5 lg:flex"
-                  aria-label="Desktop menu"
-                >
-                  <button
-                    type="button"
-                    data-cuelume-hover="tick"
-                    data-cuelume-press
-                    onClick={handleOsPlayground}
-                    aria-current={playgroundActive ? 'page' : undefined}
-                    className={cn(
-                      'rounded-md px-2.5 py-1 text-[13px] font-medium transition-colors',
-                      focusRing,
-                      playgroundActive
-                        ? 'text-foreground'
-                        : 'text-foreground/70 hover:bg-secondary/40 hover:text-foreground',
-                    )}
-                  >
-                    {t('playground')}
-                  </button>
-
-                  <DropdownMenu
-                    open={menubarMenu === 'caseStudies'}
-                    onOpenChange={setExclusiveMenu('caseStudies')}
-                  >
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        type="button"
-                        data-cuelume-hover="tick"
-                        data-cuelume-press
-                        className={cn(
-                          'inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[13px] font-medium text-foreground/70 transition-colors hover:bg-secondary/40 hover:text-foreground',
-                          focusRing,
-                        )}
-                      >
-                        {t('caseStudies')}
-                        <ChevronDown className="h-3 w-3 opacity-70" aria-hidden />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="start"
-                      className="max-h-[min(70vh,28rem)] w-64 overflow-y-auto border border-border bg-card"
-                    >
-                      {projects.map((project) => {
-                        const projectId = getProjectId(project.title);
-                        return (
-                          <DropdownMenuItem
-                            key={projectId}
-                            data-cuelume-hover="tick"
-                            onClick={() => handleOsCaseStudy(projectId)}
-                            className="flex cursor-pointer flex-col items-start gap-0.5 py-2"
-                          >
-                            <span className="text-sm font-medium">{project.title}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {project.company || project.type || project.period}
-                            </span>
-                          </DropdownMenuItem>
-                        );
-                      })}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </nav>
               ) : null}
+
             </div>
           </div>
 
@@ -374,11 +320,17 @@ export function TopBar() {
               </Button>
             ) : null}
             {osEnabled ? (
-              <WallpaperPicker
-                open={menubarMenu === 'wallpaper'}
-                onOpenChange={setExclusiveMenu('wallpaper')}
-              />
+              <>
+                <MenubarOpenApps />
+                <ControlCenter
+                  open={menubarMenu === 'wallpaper'}
+                  onOpenChange={setExclusiveMenu('wallpaper')}
+                  onOpenMore={() => desktopOs?.openWindow('photos', { syncUrl: false })}
+                />
+              </>
             ) : null}
+            {/* Themes live in the control centre's Appearance row when OS chrome is on */}
+            {!osEnabled ? (
             <DropdownMenu
               open={menubarMenu === 'theme'}
               onOpenChange={setExclusiveMenu('theme')}
@@ -403,7 +355,7 @@ export function TopBar() {
                       const IconComponent = currentTheme.icon;
                       return <IconComponent className="h-4 w-4 text-primary" />;
                     }
-                    if (currentTheme?.color && 'letter' in currentTheme && currentTheme.letter) {
+                    if (currentTheme?.color && 'letter' in currentTheme && typeof currentTheme.letter === 'string') {
                       return (
                         <div
                           className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-black/80"
@@ -411,6 +363,14 @@ export function TopBar() {
                         >
                           {currentTheme.letter}
                         </div>
+                      );
+                    }
+                    if (currentTheme?.id === 'clear') {
+                      return (
+                        <div
+                          className="h-4 w-4 rounded-full border border-foreground/45 bg-foreground/15 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.35)]"
+                          aria-hidden
+                        />
                       );
                     }
                     if (currentTheme?.color) {
@@ -421,7 +381,7 @@ export function TopBar() {
                   <span className="hidden sm:inline">{allThemes.find((item) => item.id === theme)?.name ?? 'Theme'}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-44 border border-border bg-card">
+              <DropdownMenuContent align="end" className="w-44">
                 {allThemes.map((item) => {
                   const IconComponent = item.icon;
                   return (
@@ -434,7 +394,12 @@ export function TopBar() {
                       <div className="flex items-center gap-2">
                         {IconComponent ? (
                           <IconComponent className="h-3.5 w-3.5" />
-                        ) : item.color && 'letter' in item && item.letter ? (
+                        ) : item.id === 'clear' ? (
+                          <div
+                            className="h-3 w-3 rounded-full border border-foreground/45 bg-foreground/15 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.35)]"
+                            aria-hidden
+                          />
+                        ) : item.color && 'letter' in item && typeof item.letter === 'string' ? (
                           <div
                             className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-black/80"
                             style={{ backgroundColor: item.color }}
@@ -451,7 +416,9 @@ export function TopBar() {
                 })}
               </DropdownMenuContent>
             </DropdownMenu>
-            <SoundToggle variant="inline" />
+            ) : null}
+            {/* Sound lives in the control centre when the OS chrome is on */}
+            {!osEnabled ? <SoundToggle variant="inline" /> : null}
             {osEnabled ? <MenubarClock /> : null}
           </div>
         </div>
