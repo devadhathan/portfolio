@@ -1666,24 +1666,26 @@ html.light .os-dock__divider {
     --os-traffic-fill: hsl(0 0% 38% / 0.55);
   }
 
+  /* Zoom stays an empty disc on touch — windows already fill the stage. */
   .os-window-traffic-group .os-window-traffic--zoom {
-    --os-traffic-fill: #009e87;
+    --os-traffic-fill: hsl(0 0% 38% / 0.55);
   }
 
-  .os-window-traffic-group .os-window-traffic__glyph {
+  .os-window-traffic-group .os-window-traffic--close .os-window-traffic__glyph {
     opacity: 1;
+  }
+
+  .os-window-traffic-group .os-window-traffic--zoom .os-window-traffic__glyph {
+    opacity: 0;
   }
 
   html.light .os-window-traffic-group .os-window-traffic--close {
     --os-traffic-fill: #f13342;
   }
 
-  html.light .os-window-traffic-group .os-window-traffic--idle {
-    --os-traffic-fill: hsl(0 0% 72% / 0.7);
-  }
-
+  html.light .os-window-traffic-group .os-window-traffic--idle,
   html.light .os-window-traffic-group .os-window-traffic--zoom {
-    --os-traffic-fill: #009e87;
+    --os-traffic-fill: hsl(0 0% 72% / 0.7);
   }
 }
 

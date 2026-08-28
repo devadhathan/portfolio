@@ -552,9 +552,10 @@ function ItemViews({
  * Finder — Favourites sidebar + color Tags (right-click to assign).
  */
 export function FinderWindowBody() {
-  const { recents, finderLocation, setFinderLocation } = useDesktopOs();
+  const { recents, finderLocation, setFinderLocation, isNarrow } = useDesktopOs();
   const titles = useWindowTitles();
-  const [view, setView] = useState<ViewMode>('grid');
+  // Narrow windows fit far fewer icons per row, so rows read better than a grid.
+  const [view, setView] = useState<ViewMode>(isNarrow ? 'list' : 'grid');
   const [itemTags, setItemTags] = useState<ItemTagsMap>({});
   const [ctxMenu, setCtxMenu] = useState<{
     x: number;
@@ -562,8 +563,21 @@ export function FinderWindowBody() {
     item: FinderItem;
   } | null>(null);
 
+  const viewPickedRef = useRef(false);
+
   useEffect(() => {
     setItemTags(readItemTags());
+  }, []);
+
+  // isNarrow only resolves after mount, so follow it until the user picks a view.
+  useEffect(() => {
+    if (viewPickedRef.current) return;
+    setView(isNarrow ? 'list' : 'grid');
+  }, [isNarrow]);
+
+  const pickView = useCallback((next: ViewMode) => {
+    viewPickedRef.current = true;
+    setView(next);
   }, []);
 
   // Drop removed custom tags if a stale location was restored.
@@ -686,7 +700,7 @@ export function FinderWindowBody() {
                   : 'text-muted-foreground hover:text-foreground/80',
                 focusRing,
               )}
-              onClick={() => setView('grid')}
+              onClick={() => pickView('grid')}
             >
               <LayoutGrid className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
             </button>
@@ -702,7 +716,7 @@ export function FinderWindowBody() {
                   : 'text-muted-foreground hover:text-foreground/80',
                 focusRing,
               )}
-              onClick={() => setView('list')}
+              onClick={() => pickView('list')}
             >
               <List className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
             </button>
