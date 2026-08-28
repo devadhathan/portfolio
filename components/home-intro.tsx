@@ -3,7 +3,6 @@
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSiteContent } from '@/components/site-content-provider';
-import { X_PROFILE_URL } from '@/lib/social-links';
 import { cn } from '@/lib/utils';
 
 /** Kept for call sites that still gate on “intro play” — always ready under boot. */
@@ -62,7 +61,6 @@ export function HomeIntro({ className }: HomeIntroProps) {
   const contactLinks = [
     { label: 'LinkedIn', href: linkedinUrl, external: true },
     { label: 'Email', href: emailHref, external: false },
-    { label: 'X', href: X_PROFILE_URL, external: true },
   ] as const;
 
   return (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense, type ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
@@ -21,6 +21,32 @@ import { useCaseStudyTracking } from '@/hooks/use-case-study-tracking';
 import { useCaseStudyDocumentTitle } from '@/hooks/use-case-study-document-title';
 import { buildCaseStudySections } from '@/lib/case-study-sections';
 import { CaseStudyOnPageNav } from '@/components/case-study-on-page-nav';
+import { useCardHoverGlow } from '@/components/card-hover-glow';
+
+/** Work grid card — dim resting border, cursor spotlight highlights only the hovered edge. */
+function WorkProjectCard({
+  onClick,
+  children,
+}: {
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  const { glow, glowHandlers } = useCardHoverGlow();
+
+  return (
+    <Card
+      data-cuelume-hover="tick"
+      data-cuelume-press
+      data-cuelume-release
+      {...glowHandlers}
+      className="relative rounded-xl border border-border/35 bg-transparent text-foreground cursor-pointer group overflow-hidden h-full flex flex-col dark:border-white/[0.18]"
+      onClick={onClick}
+    >
+      {glow}
+      {children}
+    </Card>
+  );
+}
 
 const ProjectDetailView = dynamic(
   () => import('@/components/project-detail-view').then(mod => ({ default: mod.ProjectDetailView })),
@@ -332,19 +358,13 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                             ease: easeOutExpo,
                           }}
                         >
-                          <Card
-                            data-cuelume-hover="tick"
-                            data-cuelume-press
-                            data-cuelume-release
-                            className="rounded-xl border border-border/75 bg-transparent text-foreground cursor-pointer hover:border-border transition-all group overflow-hidden h-full flex flex-col dark:border-border/60 dark:hover:border-border/85"
-                            onClick={() => setSelectedProject(projectId)}
-                          >
-                            <div className="flex min-h-0 flex-1 flex-col">
+                          <WorkProjectCard onClick={() => setSelectedProject(projectId)}>
+                            <div className="relative z-[2] flex min-h-0 flex-1 flex-col">
                               <div
                                 className={
                                   embedded
-                                    ? 'os-work-card__media relative min-h-0 w-full flex-1 overflow-hidden border-b border-border/50 bg-transparent'
-                                    : 'relative w-full h-52 md:h-60 lg:h-64 bg-transparent border-b border-border/50 overflow-hidden flex-shrink-0'
+                                    ? 'os-work-card__media relative min-h-0 w-full flex-1 overflow-hidden border-b border-border/35 bg-transparent dark:border-white/[0.18]'
+                                    : 'relative w-full h-52 md:h-60 lg:h-64 bg-transparent border-b border-border/35 dark:border-white/[0.18] overflow-hidden flex-shrink-0'
                                 }
                               >
                                 <Image
@@ -379,7 +399,7 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                                 </p>
                               </CardContent>
                             </div>
-                          </Card>
+                          </WorkProjectCard>
                         </motion.div>
                       );
                     })}
@@ -400,19 +420,15 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                           ease: easeOutExpo,
                         }}
                       >
-                        <Card
-                          data-cuelume-hover="tick"
-                          data-cuelume-press
-                          data-cuelume-release
-                          className="rounded-xl border border-border/75 bg-transparent text-foreground cursor-pointer hover:border-border transition-all group overflow-hidden h-full flex flex-col dark:border-border/60 dark:hover:border-border/85"
+                        <WorkProjectCard
                           onClick={() => setSelectedProject(getProjectId(finshotsProject.title))}
                         >
-                          <div className="flex min-h-0 flex-1 flex-col">
+                          <div className="relative z-[2] flex min-h-0 flex-1 flex-col">
                             <div
                               className={
                                 embedded
-                                  ? 'os-work-card__media os-work-card__media--tall relative min-h-0 w-full flex-1 overflow-hidden border-b border-border/50 bg-transparent'
-                                  : 'relative w-full h-52 sm:h-64 md:h-80 lg:h-[28rem] bg-transparent border-b border-border/50 overflow-hidden flex-shrink-0'
+                                  ? 'os-work-card__media os-work-card__media--tall relative min-h-0 w-full flex-1 overflow-hidden border-b border-border/35 bg-transparent dark:border-white/[0.18]'
+                                  : 'relative w-full h-52 sm:h-64 md:h-80 lg:h-[28rem] bg-transparent border-b border-border/35 dark:border-white/[0.18] overflow-hidden flex-shrink-0'
                               }
                             >
                               <Image
@@ -447,7 +463,7 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                               </p>
                             </CardContent>
                           </div>
-                        </Card>
+                        </WorkProjectCard>
                       </motion.div>
                     )}
                   </>

@@ -28,14 +28,13 @@
   },
   "home": {
     "digitalHome": "Dev's digital home",
-    "heroLine1": "I'm Dev, a product designer who builds products.",
+    "heroLine1": "Dev is a designer crafting from pixels to code.",
     "intro": {
       "name": "Devadhathan M D",
       "role": "Product designer",
-      "p1": "I design interfaces for the computer and experiences for the people.",
-      "p2": "Four years in product design. Most recently <wordsmith>Wordsmith AI</wordsmith>, before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>.",
-      "p3": "I think about interfaces and <i>what tickles us</i>. Research to find <i>the whys</i>, then obsess over details.",
-      "p4": "Building something <i>simple, but better</i>."
+      "p1": "Designing interfaces and experiences for people, four years and counting. Most recently at <wordsmith>Wordsmith AI</wordsmith>, before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>.",
+      "p2": "Researching to find the whys, obsessing over the details, then shipping it.",
+      "p3": "Always building. Simple, but better."
     },
     "devBio": "Hi, I'm a designer based in Edinburgh.\n\nMost recently I worked on <wordsmith>Wordsmith AI</wordsmith>, and before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>. I came to design from computer engineering.\n\nI design interfaces for the computer and experiences for the people, and I'm building something <i>simple, but better</i>.",
     "devBioHero": "Hi, I'm a designer based in Edinburgh.\n\nMost recently I worked on <wordsmith>Wordsmith AI</wordsmith>, and before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>. I came to design from computer engineering.\n\nI design interfaces for the computer and experiences for the people, and I'm building something <i>simple, but better</i>.",
@@ -49,7 +48,7 @@
     "connectPost": {
       "name": "Dev MD",
       "handle": "@MDdevaD",
-      "body": "Connect with me on LinkedIn or X — let’s build something great 💪"
+      "body": "Connect with me on LinkedIn or email — let’s build something great 💪"
     },
     "designPreferences": "Design Preferences",
     "designPhilosophy": "Design Philosophy",

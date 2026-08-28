@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, type ReactNode } from 'react';
 import { MoreHorizontal } from 'lucide-react';
-import { XLogo } from '@/components/x-logo';
-import { X_PROFILE_URL } from '@/lib/social-links';
 import { cn } from '@/lib/utils';
 
 const CONNECT_PREVIEW_POSTER = '/videos/connect-preview-poster.webp';
@@ -31,7 +29,7 @@ export function ConnectMiniPost({
   handle,
   avatarSrc,
   body,
-  profileHref = X_PROFILE_URL,
+  profileHref = 'https://www.linkedin.com/in/devadhathan/',
   videoSrc = '/videos/connect-preview.mp4',
   videoPoster = CONNECT_PREVIEW_POSTER,
   className,
@@ -144,7 +142,7 @@ export function ConnectMiniPost({
             href={profileHref}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Open on X"
+            aria-label="More options"
             className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground/50 transition-colors hover:bg-secondary/40 hover:text-muted-foreground"
           >
             <MoreHorizontal className="h-4 w-4" strokeWidth={1.75} />

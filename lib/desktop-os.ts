@@ -201,7 +201,7 @@ export function pathToWindowId(pathname: string): DesktopWindowId {
   return 'home';
 }
 
-export const DESKTOP_OS_ICON_STORAGE_KEY = 'portfolio-desktop-os-icons-v13';
+export const DESKTOP_OS_ICON_STORAGE_KEY = 'portfolio-desktop-os-icons-v14';
 export const DESKTOP_OS_WALLPAPER_KEY = 'portfolio-desktop-os-wallpaper-v10';
 
 /** One visible window at a time. */
@@ -338,22 +338,24 @@ const NARROW_ROW = 100;
 const NARROW_START_Y = 40;
 
 /**
- * Desktop icons sit on the right — primary apps live in the bottom dock.
- * Visible rail (top → bottom): Ask AI → Favourites → Draw → Trash.
+ * While the dock is parked its apps sit on the left rail
+ * (Home → Work → Playground → Photos); everything else stays on the right
+ * rail as before (Ask AI → Favourites → Draw → Trash).
  */
 export const DEFAULT_ICON_POSITIONS: Record<DesktopIconId, DesktopIconPosition> = {
-  // Visible right-rail stack
+  // Left rail — former dock apps
+  home: { x: COL_INSET, y: START_Y, edge: 'left' },
+  work: { x: COL_INSET, y: START_Y + ROW, edge: 'left' },
+  playground: { x: COL_INSET, y: START_Y + ROW * 2, edge: 'left' },
+  photos: { x: COL_INSET, y: START_Y + ROW * 3, edge: 'left' },
+  // Right rail — unchanged
   ask: { x: COL_INSET, y: START_Y, edge: 'right' },
   writings: { x: COL_INSET, y: START_Y + ROW, edge: 'right' },
   drawesome: { x: COL_INSET, y: START_Y + ROW * 2, edge: 'right' },
   trash: { x: COL_INSET, y: START_Y + ROW * 3, edge: 'right' },
-  // Dock / menu apps — kept for layout typing, not shown on the rail
+  // Menu / Finder-only apps — kept for layout typing, not shown on the desktop
   finder: { x: COL_INSET, y: START_Y, edge: 'right' },
-  home: { x: COL_INSET, y: START_Y, edge: 'right' },
-  work: { x: COL_INSET, y: START_Y + ROW, edge: 'right' },
-  playground: { x: COL_INSET, y: START_Y + ROW * 2, edge: 'right' },
   games: { x: COL_INSET, y: START_Y + ROW * 3, edge: 'right' },
-  photos: { x: COL_INSET, y: START_Y + ROW, edge: 'right' },
   contact: { x: COL_INSET, y: START_Y + ROW * 3, edge: 'right' },
   catalystic: { x: COL_INSET, y: START_Y + ROW * 4, edge: 'right' },
   bigBang: { x: COL_INSET, y: START_Y + ROW * 5, edge: 'right' },
@@ -362,18 +364,18 @@ export const DEFAULT_ICON_POSITIONS: Record<DesktopIconId, DesktopIconPosition> 
   colophon: { x: COL_INSET, y: START_Y + ROW * 6, edge: 'right' },
 };
 
-/** Fixed compact right rail for phone / tablet OS (no drag). Dock holds primaries. */
+/** Fixed compact rails for phone / tablet OS (no drag). */
 export const NARROW_ICON_POSITIONS: Record<DesktopIconId, DesktopIconPosition> = {
+  home: { x: NARROW_COL_INSET, y: NARROW_START_Y, edge: 'left' },
+  work: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW, edge: 'left' },
+  playground: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 2, edge: 'left' },
+  photos: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 3, edge: 'left' },
   ask: { x: NARROW_COL_INSET, y: NARROW_START_Y, edge: 'right' },
   writings: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW, edge: 'right' },
   drawesome: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 2, edge: 'right' },
   trash: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 3, edge: 'right' },
   finder: { x: NARROW_COL_INSET, y: NARROW_START_Y, edge: 'right' },
-  home: { x: NARROW_COL_INSET, y: NARROW_START_Y, edge: 'right' },
-  work: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW, edge: 'right' },
-  playground: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 2, edge: 'right' },
   games: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 3, edge: 'right' },
-  photos: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW, edge: 'right' },
   contact: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 3, edge: 'right' },
   catalystic: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 4, edge: 'right' },
   bigBang: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 5, edge: 'right' },

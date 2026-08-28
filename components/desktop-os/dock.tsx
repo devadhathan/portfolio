@@ -47,7 +47,6 @@ const PRIMARY_DOCK_ITEMS: DockItem[] = [
   { id: 'home', src: '/icons/home.svg', syncUrl: true },
   { id: 'work', src: '/icons/briefcase.svg', syncUrl: true },
   { id: 'playground', src: '/icons/playgroundd.svg', syncUrl: true },
-  { id: 'contact', src: '/icons/mailbox.svg' },
 ];
 
 /** Trailing dock apps — right of the divider. */
@@ -199,6 +198,7 @@ function DockIcon({
         compact && 'os-dock__item--compact',
         focusRing,
       )}
+      data-os-icon={item.id}
       initial="rest"
       whileHover="hover"
       whileFocus="hover"
@@ -497,8 +497,15 @@ export function Dock() {
     // Mobile: no magnification wave — keeps the dock compact; labels still show on press.
     if (reduceMotion || isNarrow) return;
     hoveringRef.current = true;
-    // Write the motion value immediately — Framer springs sample next frame.
     mouseX.set(e.clientX);
+    // Recapture at most once per frame while the gap/padding spring settles —
+    // trailing icons (e.g. Photos) otherwise magnify off a stale center.
+    if (!rafRef.current) {
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = 0;
+        if (hoveringRef.current) captureCenters();
+      });
+    }
   };
 
   const onDockEnter = () => {

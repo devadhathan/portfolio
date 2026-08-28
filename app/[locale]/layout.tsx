@@ -129,7 +129,7 @@ export default async function LocaleLayout({
   return (
     <html
       lang={locale}
-      className="dark"
+      className="clear"
       data-os-menubar="light"
       suppressHydrationWarning
     >

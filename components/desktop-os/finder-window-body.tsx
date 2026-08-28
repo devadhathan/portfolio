@@ -123,8 +123,14 @@ const DOCUMENTS: FinderItem[] = [
   },
 ];
 
-/** Desktop Favourites folder — Medium, Games, and side projects. */
+/** Desktop Favourites folder — Contact, Medium, Games, and side projects. */
 const FAVOURITES: FinderItem[] = [
+  {
+    id: 'contact',
+    label: 'Contact',
+    src: '/icons/mailbox.svg',
+    openId: 'contact',
+  },
   {
     id: 'medium',
     label: 'Medium',

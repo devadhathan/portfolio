@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { PlaygroundItemMedia } from '@/components/playground-phone-frame';
+import { useCardHoverGlow } from '@/components/card-hover-glow';
 import type { PlaygroundItem } from '@/lib/playground-items';
 
 type PlaygroundCraftCardProps = {
@@ -20,6 +21,8 @@ export function PlaygroundCraftCard({
   onOpen,
   className,
 }: PlaygroundCraftCardProps) {
+  const { glow, glowHandlers } = useCardHoverGlow();
+
   return (
     <button
       type="button"
@@ -28,17 +31,19 @@ export function PlaygroundCraftCard({
       data-cuelume-hover="page"
       data-cuelume-press
       data-cuelume-release
+      {...glowHandlers}
       className={cn(
-        'group flex h-full min-h-[320px] w-full flex-col overflow-hidden rounded-2xl border border-border/55 bg-transparent text-left transition-colors hover:border-border/80 sm:min-h-[420px] dark:border-border/40',
+        'group relative flex h-full min-h-[320px] w-full flex-col overflow-hidden rounded-2xl border border-border/35 bg-transparent text-left sm:min-h-[420px] dark:border-white/[0.18]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
         className,
       )}
     >
-      <div className="flex flex-1 items-center justify-center bg-transparent px-4 py-8 sm:px-5 sm:py-10">
+      {glow}
+      <div className="relative z-[2] flex flex-1 items-center justify-center bg-transparent px-4 py-8 sm:px-5 sm:py-10">
         <PlaygroundItemMedia item={item} accessibilityLabel={accessibilityLabel} size="preview" />
       </div>
 
-      <div className="flex items-center justify-between gap-3 border-t border-border/50 bg-transparent px-4 py-3">
+      <div className="relative z-[2] flex items-center justify-between gap-3 border-t border-border/35 bg-transparent px-4 py-3 dark:border-white/[0.18]">
         <span className="truncate text-[13px] font-medium tracking-tight text-foreground">
           {title}
         </span>

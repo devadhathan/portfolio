@@ -10,9 +10,9 @@ import {
 } from 'react';
 import { cn } from '@/lib/utils';
 
-/** Matches Misc home cards — thin border that brightens on hover. */
+/** Matches Misc home cards — dim resting border; the cursor spotlight does the highlight. */
 export const HOME_CARD_BORDER =
-  'rounded-lg border border-border/55 transition-[border-color] duration-500 ease-out hover:border-border/80 dark:border-border/40 dark:hover:border-border/70';
+  'rounded-lg border border-border/35 dark:border-white/[0.18]';
 
 type CardHoverGlowOverlayProps = {
   x: number;
@@ -32,7 +32,7 @@ export function CardHoverGlowOverlay({
     <div
       className={cn('pointer-events-none absolute inset-0 z-[1] rounded-[inherit]', className)}
       style={{
-        border: '1px solid hsl(var(--primary) / 0.5)',
+        border: '1px solid hsl(var(--foreground) / 0.8)',
         WebkitMaskImage: `radial-gradient(circle ${radius}px at ${x}px ${y}px, black 30%, transparent 75%)`,
         maskImage: `radial-gradient(circle ${radius}px at ${x}px ${y}px, black 30%, transparent 75%)`,
       }}

@@ -1,17 +1,18 @@
 'use client';
 
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Briefcase, Github, Globe, Linkedin, Mail } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { useTranslations } from 'next-intl';
 import { CardHoverGlow } from '@/components/card-hover-glow';
 import { ConnectMiniPost } from '@/components/connect-mini-post';
-import { XLogo } from '@/components/x-logo';
-import { X_PROFILE_URL } from '@/lib/social-links';
 import { useSiteContent } from '@/components/site-content-provider';
 import { cn } from '@/lib/utils';
 
 const ASCII_PREVIEW_SRC = '/videos/ascii-preview.mp4';
 const ASCII_PREVIEW_POSTER = '/videos/ascii-preview-poster.webp';
+/** Light theme — static portrait instead of the ASCII loop. */
+const LIGHT_PORTRAIT_SRC = '/photos/case-study-bg/me-with-floor-white.png';
 
 function introLink(href: string, chunks: ReactNode) {
   return (
@@ -71,7 +72,21 @@ function DeferredAsciiPreview({ className }: { className?: string }) {
   );
 }
 
-const LINE_KEYS = ['p1', 'p2', 'p3', 'p4'] as const;
+function LightPortrait({ className }: { className?: string }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={LIGHT_PORTRAIT_SRC}
+      alt="Portrait of Dev"
+      className={className}
+      decoding="async"
+      loading="lazy"
+      draggable={false}
+    />
+  );
+}
+
+const LINE_KEYS = ['p1', 'p2', 'p3'] as const;
 
 type HomeHeroProps = {
   className?: string;
@@ -81,6 +96,14 @@ export function HomeHero({ className }: HomeHeroProps) {
   const t = useTranslations('home.intro');
   const tHome = useTranslations('home');
   const { settings } = useSiteContent();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const useLightPortrait = mounted && resolvedTheme === 'light';
 
   const linkedinUrl = settings.linkedin?.startsWith('http')
     ? settings.linkedin
@@ -103,11 +126,6 @@ export function HomeHero({ className }: HomeHeroProps) {
       label: 'Email',
       href: emailHref,
       icon: <Mail className="h-4 w-4" />,
-    },
-    {
-      label: 'X',
-      href: X_PROFILE_URL,
-      icon: <XLogo className="h-3.5 w-3.5" />,
     },
     {
       label: 'LinkedIn',
@@ -151,7 +169,11 @@ export function HomeHero({ className }: HomeHeroProps) {
           </div>
 
           <div className="home-hero__ascii relative z-[2]">
-            <DeferredAsciiPreview className="home-hero__ascii-video" />
+            {useLightPortrait ? (
+              <LightPortrait className="home-hero__ascii-video home-hero__ascii-portrait" />
+            ) : (
+              <DeferredAsciiPreview className="home-hero__ascii-video" />
+            )}
           </div>
         </CardHoverGlow>
 
@@ -162,7 +184,7 @@ export function HomeHero({ className }: HomeHeroProps) {
               handle={tHome('connectPost.handle')}
               avatarSrc="/photos/sideprojects/avatar-face.jpg"
               body={tHome('connectPost.body')}
-              profileHref={X_PROFILE_URL}
+              profileHref={linkedinUrl}
               socialLinks={socialLinks}
               flushMedia
               className="home-hero__connect-inner min-h-0 sm:min-h-0 h-full"

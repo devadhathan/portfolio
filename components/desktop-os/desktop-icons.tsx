@@ -17,17 +17,26 @@ import {
 import { prefetchDesktopWindow } from '@/components/desktop-os/window-bodies';
 import { cn, focusRing } from '@/lib/utils';
 
-/** Right-rail apps — Photos/Contact live in the bottom dock with primary apps. */
-const APP_ICON_IDS = ['ask'] as const;
+/**
+ * Desktop apps. While the dock is parked, the primary apps (Home / Work /
+ * Playground / Photos) live here alongside Ask AI.
+ */
+const APP_ICON_IDS = ['home', 'work', 'playground', 'photos', 'ask'] as const;
 const DESKTOP_RAIL_WINDOW_IDS = ['drawesome'] as const;
 type AppIconWindowId = (typeof APP_ICON_IDS)[number];
 type DesktopRailWindowId = (typeof DESKTOP_RAIL_WINDOW_IDS)[number];
 
 const APP_ICONS: {
   id: AppIconWindowId;
-  labelKey: 'askAI';
+  labelKey: 'home' | 'work' | 'playground' | 'photos' | 'askAI';
   src: string;
-}[] = [{ id: 'ask', labelKey: 'askAI', src: '/icons/sparkles.svg' }];
+}[] = [
+  { id: 'home', labelKey: 'home', src: '/icons/home.svg' },
+  { id: 'work', labelKey: 'work', src: '/icons/briefcase.svg' },
+  { id: 'playground', labelKey: 'playground', src: '/icons/playgroundd.svg' },
+  { id: 'photos', labelKey: 'photos', src: '/icons/image.svg' },
+  { id: 'ask', labelKey: 'askAI', src: '/icons/sparkles.svg' },
+];
 
 const RAIL_WINDOW_ICONS: {
   id: DesktopRailWindowId;
@@ -273,6 +282,7 @@ export function DesktopIcons(_props?: DesktopIconsProps) {
             key={item.id}
             type="button"
             data-cuelume-hover="tick"
+            data-os-icon={item.id}
             aria-label={label}
             className={cn(iconClass, isFocused && 'os-desktop-icon--active')}
             style={styleFor(item.id, pos)}
@@ -311,6 +321,7 @@ export function DesktopIcons(_props?: DesktopIconsProps) {
             key={item.id}
             type="button"
             data-cuelume-hover="tick"
+            data-os-icon={item.id}
             aria-label={item.label}
             className={cn(iconClass, isFocused && 'os-desktop-icon--active')}
             style={styleFor(item.id, pos)}
@@ -341,6 +352,7 @@ export function DesktopIcons(_props?: DesktopIconsProps) {
             key={item.id}
             type="button"
             data-cuelume-hover="tick"
+            data-os-icon={item.id}
             aria-label={label}
             className={cn(iconClass, isFocused && 'os-desktop-icon--active')}
             style={styleFor(item.id, pos)}
@@ -359,6 +371,7 @@ export function DesktopIcons(_props?: DesktopIconsProps) {
       <button
         type="button"
         data-cuelume-hover="tick"
+        data-os-icon="trash"
         aria-label="Trash"
         className={cn(
           iconClass,

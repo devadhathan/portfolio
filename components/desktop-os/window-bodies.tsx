@@ -15,7 +15,6 @@ import {
   type DesktopLinkIconId,
 } from '@/lib/desktop-os';
 import { trackEvent } from '@/lib/analytics';
-import { X_PROFILE_HANDLE, X_PROFILE_URL } from '@/lib/social-links';
 import { cn, focusRing } from '@/lib/utils';
 
 /**
@@ -341,12 +340,6 @@ export function ContactWindowBody() {
       detail: email,
       href: `mailto:${email}`,
       external: false,
-    },
-    {
-      label: 'X',
-      detail: X_PROFILE_HANDLE,
-      href: X_PROFILE_URL,
-      external: true,
     },
     {
       label: 'LinkedIn',

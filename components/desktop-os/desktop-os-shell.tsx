@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState, type ComponentType } from 'react';
+import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { useAskAI } from '@/components/ask-ai-provider';
 import { useDesktopOs } from '@/components/desktop-os/desktop-os-provider';
 import { OsWindow } from '@/components/desktop-os/os-window';
 import { WidgetsPanel } from '@/components/desktop-os/widgets-panel';
 import { DesktopIcons } from '@/components/desktop-os/desktop-icons';
-import { Dock } from '@/components/desktop-os/dock';
+import { ShortcutBar } from '@/components/desktop-os/shortcut-bar';
 import { BridgeWaterSurface } from '@/components/desktop-os/bridge-water-surface';
 import { DevOsWelcomeToast } from '@/components/desktop-os/dev-os-welcome-widget';
 import {
@@ -33,6 +34,18 @@ import {
   OS_WALLPAPER_CSS_VAR,
   type DesktopWindowId,
 } from '@/lib/desktop-os';
+
+/**
+ * Dock is temporarily parked — primary apps live on the left desktop rail and
+ * the bottom shortcut pill. Flip back to `true` to restore the bottom dock.
+ * Loaded lazily so the parked implementation stays out of the shell chunk.
+ */
+const SHOW_DOCK = false;
+
+const Dock = dynamic(
+  () => import('@/components/desktop-os/dock').then((m) => ({ default: m.Dock })),
+  { ssr: false },
+);
 
 /** Keep Cmd/Ctrl+I Ask AI toggle in sync with the Ask OS window. */
 function AskWindowBridge() {
@@ -220,6 +233,16 @@ export function DesktopOsShell() {
   const dimmed = DESKTOP_WINDOW_IDS.some((id) => windows[id].open && windows[id].covered);
   const anyWindowOpen = DESKTOP_WINDOW_IDS.some((id) => windows[id].open);
 
+  // Menubar lives outside this subtree — flag <html> so it can hide in fullscreen.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (dimmed) root.dataset.osCovered = 'true';
+    else delete root.dataset.osCovered;
+    return () => {
+      delete root.dataset.osCovered;
+    };
+  }, [dimmed]);
+
   return (
     <div
       className={
@@ -229,6 +252,7 @@ export function DesktopOsShell() {
       }
       data-os-dimmed={dimmed ? 'true' : undefined}
       data-os-window-open={anyWindowOpen ? 'true' : undefined}
+      data-os-dock={SHOW_DOCK ? undefined : 'hidden'}
       data-wallpaper-swapping={swapping ? 'true' : undefined}
     >
       <WallpaperLayers background={wallpaperBackground} onSwap={setSwapping} />
@@ -247,7 +271,7 @@ export function DesktopOsShell() {
           );
         })}
       </div>
-      <Dock />
+      {SHOW_DOCK ? <Dock /> : <ShortcutBar />}
       <DevOsWelcomeToast />
       <WidgetsPanel />
     </div>

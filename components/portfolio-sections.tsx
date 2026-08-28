@@ -16,8 +16,6 @@ import { HomeHero } from './home-hero';
 import { CaseStudiesList } from './case-studies-list';
 import { StatusPet } from './status-pet';
 import { CardHoverGlowOverlay, HOME_CARD_BORDER } from '@/components/card-hover-glow';
-import { XLogo } from '@/components/x-logo';
-import { X_PROFILE_URL } from '@/lib/social-links';
 import { useSiteContent } from '@/components/site-content-provider';
 import { useTheme } from '@/contexts/theme-context';
 import { useTranslations } from 'next-intl';
@@ -996,11 +994,6 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             icon: <Mail className="h-4 w-4" />,
           },
           {
-            label: 'X',
-            href: X_PROFILE_URL,
-            icon: <XLogo className="h-3.5 w-3.5" />,
-          },
-          {
             label: 'LinkedIn',
             href: linkedinUrl,
             icon: <Linkedin className="h-4 w-4" />,
@@ -1027,7 +1020,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                 handle={t('connectPost.handle')}
                 avatarSrc="/photos/sideprojects/avatar-face.jpg"
                 body={t('connectPost.body')}
-                profileHref={X_PROFILE_URL}
+                profileHref={linkedinUrl}
                 socialLinks={socialLinks}
               />
             </CardContent>
