@@ -210,14 +210,11 @@ export function ShortcutBar() {
       }}
     >
       {/*
-        Only the well's own box animates. Both layers stay mounted and are
+        Only the well's own box animates. The item layer stays mounted and is
         absolutely centered, so the icons never reflow mid-transition — that
         per-frame relayout was what made the row shimmer.
       */}
       <div className={cn('os-shortcut-bar__well', revealed && 'os-shortcut-bar__well--open')}>
-        <span className="os-shortcut-bar__layer os-shortcut-bar__layer--handle" aria-hidden>
-          <span className="os-shortcut-bar__handle" />
-        </span>
         <div className="os-shortcut-bar__layer os-shortcut-bar__layer--items">
           {SHORTCUT_ITEMS.map((item) => {
             const label = titles[item.id];

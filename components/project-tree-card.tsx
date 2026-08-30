@@ -152,7 +152,7 @@ function TreeRow({
 
       <span
         className={cn(
-          'min-w-0 flex-1 truncate text-[14px] leading-none',
+          'min-w-0 flex-1 truncate text-[15px] leading-none tracking-[-0.008em]',
           isActive ? 'text-primary-foreground' : 'text-foreground/80',
           showOpenHint && !isActive && 'group-hover/row:text-foreground',
         )}

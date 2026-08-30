@@ -23,7 +23,7 @@ function introLink(href: string, chunks: ReactNode) {
   );
 }
 
-const LINE_KEYS = ['p1', 'p2'] as const;
+const LINE_KEYS = ['p1'] as const;
 
 export const HOME_INTRO_LINE_STAGGER = 0.1;
 export const HOME_INTRO_LINE_DURATION = 0.42;
@@ -52,6 +52,7 @@ export function HomeIntro({ className }: HomeIntroProps) {
 
   const richTags = {
     i: (chunks: ReactNode) => <em className="italic">{chunks}</em>,
+    keep: (chunks: ReactNode) => <span className="home-hero__keep">{chunks}</span>,
     wordsmith: (chunks: ReactNode) => introLink('https://wordsmith.ai', chunks),
     nesoi: (chunks: ReactNode) => introLink('https://nesoi.ai', chunks),
     ditto: (chunks: ReactNode) => introLink('https://joinditto.in', chunks),

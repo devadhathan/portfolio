@@ -10,6 +10,13 @@ export type GenUIViewport = {
   status?: 'loading' | 'ready';
 };
 
+/** One conversation. Sidebar history lists these, not individual messages. */
+export type GenUIChat = {
+  id: string;
+  title: string;
+  viewports: GenUIViewport[];
+};
+
 type CreateGenUIViewportOptions = {
   title?: string;
   /** When true, summary is shown as-is (no fallback rewriting). */

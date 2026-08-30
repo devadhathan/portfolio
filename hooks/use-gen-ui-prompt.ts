@@ -223,7 +223,11 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
           : [];
 
         if (!shouldBuildViewport && enrichedItems.length === 0) {
-          const reply = (finalText || rawMessage).trim() || 'Something went wrong. Please try again.';
+          // No cards to show, so keep the model's own words — the canned
+          // narratives all reference cards that aren't there.
+          const reply =
+            (rawMessage || finalText).trim() ||
+            "I don't have that in Dev's portfolio. Ask about his projects, skills, career, or how to get in touch.";
           await finishViewport(reply, [], { rawSummary: true, title: '' });
           return;
         }
@@ -236,7 +240,11 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'Something went wrong. Please try again.';
-        onGenUIViewport?.(createGenUIViewport(trimmed, message, [], { id: pendingId }));
+        // rawSummary so the failure is shown as-is instead of being rewritten
+        // into portfolio narrative by formatLeadSummary.
+        onGenUIViewport?.(
+          createGenUIViewport(trimmed, message, [], { id: pendingId, rawSummary: true, title: '' }),
+        );
       } finally {
         setIsLoading(false);
         onAgentWorking?.(false);

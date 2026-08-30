@@ -1,17 +1,13 @@
 'use client';
 
 import { useEffect, useRef, type ReactNode } from 'react';
-import { MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const CONNECT_PREVIEW_POSTER = '/videos/connect-preview-poster.webp';
 
 type ConnectMiniPostProps = {
-  name: string;
-  handle: string;
-  avatarSrc: string;
+  title?: string;
   body: string;
-  profileHref?: string;
   videoSrc?: string;
   videoPoster?: string;
   className?: string;
@@ -25,11 +21,8 @@ type ConnectMiniPostProps = {
 };
 
 export function ConnectMiniPost({
-  name,
-  handle,
-  avatarSrc,
+  title,
   body,
-  profileHref = 'https://www.linkedin.com/in/devadhathan/',
   videoSrc = '/videos/connect-preview.mp4',
   videoPoster = CONNECT_PREVIEW_POSTER,
   className,
@@ -70,13 +63,28 @@ export function ConnectMiniPost({
   return (
     <div
       ref={rootRef}
-      className={cn('group/connect flex h-full min-h-[352px] flex-col overflow-hidden sm:min-h-[452px]', className)}
+      className={cn('group/connect flex h-full min-h-[400px] flex-col overflow-hidden sm:min-h-[480px]', className)}
       data-cuelume-card-hover
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="flex min-h-0 flex-1 flex-col px-4 pb-4 pt-4">
+      {/* No bottom padding — the preview sits flush against the card edge. */}
+      <div className="flex min-h-0 flex-1 flex-col p-[20px] pb-0">
+        <div className="space-y-1.5">
+          {title ? <p className="home-card-title">{title}</p> : null}
+          {paragraphs.map((paragraph, index) => (
+            <p
+              key={index}
+              // Balanced wrap keeps the two lines even instead of leaving a
+              // short orphan on the second row.
+              className="home-card-desc max-w-[34ch] whitespace-pre-wrap leading-[1.45] [text-wrap:balance]"
+            >
+              {paragraph}
+            </p>
+          ))}
+        </div>
+
         {socialLinks && socialLinks.length > 0 ? (
-          <div className="relative z-20 mb-auto flex items-center gap-2">
+          <div className="relative z-20 mt-4 flex items-center gap-2">
             {socialLinks.map((link, index) => {
               const tooltip = link.href.startsWith('mailto:')
                 ? link.href.replace(/^mailto:/, '')
@@ -112,64 +120,11 @@ export function ConnectMiniPost({
           </div>
         ) : null}
 
-        <div className="mt-5 flex items-start justify-between gap-3 sm:mt-6">
-          <a
-            href={profileHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-cuelume-hover="tick"
-            className="flex min-w-0 items-center gap-2"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={avatarSrc}
-              alt={name}
-              width={36}
-              height={36}
-              decoding="async"
-              className="h-9 w-9 shrink-0 rounded-full object-cover object-[center_20%] ring-1 ring-border/40"
-            />
-            <span className="min-w-0">
-              <span className="block truncate text-[13px] font-semibold leading-tight text-foreground">
-                {name}
-              </span>
-              <span className="block truncate text-[12px] leading-tight text-muted-foreground/70">
-                {handle}
-              </span>
-            </span>
-          </a>
-          <a
-            href={profileHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="More options"
-            className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground/50 transition-colors hover:bg-secondary/40 hover:text-muted-foreground"
-          >
-            <MoreHorizontal className="h-4 w-4" strokeWidth={1.75} />
-          </a>
-        </div>
-
-        <div className="mt-4 space-y-2.5 text-[14px] leading-relaxed text-muted-foreground transition-colors duration-300 group-hover/connect:text-foreground/90">
-          {paragraphs.map((paragraph, index) => (
-            <p key={index} className="whitespace-pre-wrap">
-              {paragraph.split(/(@[A-Za-z0-9_]+)/g).map((part, partIndex) =>
-                part.startsWith('@') ? (
-                  <span key={partIndex} className="text-sky-400/80 transition-colors duration-300 group-hover/connect:text-sky-400">
-                    {part}
-                  </span>
-                ) : (
-                  <span key={partIndex}>{part}</span>
-                ),
-              )}
-            </p>
-          ))}
-        </div>
-
-        <div className="mt-auto pt-4">
+        {/* mt-auto pins the preview to the bottom edge of the card. */}
+        <div className="mt-auto flex flex-col pt-5">
           <div
             className={cn(
-              'relative w-full shrink-0 overflow-hidden rounded-2xl border border-border/40 bg-secondary/15 aspect-video shadow-none transition-[transform,box-shadow] duration-500 ease-out will-change-transform group-hover/connect:-translate-y-1.5 group-hover/connect:shadow-[0_10px_24px_rgba(0,0,0,0.16)] dark:group-hover/connect:shadow-[0_12px_28px_rgba(0,0,0,0.4)]',
-              flushMedia ? 'mb-0' : '-mb-6 sm:-mb-8',
+              'relative mb-0 aspect-video min-h-[15rem] max-h-[17rem] w-full shrink-0 overflow-hidden rounded-2xl rounded-b-none border border-border/40 bg-secondary/15 shadow-none transition-[transform,box-shadow] duration-500 ease-out will-change-transform group-hover/connect:-translate-y-1.5 group-hover/connect:shadow-[0_10px_24px_rgba(0,0,0,0.16)] dark:group-hover/connect:shadow-[0_12px_28px_rgba(0,0,0,0.4)]',
             )}
           >
             <video

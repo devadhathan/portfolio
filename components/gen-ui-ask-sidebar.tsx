@@ -2,41 +2,36 @@
 
 import { useState } from 'react';
 import { ChevronsLeft, ChevronsRight, MessageSquare, SquarePen } from 'lucide-react';
-import { AgentOrbHatMenu } from '@/components/agent-orb-hat-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { GenUIViewport } from '@/lib/gen-ui-viewport';
+import { capitalizePrompt } from '@/lib/enrich-gen-ui';
+import type { GenUIChat } from '@/lib/gen-ui-viewport';
 import { cn } from '@/lib/utils';
 
 type GenUIAskSidebarProps = {
   brandLabel?: string;
-  viewports: GenUIViewport[];
-  activeViewportId: string | null;
+  chats: GenUIChat[];
+  activeChatId: string | null;
   isEmpty: boolean;
   onNewChat: () => void;
-  onSelectViewport: (id: string) => void;
+  onSelectChat: (id: string) => void;
   className?: string;
 };
-
-function truncateLabel(text: string, max = 36) {
-  const trimmed = text.trim();
-  if (trimmed.length <= max) return trimmed;
-  return `${trimmed.slice(0, max - 1)}…`;
-}
 
 const iconBtn =
   'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-black/[0.05] hover:text-foreground dark:hover:bg-white/[0.06]';
 
 export function GenUIAskSidebar({
   brandLabel = 'Ask AI',
-  viewports,
-  activeViewportId,
+  chats,
+  activeChatId,
   isEmpty,
   onNewChat,
-  onSelectViewport,
+  onSelectChat,
   className,
 }: GenUIAskSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const history = viewports.filter((v) => v.prompt.trim().length > 0);
+  // Newest chat first, and a chat only appears once it has a real prompt.
+  const history = [...chats].filter((c) => c.title.trim().length > 0).reverse();
 
   if (collapsed) {
     return (
@@ -72,16 +67,17 @@ export function GenUIAskSidebar({
           </button>
         </div>
 
-        <ScrollArea className="mt-3 min-h-0 w-full flex-1">
+        <ScrollArea className="mt-3 min-h-0 w-full flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block">
           <div className="flex flex-col items-center gap-1 px-2 pb-2">
-            {history.map((viewport) => {
-              const active = viewport.id === activeViewportId;
-              const label = viewport.title || viewport.prompt;
+            {history.map((chat) => {
+              const active = chat.id === activeChatId;
+              // Fixed to the question that opened the chat, matching the bubble.
+              const label = capitalizePrompt(chat.title);
               return (
                 <button
-                  key={viewport.id}
+                  key={chat.id}
                   type="button"
-                  onClick={() => onSelectViewport(viewport.id)}
+                  onClick={() => onSelectChat(chat.id)}
                   className={cn(
                     iconBtn,
                     active && 'bg-black/[0.06] text-foreground dark:bg-white/[0.08]',
@@ -108,8 +104,7 @@ export function GenUIAskSidebar({
       aria-label="Ask AI sidebar"
     >
       <div className="flex h-12 shrink-0 items-center justify-between gap-2 px-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <AgentOrbHatMenu size="xs" align="start" />
+        <div className="flex min-w-0 items-center">
           <span className="truncate text-sm font-semibold tracking-tight text-foreground">
             {brandLabel}
           </span>
@@ -148,32 +143,34 @@ export function GenUIAskSidebar({
         </p>
       </div>
 
-      <ScrollArea className="min-h-0 flex-1">
+      <ScrollArea className="min-h-0 w-full flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block">
         <div className="space-y-0.5 px-2 pb-3">
           {history.length === 0 ? (
             <p className="px-2.5 py-2 text-[12px] leading-relaxed text-muted-foreground/55">
               No chats yet
             </p>
           ) : (
-            history.map((viewport) => {
-              const active = viewport.id === activeViewportId;
-              const label = viewport.title || viewport.prompt;
+            history.map((chat) => {
+              const active = chat.id === activeChatId;
+              // Fixed to the question that opened the chat, matching the bubble.
+              const label = capitalizePrompt(chat.title);
               return (
                 <button
-                  key={viewport.id}
+                  key={chat.id}
                   type="button"
-                  onClick={() => onSelectViewport(viewport.id)}
+                  onClick={() => onSelectChat(chat.id)}
                   className={cn(
-                    'flex w-full items-center rounded-lg px-2.5 py-2 text-left text-[13px] transition-colors',
+                    'flex w-full items-center overflow-hidden rounded-lg px-2.5 py-2 text-left text-[13px] transition-colors',
                     active
                       ? 'bg-black/[0.06] text-foreground dark:bg-white/[0.08]'
                       : 'text-foreground/75 hover:bg-black/[0.04] hover:text-foreground dark:hover:bg-white/[0.05]',
                   )}
                   title={label}
                 >
-                  <span className="truncate">
-                    {truncateLabel(label)}
-                    {viewport.status === 'loading' ? '…' : ''}
+                  {/* min-w-0 lets the flex item shrink so `truncate` can ellipsis it */}
+                  <span className="min-w-0 flex-1 truncate">
+                    {label}
+                    {chat.viewports.some((v) => v.status === 'loading') ? '…' : ''}
                   </span>
                 </button>
               );

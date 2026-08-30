@@ -1,6 +1,6 @@
 'use client';
 
-import type { GenUIViewport } from '@/lib/gen-ui-viewport';
+import type { GenUIChat, GenUIViewport } from '@/lib/gen-ui-viewport';
 import { GenUIAskSidebar } from '@/components/gen-ui-ask-sidebar';
 import { GenUIViewportStack } from '@/components/gen-ui-viewport-stack';
 import { GenUISearchBar } from '@/components/gen-ui-search-bar';
@@ -9,6 +9,10 @@ import { cn } from '@/lib/utils';
 
 type GenUIModeShellProps = {
   viewports: GenUIViewport[];
+  /** Past conversations for the sidebar history list. */
+  chats?: GenUIChat[];
+  activeChatId?: string | null;
+  onSelectChat?: (id: string) => void;
   activeViewportId: string | null;
   scrollToViewportId: string | null;
   isAgentWorking: boolean;
@@ -36,6 +40,9 @@ type GenUIModeShellProps = {
 
 export function GenUIModeShell({
   viewports,
+  chats = [],
+  activeChatId = null,
+  onSelectChat,
   activeViewportId,
   scrollToViewportId,
   isAgentWorking,
@@ -60,16 +67,6 @@ export function GenUIModeShell({
   const showCenterSearch = !hasPrompted && viewports.length === 0 && !isAgentWorking && !isLoading;
   const showBottomSearch = hasPrompted || viewports.length > 0 || isAgentWorking || isLoading;
   const sidebarEnabled = showSidebar ?? (embedded && Boolean(onBack));
-
-  const handleSelectViewport = (id: string) => {
-    onActiveChange(id);
-    requestAnimationFrame(() => {
-      document.getElementById(`gen-ui-viewport-${id}`)?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-      });
-    });
-  };
 
   const main = (
     <div
@@ -133,6 +130,8 @@ export function GenUIModeShell({
                 embedded={embedded || sidebarEnabled}
                 onActiveChange={onActiveChange}
                 onCaseStudySelect={onCaseStudySelect}
+                onFollowUpSelect={onSubmit}
+                followUpsDisabled={isLoading || isAgentWorking || limitReached}
               />
             ) : isLoading ? (
               <div
@@ -217,11 +216,11 @@ export function GenUIModeShell({
     >
       <GenUIAskSidebar
         brandLabel={brandLabel}
-        viewports={viewports}
-        activeViewportId={activeViewportId}
+        chats={chats}
+        activeChatId={activeChatId}
         isEmpty={showCenterSearch}
         onNewChat={onBack}
-        onSelectViewport={handleSelectViewport}
+        onSelectChat={onSelectChat ?? (() => {})}
         className="hidden sm:flex"
       />
       {main}

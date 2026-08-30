@@ -361,7 +361,7 @@ export function ProjectDetailView({
           {!isNesoi && project.type ? (
             <div className="pb-6 border-b border-border/50">
               <h3 className="cs-label uppercase text-muted-foreground mb-2">{t('product')}</h3>
-              <p className="cs-body text-foreground">{project.type}</p>
+              <p className="cs-meta text-foreground">{project.type}</p>
             </div>
           ) : null}
           
@@ -370,7 +370,7 @@ export function ProjectDetailView({
               <h3 className="cs-label uppercase text-muted-foreground mb-2">{t('skills')}</h3>
               <div className="space-y-2">
                 {project.tools.map((tool, idx) => (
-                  <p key={idx} className="cs-body text-foreground">{tool}</p>
+                  <p key={idx} className="cs-meta text-foreground">{tool}</p>
                 ))}
               </div>
             </div>
@@ -379,21 +379,21 @@ export function ProjectDetailView({
           {project.role && (
             <div className="py-6 border-b border-border/50">
               <h3 className="cs-label uppercase text-muted-foreground mb-2">{t('myRole')}</h3>
-              <p className="cs-body text-foreground">{project.role}</p>
+              <p className="cs-meta text-foreground">{project.role}</p>
             </div>
           )}
           
           {project.period && (
             <div className="py-6 border-b border-border/50">
               <h3 className="cs-label uppercase text-muted-foreground mb-2">{t('timeline')}</h3>
-              <p className="cs-body text-foreground">{project.period}</p>
+              <p className="cs-meta text-foreground">{project.period}</p>
             </div>
           )}
           
           {project.team && (
             <div className="pt-6">
               <h3 className="cs-label uppercase text-muted-foreground mb-2">{t('team')}</h3>
-              <p className="cs-body text-foreground">{project.team}</p>
+              <p className="cs-meta text-foreground">{project.team}</p>
             </div>
           )}
         </div>

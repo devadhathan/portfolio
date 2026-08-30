@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 
 /** Matches Misc home cards — dim resting border; the cursor spotlight does the highlight. */
 export const HOME_CARD_BORDER =
-  'rounded-lg border border-border/35 dark:border-white/[0.18]';
+  'rounded-lg border border-border/35 dark:border-[#1f1f1f]';
 
 type CardHoverGlowOverlayProps = {
   x: number;

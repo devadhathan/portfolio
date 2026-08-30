@@ -446,9 +446,16 @@ function FeaturedThumb({
       )}
     >
       {glow}
+      {/* Media is inset by the card's 20px gutter, matching the text below. */}
       <div
         className={cn(
-          'case-study-feature__media relative z-[2] w-full overflow-hidden bg-transparent',
+          'relative z-[2] flex w-full flex-col px-[20px] pt-[20px]',
+          isHero && 'lg:min-h-0 lg:flex-1',
+        )}
+      >
+      <div
+        className={cn(
+          'case-study-feature__media relative z-[2] w-full overflow-hidden rounded-md bg-transparent',
           // Mobile / tablet: same aspect as sibling cards. Desktop hero fills the tall cell.
           isHero
             ? 'aspect-[16/10] lg:aspect-auto lg:min-h-0 lg:flex-1 lg:h-full'
@@ -517,20 +524,16 @@ function FeaturedThumb({
         ) : null}
         <div className="pointer-events-none absolute inset-0 z-[2] bg-gradient-to-t from-black/45 via-transparent to-transparent opacity-80" />
       </div>
+      </div>
       <div
         className={cn(
-          'relative z-[2] flex shrink-0 flex-col gap-1.5 px-3.5 py-3.5 sm:px-4 sm:py-4',
-          isHero && 'sm:px-5 sm:py-5',
+          // Same 20px inset as the home cards.
+          'relative z-[2] flex shrink-0 flex-col gap-1.5 p-[20px] pt-4',
         )}
       >
         <div className="flex items-baseline justify-between gap-2">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <span
-              className={cn(
-                'font-medium tracking-tight text-foreground',
-                isHero ? 'text-[15px] sm:text-base' : 'text-[14px] sm:text-[15px]',
-              )}
-            >
+            <span className="text-[16px] font-medium leading-[1.35] tracking-[-0.014em] text-foreground">
               {item.title}
             </span>
             {item.openWordsmith ? (
@@ -546,7 +549,7 @@ function FeaturedThumb({
             ) : null}
           </div>
           {item.dateLabel && item.dateLabel !== '—' ? (
-            <span className="shrink-0 whitespace-nowrap text-[12px] tabular-nums text-muted-foreground sm:text-[13px]">
+            <span className="shrink-0 whitespace-nowrap text-[13px] tabular-nums text-muted-foreground">
               {item.dateLabel}
             </span>
           ) : null}
@@ -554,10 +557,8 @@ function FeaturedThumb({
         {item.subtitle ? (
           <p
             className={cn(
-              'text-muted-foreground',
-              isHero
-                ? 'line-clamp-3 text-[13px] leading-5 sm:text-[14px] sm:leading-6'
-                : 'line-clamp-2 text-[12px] leading-5 sm:text-[13px] sm:leading-5',
+              'text-[15px] leading-[1.6] tracking-[-0.008em] text-muted-foreground',
+              isHero ? 'line-clamp-3' : 'line-clamp-2',
             )}
           >
             {item.subtitle}
@@ -613,7 +614,7 @@ export function CaseStudiesList({
   return (
     <section className={cn('os-col w-full', className)} aria-label={title}>
       <div className="mb-5 flex items-baseline justify-between gap-3 sm:mb-6">
-        <h2 className="text-[15px] font-medium text-muted-foreground sm:text-base">
+        <h2 className="text-[16px] font-medium text-muted-foreground">
           {title}
         </h2>
         <button
@@ -623,7 +624,7 @@ export function CaseStudiesList({
           data-cuelume-press
           data-cuelume-release
           className={cn(
-            'shrink-0 font-mono text-[13px] font-normal text-muted-foreground underline decoration-muted-foreground/50 underline-offset-[3px] transition-colors hover:text-foreground hover:decoration-foreground/60 sm:text-sm',
+            'shrink-0 text-[15px] font-normal leading-[1.4] tracking-[-0.008em] text-muted-foreground underline decoration-muted-foreground/50 decoration-1 underline-offset-[0.22em] transition-colors hover:text-foreground hover:decoration-foreground/60',
             focusRing,
           )}
         >
@@ -671,15 +672,15 @@ export function CaseStudiesList({
               >
                 <span className="inline-flex min-w-0 flex-wrap items-center gap-1.5">
                   {item.company ? (
-                    <span className="text-[14px] font-medium text-foreground transition-colors group-hover:text-foreground/80 sm:text-[15px]">
+                    <span className="text-[15px] font-medium leading-[1.4] tracking-[-0.008em] text-foreground transition-colors group-hover:text-foreground/80">
                       {item.company}
                     </span>
                   ) : null}
-                  <span className="text-[14px] font-medium text-foreground transition-colors group-hover:text-foreground/80 sm:text-[15px]">
+                  <span className="text-[15px] font-medium leading-[1.4] tracking-[-0.008em] text-foreground transition-colors group-hover:text-foreground/80">
                     {item.title}
                   </span>
                 </span>
-                <span className="whitespace-nowrap text-right text-[13px] tabular-nums text-muted-foreground sm:text-sm">
+                <span className="whitespace-nowrap text-right text-[13px] tabular-nums text-muted-foreground">
                   {item.dateLabel}
                 </span>
               </button>

@@ -39,7 +39,7 @@ function WorkProjectCard({
       data-cuelume-press
       data-cuelume-release
       {...glowHandlers}
-      className="relative rounded-xl border border-border/35 bg-transparent text-foreground cursor-pointer group overflow-hidden h-full flex flex-col dark:border-white/[0.18]"
+      className="relative rounded-xl border border-border/35 bg-transparent text-foreground cursor-pointer group overflow-hidden h-full flex flex-col dark:border-[#1f1f1f]"
       onClick={onClick}
     >
       {glow}
@@ -363,8 +363,8 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                               <div
                                 className={
                                   embedded
-                                    ? 'os-work-card__media relative min-h-0 w-full flex-1 overflow-hidden border-b border-border/35 bg-transparent dark:border-white/[0.18]'
-                                    : 'relative w-full h-52 md:h-60 lg:h-64 bg-transparent border-b border-border/35 dark:border-white/[0.18] overflow-hidden flex-shrink-0'
+                                    ? 'os-work-card__media relative min-h-0 w-full flex-1 overflow-hidden border-b border-border/35 bg-transparent dark:border-[#1f1f1f]'
+                                    : 'relative w-full h-52 md:h-60 lg:h-64 bg-transparent border-b border-border/35 dark:border-[#1f1f1f] overflow-hidden flex-shrink-0'
                                 }
                               >
                                 <Image
@@ -427,8 +427,8 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                             <div
                               className={
                                 embedded
-                                  ? 'os-work-card__media os-work-card__media--tall relative min-h-0 w-full flex-1 overflow-hidden border-b border-border/35 bg-transparent dark:border-white/[0.18]'
-                                  : 'relative w-full h-52 sm:h-64 md:h-80 lg:h-[28rem] bg-transparent border-b border-border/35 dark:border-white/[0.18] overflow-hidden flex-shrink-0'
+                                  ? 'os-work-card__media os-work-card__media--tall relative min-h-0 w-full flex-1 overflow-hidden border-b border-border/35 bg-transparent dark:border-[#1f1f1f]'
+                                  : 'relative w-full h-52 sm:h-64 md:h-80 lg:h-[28rem] bg-transparent border-b border-border/35 dark:border-[#1f1f1f] overflow-hidden flex-shrink-0'
                               }
                             >
                               <Image

@@ -5,8 +5,9 @@ import { ArrowUpRight } from 'lucide-react';
 import { play } from 'cuelume';
 import { CardTag } from '@/components/card-tag';
 import { cn } from '@/lib/utils';
+import { CATALYSTIC_URL } from '@/lib/social-links';
 
-export const CATALYSTIC_URL = 'https://catalysticui.space/landing.html';
+export { CATALYSTIC_URL };
 
 type CatalysticCardProps = {
   sectionLabel?: string;
@@ -112,7 +113,7 @@ export function CatalysticCard({
     >
       <div className="relative z-10 shrink-0 px-4 pt-4 pb-2">
         {sectionLabel ? (
-          <p className="mb-2 text-[12px] font-medium uppercase tracking-[0.22em] text-muted-foreground/55">
+          <p className="mb-2 text-[13px] font-medium uppercase tracking-[0.08em] text-muted-foreground/55">
             {sectionLabel}
           </p>
         ) : null}

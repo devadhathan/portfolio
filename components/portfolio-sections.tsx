@@ -5,12 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AgentState, SectionPriority, SectionType } from '@/lib/agent';
-import { User, Briefcase, Mail, Linkedin, FileText, Sparkles, Code2, Calendar, Award, Globe, Github, FolderKanban, Image as ImageIcon, ExternalLink, Rocket, MapPin, type LucideIcon } from 'lucide-react';
+import { User, Briefcase, Mail, Lightbulb, Linkedin, FileText, Sparkles, Code2, Calendar, Award, Globe, Github, FolderKanban, Image as ImageIcon, ExternalLink, Rocket, MapPin, type LucideIcon } from 'lucide-react';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import { HighlightedText } from './highlighted-text';
 import { HeroBio } from './hero-bio';
-import { HomeHero } from './home-hero';
+import { HomeHero, HomeHeroTitle } from './home-hero';
 // Temporary: portrait swapped for lined frame — re-import when restoring
 // import { HomePortrait } from './home-portrait';
 import { CaseStudiesList } from './case-studies-list';
@@ -23,6 +23,8 @@ import { FINSHOTS_APP_SCREEN } from '@/lib/build-case-study-cards';
 import dynamic from 'next/dynamic';
 import { ProjectTreeCard } from '@/components/project-tree-card';
 import { SideProjectCard } from '@/components/side-project-card';
+import { MediumLogo } from '@/components/medium-logo';
+import { CATALYSTIC_URL, MEDIUM_PROFILE_URL } from '@/lib/social-links';
 import { NesoiHomeCard } from '@/components/nesoi-home-card';
 import { DEW_MEDIUM_THUMB, DEW_MEDIUM_URL, DEW_VIDEO_SRC } from '@/hooks/use-in-view-video-prefetch';
 import { SiteUpdateNote } from '@/components/site-update-note';
@@ -1003,6 +1005,16 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             href: githubUrl,
             icon: <Github className="h-4 w-4" />,
           },
+          {
+            label: 'Medium',
+            href: MEDIUM_PROFILE_URL,
+            icon: <MediumLogo className="h-4 w-4" />,
+          },
+          {
+            label: 'Catalystic UI',
+            href: CATALYSTIC_URL,
+            icon: <Lightbulb className="h-4 w-4" />,
+          },
         ];
 
         return (
@@ -1016,11 +1028,8 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             {borderReveal}
             <CardContent className="relative z-10 h-full p-0">
               <ConnectMiniPost
-                name={t('connectPost.name')}
-                handle={t('connectPost.handle')}
-                avatarSrc="/photos/sideprojects/avatar-face.jpg"
+                title={t('connectPost.title')}
                 body={t('connectPost.body')}
-                profileHref={linkedinUrl}
                 socialLinks={socialLinks}
               />
             </CardContent>
@@ -1042,8 +1051,12 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
               +
             </span>
 
+            <div className="home-intro-frame__section home-intro-frame__section--hero-title">
+              <HomeHeroTitle />
+            </div>
+
             <div className="home-intro-frame__section">
-              <HomeHero className="mb-0" />
+              <HomeHero className="mb-0" showTitle={false} />
             </div>
 
             <div className="home-intro-frame__rule-pair" aria-hidden>
@@ -1068,7 +1081,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
               aria-label={tNav('misc')}
             >
               <div className="mb-5 flex items-baseline justify-between gap-3 sm:mb-6">
-                <h2 className="text-[15px] font-medium text-muted-foreground sm:text-base">
+                <h2 className="text-[16px] font-medium text-muted-foreground">
                   {tNav('misc')}
                 </h2>
               </div>
@@ -1103,23 +1116,19 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
 
             <div className="home-intro-frame__rule" aria-hidden />
 
-            <div className="home-intro-frame__section home-intro-frame__status flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+            <div className="home-intro-frame__section home-intro-frame__status flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-muted-foreground">
               <span className="whitespace-nowrap font-mono tracking-tight">Build - DevOS 12.4</span>
               <span aria-hidden className="text-muted-foreground/50">
                 ·
               </span>
-              <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
-                Available for work
-                <StatusPet />
-              </span>
+              <StatusPet />
             </div>
           </div>
         </div>
       ) : (
         <section className="os-col w-full" aria-label={tNav('misc')}>
           <div className="mb-5 flex items-baseline justify-between gap-3 sm:mb-6">
-            <h2 className="text-[15px] font-medium text-muted-foreground sm:text-base">
+            <h2 className="text-[16px] font-medium text-muted-foreground">
               {tNav('misc')}
             </h2>
           </div>
@@ -1148,16 +1157,12 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
               );
             })}
           </div>
-          <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 pb-6 text-[11px] text-muted-foreground md:mt-6">
+          <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 pb-6 text-[12px] text-muted-foreground md:mt-6">
             <span className="whitespace-nowrap font-mono tracking-tight">Build - DevOS 12.4</span>
             <span aria-hidden className="text-muted-foreground/50">
               ·
             </span>
-            <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
-              Available for work
-              <StatusPet />
-            </span>
+            <StatusPet />
           </div>
         </section>
       )}

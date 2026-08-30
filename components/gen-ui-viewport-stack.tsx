@@ -15,6 +15,9 @@ type GenUIViewportStackProps = {
   embedded?: boolean;
   onActiveChange?: (id: string) => void;
   onCaseStudySelect?: (projectSlug: string) => void;
+  /** Submits a suggested follow-up question as a new prompt. */
+  onFollowUpSelect?: (prompt: string) => void;
+  followUpsDisabled?: boolean;
 };
 
 function scrollToViewport(id: string) {
@@ -30,7 +33,10 @@ export function GenUIViewportStack({
   embedded = false,
   onActiveChange,
   onCaseStudySelect,
+  onFollowUpSelect,
+  followUpsDisabled = false,
 }: GenUIViewportStackProps) {
+  const allPrompts = viewports.map((v) => v.prompt);
   const containerRef = useRef<HTMLDivElement>(null);
   const lastScrolledIdRef = useRef<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(Math.max(0, viewports.length - 1));
@@ -102,8 +108,17 @@ export function GenUIViewportStack({
           embedded && 'pb-36',
         )}
       >
-        {viewports.map((vp) => (
-          <GenUIViewportSection key={vp.id} viewport={vp} onCaseStudySelect={onCaseStudySelect} />
+        {viewports.map((vp, i) => (
+          <GenUIViewportSection
+            key={vp.id}
+            viewport={vp}
+            onCaseStudySelect={onCaseStudySelect}
+            // Only prior prompts, so a later message never rewrites the
+            // suggestions already shown above it.
+            askedPrompts={allPrompts.slice(0, i + 1)}
+            onFollowUpSelect={onFollowUpSelect}
+            followUpsDisabled={followUpsDisabled}
+          />
         ))}
       </div>
     </div>

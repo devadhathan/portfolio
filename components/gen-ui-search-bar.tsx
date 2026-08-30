@@ -50,10 +50,11 @@ export function GenUISearchBar({
   const isCenter = variant === 'center';
   const limitReached = disabled || (promptCount !== undefined && promptCount <= 0);
   const canSend = Boolean(value.trim()) && !isLoading && !limitReached;
-  const placeholder = 'How can I help you today?';
+  // The centre state already greets above the field, so don't echo it there.
+  const placeholder = isCenter ? 'Ask anything' : 'How can I help you today?';
   const subheadBelow = subheadPlacement === 'below-chips';
-  // Prefer brand-first empty state; legacy `headline` still works as wordmark.
-  const wordmark = brandLabel || headline || 'Ask AI';
+  // Greeting-first empty state. `brandLabel` stays the sidebar wordmark.
+  const wordmark = headline || 'How can I help you today?';
 
   useLayoutEffect(() => {
     const el = inputRef.current;
@@ -132,11 +133,11 @@ export function GenUISearchBar({
   if (isCenter) {
     return (
       <div className={cn('flex w-full max-w-2xl flex-col items-center gap-5 md:gap-6', className)}>
-        {/* Brand-first — Grok-style mark + name, not a competing headline */}
+        {/* Orb sits above the greeting so it reads as one centred stack */}
         <div className="flex flex-col items-center gap-3">
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-col items-center gap-3">
             <AgentOrbHatMenu size={orbSize} />
-            <span className="text-[22px] font-semibold tracking-tight text-foreground sm:text-[26px]">
+            <span className="text-center text-[22px] font-semibold tracking-tight text-foreground sm:text-[26px]">
               {wordmark}
             </span>
           </div>

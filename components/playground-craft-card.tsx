@@ -33,7 +33,7 @@ export function PlaygroundCraftCard({
       data-cuelume-release
       {...glowHandlers}
       className={cn(
-        'group relative flex h-full min-h-[320px] w-full flex-col overflow-hidden rounded-2xl border border-border/35 bg-transparent text-left sm:min-h-[420px] dark:border-white/[0.18]',
+        'group relative flex h-full min-h-[320px] w-full flex-col overflow-hidden rounded-2xl border border-border/35 bg-transparent text-left sm:min-h-[420px] dark:border-[#1f1f1f]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
         className,
       )}
@@ -43,11 +43,11 @@ export function PlaygroundCraftCard({
         <PlaygroundItemMedia item={item} accessibilityLabel={accessibilityLabel} size="preview" />
       </div>
 
-      <div className="relative z-[2] flex items-center justify-between gap-3 border-t border-border/35 bg-transparent px-4 py-3 dark:border-white/[0.18]">
-        <span className="truncate text-[13px] font-medium tracking-tight text-foreground">
+      <div className="relative z-[2] flex items-center justify-between gap-3 border-t border-border/35 bg-transparent px-4 py-3 dark:border-[#1f1f1f]">
+        <span className="truncate text-[15px] font-medium leading-[1.4] tracking-[-0.008em] text-foreground">
           {title}
         </span>
-        <span className="shrink-0 truncate text-right text-[11px] text-muted-foreground/70">
+        <span className="shrink-0 truncate text-right text-[13px] text-muted-foreground/70">
           {item.stackLabel}
         </span>
       </div>

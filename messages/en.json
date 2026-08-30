@@ -28,13 +28,11 @@
   },
   "home": {
     "digitalHome": "Dev's digital home",
-    "heroLine1": "Dev is a designer crafting from pixels to code.",
+    "heroLine1": "Designing experiences from pixels to code.",
     "intro": {
-      "name": "Devadhathan M D",
-      "role": "Product designer",
-      "p1": "Designing interfaces and experiences for people, four years and counting. Most recently at <wordsmith>Wordsmith AI</wordsmith>, before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>.",
-      "p2": "Researching to find the whys, obsessing over the details, then shipping it.",
-      "p3": "Always building. Simple, but better."
+      "name": "Dev",
+      "role": "Product Designer",
+      "p1": "I've spent four years designing and building products for people. Most recently at <wordsmith>Wordsmith AI</wordsmith>, before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>. My process is simple: research the whys, obsess over the details, then ship it with impact. <keep>I'm a builder, always building simple but better.</keep>"
     },
     "devBio": "Hi, I'm a designer based in Edinburgh.\n\nMost recently I worked on <wordsmith>Wordsmith AI</wordsmith>, and before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>. I came to design from computer engineering.\n\nI design interfaces for the computer and experiences for the people, and I'm building something <i>simple, but better</i>.",
     "devBioHero": "Hi, I'm a designer based in Edinburgh.\n\nMost recently I worked on <wordsmith>Wordsmith AI</wordsmith>, and before that <nesoi>Nesoi</nesoi> and <ditto>Ditto</ditto> by <finshots>Finshots</finshots>. I came to design from computer engineering.\n\nI design interfaces for the computer and experiences for the people, and I'm building something <i>simple, but better</i>.",
@@ -46,9 +44,8 @@
     "experience": "Experience",
     "connect": "Connect",
     "connectPost": {
-      "name": "Dev MD",
-      "handle": "@MDdevaD",
-      "body": "Connect with me on LinkedIn or email — let’s build something great 💪"
+      "title": "Find me",
+      "body": "Drop a line, follow the noise, or see what I’m building."
     },
     "designPreferences": "Design Preferences",
     "designPhilosophy": "Design Philosophy",

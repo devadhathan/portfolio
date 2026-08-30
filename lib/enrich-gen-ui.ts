@@ -450,9 +450,11 @@ export function formatLeadSummary(text: string, prompt?: string): string {
 
   const s = stripMarkdown(text);
   const wordCount = s ? s.split(/\s+/).filter(Boolean).length : 0;
+  // A direct answer to a direct question is often short. Only treat it as thin
+  // when it says nothing on its own, otherwise a correct reply gets replaced.
   const weak =
     !s ||
-    wordCount < 40 ||
+    wordCount < 8 ||
     s.includes('###') ||
     s.includes('**') ||
     s.includes('__') ||
@@ -469,7 +471,7 @@ export function formatLeadSummary(text: string, prompt?: string): string {
     return prompt ? fallbackStorySummary(prompt) : '';
   }
 
-  if (prompt && isCaseStudyQuery(prompt) && wordCount < 80) {
+  if (prompt && isCaseStudyQuery(prompt) && wordCount < 25) {
     return fallbackStorySummary(prompt);
   }
 
@@ -588,5 +590,5 @@ function fallbackFromPromptIntent(prompt: string): string {
   if (isInsufficientContextQuery(prompt)) {
     return `I don't have much context about that in Dev's portfolio — it's built around his work, projects, skills, and career.\n\nReach out to Dev directly using the contact card below.`;
   }
-  return "Here's a focused view built from your question — narrative up top, then cards with the projects, metrics, and context that answer it.";
+  return "Here's what Dev's portfolio has on that — the projects, outcomes, and context most relevant to your question.";
 }

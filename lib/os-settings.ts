@@ -30,7 +30,7 @@ export const DEFAULT_OS_SETTINGS: OsSettings = {
   wallpaperId: 'bridge',
   shuffleDaily: false,
   sounds: true,
-  soundVolume: 30,
+  soundVolume: 25,
   widgets: false,
   iconLabels: true,
   zoom: 100,

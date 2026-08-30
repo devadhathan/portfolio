@@ -71,7 +71,7 @@ export function GenUIAssistantReply({
       );
     }
     return (
-      <p key={key} className="text-base md:text-lg text-muted-foreground leading-[1.75]">
+      <p key={key} className="text-base md:text-lg text-muted-foreground leading-[1.75] break-words">
         {text}
       </p>
     );
@@ -82,7 +82,7 @@ export function GenUIAssistantReply({
 
   if (!animate) {
     return (
-      <article className={cn('max-w-3xl space-y-5 scroll-mt-24', className)}>
+      <article className={cn('w-full min-w-0 max-w-3xl space-y-5 scroll-mt-24', className)}>
         {hasTitle ? <h2 className={titleClass}>{title}</h2> : null}
         {paragraphs.length > 0 && (
           <div className="space-y-4">{paragraphs.map((p, i) => renderBlock(p, `block-${i}`))}</div>
@@ -96,7 +96,7 @@ export function GenUIAssistantReply({
   const doneParagraphs = paragraphs.slice(0, Math.max(0, segmentIndex - titleOffset));
 
   return (
-    <article className={cn('max-w-3xl space-y-5 scroll-mt-24', className)}>
+    <article className={cn('w-full min-w-0 max-w-3xl space-y-5 scroll-mt-24', className)}>
       {hasTitle && segmentIndex > 0 ? <h2 className={titleClass}>{title}</h2> : null}
 
       {doneParagraphs.length > 0 && (

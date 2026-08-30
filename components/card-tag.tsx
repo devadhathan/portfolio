@@ -11,7 +11,7 @@ type CardTagProps = {
 
 /** One compact pill look for Latest / 2026 / Case study / etc. */
 const PILL_CLASS =
-  'rounded-full border border-foreground/20 bg-secondary/50 px-2 py-0.5 text-[11px] font-medium tracking-wide text-muted-foreground dark:border-white/35 dark:bg-white/[0.07]';
+  'rounded-full border border-foreground/20 bg-secondary/50 px-2 py-0.5 text-[12px] font-medium tracking-wide text-muted-foreground dark:border-white/35 dark:bg-white/[0.07]';
 
 const TONE_CLASS: Record<CardTagTone, string> = {
   glass: PILL_CLASS,
@@ -20,9 +20,9 @@ const TONE_CLASS: Record<CardTagTone, string> = {
   amber: PILL_CLASS,
   emerald: PILL_CLASS,
   orange:
-    'rounded-full border border-orange-500/80 px-1.5 py-px text-[10px] font-medium leading-none tracking-wide text-orange-500 dark:border-orange-400/80 dark:text-orange-400',
+    'rounded-full border border-orange-500/80 px-1.5 py-px text-[12px] font-medium leading-none tracking-wide text-orange-500 dark:border-orange-400/80 dark:text-orange-400',
   mono:
-    'font-mono text-[11px] font-normal tracking-wide text-muted-foreground transition-colors duration-200 hover:text-primary group-hover:text-primary group-hover/row:text-primary group-hover/nesoi:text-primary group-hover/cat:text-primary group-hover/ws:text-primary group-hover/notch:text-primary',
+    'font-mono text-[12px] font-normal tracking-wide text-muted-foreground transition-colors duration-200 hover:text-primary group-hover:text-primary group-hover/row:text-primary group-hover/nesoi:text-primary group-hover/cat:text-primary group-hover/ws:text-primary group-hover/notch:text-primary',
 };
 
 export function CardTag({ children, className, tone = 'glass' }: CardTagProps) {
