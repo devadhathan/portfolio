@@ -367,7 +367,7 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             <div className="flex-1 flex justify-center">
               <div className="relative w-full max-w-[560px] rounded-lg overflow-hidden border border-border/40 dark:border-border/60 hero-illustration">
                 <div className="relative w-full h-[272px] sm:h-[332px] md:h-[372px] max-h-[372px]">
-                  {theme === 'dark' || theme === 'clear' ? (
+                  {theme === 'dark' ? (
                     <HeroVideo />
                   ) : theme === 'blue' || theme === 'green' || theme === 'red' ? (
                     <img

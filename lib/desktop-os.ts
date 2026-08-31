@@ -163,7 +163,7 @@ export const WINDOW_ICON_SRC: Partial<Record<DesktopWindowId, string>> = {
   work: '/icons/briefcase.svg',
   playground: '/icons/playgroundd.svg',
   games: '/icons/gamess.svg',
-  drawesome: '/icons/pen.svg',
+  drawesome: '/icons/pennn.svg',
   ask: '/icons/sparkles.svg',
   photos: '/icons/image.svg',
   wordsmith: '/icons/sparkles.svg',

@@ -21,6 +21,39 @@ type AgentOrbProps = {
 
 const SIZE = { xs: 28, sm: 40, md: 56, lg: 72, xl: 96, '2xl': 128 } as const;
 
+/**
+ * Orbs live inside windows that stay mounted after closing, and in cards far
+ * below the fold, so the gaze/blink timers and the blob animations used to run
+ * for orbs nobody could see. This reports whether the orb is actually on screen
+ * in a visible tab; everything animated hangs off it.
+ */
+function useOrbAwake(ref: React.RefObject<HTMLElement>) {
+  const [onScreen, setOnScreen] = useState(false);
+  const [tabVisible, setTabVisible] = useState(true);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    // Closed OS windows are display:none, which reads as not intersecting.
+    const observer = new IntersectionObserver(
+      ([entry]) => setOnScreen(entry.isIntersecting),
+      { rootMargin: '64px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ref]);
+
+  useEffect(() => {
+    const sync = () => setTabVisible(document.visibilityState === 'visible');
+    sync();
+    document.addEventListener('visibilitychange', sync);
+    return () => document.removeEventListener('visibilitychange', sync);
+  }, []);
+
+  return onScreen && tabVisible;
+}
+
 export function AgentOrb({
   size = 'md',
   className,
@@ -31,10 +64,12 @@ export function AgentOrb({
   hatEmoji,
 }: AgentOrbProps) {
   const orbRef = useRef<HTMLButtonElement>(null);
+  const shellRef = useRef<HTMLDivElement>(null);
   const filterId = useId().replace(/:/g, '');
   const [orbPupil, setOrbPupil] = useState({ x: 0, y: 0 });
   const [orbBlink, setOrbBlink] = useState(false);
   const [storedHat] = useOrbHatEmoji();
+  const awake = useOrbAwake(shellRef);
   const px = SIZE[size];
   const resolvedHat = hatEmoji === undefined ? storedHat : hatEmoji;
   const showHat = Boolean(resolvedHat?.trim());
@@ -42,7 +77,7 @@ export function AgentOrb({
     size === 'xs' ? 14 : size === 'sm' ? 18 : size === 'md' ? 24 : size === 'lg' ? 30 : size === 'xl' ? 38 : 46;
 
   useEffect(() => {
-    if (lookAt != null) return;
+    if (lookAt != null || !awake) return;
 
     let timer: ReturnType<typeof setTimeout>;
     const max = 3;
@@ -60,11 +95,13 @@ export function AgentOrb({
     };
     scheduleGaze();
     return () => clearTimeout(timer);
-  }, [lookAt]);
+  }, [awake, lookAt]);
 
   const pupil = lookAt ?? orbPupil;
 
   useEffect(() => {
+    if (!awake) return;
+
     let blinkTimer: ReturnType<typeof setTimeout>;
     let openTimer: ReturnType<typeof setTimeout>;
     const scheduleBlink = () => {
@@ -79,7 +116,7 @@ export function AgentOrb({
       clearTimeout(blinkTimer);
       clearTimeout(openTimer);
     };
-  }, []);
+  }, [awake]);
 
   const orbBody = (
     <>
@@ -178,7 +215,9 @@ export function AgentOrb({
 
   const orbShell = (
     <div
+      ref={shellRef}
       className="relative flex-shrink-0 overflow-visible"
+      data-orb-asleep={awake ? undefined : 'true'}
       style={{ width: px, height: px }}
     >
       {showHat ? (

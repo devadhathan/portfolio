@@ -128,7 +128,53 @@ export function MenuBar() {
     className: 'os-menu-content',
   };
 
+  /*
+   * Rows are built lazily: this component re-renders on any OS state change, and
+   * eagerly constructing every menu (File/View/Help exist twice — full bar plus
+   * overflow) meant ~40 items per render for menus nobody had opened. The Content
+   * element stays mounted so Radix keeps its close animation.
+   */
+  const rowsWhenOpen = (id: MenuId, rows: () => React.ReactNode) =>
+    openMenu === id ? rows() : null;
+
   /* ---------------------------------------------------------------- Logo */
+  const logoRows = () => (
+    <>
+      <DropdownMenuItem className={menuItemClass} onClick={() => openWindow('home')}>
+        {t('home')}
+      </DropdownMenuItem>
+      <DropdownMenuSeparator className="os-menu-divider" />
+      <DropdownMenuItem
+        className={menuItemClass}
+        onClick={() => openWindow('about', { syncUrl: false })}
+      >
+        About Me
+      </DropdownMenuItem>
+      <DropdownMenuItem
+        className={menuItemClass}
+        onClick={() => openWindow('contact', { syncUrl: false })}
+      >
+        {t('contact')}
+      </DropdownMenuItem>
+      <DropdownMenuItem
+        className={menuItemClass}
+        onClick={() => openWindow('colophon', { syncUrl: false })}
+      >
+        Colophon
+      </DropdownMenuItem>
+      <DropdownMenuSeparator className="os-menu-divider" />
+      <DropdownMenuItem
+        className={menuItemClass}
+        onClick={() => {
+          trackEvent('desktop_reset');
+          resetDesktop();
+        }}
+      >
+        Reset Desktop
+      </DropdownMenuItem>
+    </>
+  );
+
   const logoMenu = (
     <DropdownMenu open={openMenu === 'logo'} onOpenChange={(o) => setOpenMenu(o ? 'logo' : null)}>
       <DropdownMenuTrigger asChild>
@@ -151,40 +197,7 @@ export function MenuBar() {
           />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent {...menuContentProps}>
-        <DropdownMenuItem className={menuItemClass} onClick={() => openWindow('home')}>
-          {t('home')}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator className="os-menu-divider" />
-        <DropdownMenuItem
-          className={menuItemClass}
-          onClick={() => openWindow('about', { syncUrl: false })}
-        >
-          About Me
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          className={menuItemClass}
-          onClick={() => openWindow('contact', { syncUrl: false })}
-        >
-          {t('contact')}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          className={menuItemClass}
-          onClick={() => openWindow('colophon', { syncUrl: false })}
-        >
-          Colophon
-        </DropdownMenuItem>
-        <DropdownMenuSeparator className="os-menu-divider" />
-        <DropdownMenuItem
-          className={menuItemClass}
-          onClick={() => {
-            trackEvent('desktop_reset');
-            resetDesktop();
-          }}
-        >
-          Reset Desktop
-        </DropdownMenuItem>
-      </DropdownMenuContent>
+      <DropdownMenuContent {...menuContentProps}>{rowsWhenOpen('logo', logoRows)}</DropdownMenuContent>
     </DropdownMenu>
   );
 
@@ -192,7 +205,7 @@ export function MenuBar() {
    * Recent windows, listed inline rather than in a submenu — nested menus are
    * the one thing in here that did not survive contact with the OS chrome.
    */
-  const recentRows = (
+  const recentRows = () => (
     <>
       <DropdownMenuLabel className="os-menu-heading">Open Recent</DropdownMenuLabel>
       {recents.length === 0 ? (
@@ -229,7 +242,7 @@ export function MenuBar() {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent {...menuContentProps}>
-        {activeId ? (
+        {openMenu !== 'window' ? null : activeId ? (
           <>
             {activePath ? (
               <DropdownMenuItem className={menuItemClass} onClick={copyLink}>
@@ -273,7 +286,7 @@ export function MenuBar() {
           </>
         ) : (
           <>
-            {recentRows}
+            {recentRows()}
             <DropdownMenuSeparator className="os-menu-divider" />
             <DropdownMenuItem className={menuItemClass} onClick={toggleWidgets}>
               Show Desktop Widgets
@@ -285,9 +298,9 @@ export function MenuBar() {
   );
 
   /* ---------------------------------------------------------------- File */
-  const fileRows = (
+  const fileRows = () => (
     <>
-      {recentRows}
+      {recentRows()}
       <DropdownMenuSeparator className="os-menu-divider" />
       <DropdownMenuItem
         className={cn(menuItemClass, !activeId && 'pointer-events-none opacity-30')}
@@ -299,7 +312,7 @@ export function MenuBar() {
   );
 
   /* ---------------------------------------------------------------- View */
-  const viewRows = (
+  const viewRows = () => (
     <>
       <DropdownMenuItem
         className={menuItemClass}
@@ -355,7 +368,7 @@ export function MenuBar() {
   );
 
   /* ---------------------------------------------------------------- Help */
-  const helpRows = (
+  const helpRows = () => (
     <>
       <DropdownMenuItem
         className={menuItemClass}
@@ -381,14 +394,14 @@ export function MenuBar() {
     </>
   );
 
-  const namedMenu = (id: MenuId, label: string, rows: React.ReactNode) => (
+  const namedMenu = (id: MenuId, label: string, rows: () => React.ReactNode) => (
     <DropdownMenu open={openMenu === id} onOpenChange={(o) => setOpenMenu(o ? id : null)}>
       <DropdownMenuTrigger asChild>
         <button {...triggerProps(id)} className={labelClass(id)}>
           {label}
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent {...menuContentProps}>{rows}</DropdownMenuContent>
+      <DropdownMenuContent {...menuContentProps}>{rowsWhenOpen(id, rows)}</DropdownMenuContent>
     </DropdownMenu>
   );
 
@@ -432,14 +445,18 @@ export function MenuBar() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent {...menuContentProps}>
-            <DropdownMenuLabel className="os-menu-heading">File</DropdownMenuLabel>
-            {fileRows}
-            <DropdownMenuSeparator className="os-menu-divider" />
-            <DropdownMenuLabel className="os-menu-heading">View</DropdownMenuLabel>
-            {viewRows}
-            <DropdownMenuSeparator className="os-menu-divider" />
-            <DropdownMenuLabel className="os-menu-heading">Help</DropdownMenuLabel>
-            {helpRows}
+            {rowsWhenOpen('overflow', () => (
+              <>
+                <DropdownMenuLabel className="os-menu-heading">File</DropdownMenuLabel>
+                {fileRows()}
+                <DropdownMenuSeparator className="os-menu-divider" />
+                <DropdownMenuLabel className="os-menu-heading">View</DropdownMenuLabel>
+                {viewRows()}
+                <DropdownMenuSeparator className="os-menu-divider" />
+                <DropdownMenuLabel className="os-menu-heading">Help</DropdownMenuLabel>
+                {helpRows()}
+              </>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

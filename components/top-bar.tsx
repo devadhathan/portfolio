@@ -365,14 +365,6 @@ export function TopBar() {
                         </div>
                       );
                     }
-                    if (currentTheme?.id === 'clear') {
-                      return (
-                        <div
-                          className="h-4 w-4 rounded-full border border-foreground/45 bg-foreground/15 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.35)]"
-                          aria-hidden
-                        />
-                      );
-                    }
                     if (currentTheme?.color) {
                       return <div className="h-4 w-4 rounded-full" style={{ backgroundColor: currentTheme.color }} />;
                     }
@@ -394,11 +386,6 @@ export function TopBar() {
                       <div className="flex items-center gap-2">
                         {IconComponent ? (
                           <IconComponent className="h-3.5 w-3.5" />
-                        ) : item.id === 'clear' ? (
-                          <div
-                            className="h-3 w-3 rounded-full border border-foreground/45 bg-foreground/15 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.35)]"
-                            aria-hidden
-                          />
                         ) : item.color && 'letter' in item && typeof item.letter === 'string' ? (
                           <div
                             className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-black/80"

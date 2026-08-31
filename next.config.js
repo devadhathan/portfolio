@@ -10,7 +10,13 @@ const nextConfig = {
     unoptimized: false,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    formats: ['image/avif', 'image/webp'],
+    /*
+     * WebP only. The sources are already WebP, so AVIF was re-encoding them for
+     * about 13KB on a 60KB thumbnail while costing ~4x the transform time
+     * (measured: 658ms vs 173ms cold on a 1400px source). Every uncached size
+     * pays that on first request, which is what made the work grid crawl.
+     */
+    formats: ['image/webp'],
   },
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
   transpilePackages: ['next-intl', 'use-intl', 'cuelume'],

@@ -93,9 +93,9 @@ async function LocaleProviders({
         <SuppressCleanupErrors />
         <ThemeProvider
           attribute="class"
-          defaultTheme="clear"
+          defaultTheme="dark"
           enableSystem
-          themes={['clear', 'dark', 'light', 'blue', 'green', 'red']}
+          themes={['dark', 'light', 'blue', 'green', 'red']}
         >
           <ClientThemeProvider>
             <SiteContentProvider settings={settings} experience={experience} projects={projects}>
@@ -129,7 +129,7 @@ export default async function LocaleLayout({
   return (
     <html
       lang={locale}
-      className="clear"
+      className="dark"
       data-os-menubar="light"
       suppressHydrationWarning
     >

@@ -12,8 +12,7 @@ body {
 }
 
 /* Theme variables - outside @layer for proper specificity */
-.dark,
-.clear {
+.dark {
   --background: 53 31% 6%;
   --foreground: 0 0% 98%;
   --card: 47 20% 9%;
@@ -304,8 +303,7 @@ body {
     --chart-5: 27 87% 67%;
     --radius: 0.75rem;
   }
-  .dark,
-  .clear {
+  .dark {
     --background: 53 31% 6%;
     --foreground: 0 0% 98%;
     --card: 47 20% 9%;
@@ -483,6 +481,16 @@ body {
 .agent-orb-wave-2 { animation: agent-orb-wave-2 1.7s linear infinite; will-change: transform; }
 .agent-orb-wave-3 { animation: agent-orb-wave-3 2.4s linear infinite 0.4s; will-change: transform; }
 
+/*
+ * Offscreen or inside a closed window: the six looping animations here keep the
+ * compositor busy for something nobody can see. The component sets this once it
+ * leaves the viewport (it also stops its gaze/blink timers).
+ */
+[data-orb-asleep='true'] * {
+  animation-play-state: paused !important;
+  will-change: auto;
+}
+
 @keyframes brand-logo-tumble-3d {
   0%, 100% {
     transform: rotateY(-7deg) rotateZ(-1.5deg);
@@ -656,7 +664,6 @@ body {
 }
 
 /* Dynamic background — wallpaper from boot script when set. */
-html.clear body,
 html.dark body,
 html.light body,
 html.blue body,
@@ -719,8 +726,7 @@ html.red body {
     background: var(--os-wallpaper, #f5f0e8);
   }
 
-  html.dark .desktop-stage,
-  html.clear .desktop-stage {
+  html.dark .desktop-stage {
     background: var(--os-wallpaper, #0a0a0a);
   }
 
@@ -2310,6 +2316,36 @@ html.light .os-desktop-icon:focus-visible:not(.os-desktop-icon--dragging) .os-de
   transform: scale(1.08) translateZ(0);
 }
 
+/*
+ * Flat desktop icons — the SVGs are full squircle app icons with their own
+ * plate, so the frosted pad behind them was a second shell. !important because
+ * the themed well rules below are more specific (same approach as --bitmap).
+ */
+.os-desktop-icon__well--asset,
+html.dark .os-desktop-icon__well--asset,
+html.light .os-desktop-icon__well--asset {
+  border: none !important;
+  background: none !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* Depth now comes from the art itself rather than the pad's shadow. */
+.os-desktop-icon__well--asset .os-desktop-icon__asset {
+  filter: drop-shadow(0 2px 6px hsl(0 0% 0% / 0.32));
+}
+
+/*
+ * The pen is a bare glyph drawn corner to corner, where the other icons are
+ * squircles with their own internal padding — at the same box size it reads
+ * noticeably larger than its neighbours.
+ */
+.os-desktop-icon[data-os-icon='drawesome'] .os-desktop-icon__asset {
+  transform: scale(0.82);
+}
+
 .os-desktop-icon__asset {
   position: relative;
   z-index: 0;
@@ -2335,11 +2371,13 @@ html.light .os-desktop-icon:focus-visible:not(.os-desktop-icon--dragging) .os-de
   transition: opacity 0.28s ease;
 }
 
-/* Colored themes: light wash only — keep glass readable */
-html.blue .os-desktop-icon__tint,
-html.green .os-desktop-icon__tint,
-html.red .os-desktop-icon__tint {
-  opacity: 0.28;
+/*
+ * The wash used to recolor the glass plate behind each icon. With the plate
+ * removed it has nothing to blend into and paints a visible tinted box on top
+ * of the art, so it stays hidden in every theme.
+ */
+.os-desktop-icon__tint {
+  display: none;
 }
 
 /*
@@ -2358,14 +2396,31 @@ html.light .os-desktop-icon__well--asset .os-desktop-icon__asset {
 }
 
 html.dark .os-desktop-icon__asset,
-html.clear .os-desktop-icon__asset,
-html.dark .os-desktop-icon__well--asset .os-desktop-icon__asset,
-html.clear .os-desktop-icon__well--asset .os-desktop-icon__asset {
+html.dark .os-desktop-icon__well--asset .os-desktop-icon__asset {
   filter: none;
 }
 
 html.dark .os-desktop-icon__well--asset .os-desktop-icon__asset {
   filter: drop-shadow(0 1px 1px hsl(0 0% 0% / 0.2));
+}
+
+/*
+ * Selection glow — must sit after (and match the specificity of) the themed
+ * filter rules above, which otherwise reset the icon filter to none.
+ */
+html.dark .os-desktop-icon--active .os-desktop-icon__well--asset .os-desktop-icon__asset,
+html.blue .os-desktop-icon--active .os-desktop-icon__well--asset .os-desktop-icon__asset,
+html.green .os-desktop-icon--active .os-desktop-icon__well--asset .os-desktop-icon__asset,
+html.red .os-desktop-icon--active .os-desktop-icon__well--asset .os-desktop-icon__asset {
+  filter:
+    drop-shadow(0 0 4px hsl(0 0% 100% / 0.95))
+    drop-shadow(0 0 12px hsl(0 0% 100% / 0.6));
+}
+
+html.light .os-desktop-icon--active .os-desktop-icon__well--asset .os-desktop-icon__asset {
+  filter:
+    drop-shadow(0 0 4px hsl(0 0% 0% / 0.75))
+    drop-shadow(0 0 12px hsl(0 0% 0% / 0.5));
 }
 
 html.light .os-desktop-icon {
@@ -2374,6 +2429,39 @@ html.light .os-desktop-icon {
     0 1px 1px hsl(0 0% 0% / 0.55),
     0 0 6px hsl(0 0% 0% / 0.35),
     0 2px 8px hsl(0 0% 0% / 0.28);
+}
+
+/*
+ * Light wallpaper, any theme. The icons are white labels with a dark halo and
+ * flat art with no plate behind it, which disappears against a pale photo —
+ * the pen glyph is very nearly white. `data-os-menubar='dark'` is the wallpaper
+ * telling us its top band is bright, which is the same signal we need here, so
+ * the ink flips dark and the halo flips light. Placed after the themed filter
+ * rules above, which would otherwise reset the icon filter.
+ */
+html[data-os-menubar='dark'] .os-desktop-icon {
+  color: hsl(0 0% 10% / 0.95);
+  text-shadow:
+    0 1px 1px hsl(0 0% 100% / 0.75),
+    0 0 6px hsl(0 0% 100% / 0.5),
+    0 2px 8px hsl(0 0% 100% / 0.35);
+}
+
+html[data-os-menubar='dark'] .os-desktop-icon__well--asset .os-desktop-icon__asset {
+  filter:
+    drop-shadow(0 1px 2px hsl(0 0% 0% / 0.35))
+    drop-shadow(0 0 1px hsl(0 0% 0% / 0.4));
+}
+
+html[data-os-menubar='dark'] .os-desktop-icon--active .os-desktop-icon__well--asset .os-desktop-icon__asset {
+  filter:
+    drop-shadow(0 0 4px hsl(0 0% 0% / 0.7))
+    drop-shadow(0 0 12px hsl(0 0% 0% / 0.45));
+}
+
+html[data-os-menubar='dark'] .os-desktop-icon__external {
+  background: hsl(0 0% 100% / 0.95);
+  color: hsl(0 0% 12% / 0.95);
 }
 
 html.light .os-desktop-icon__well {
@@ -2547,8 +2635,7 @@ html.light .os-desktop-icon__well--asset {
   pointer-events: none;
 }
 
-html.dark .os-desktop-icon__external,
-html.clear .os-desktop-icon__external {
+html.dark .os-desktop-icon__external {
   background: hsl(0 0% 12% / 0.92);
   color: hsl(0 0% 100% / 0.95);
 }
@@ -4811,8 +4898,7 @@ html.light .os-photos-lightbox__close:hover {
   will-change: filter;
 }
 
-.dark .svg-theme-aware,
-.clear .svg-theme-aware {
+.dark .svg-theme-aware {
   filter: brightness(0) saturate(100%) invert(27%) sepia(100%) saturate(2000%) hue-rotate(228deg) brightness(1.26) contrast(1.2) !important;
 }
 
@@ -4929,8 +5015,6 @@ html.light .os-photos-lightbox__close:hover {
 
 .dark .pixel-draw-cursor,
 .dark .pixel-draw-cursor button,
-.clear .pixel-draw-cursor,
-.clear .pixel-draw-cursor button,
 .blue .pixel-draw-cursor,
 .blue .pixel-draw-cursor button,
 .green .pixel-draw-cursor,
@@ -4949,7 +5033,6 @@ html.light .os-photos-lightbox__close:hover {
 }
 
 .dark .pixl-artwork-svg,
-.clear .pixl-artwork-svg,
 .blue .pixl-artwork-svg,
 .green .pixl-artwork-svg,
 .red .pixl-artwork-svg {
@@ -5035,7 +5118,6 @@ html.light .os-photos-lightbox__close:hover {
 }
 
 .dark .glass-nav-pill,
-.clear .glass-nav-pill,
 html.blue .glass-nav-pill,
 html.green .glass-nav-pill,
 html.red .glass-nav-pill {
@@ -5057,7 +5139,6 @@ html.red .glass-nav-pill {
 }
 
 .dark .glass-nav-pill::before,
-.clear .glass-nav-pill::before,
 html.blue .glass-nav-pill::before,
 html.green .glass-nav-pill::before,
 html.red .glass-nav-pill::before {
@@ -5068,7 +5149,6 @@ html.red .glass-nav-pill::before {
 }
 
 .dark .glass-nav-pill::after,
-.clear .glass-nav-pill::after,
 html.blue .glass-nav-pill::after,
 html.green .glass-nav-pill::after,
 html.red .glass-nav-pill::after {
@@ -5092,7 +5172,6 @@ html.red .glass-nav-pill::after {
 }
 
 .dark .glass-chrome,
-.clear .glass-chrome,
 html.blue .glass-chrome,
 html.green .glass-chrome,
 html.red .glass-chrome {
@@ -5104,7 +5183,6 @@ html.red .glass-chrome {
 }
 
 .dark .glass-chrome:hover,
-.clear .glass-chrome:hover,
 html.blue .glass-chrome:hover,
 html.green .glass-chrome:hover,
 html.red .glass-chrome:hover {
@@ -5128,8 +5206,7 @@ html.red .glass-chrome:hover {
   );
 }
 
-.dark .progressive-blur-tint,
-.clear .progressive-blur-tint {
+.dark .progressive-blur-tint {
   background: linear-gradient(
     to bottom,
     hsl(var(--background) / 0.82) 0%,
@@ -5148,8 +5225,7 @@ html.red .glass-chrome:hover {
   );
 }
 
-.dark .progressive-blur-tint--mobile,
-.clear .progressive-blur-tint--mobile {
+.dark .progressive-blur-tint--mobile {
   background: linear-gradient(
     to bottom,
     hsl(var(--background) / 0.88) 0%,

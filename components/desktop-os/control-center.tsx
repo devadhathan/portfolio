@@ -169,7 +169,7 @@ export function ControlCenter({
 
   const wallpapers = useMemo(() => WALLPAPER_PRESETS.slice(0, MAX_GRID_WALLPAPERS), []);
   const hasMore = WALLPAPER_PRESETS.length > MAX_GRID_WALLPAPERS;
-  const activeTheme = theme ?? 'clear';
+  const activeTheme = theme ?? 'dark';
 
   const close = useCallback(
     (returnFocus = true) => {
@@ -474,11 +474,6 @@ export function ControlCenter({
                   >
                     {Icon ? (
                       <Icon className="h-3.5 w-3.5" aria-hidden />
-                    ) : option.id === 'clear' ? (
-                      <span
-                        aria-hidden
-                        className="h-3 w-3 rounded-full border border-foreground/45 bg-foreground/15 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.35)]"
-                      />
                     ) : (
                       <span
                         aria-hidden
@@ -493,7 +488,7 @@ export function ControlCenter({
             <p className="px-1 pt-1.5 text-[11px] text-foreground/50">
               {activeTheme === 'system'
                 ? 'Following your system'
-                : (APPEARANCE_OPTIONS.find((option) => option.id === activeTheme)?.name ?? 'Clear')}
+                : (APPEARANCE_OPTIONS.find((option) => option.id === activeTheme)?.name ?? 'Dark')}
             </p>
           </section>
 

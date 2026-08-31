@@ -42,7 +42,7 @@ const RAIL_WINDOW_ICONS: {
   id: DesktopRailWindowId;
   labelKey: 'drawesome';
   src: string;
-}[] = [{ id: 'drawesome', labelKey: 'drawesome', src: '/icons/pen.svg' }];
+}[] = [{ id: 'drawesome', labelKey: 'drawesome', src: '/icons/pennn.svg' }];
 
 const LINK_ICON_ID_SET = new Set<string>(DESKTOP_LINK_ICON_IDS);
 const WINDOW_ICON_ID_SET = new Set<string>([

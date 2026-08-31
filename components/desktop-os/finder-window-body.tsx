@@ -88,7 +88,7 @@ const APPLICATIONS: FinderItem[] = [
     syncUrl: true,
   },
   { id: 'games', label: 'Games', src: '/icons/gamess.svg', openId: 'games' },
-  { id: 'drawesome', label: 'Draw', src: '/icons/pen.svg', openId: 'drawesome' },
+  { id: 'drawesome', label: 'Draw', src: '/icons/pennn.svg', openId: 'drawesome' },
   { id: 'photos', label: 'Photos', src: '/icons/image.svg', openId: 'photos' },
   { id: 'ask', label: 'Ask AI', src: '/icons/sparkles.svg', openId: 'ask' },
   { id: 'contact', label: 'Contact', src: '/icons/mailbox.svg', openId: 'contact' },

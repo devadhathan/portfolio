@@ -1,12 +1,13 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { DesktopWindowId } from '@/lib/desktop-os';
 
 /** Window chrome and the menu bar name windows the same way. */
 export function useWindowTitles(): Record<DesktopWindowId, string> {
   const t = useTranslations('nav');
-  return {
+  return useMemo(() => ({
     finder: 'Catalog',
     home: t('home'),
     work: t('work'),
@@ -23,5 +24,5 @@ export function useWindowTitles(): Record<DesktopWindowId, string> {
     writings: 'Favourites',
     catalystic: 'Catalystic',
     bigBang: 'Big Bang',
-  };
+  }), [t]);
 }

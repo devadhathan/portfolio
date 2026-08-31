@@ -155,6 +155,8 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
   const [focusedId, setFocusedId] = useState<DesktopWindowId | null>(() =>
     pathToWindowId(pathname),
   );
+  const focusedIdRef = useRef(focusedId);
+  focusedIdRef.current = focusedId;
   const [finderLocation, setFinderLocation] = useState<FinderLocation>('applications');
   const [closedStack, setClosedStack] = useState<DesktopWindowId[]>([]);
   const [iconPositions, setIconPositions] = useState<Record<DesktopIconId, DesktopIconPosition>>(
@@ -259,6 +261,27 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
 
   const focusWindow = useCallback(
     (id: DesktopWindowId, opts?: OpenWindowOpts) => {
+      // Windows call this on every mousedown. Re-focusing the window that is
+      // already focused and on top produces identical state, but the setters
+      // below allocate regardless — which invalidates the context and re-renders
+      // the shell, every mounted window body and the menubar. Bail instead.
+      if (!opts?.finderLocation) {
+        const settled = windowsRef.current[id];
+        const path = WINDOW_PATH[id];
+        // syncUrl:false callers never touch the URL, so a mismatch is expected.
+        const urlSettled = opts?.syncUrl === false || !path || pathname === path;
+        if (
+          settled?.open &&
+          settled.maximized &&
+          settled.zIndex === zCounter.current &&
+          (!isNarrowRef.current || settled.covered) &&
+          focusedIdRef.current === id &&
+          urlSettled
+        ) {
+          return;
+        }
+      }
+
       if (opts?.finderLocation) {
         setFinderLocation(opts.finderLocation);
       }
@@ -280,7 +303,9 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
             maximized: true,
             covered: inheritCovered,
             everOpened: true,
-            zIndex: bumpZ(),
+            // Already on top — reusing the value avoids a pointless style write.
+            zIndex:
+              alreadyOpen && current.zIndex === zCounter.current ? current.zIndex : bumpZ(),
           },
         };
 
@@ -309,7 +334,9 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
       // Only a real open — refocusing an open window is not a new visit.
       if (!windowsRef.current[id]?.open) trackEvent('window_opened', { window: id });
 
-      setClosedStack((prev) => prev.filter((x) => x !== id));
+      // filter() would allocate on every call, changing state identity even when
+      // the id was never in the stack.
+      setClosedStack((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : prev));
       setFocusedId(id);
       // Open Recent lists what you were in before this one.
       setSettings((prev) => {
@@ -325,7 +352,7 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
         syncUrl(id);
       }
     },
-    [bumpZ, syncUrl],
+    [bumpZ, pathname, syncUrl],
   );
 
   const focusWindowRef = useRef(focusWindow);

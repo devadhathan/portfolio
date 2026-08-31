@@ -99,6 +99,9 @@ export function getOsSettingsBootScript(): string {
   const order = WALLPAPER_PRESETS.map((preset) => preset.id);
 
   return `(function(){try{
+/* The 'clear' theme is gone. Rewrite it before next-themes reads the key, or a
+   returning visitor boots into a class with no styles behind it. */
+try{if(localStorage.getItem('theme')==='clear'){localStorage.setItem('theme','dark');document.documentElement.classList.remove('clear');document.documentElement.classList.add('dark');}}catch(e){}
 var S={};try{S=JSON.parse(localStorage.getItem(${JSON.stringify(OS_SETTINGS_KEY)}))||{}}catch(e){}
 var P=${JSON.stringify(backgrounds)},M=${JSON.stringify(mobileBackgrounds)},C=${JSON.stringify(contrasts)},O=${JSON.stringify(order)};
 var id=S.wallpaperId;
