@@ -5,7 +5,14 @@ import { Maximize2, Minimize2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { DesktopWindowId } from '@/lib/desktop-os';
 import { useDesktopOs } from '@/components/desktop-os/desktop-os-provider';
-import { OsWindowIdProvider } from '@/components/desktop-os/os-window-scope';
+import { OsWindowIdProvider, useOsWindowId } from '@/components/desktop-os/os-window-scope';
+import { useOsWindowScrollSession } from '@/hooks/use-os-window-scroll-session';
+
+function OsWindowScrollSession() {
+  const id = useOsWindowId() as DesktopWindowId;
+  useOsWindowScrollSession(id);
+  return null;
+}
 
 type OsWindowProps = {
   id: DesktopWindowId;
@@ -26,6 +33,7 @@ export function OsWindow({ id, title, children }: OsWindowProps) {
 
   return (
     <div
+      data-os-window={id}
       className={cn(
         'os-window absolute flex flex-col overflow-hidden rounded-2xl border border-border/40 isolate',
         focusedId === id && isOpen && 'os-window--focused',
@@ -85,7 +93,10 @@ export function OsWindow({ id, title, children }: OsWindowProps) {
           isFinder ? 'overflow-hidden' : 'overflow-auto',
         )}
       >
-        <OsWindowIdProvider value={id}>{children}</OsWindowIdProvider>
+        <OsWindowIdProvider value={id}>
+          <OsWindowScrollSession />
+          {children}
+        </OsWindowIdProvider>
       </div>
     </div>
   );

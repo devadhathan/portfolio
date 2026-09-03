@@ -20,13 +20,13 @@ import {
 } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { useDesktopOs } from '@/components/desktop-os/desktop-os-provider';
+import { OsCatalogIcon, windowLineIconId, type OsLineIconId } from '@/components/desktop-os/os-line-icons';
 import { useWindowTitles } from '@/components/desktop-os/window-titles';
 import { prefetchDesktopWindow } from '@/components/desktop-os/window-bodies';
 import { trackEvent } from '@/lib/analytics';
 import { setDockInteractionBusy } from '@/lib/dock-interaction';
 import {
   DESKTOP_WINDOW_IDS,
-  WINDOW_ICON_SRC,
   WINDOW_PATH,
   type DesktopWindowId,
   type FinderLocation,
@@ -35,7 +35,7 @@ import { cn, focusRing } from '@/lib/utils';
 
 type DockItem = {
   id: DesktopWindowId;
-  src: string;
+  iconId: OsLineIconId;
   /** Route-syncing windows keep their URL; the rest open in place. */
   syncUrl?: boolean;
   /** When set, dock opens Finder at this sidebar location. */
@@ -44,14 +44,14 @@ type DockItem = {
 
 /** Primary cluster — Mac-style dock apps (Photos sits after a divider). */
 const PRIMARY_DOCK_ITEMS: DockItem[] = [
-  { id: 'home', src: '/icons/home.svg', syncUrl: true },
-  { id: 'work', src: '/icons/briefcase.svg', syncUrl: true },
-  { id: 'playground', src: '/icons/playgroundd.svg', syncUrl: true },
+  { id: 'home', iconId: 'home', syncUrl: true },
+  { id: 'work', iconId: 'work', syncUrl: true },
+  { id: 'playground', iconId: 'playground', syncUrl: true },
 ];
 
 /** Trailing dock apps — right of the divider. */
 const TRAILING_DOCK_ITEMS: DockItem[] = [
-  { id: 'photos', src: '/icons/image.svg' },
+  { id: 'photos', iconId: 'photos' },
 ];
 
 const PRIMARY_DOCK_IDS = new Set<DesktopWindowId>([
@@ -168,15 +168,9 @@ function DockIcon({
   const tipSpring = reduceMotion ? { duration: 0 } : DOCK_SPRING_SNAPPY;
 
   const icon = (
-    // eslint-disable-next-line @next/next/no-img-element -- local SVG, no optimisation to gain
-    <img
-      src={item.src}
-      alt=""
-      width={60}
-      height={60}
-      className={cn('os-dock__icon', isBare && 'os-dock__icon--bare')}
-      draggable={false}
-      decoding="async"
+    <OsCatalogIcon
+      id={item.iconId}
+      size={compact ? 'sm' : 'md'}
     />
   );
 
@@ -281,7 +275,7 @@ export function Dock() {
         if (finderLocation === 'trash') {
           items.push({
             id: 'trash',
-            src: WINDOW_ICON_SRC.trash ?? '/icons/trash.svg',
+            iconId: 'trash',
             syncUrl: false,
             finderLocation: 'trash',
             zIndex,
@@ -289,7 +283,7 @@ export function Dock() {
         } else if (finderLocation === 'favourites') {
           items.push({
             id: 'writings',
-            src: WINDOW_ICON_SRC.writings ?? '/icons/folder.svg',
+            iconId: 'writings',
             syncUrl: false,
             finderLocation: 'favourites',
             zIndex,
@@ -303,7 +297,7 @@ export function Dock() {
 
       items.push({
         id,
-        src: WINDOW_ICON_SRC[id] ?? '/icons/sparkles.svg',
+        iconId: windowLineIconId(id),
         syncUrl: Boolean(WINDOW_PATH[id]),
         zIndex: windows[id]?.zIndex ?? 0,
       });

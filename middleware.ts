@@ -1,10 +1,24 @@
 import createMiddleware from 'next-intl/middleware'
 import { NextRequest, NextResponse } from 'next/server'
-import { routing } from './i18n/routing'
+import { routing, type Locale } from './i18n/routing'
 
 const BLOCKED_DOMAIN = 'wordsmith.ai'
 
+/** App segments that must not be treated as a locale slug (e.g. /work → locale "work"). */
+const APP_ROUTE_SEGMENTS = new Set(['work', 'contact', 'playground'])
+
 const intlMiddleware = createMiddleware(routing)
+
+function rewriteKnownAppRoute(request: NextRequest): NextResponse | null {
+  const { pathname } = request.nextUrl
+  const first = pathname.split('/').filter(Boolean)[0]
+  if (!first || routing.locales.includes(first as Locale)) return null
+  if (!APP_ROUTE_SEGMENTS.has(first)) return null
+
+  const url = request.nextUrl.clone()
+  url.pathname = `/${routing.defaultLocale}${pathname}`
+  return NextResponse.rewrite(url)
+}
 
 export function middleware(request: NextRequest) {
   const origin = request.headers.get('origin') || ''
@@ -26,6 +40,9 @@ export function middleware(request: NextRequest) {
     url.pathname = pathname.replace(/^\/ml/, '') || '/'
     return NextResponse.redirect(url)
   }
+
+  const appRouteRewrite = rewriteKnownAppRoute(request)
+  if (appRouteRewrite) return appRouteRewrite
 
   return intlMiddleware(request)
 }

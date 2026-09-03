@@ -1,11 +1,16 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { ArrowUp } from 'lucide-react';
-import { AgentOrbHatMenu } from '@/components/agent-orb-hat-menu';
 import { GEN_UI_STARTER_CHIPS } from '@/lib/gen-ui-prompt-placeholders';
 import { MAX_GEN_UI_PROMPT_LENGTH } from '@/lib/gen-ui-prompt';
 import { cn } from '@/lib/utils';
+
+const AgentOrbHatMenu = dynamic(
+  () => import('@/components/agent-orb-hat-menu').then((m) => ({ default: m.AgentOrbHatMenu })),
+  { ssr: false },
+);
 
 const INPUT_SHELL_CLASS =
   'rounded-[28px] border border-border/55 bg-secondary/90 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-white/[0.12] dark:bg-[#1c1c1c] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]';
@@ -29,6 +34,8 @@ type GenUISearchBarProps = {
   /** Place supporting copy under the chips instead of under the brand. */
   subheadPlacement?: 'under-headline' | 'below-chips';
   orbSize?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  /** Ask window — orb stays awake while open; chunk loads with this bar only. */
+  orbAlwaysAwake?: boolean;
 };
 
 export function GenUISearchBar({
@@ -43,6 +50,7 @@ export function GenUISearchBar({
   subhead = "Ask about my work — I'll build a custom view.",
   subheadPlacement = 'under-headline',
   orbSize = 'sm',
+  orbAlwaysAwake = false,
 }: GenUISearchBarProps) {
   const [value, setValue] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -136,7 +144,7 @@ export function GenUISearchBar({
         {/* Orb sits above the greeting so it reads as one centred stack */}
         <div className="flex flex-col items-center gap-3">
           <div className="flex flex-col items-center gap-3">
-            <AgentOrbHatMenu size={orbSize} />
+            <AgentOrbHatMenu size={orbSize} alwaysAwake={orbAlwaysAwake} />
             <span className="text-center text-[22px] font-semibold tracking-tight text-foreground sm:text-[26px]">
               {wordmark}
             </span>

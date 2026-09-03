@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { trackEvent } from '@/lib/analytics';
 import type { CaseStudySection } from '@/lib/case-study-sections';
 
 type CaseStudyOnPageNavProps = {
@@ -18,6 +19,7 @@ export function CaseStudyOnPageNav({ label, projectId, sections }: CaseStudyOnPa
   const [activeId, setActiveId] = useState<string | null>(sections[0]?.id ?? null);
   const tocNavRef = useRef<HTMLElement | null>(null);
   const tocLinkRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const trackRef = useRef<HTMLSpanElement | null>(null);
   const indicatorRef = useRef<HTMLSpanElement | null>(null);
   const lockUntilRef = useRef(0);
 
@@ -25,6 +27,21 @@ export function CaseStudyOnPageNav({ label, projectId, sections }: CaseStudyOnPa
     activeId && sections.some((section) => section.id === activeId)
       ? activeId
       : (sections[0]?.id ?? null);
+
+  const updateTrackBounds = useCallback(() => {
+    const track = trackRef.current;
+    if (!track || sections.length === 0) return;
+
+    const first = tocLinkRefs.current[sections[0].id];
+    const last = tocLinkRefs.current[sections[sections.length - 1].id];
+    if (!first || !last) return;
+
+    const top = first.offsetTop;
+    const height = last.offsetTop + last.offsetHeight - top;
+    track.style.top = `${top}px`;
+    track.style.height = `${Math.max(height, 0)}px`;
+    track.style.bottom = 'auto';
+  }, [sections]);
 
   const placeIndicator = useCallback((sectionId: string | null) => {
     const indicator = indicatorRef.current;
@@ -53,6 +70,15 @@ export function CaseStudyOnPageNav({ label, projectId, sections }: CaseStudyOnPa
       setActiveId(sectionId);
       placeIndicator(sectionId);
       lockUntilRef.current = performance.now() + 850;
+      if (
+        projectId.includes('crm') &&
+        (sectionId === 'other-features' ||
+          sectionId === 'adding-notes' ||
+          sectionId === 'my-tasks-lead-owner-change' ||
+          sectionId === 'tags-for-leads')
+      ) {
+        trackEvent('crm_toc_clicked', { section: sectionId, slug: projectId });
+      }
       const target = document.getElementById(`${projectId}-${sectionId}`);
       if (!target) return;
       const root = findScrollRoot(target);
@@ -71,8 +97,17 @@ export function CaseStudyOnPageNav({ label, projectId, sections }: CaseStudyOnPa
   );
 
   useLayoutEffect(() => {
+    updateTrackBounds();
     placeIndicator(effectiveActiveId);
-  }, [effectiveActiveId, sectionKey, placeIndicator]);
+  }, [effectiveActiveId, sectionKey, placeIndicator, updateTrackBounds]);
+
+  useEffect(() => {
+    const nav = tocNavRef.current;
+    if (!nav) return;
+    const observer = new ResizeObserver(() => updateTrackBounds());
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, [sectionKey, updateTrackBounds]);
 
   useEffect(() => {
     if (!projectId || !sectionKey) {
@@ -86,6 +121,8 @@ export function CaseStudyOnPageNav({ label, projectId, sections }: CaseStudyOnPa
     let cancelled = false;
     let retryTimer = 0;
     let observer: IntersectionObserver | null = null;
+    let scrollRoot: HTMLElement | null = null;
+    let onScroll: (() => void) | null = null;
 
     const bind = () => {
       if (cancelled) return;
@@ -102,8 +139,28 @@ export function CaseStudyOnPageNav({ label, projectId, sections }: CaseStudyOnPa
         return;
       }
 
-      const scrollRoot = findScrollRoot(entries[0].el);
+      scrollRoot = findScrollRoot(entries[0].el);
       const visible = new Map<string, number>();
+
+      onScroll = () => {
+        if (performance.now() < lockUntilRef.current) return;
+        const atEnd = scrollRoot
+          ? scrollRoot.scrollTop + scrollRoot.clientHeight >= scrollRoot.scrollHeight - 24
+          : window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 24;
+        if (!atEnd) return;
+        const lastId = ids[ids.length - 1];
+        setActiveId((prev) => {
+          if (prev === lastId) return prev;
+          placeIndicator(lastId);
+          return lastId;
+        });
+      };
+
+      if (scrollRoot) {
+        scrollRoot.addEventListener('scroll', onScroll, { passive: true });
+      } else {
+        window.addEventListener('scroll', onScroll, { passive: true });
+      }
 
       observer = new IntersectionObserver(
         (ioEntries) => {
@@ -146,6 +203,8 @@ export function CaseStudyOnPageNav({ label, projectId, sections }: CaseStudyOnPa
       );
 
       for (const { el } of entries) observer.observe(el);
+      updateTrackBounds();
+      onScroll?.();
     };
 
     bind();
@@ -154,17 +213,21 @@ export function CaseStudyOnPageNav({ label, projectId, sections }: CaseStudyOnPa
       cancelled = true;
       window.clearTimeout(retryTimer);
       observer?.disconnect();
+      if (onScroll) {
+        if (scrollRoot) scrollRoot.removeEventListener('scroll', onScroll);
+        else window.removeEventListener('scroll', onScroll);
+      }
     };
-  }, [findScrollRoot, placeIndicator, projectId, sectionKey]);
+  }, [findScrollRoot, placeIndicator, projectId, sectionKey, updateTrackBounds]);
 
   return (
-    <div className="os-work-case-toc-inner pt-8 pr-1">
+    <div className="os-work-case-toc-inner px-4 pb-4 pt-8 sm:px-5">
       <p className="mb-3 pl-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
       {sections.length > 0 ? (
         <nav ref={tocNavRef} className="os-work-toc-nav relative" aria-label={label}>
-          <span className="os-work-toc-track" aria-hidden />
+          <span ref={trackRef} className="os-work-toc-track" aria-hidden />
           <span ref={indicatorRef} className="os-work-toc-indicator" aria-hidden />
           {sections.map((section) => {
             const isActive = effectiveActiveId === section.id;

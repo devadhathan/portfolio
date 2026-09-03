@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { getCaseStudyBackground } from '@/lib/case-study-backgrounds';
 
@@ -14,10 +15,65 @@ type CaseStudyScreenStageProps = {
   frame?: 'phone' | 'landscape';
   media:
     | { type: 'image'; src: string }
-    | { type: 'video'; src: string; poster?: string; autoPlay?: boolean; controls?: boolean };
+    | { type: 'video'; src: string; poster?: string; controls?: boolean };
   onClick?: () => void;
   className?: string;
 };
+
+/**
+ * Plays while it is on screen and pauses when it leaves, so a case study with
+ * several walkthroughs isn't decoding all of them at once. Same behaviour as
+ * the unstaged section videos.
+ */
+function StageVideo({
+  src,
+  poster,
+  controls,
+  label,
+  className,
+}: {
+  src: string;
+  poster?: string;
+  controls?: boolean;
+  label: string;
+  className?: string;
+}) {
+  const ref = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) void el.play().catch(() => {});
+        else el.pause();
+      },
+      { threshold: 0.25 },
+    );
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      el.pause();
+    };
+  }, []);
+
+  return (
+    <video
+      ref={ref}
+      className={className}
+      poster={poster}
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="metadata"
+      controls={controls}
+      aria-label={label}
+    >
+      <source src={src} type="video/mp4" />
+    </video>
+  );
+}
 
 /**
  * Painting stage with an inset interface screen.
@@ -84,18 +140,13 @@ export function CaseStudyScreenStage({
                 sizes="(max-width: 768px) 45vw, 280px"
               />
             ) : (
-              <video
+              <StageVideo
                 className="absolute inset-0 h-full w-full object-cover"
+                src={media.src}
                 poster={media.poster}
-                autoPlay={media.autoPlay ?? true}
-                muted
-                loop
-                playsInline
                 controls={media.controls}
-                aria-label={alt}
-              >
-                <source src={media.src} type="video/mp4" />
-              </video>
+                label={alt}
+              />
             )}
           </div>
         ) : (
@@ -110,18 +161,13 @@ export function CaseStudyScreenStage({
                 sizes="(max-width: 768px) 90vw, 70vw"
               />
             ) : (
-              <video
+              <StageVideo
                 className="h-auto w-full"
+                src={media.src}
                 poster={media.poster}
-                autoPlay={media.autoPlay ?? false}
-                muted={media.autoPlay ?? false}
-                loop={media.autoPlay ?? false}
-                playsInline
                 controls={media.controls ?? true}
-                aria-label={alt}
-              >
-                <source src={media.src} type="video/mp4" />
-              </video>
+                label={alt}
+              />
             )}
           </div>
         )}

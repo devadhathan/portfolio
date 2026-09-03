@@ -12,8 +12,8 @@ import {
 import { CardTag } from '@/components/card-tag';
 import { useSiteContent } from '@/components/site-content-provider';
 import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
-import { getProjectId, type Project } from '@/lib/types/project';
-import { trackEvent } from '@/lib/analytics';
+import { getProjectId, getProjectSlug, type Project } from '@/lib/types/project';
+import { startSessionReplay, trackEvent } from '@/lib/analytics';
 import { cn, focusRing } from '@/lib/utils';
 import {
   HOME_INTRO_CARDS_DELAY,
@@ -161,7 +161,7 @@ const FEATURED_MEDIA: Record<
     src: '/videos/nesoi-thumb.mp4',
     poster: '/videos/nesoi-poster.webp',
     subtitle: 'I redesigned how teams turn files into interactive learning.',
-    title: 'Nesoi.ai',
+    title: 'Nesoi AI Dashboard',
   },
   'crm-redesign': {
     type: 'image',
@@ -170,7 +170,7 @@ const FEATURED_MEDIA: Record<
     overlayType: 'video',
     overlayPoster: '/CRM/image.webp',
     subtitle: 'We rebuilt leads and notes so agents could move faster.',
-    title: 'CRM',
+    title: 'Ditto Insurance CRM Design',
   },
 };
 
@@ -180,7 +180,7 @@ function buildItems(projects: Project[]): { featured: FeaturedItem[]; archive: L
   const parsed = projects
     .filter((project) => !/wordsmith/i.test(project.title))
     .map((project) => {
-      const id = getProjectId(project.title);
+      const id = getProjectSlug(project);
       const meta = parsePeriod(project.period);
       const exact = CASE_STUDY_DATE_BY_ID[id];
       const year = exact?.year ?? meta.year;
@@ -486,7 +486,7 @@ function FeaturedThumb({
             className={cn(
               'pointer-events-none absolute z-[1] transition-transform duration-700 ease-out-expo group-hover:scale-[1.02]',
               item.openWordsmith
-                ? 'inset-y-[11%] left-[16%] right-0 group-hover:translate-x-0.5'
+                ? 'inset-y-[5%] left-[8%] right-0 group-hover:translate-x-0.5'
                 : 'inset-y-[8%] left-1/2 w-[82%] -translate-x-1/2 sm:w-[78%]',
             )}
           >
@@ -500,7 +500,10 @@ function FeaturedThumb({
             >
               {item.media.overlayType === 'video' && reduceMotion !== true && allowLoopVideo ? (
                 <FeaturedVideo
-                  className="h-full w-full object-cover object-left-top"
+                  className={cn(
+                    'h-full w-full object-cover object-left-top',
+                    item.openWordsmith && 'scale-[1.14] origin-top-left',
+                  )}
                   src={item.media.overlay}
                   poster={item.media.overlayPoster}
                 />
@@ -513,7 +516,10 @@ function FeaturedThumb({
                       : item.media.overlay
                   }
                   alt=""
-                  className="h-full w-full object-cover object-left-top"
+                  className={cn(
+                    'h-full w-full object-cover object-left-top',
+                    item.openWordsmith && 'scale-[1.14] origin-top-left',
+                  )}
                   loading="lazy"
                   decoding="async"
                   draggable={false}
@@ -587,11 +593,14 @@ export function CaseStudiesList({
 
   const handleSelect = (item: ListItem) => {
     if (item.openWordsmith) {
-      trackEvent('outbound_link', { destination: 'wordsmith' });
+      const surface = desktopOs?.enabled ? 'home_selected_work' : 'home_bento';
+      trackEvent('wordsmith_card_clicked', { surface });
       if (desktopOs?.enabled) {
         desktopOs.openWindow('wordsmith', { syncUrl: false });
         return;
       }
+      trackEvent('wordsmith_opened', { surface });
+      startSessionReplay();
       if (item.href) {
         window.open(item.href, '_blank', 'noopener,noreferrer');
       }

@@ -98,6 +98,7 @@ export function GenUIModeShell({
               subhead={subhead}
               subheadPlacement={subheadPlacement}
               orbSize={orbSize}
+              orbAlwaysAwake={embedded}
             />
           </div>
         </div>
@@ -160,6 +161,7 @@ export function GenUIModeShell({
                   subhead={subhead}
                   subheadPlacement={subheadPlacement}
                   orbSize={orbSize}
+                  orbAlwaysAwake={embedded}
                 />
               </div>
             )}

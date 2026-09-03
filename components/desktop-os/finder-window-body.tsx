@@ -4,10 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as R
 import { createPortal } from 'react-dom';
 import { Check, Clock, FileText, Folder, Grid2X2, HardDrive, LayoutGrid, List, Star, Trash2 } from 'lucide-react';
 import { useDesktopOs } from '@/components/desktop-os/desktop-os-provider';
+import { OsLineIcon, type OsLineIconId } from '@/components/desktop-os/os-line-icons';
 import { useWindowTitles } from '@/components/desktop-os/window-titles';
 import {
   TRASH_BAIT_VIDEO,
-  WINDOW_ICON_SRC,
   type DesktopWindowId,
   type FinderLocation,
   type FinderTagId,
@@ -20,7 +20,9 @@ type ViewMode = 'grid' | 'list';
 type FinderItem = {
   id: string;
   label: string;
-  src: string;
+  /** Legacy / thumbnail assets (e.g. trash bait). Prefer `iconId` for apps. */
+  src?: string;
+  iconId?: OsLineIconId;
   openId?: DesktopWindowId;
   href?: string;
   syncUrl?: boolean;
@@ -78,81 +80,79 @@ const LOCATION_TITLE: Record<FinderLocation, string> = {
 };
 
 const APPLICATIONS: FinderItem[] = [
-  { id: 'home', label: 'Home', src: '/icons/home.svg', openId: 'home', syncUrl: true },
-  { id: 'work', label: 'Work', src: '/icons/briefcase.svg', openId: 'work', syncUrl: true },
+  { id: 'home', label: 'Home', iconId: 'home', openId: 'home', syncUrl: true },
+  { id: 'work', label: 'Work', iconId: 'work', openId: 'work', syncUrl: true },
   {
     id: 'playground',
     label: 'Playground',
-    src: '/icons/playgroundd.svg',
+    iconId: 'playground',
     openId: 'playground',
     syncUrl: true,
   },
-  { id: 'games', label: 'Games', src: '/icons/gamess.svg', openId: 'games' },
-  { id: 'drawesome', label: 'Draw', src: '/icons/pennn.svg', openId: 'drawesome' },
-  { id: 'photos', label: 'Photos', src: '/icons/image.svg', openId: 'photos' },
-  { id: 'ask', label: 'Ask AI', src: '/icons/sparkles.svg', openId: 'ask' },
-  { id: 'contact', label: 'Contact', src: '/icons/mailbox.svg', openId: 'contact' },
+  { id: 'games', label: 'Games', iconId: 'games', openId: 'games' },
+  { id: 'photos', label: 'Photos', iconId: 'photos', openId: 'photos' },
+  { id: 'ask', label: 'Ask AI', iconId: 'ask', openId: 'ask' },
+  { id: 'contact', label: 'Contact', iconId: 'contact', openId: 'contact' },
 ];
 
 const DESKTOP: FinderItem[] = [
-  { id: 'home', label: 'Home', src: '/icons/home.svg', openId: 'home', syncUrl: true },
-  { id: 'work', label: 'Work', src: '/icons/briefcase.svg', openId: 'work', syncUrl: true },
-  { id: 'photos', label: 'Photos', src: '/icons/image.svg', openId: 'photos' },
+  { id: 'home', label: 'Home', iconId: 'home', openId: 'home', syncUrl: true },
+  { id: 'work', label: 'Work', iconId: 'work', openId: 'work', syncUrl: true },
+  { id: 'photos', label: 'Photos', iconId: 'photos', openId: 'photos' },
   {
     id: 'playground',
     label: 'Playground',
-    src: '/icons/playgroundd.svg',
+    iconId: 'playground',
     openId: 'playground',
     syncUrl: true,
   },
-  { id: 'ask', label: 'Ask AI', src: '/icons/sparkles.svg', openId: 'ask' },
+  { id: 'ask', label: 'Ask AI', iconId: 'ask', openId: 'ask' },
   {
     id: 'favourites',
     label: 'Favourites',
-    src: '/icons/folder.svg',
+    iconId: 'folder',
     location: 'favourites',
   },
 ];
 
-const DOCUMENTS: FinderItem[] = [
-  {
-    id: 'favourites',
-    label: 'Favourites',
-    src: '/icons/folder.svg',
-    location: 'favourites',
-  },
-];
+const DOCUMENTS: FinderItem[] = [];
 
-/** Desktop Favourites folder — Contact, Medium, Games, and side projects. */
+/** Desktop Favourites folder — Contact, Medium, Games, Draw, and side projects. */
 const FAVOURITES: FinderItem[] = [
   {
     id: 'contact',
     label: 'Contact',
-    src: '/icons/mailbox.svg',
+    iconId: 'contact',
     openId: 'contact',
   },
   {
     id: 'medium',
     label: 'Medium',
-    src: '/icons/news.svg',
+    iconId: 'medium',
     href: 'https://medium.com/@devadhathanmd18',
   },
   {
     id: 'games',
     label: 'Games',
-    src: '/icons/gamess.svg',
+    iconId: 'games',
     openId: 'games',
+  },
+  {
+    id: 'drawesome',
+    label: 'Draw',
+    iconId: 'drawesome',
+    openId: 'drawesome',
   },
   {
     id: 'catalystic',
     label: 'Catalystic',
-    src: '/icons/lightbulb.svg',
+    iconId: 'catalystic',
     openId: 'catalystic',
   },
   {
     id: 'bigBang',
     label: 'Big Bang',
-    src: '/icons/lightbulb.svg',
+    iconId: 'bigBang',
     openId: 'bigBang',
   },
 ];
@@ -172,31 +172,31 @@ const SIDE_PROJECTS: FinderItem[] = [
   {
     id: 'catalystic',
     label: 'Catalystic UI',
-    src: '/icons/folder.svg',
+    iconId: 'folder',
     openId: 'catalystic',
   },
   {
     id: 'pixl',
     label: 'Pixl',
-    src: '/icons/folder.svg',
+    iconId: 'folder',
     href: 'https://pixlanimations.vercel.app',
   },
   {
     id: 'musicNotch',
     label: 'MusicNotch',
-    src: '/icons/folder.svg',
+    iconId: 'folder',
     href: 'https://musicnotch-landing.vercel.app/',
   },
   {
     id: 'linkring',
     label: 'Linkring',
-    src: '/icons/folder.svg',
+    iconId: 'folder',
     href: 'https://linkring.vercel.app/',
   },
   {
     id: 'bigBang',
     label: 'Big Bang Timeline',
-    src: '/icons/folder.svg',
+    iconId: 'folder',
     openId: 'bigBang',
   },
 ];
@@ -436,6 +436,48 @@ function TagsContextMenu({
   );
 }
 
+function FinderItemGlyph({ item, size }: { item: FinderItem; size: 'sm' | 'md' | 'lg' }) {
+  if (item.iconId) {
+    const wrapperSize = size === 'lg' ? 'os-finder-catalog-icon--lg' : 'os-finder-catalog-icon--sm';
+    return (
+      <span className={cn('os-finder-catalog-icon', wrapperSize)}>
+        <OsLineIcon id={item.iconId} />
+      </span>
+    );
+  }
+  if (item.src) {
+    const px = size === 'sm' ? 28 : size === 'lg' ? 56 : 48;
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={item.src}
+        alt=""
+        width={px}
+        height={px}
+        className={
+          size === 'sm'
+            ? 'h-7 w-7 shrink-0 rounded-md object-cover'
+            : size === 'lg'
+              ? 'h-14 w-14 rounded-xl object-cover'
+              : 'h-12 w-12 rounded-xl object-cover'
+        }
+        draggable={false}
+        decoding="async"
+      />
+    );
+  }
+  return (
+    <span
+      className={cn(
+        'os-finder-catalog-icon',
+        size === 'lg' ? 'os-finder-catalog-icon--lg' : 'os-finder-catalog-icon--sm',
+      )}
+    >
+      <OsLineIcon id="folder" />
+    </span>
+  );
+}
+
 function ItemViews({
   items,
   view,
@@ -456,6 +498,11 @@ function ItemViews({
     );
   }
 
+  const activate = (item: FinderItem) => {
+    setSelectedId(item.id);
+    openFinderItem(item, openWindow, setFinderLocation);
+  };
+
   if (view === 'list') {
     return (
       <ul className="flex flex-col px-2 py-2">
@@ -466,29 +513,19 @@ function ItemViews({
             <li key={item.id}>
               <button
                 type="button"
-                onClick={() => setSelectedId(item.id)}
-                onDoubleClick={() => openFinderItem(item, openWindow, setFinderLocation)}
+                onClick={() => activate(item)}
                 onContextMenu={(e) => onContextItem(item, e)}
                 data-cuelume-press
                 data-cuelume-release
                 className={cn(
-                  'flex w-full items-center gap-3 rounded-lg px-2.5 py-1.5 text-left transition-colors',
+                  'flex w-full items-center gap-3 rounded-lg px-2.5 py-1.5 text-left text-foreground/90 transition-colors',
                   selected
-                    ? 'bg-primary/90 text-primary-foreground'
-                    : 'text-foreground/90 hover:bg-foreground/[0.06]',
+                    ? 'bg-foreground/[0.12]'
+                    : 'hover:bg-foreground/[0.06]',
                   focusRing,
                 )}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={item.src}
-                  alt=""
-                  width={28}
-                  height={28}
-                  className="h-7 w-7 shrink-0 object-contain drop-shadow-sm"
-                  draggable={false}
-                  decoding="async"
-                />
+                <FinderItemGlyph item={item} size="sm" />
                 <span className="flex min-w-0 flex-1 items-center gap-1.5">
                   <TagDots tags={tags} />
                   <span className="truncate text-[13px]">{item.label}</span>
@@ -502,43 +539,28 @@ function ItemViews({
   }
 
   return (
-    <ul className="grid grid-cols-3 gap-3 px-4 py-4 sm:grid-cols-4">
+    <ul className="grid grid-cols-3 justify-items-center gap-3 px-4 py-4 sm:grid-cols-4">
       {items.map((item) => {
         const selected = selectedId === item.id;
         const tags = itemTags[item.id] ?? [];
         return (
-          <li key={item.id}>
+          <li key={item.id} className="w-full">
             <button
               type="button"
-              onClick={() => setSelectedId(item.id)}
-              onDoubleClick={() => openFinderItem(item, openWindow, setFinderLocation)}
+              onClick={() => activate(item)}
               onContextMenu={(e) => onContextItem(item, e)}
               data-cuelume-press
               data-cuelume-release
               className={cn(
-                'flex w-full flex-col items-center gap-1.5 rounded-xl px-1.5 py-2 text-center transition-colors',
-                selected ? 'bg-primary/15' : 'hover:bg-foreground/[0.05]',
+                'mx-auto flex w-auto max-w-full flex-col items-center gap-1.5 rounded-xl px-2 py-1.5 text-center transition-colors',
+                selected ? 'bg-foreground/[0.1]' : 'hover:bg-foreground/[0.05]',
                 focusRing,
               )}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={item.src}
-                alt=""
-                width={48}
-                height={48}
-                className="h-12 w-12 drop-shadow-sm"
-                draggable={false}
-                decoding="async"
-              />
-              <span
-                className={cn(
-                  'inline-flex max-w-full items-center justify-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] leading-tight',
-                  selected ? 'bg-primary/90 text-primary-foreground' : 'text-foreground/90',
-                )}
-              >
+              <FinderItemGlyph item={item} size="lg" />
+              <span className="inline-flex max-w-[5.5rem] items-center justify-center gap-1 text-[11px] leading-tight text-foreground/90">
                 <TagDots tags={tags} />
-                <span className="line-clamp-2 text-left">{item.label}</span>
+                <span className="line-clamp-2 text-center">{item.label}</span>
               </span>
             </button>
           </li>
@@ -631,7 +653,7 @@ export function FinderWindowBody() {
         return {
           id,
           label: known?.label ?? titles[id] ?? id,
-          src: WINDOW_ICON_SRC[id] ?? '/icons/folder.svg',
+          iconId: known?.iconId ?? 'folder',
           openId: id,
           syncUrl: known?.syncUrl,
         } satisfies FinderItem;

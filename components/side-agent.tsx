@@ -260,11 +260,11 @@ const CONTENT_DATABASE: Record<string, Partial<PortfolioSection> & { link?: stri
     content: 'Conducted field research and usability testing to design a user-centric kiosk interface for Edinburgh Napier University.'
   },
   'crm': {
-    title: 'CRM Redesign',
+    title: 'Ditto Insurance CRM Design',
     type: 'projects',
     description: 'Internal tool optimization for insurance agents.',
     content: ' streamlined workflows and reduced cognitive load.\n\n**Impact:** 20% boost in team efficiency and 30% faster task completion.',
-    link: `/work?project=${getProjectIdFromTitle('CRM Redesign')}`
+    link: `/work?project=crm-redesign`
   },
   'booking': {
     title: 'Booking Portal Redesign',

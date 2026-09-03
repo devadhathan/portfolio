@@ -2074,10 +2074,7 @@ html[data-os-menubar='dark'] .os-menubar {
   color: hsl(0 0% 100% / 0.96);
   cursor: grab;
   border-radius: 0.75rem;
-  text-shadow:
-    0 1px 1px hsl(0 0% 0% / 0.75),
-    0 0 6px hsl(0 0% 0% / 0.45),
-    0 2px 8px hsl(0 0% 0% / 0.35);
+  text-shadow: none;
   user-select: none;
   touch-action: none;
   contain: layout style;
@@ -2126,6 +2123,10 @@ html[data-os-menubar='dark'] .os-menubar {
   font-weight: 560;
   text-align: center;
   max-width: 5.75rem;
+  color: hsl(0 0% 100% / 0.96);
+  text-shadow:
+    0 1px 1px hsl(0 0% 0% / 0.55),
+    0 1px 3px hsl(0 0% 0% / 0.35);
   transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
 }
 
@@ -2177,9 +2178,6 @@ html[data-os-menubar='dark'] .os-menubar {
   pointer-events: auto;
 }
 
-.os-desktop-icon--dragging .os-desktop-icon__tint {
-  opacity: 0 !important;
-}
 
 .os-desktop-icon--active .os-desktop-icon__well {
   box-shadow:
@@ -2332,6 +2330,137 @@ html.light .os-desktop-icon__well--asset {
   box-shadow: none !important;
 }
 
+/* Solid black circle + white glyph — simple desktop icon plate. */
+.os-desktop-icon__well--circle,
+html.dark .os-desktop-icon__well--circle,
+html.light .os-desktop-icon__well--circle {
+  width: 2.85rem;
+  height: 2.85rem;
+  border-radius: 9999px !important;
+  border: none !important;
+  background: #0a0a0a !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  overflow: hidden;
+  color: #fff;
+}
+
+.os-desktop-icon:hover:not(.os-desktop-icon--dragging) .os-desktop-icon__well--circle,
+.os-desktop-icon:focus-visible:not(.os-desktop-icon--dragging) .os-desktop-icon__well--circle,
+html.light .os-desktop-icon:hover:not(.os-desktop-icon--dragging) .os-desktop-icon__well--circle,
+html.light .os-desktop-icon:focus-visible:not(.os-desktop-icon--dragging) .os-desktop-icon__well--circle {
+  background: #0a0a0a !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.os-desktop-icon--active .os-desktop-icon__well--circle,
+.os-desktop-icon--active:hover:not(.os-desktop-icon--dragging) .os-desktop-icon__well--circle {
+  background: #0a0a0a !important;
+  background-image: none !important;
+  box-shadow: 0 0 0 2px hsl(var(--primary)) !important;
+}
+
+html.blue .os-desktop-icon__well--circle svg,
+html.green .os-desktop-icon__well--circle svg,
+html.red .os-desktop-icon__well--circle svg {
+  color: var(--theme-color);
+}
+
+html.blue .os-catalog-icon,
+html.green .os-catalog-icon,
+html.red .os-catalog-icon {
+  color: var(--theme-color);
+}
+
+.os-desktop-icon__well--circle .os-desktop-icon__asset,
+.os-desktop-icon__well--circle .os-desktop-icon__tint {
+  width: 68%;
+  height: 68%;
+  border-radius: 0;
+  filter: none;
+}
+
+.os-desktop-icon__well--circle svg {
+  flex-shrink: 0;
+  color: #fff;
+}
+
+/* Finder catalog — same black circle + white line glyph as desktop icons */
+.os-catalog-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background: #0a0a0a;
+  color: #fff;
+}
+
+.os-catalog-icon--sm {
+  width: 2rem;
+  height: 2rem;
+}
+
+.os-catalog-icon--lg {
+  width: 4rem;
+  height: 4rem;
+}
+
+.os-catalog-icon svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.os-catalog-icon--sm svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.os-catalog-icon--lg svg {
+  width: 1.55rem;
+  height: 1.55rem;
+}
+
+/* Finder (Finder window "catalog" tiles) — bigger glyphs, no external circle. */
+.os-finder-catalog-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.os-finder-catalog-icon--sm {
+  width: 2.6rem;
+  height: 2.6rem;
+}
+
+.os-finder-catalog-icon--lg {
+  width: 4.9rem;
+  height: 4.9rem;
+}
+
+.os-finder-catalog-icon svg {
+  width: 1.45rem;
+  height: 1.45rem;
+}
+
+.os-finder-catalog-icon--lg svg {
+  width: 2rem;
+  height: 2rem;
+}
+
+html.blue .os-finder-catalog-icon,
+html.green .os-finder-catalog-icon,
+html.red .os-finder-catalog-icon {
+  color: var(--theme-color);
+}
+
 /* Depth now comes from the art itself rather than the pad's shadow. */
 .os-desktop-icon__well--asset .os-desktop-icon__asset {
   filter: drop-shadow(0 2px 6px hsl(0 0% 0% / 0.32));
@@ -2342,7 +2471,8 @@ html.light .os-desktop-icon__well--asset {
  * squircles with their own internal padding — at the same box size it reads
  * noticeably larger than its neighbours.
  */
-.os-desktop-icon[data-os-icon='drawesome'] .os-desktop-icon__asset {
+.os-desktop-icon[data-os-icon='drawesome'] .os-desktop-icon__well--asset .os-desktop-icon__asset,
+.os-desktop-icon[data-os-icon='drawesome'] .os-desktop-icon__well--asset .os-desktop-icon__tint {
   transform: scale(0.82);
 }
 
@@ -2358,33 +2488,46 @@ html.light .os-desktop-icon__well--asset {
   transition: filter 0.28s ease;
 }
 
-/* Theme wash: recolors glass plate / glyphs toward --theme-color */
+/*
+ * Themed icon art.
+ *
+ * A wash used to sit over the glass plate behind each icon; with the plate gone
+ * it had nothing to blend into and painted a tinted square on top of the glyph.
+ * The art itself is white with alpha gradients, so the colour themes instead
+ * use it as a mask and fill it with --theme-color: identical shape, identical
+ * soft edges, just not white. Off by default, since dark and light want the
+ * artwork as drawn.
+ */
 .os-desktop-icon__tint {
   position: absolute;
   inset: 0;
   z-index: 1;
-  border-radius: inherit;
-  background: var(--theme-color);
-  mix-blend-mode: soft-light;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.28s ease;
-}
-
-/*
- * The wash used to recolor the glass plate behind each icon. With the plate
- * removed it has nothing to blend into and paints a visible tinted box on top
- * of the art, so it stays hidden in every theme.
- */
-.os-desktop-icon__tint {
   display: none;
+  border-radius: inherit;
+  /*
+   * Filling with the raw theme colour reads as a saturated sticker next to the
+   * rest of the desktop, so it stays mostly the original white with the theme
+   * only tinting it. Raise --os-icon-tint-strength for more colour.
+   */
+  --os-icon-tint-strength: 30%;
+  background: white;
+  background: color-mix(in srgb, var(--theme-color) var(--os-icon-tint-strength), white);
+  -webkit-mask: var(--os-icon-src) center / contain no-repeat;
+  mask: var(--os-icon-src) center / contain no-repeat;
+  pointer-events: none;
 }
 
-/*
- * Light mode: soft tinted accent wells, white glyphs.
- */
-html.light .os-desktop-icon__tint {
-  opacity: 0;
+html.blue .os-desktop-icon__tint,
+html.green .os-desktop-icon__tint,
+html.red .os-desktop-icon__tint {
+  display: block;
+}
+
+/* The mask carries the art in these themes, so the white original steps aside. */
+html.blue .os-desktop-icon__asset,
+html.green .os-desktop-icon__asset,
+html.red .os-desktop-icon__asset {
+  visibility: hidden;
 }
 
 html.light .os-desktop-icon__asset {
@@ -2423,28 +2566,46 @@ html.light .os-desktop-icon--active .os-desktop-icon__well--asset .os-desktop-ic
     drop-shadow(0 0 12px hsl(0 0% 0% / 0.5));
 }
 
+/*
+ * In the colour themes the mask layer is the visible icon, so depth and the
+ * selection glow follow it rather than the hidden original.
+ */
+html.blue .os-desktop-icon__tint,
+html.green .os-desktop-icon__tint,
+html.red .os-desktop-icon__tint {
+  filter: drop-shadow(0 1px 1px hsl(0 0% 0% / 0.2));
+}
+
+html.blue .os-desktop-icon--active .os-desktop-icon__tint,
+html.green .os-desktop-icon--active .os-desktop-icon__tint,
+html.red .os-desktop-icon--active .os-desktop-icon__tint {
+  filter:
+    drop-shadow(0 0 4px hsl(0 0% 100% / 0.95))
+    drop-shadow(0 0 12px hsl(0 0% 100% / 0.6));
+}
+
 html.light .os-desktop-icon {
+  color: hsl(0 0% 100% / 0.96);
+  text-shadow: none;
+}
+
+html.light .os-desktop-icon__label,
+html.dark .os-desktop-icon__label,
+html[data-os-menubar='dark'] .os-desktop-icon__label,
+html[data-os-menubar='light'] .os-desktop-icon__label {
   color: hsl(0 0% 100% / 0.96);
   text-shadow:
     0 1px 1px hsl(0 0% 0% / 0.55),
-    0 0 6px hsl(0 0% 0% / 0.35),
-    0 2px 8px hsl(0 0% 0% / 0.28);
+    0 1px 3px hsl(0 0% 0% / 0.35);
 }
 
 /*
- * Light wallpaper, any theme. The icons are white labels with a dark halo and
- * flat art with no plate behind it, which disappears against a pale photo —
- * the pen glyph is very nearly white. `data-os-menubar='dark'` is the wallpaper
- * telling us its top band is bright, which is the same signal we need here, so
- * the ink flips dark and the halo flips light. Placed after the themed filter
- * rules above, which would otherwise reset the icon filter.
+ * Light wallpaper top bands used to flip icon label ink dark. Labels stay white
+ * now; only the legacy flat-asset filter path still reacts to menubar contrast.
  */
 html[data-os-menubar='dark'] .os-desktop-icon {
-  color: hsl(0 0% 10% / 0.95);
-  text-shadow:
-    0 1px 1px hsl(0 0% 100% / 0.75),
-    0 0 6px hsl(0 0% 100% / 0.5),
-    0 2px 8px hsl(0 0% 100% / 0.35);
+  color: hsl(0 0% 100% / 0.96);
+  text-shadow: none;
 }
 
 html[data-os-menubar='dark'] .os-desktop-icon__well--asset .os-desktop-icon__asset {
@@ -3059,6 +3220,7 @@ html.light .os-window-titlebar {
     align-items: stretch;
     column-gap: 1.5rem;
     padding-top: 0.5rem;
+    padding-inline: 1rem;
   }
 
   [data-os-work-case] .os-work-sidebar {
@@ -3075,6 +3237,7 @@ html.light .os-window-titlebar {
     max-height: none;
     overflow-y: auto;
     overscroll-behavior: contain;
+    scrollbar-gutter: stable;
   }
 
   [data-os-work-case] .os-work-sidebar-inner {
@@ -3116,6 +3279,7 @@ html.light .os-window-titlebar {
   [data-os-work-case] .os-work-case-row {
     grid-template-columns: minmax(11.5rem, 13rem) minmax(0, 1fr) minmax(8rem, 9.5rem);
     column-gap: 1.75rem;
+    padding-inline: 1.25rem;
   }
 }
 
@@ -3123,6 +3287,7 @@ html.light .os-window-titlebar {
   [data-os-work-case] .os-work-case-row {
     grid-template-columns: minmax(12rem, 13.5rem) minmax(0, 1fr) minmax(8.5rem, 10rem);
     column-gap: 2rem;
+    padding-inline: 1.5rem;
   }
 }
 
@@ -3134,8 +3299,7 @@ html.light .os-window-titlebar {
 .os-work-toc-track {
   position: absolute;
   left: 0;
-  top: 0.15rem;
-  bottom: 0.15rem;
+  top: 0;
   width: 1px;
   background: hsl(0 0% 100% / 0.22);
   pointer-events: none;
@@ -3196,6 +3360,7 @@ html.light .os-work-toc-indicator {
     align-items: start;
     column-gap: 1.75rem;
     padding-top: 0.75rem;
+    padding-inline: 1.5rem;
   }
 
   .work-case-sidebar {
@@ -3374,28 +3539,15 @@ html.light .os-work-toc-indicator {
 }
 
 .status-pet__face {
-  position: relative;
-  height: 1.05em;
-}
-
-.status-pet__eyes {
   display: block;
   white-space: pre;
 }
 
-/*
- * Eased rather than stepped: a hard opacity flip is what made the blink read
- * as a robot toggling a light. The lids now close and open over ~90ms.
- */
-.status-pet__eyes--blink {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  animation: status-pet-blink 2.6s ease-in-out infinite;
-}
-
-.status-pet__eyes--open {
-  animation: status-pet-open 2.6s ease-in-out infinite;
+/* Squash the dot eyes — no dash swap on blink. */
+.status-pet__eye {
+  display: inline-block;
+  transform-origin: center center;
+  animation: status-pet-eye-blink 2.6s ease-in-out infinite;
 }
 
 @keyframes status-pet-sway {
@@ -3442,54 +3594,28 @@ html.light .os-work-toc-indicator {
 }
 
 /* Double blink — one quick, one slower, so it doesn't feel metronomic. */
-@keyframes status-pet-blink {
+@keyframes status-pet-eye-blink {
   0%,
   54%,
   62%,
   78%,
   88%,
   100% {
-    opacity: 0;
+    transform: scaleY(1);
   }
   56%,
   60%,
   80%,
   86% {
-    opacity: 1;
-  }
-}
-
-@keyframes status-pet-open {
-  0%,
-  54%,
-  62%,
-  78%,
-  88%,
-  100% {
-    opacity: 1;
-  }
-  56%,
-  60%,
-  80%,
-  86% {
-    opacity: 0;
+    transform: scaleY(0.12);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .status-pet,
   .status-pet__ears,
-  .status-pet__eyes--blink,
-  .status-pet__eyes--open {
+  .status-pet__eye {
     animation: none;
-  }
-
-  .status-pet__eyes--blink {
-    opacity: 0;
-  }
-
-  .status-pet__eyes--open {
-    opacity: 1;
   }
 }
 
@@ -5232,4 +5358,50 @@ html.red .glass-chrome:hover {
     hsl(var(--background) / 0.36) 42%,
     hsl(var(--background) / 0) 100%
   );
+}
+
+/*
+ * Phone / tablet: a window only ever has one size, so opening one shouldn't
+ * animate into it.
+ *
+ * `covered` is the state the OS forces on narrow layouts, but `isNarrow` is
+ * measured after mount, so the first paint is always the restored `stage-max`
+ * box — a narrower, rounded, inset window that then animated its width out to
+ * full-bleed once the effect ran. Matching the two boxes makes the class flip
+ * invisible; the width transition is dropped so nothing can tween on the way.
+ *
+ * This lives at the end of the file on purpose: the same intent is expressed in
+ * the earlier `max-width: 1023px` block, where the desktop `.os-window--*`
+ * rules and the `max-width: 1100px` block — both later in the cascade at equal
+ * specificity — quietly overrode it.
+ */
+@media (max-width: 1023px) {
+  .os-window--stage-max,
+  .os-window--finder.os-window--stage-max,
+  [data-os-dock='hidden'] .os-window--stage-max,
+  [data-os-dock='hidden'] .os-window--finder.os-window--stage-max {
+    left: 0.25rem;
+    right: 0.25rem;
+    top: 2.75rem;
+    bottom: 0.25rem;
+    width: auto;
+    height: auto;
+    margin: 0;
+    border-radius: 0;
+    clip-path: inset(0);
+    -webkit-clip-path: inset(0);
+    transition: none;
+  }
+
+  /* Matches the covered state's clearance for the floating shortcut pill. */
+  [data-os-dock='hidden'] .os-window--stage-max,
+  [data-os-dock='hidden'] .os-window--finder.os-window--stage-max {
+    bottom: calc(0.35rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Same trailing clearance the covered state uses, so content can't shift either. */
+  .os-window--stage-max > .os-window-body,
+  [data-os-dock='hidden'] .os-window--stage-max > .os-window-body {
+    padding-bottom: 2.75rem;
+  }
 }

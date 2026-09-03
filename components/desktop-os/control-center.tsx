@@ -15,7 +15,7 @@ import { cn, focusRing } from '@/lib/utils';
  * Three columns, three rows. Past this the grid would need scrolling, which a
  * menu extra should never do — anything beyond opens in a real window instead.
  */
-const MAX_GRID_WALLPAPERS = 10;
+const MAX_GRID_WALLPAPERS = 14;
 
 /** Appearance is the theme set, plus Auto for the system preference. */
 const AUTO_THEME = { id: 'system', name: 'Auto', icon: Monitor, color: null } as const;

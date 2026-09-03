@@ -372,9 +372,15 @@ export function MenuBar() {
     <>
       <DropdownMenuItem
         className={menuItemClass}
-        onClick={() => openWindow('about', { syncUrl: false })}
+        onClick={() => openWindow('guide', { syncUrl: false })}
       >
         What is this site?
+      </DropdownMenuItem>
+      <DropdownMenuItem
+        className={menuItemClass}
+        onClick={() => openWindow('about', { syncUrl: false })}
+      >
+        About Me
       </DropdownMenuItem>
       <DropdownMenuItem
         className={menuItemClass}

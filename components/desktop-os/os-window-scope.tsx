@@ -13,6 +13,19 @@ export function useOsWindowId() {
   return useContext(OsWindowIdContext);
 }
 
+/** Like {@link useOsWindowId} but typed for optional host checks. */
+export function useOsWindowIdOptional() {
+  return useContext(OsWindowIdContext);
+}
+
+/** False when this subtree sits in a closed OS window — orbs should sleep. */
+export function useOsWindowOpen() {
+  const id = useOsWindowIdOptional();
+  const os = useDesktopOsOptional();
+  if (!id || !os) return true;
+  return Boolean(os.windows[id]?.open);
+}
+
 /**
  * Run `onClose` when the host window goes from open to closed. Windows stay
  * mounted after closing, so this is where a body resets its view — otherwise

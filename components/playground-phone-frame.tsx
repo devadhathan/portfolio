@@ -171,7 +171,12 @@ function PlaygroundOrbScreen({
       onMouseMove={handleMouseMove}
       onMouseLeave={() => setLookAt(null)}
     >
-      <AgentOrb size={size === 'detail' ? 'xl' : 'lg'} lookAt={lookAt} hoverScale={false} />
+      <AgentOrb
+        size={size === 'detail' ? 'xl' : 'lg'}
+        lookAt={lookAt}
+        hoverScale={false}
+        alwaysAwake
+      />
     </div>
   );
 }

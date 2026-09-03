@@ -22,7 +22,7 @@ export const resumeData = {
     },
     {
       role: "Product Designer",
-      company: "Nesoi.ai",
+      company: "Nesoi AI",
       period: "July 2025 - November 2025",
       achievements: [
         "I designed and shipped adviser/client-facing dashboards used by 15+ enterprise clients, so they could deliver interactive, AI-powered learning modules.",
@@ -68,29 +68,26 @@ export const resumeData = {
 
   projects: [
     {
-      title: "Nesoi.ai Dashboard",
+      title: "Nesoi AI Dashboard",
+      slug: "nesoi-ai-dashboard",
       type: "Product Design",
-      company: "Nesoi.ai",
+      company: "Nesoi AI",
       period: "July to November 2025",
       description:
-        "Nesoi turns internal material into interactive training. I redesigned the creation experience so the AI reads your upload, proposes a plan, and shows its work.\n\nNesoi is an AI learning platform running across 15 enterprise deployments, including Amazon, the University of Toronto and Bain & Company. I led the creation experience end to end, from framing through a working React prototype that engineering built from.",
+        "When someone uploads a deck at Nesoi, they are not trying to learn the product. They are trying to turn what they already have into interactive training their team will actually finish. That is the job I redesigned.\n\nNesoi is an AI learning platform running across fifteen enterprise deployments, including Amazon, the University of Toronto, and Bain & Company. I led the creation experience end to end: from framing why V1 felt like overhead, through a working React prototype that engineering built from instead of a written spec.",
       cardSubtext: "Raw file to finished video, in two moves.",
       problem:
-        "V1 made the creator do the thinking.\n\nPeople arrive to turn a document, deck or video into an interactive learning video. Everything else is overhead. V1 asked them to upload, configure, wait and hope. The AI sat off to the side, treated as a novelty rather than the fastest path.\n\nThe closest competitor had the same gap. Plenty of status, no reasoning.",
+        "On Nesoi, a chapter is the unit of learning.\n\nChapters matter because they are how a deck, a doc, or a recording becomes interactive training people actually finish. If chapters are slow to make, the platform stays a file converter. If they are fast and good, it becomes how the organisation teaches.\n\nCreating a chapter still meant designing it by hand: pick a type, write the instructions, then place the content. People wanted to describe the chapter and let AI choose the template and fill it. V1 left that work on the creator. The closest competitor showed status, not what it had read or why it was building the chapter.",
       hmw: "Fewer decisions than doing it by hand, not more.",
       approach:
-        "That moved the target from an interface to a partner. Something that reads the upload, forms a view, proposes it, and shows its work.",
+        "Not another interface to learn — a partner that takes the brief, picks a template, and shows its work while it builds the chapter.",
       detailSections: [
         {
           id: "decisions",
           title: "Decisions, why, and what they cost",
           description:
-            "Surface the AI's reasoning while it works\nWhy: instead of progress states only, so people catch a wrong read early, not after the output is done.\nCost: perceived speed. Visible thinking reads slower than a spinner.\n\nOpen with an interpretation of the upload\nWhy: instead of a blank prompt. Removes the translation work of figuring out what to ask.\nCost: the AI can guess wrong, so redirecting had to be cheap enough that a wrong guess costs one click.\n\nOne input for templates and freeform\nWhy: instead of separate modes. People switch mid task, and a forced mode choice makes them commit too early.\nCost: structured actions are less discoverable when they share a field.\n\nExtend shadcn/ui\nWhy: instead of building bespoke chat components. Faster, and everything fed one shared library.\nCost: less visual distinctiveness, in exchange for speed.",
-        },
-        {
-          id: "system-video",
-          title: "System",
-          description: "",
+            "We surfaced the AI's reasoning while it worked, not just progress states\nWhy: so people could catch a wrong read early, instead of discovering it after the output was finished.\nCost: perceived speed. Visible thinking reads slower than a spinner, and we accepted that trade.\n\nWe opened with an interpretation of the upload\nWhy: instead of a blank prompt, because the hardest part was never generating; it was translating intent into something the model could act on.\nCost: the AI can guess wrong, so redirecting had to cost one click, not a restart.\n\nWe kept one input for templates and freeform\nWhy: testing showed people pick a template and then talk their way out of it mid task. A forced mode choice made them commit too early.\nCost: structured actions are less discoverable when they share a field with freeform chat.\n\nWe extended shadcn/ui instead of building bespoke chat components\nWhy: speed mattered, and everything needed to feed one shared library the dashboard already used.\nCost: less visual distinctiveness, in exchange for shipping patterns engineering could actually maintain.",
+          image: "/CRM/Figma.webp",
           video: "/videos/Scene_no_watermark_hq.mp4",
           videoControls: false,
         },
@@ -98,48 +95,48 @@ export const resumeData = {
           id: "not-built",
           title: "Not built",
           description:
-            "Multi user chat. Scoped out of v1 on purpose. Prove the happy path before designing for teams.\n\nA separate templates mode. Dropped once testing showed people pick a template and then talk their way out of it.\n\nProgress only creation. Kept as the control in the study rather than shipped, so the trust claim had something to beat.",
-        },
-        {
-          id: "validation",
-          title: "Validation",
-          description:
-            "Users trusted the agent variant more. The interview pause created a sense of higher quality before generation even started.\n\nAsking the right question up front bought credibility the output had not yet earned.\n\n82.5 mean SUS · 5 participants, cafe study · 2 variants tested\n\nStatic form against agent variant. Confidence and trust measured qualitatively, engagement and chat volume quantitatively, sentiment through an in product PostHog survey.",
-          image: "/CRM/validation.webp",
+            "Some ideas were good; they were just not v1. Multi-user chat was scoped out on purpose. We needed to prove the happy path for a single creator before designing for teams in the same surface.\n\nWe dropped a separate templates mode once testing showed the pattern clearly: people pick a template, then talk their way out of it. A dedicated mode only formalized a transition that already happened in conversation.\n\nWe kept progress-only creation as the control in the study rather than shipping it, so the trust claim had something concrete to beat.",
         },
         {
           id: "prototype",
           title: "Prototype",
           description:
-            "The prototype was React, built in Cursor, simulating real LLM latency and states. Engineering got working code instead of a walkthrough, which cleared the hard states before they became tickets: thinking, typing, error loops.",
+            "The prototype was not a walkthrough deck. It was React, built in Cursor, simulating real LLM latency and states. Engineering got working code instead of annotated frames, which meant the awkward states became real before they became tickets: thinking, typing, error loops, and the long pause when the model is still reading.",
           video: "/CRM/prototype.mp4",
           videoPoster: "/CRM/prototype-poster.webp",
         },
         {
-          id: "system",
-          title: "System",
+          id: "validation",
+          title: "Validation",
           description:
-            "Everything went back into the library.\n\nBuilt on shadcn/ui and extended for chat: message and thinking states, prompt patterns, long conversation layout, content type variants. The dashboard and the creation tools stayed on one system.",
-          image: "/CRM/Figma.webp",
+            "The cafe study compared a static form against the agent variant: five participants, two paths, one question. Does showing the work change what people trust before the output exists?\n\nIt did. Users trusted the agent variant more. The interview pause before generation created a sense of higher quality even when the video was not finished yet. Asking the right question up front bought credibility the output had not yet earned.\n\n82.5 mean SUS · 5 participants, cafe study · 2 variants tested\n\nStatic form against agent variant. Confidence and trust measured qualitatively, engagement and chat volume quantitatively, sentiment through an in product PostHog survey.",
+          image: "/CRM/validation.webp",
+        },
+        {
+          id: "system",
+          title: "Design system",
+          description:
+            "Everything we learned went back into the library.\n\nWe built on shadcn/ui and extended it for chat: message and thinking states, prompt patterns, long conversation layout, content type variants. The dashboard and the creation tools stayed on one system so the product did not fork visually the moment you left the admin view.",
+          image: "/CRM/shadcn-system.webp",
         },
         {
           id: "constraints",
           title: "Constraints",
           description:
-            "Model capability was moving under us. Patterns had to hold when the AI got better, not just at current quality.\n\nCompetitors shipped fast. We took what worked and ignored the decoration.\n\nTool and MCP integrations were coming. The thinking view left room for calls we had not built yet.",
+            "Three pressures shaped every decision above. Model capability was moving under us. Patterns had to hold when the AI got better, not just at current quality.\n\nCompetitors shipped fast. We took what worked and ignored the decoration.\n\nTool and MCP integrations were coming, so the thinking view had to leave room for calls we had not built yet.",
         },
         {
           id: "shipped",
           title: "Shipped",
           description:
-            "Engineering built from the prototype rather than a written spec. I created the PR and it was finally merged to main.\n\nI left Nesoi in November, before post launch instrumentation matured, so the numbers here are pre ship.\n\nWhat I would have watched: completion rate from upload to published video, and how often creators redirect on the first question. If the second number stayed low, the interpretation was doing its job.",
+            "Engineering built from the prototype rather than a written spec. I opened the PR and it merged to main. The interface we tested was the interface that shipped.\n\nI left Nesoi in November, before post launch instrumentation matured, so the numbers here are pre ship.\n\nWhat I would have watched next: completion rate from upload to published video, and how often creators redirect on the first question. If the second number stayed low, the interpretation was doing its job.",
         },
       ],
 
       learnings: [
-        "Embedded beats adjacent. Conversational AI only helps when it lives inside the workflow the user came for.",
+        "Embedded beats adjacent. Conversational AI only earns trust when it lives inside the workflow the user came for, not beside it.",
         "Enterprise users will trade speed for legibility. Show the reasoning and they let the AI do more.",
-        "Trust is a UX problem before it is a model problem.",
+        "Trust is a UX problem before it is a model problem. The right first question buys credibility the output has not earned yet.",
       ],
       role: "Product Designer",
       team: "1 designer, 2 developers",
@@ -199,9 +196,9 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       tools: ["Adobe XD", "After Effects", "Illustrator", "Sketch", "Principle"],
       team: "Arif, Manoranjan, Lokesh",
       cardSubtext: "Financial news platform · founded 2019",
-      description: "Finshots launched in 2019 as a financial news platform. Dev worked as a product designer and redesigned the mobile app into a centralized hub for financial news and insights — addressing fragmented content delivery across emails, social posts, and other channels.",
+      description: "Finshots launched in 2019 as a financial news platform. Dev worked as a product designer and redesigned the mobile app into a centralized hub for financial news and insights, addressing fragmented content delivery across emails, social posts, and other channels.",
       problem: "Frequent readers of our financial content struggle to revisit old stories due to inefficient navigation on our website and in our emails. Endless scrolling and scattered content make it difficult for users to locate previously engaged stories, leading to frustration and decreased engagement. Feedback from social media and surveys indicates a strong demand for a more accessible, centralized platform that simplifies content discovery",
-      research: "The journey began with a simple yet crucial question: Why are users struggling to stay engaged with Finshots' content, despite its growing popularity? We conducted a thorough analysis using: Google Play Store reviews, Social media feedback, Direct user queries. A clear theme emerged: Users loved the content but felt overwhelmed by its fragmented delivery across emails, social posts, and other channels. Revisiting or following up on valuable financial news was cumbersome due to a lack of centralized access. The issue wasn't about the quality of the content—it was about making it more accessible and intuitive to navigate.",
+      research: "The journey began with a simple yet crucial question: Why are users struggling to stay engaged with Finshots' content, despite its growing popularity? We conducted a thorough analysis using: Google Play Store reviews, Social media feedback, Direct user queries. A clear theme emerged: Users loved the content but felt overwhelmed by its fragmented delivery across emails, social posts, and other channels. Revisiting or following up on valuable financial news was cumbersome due to a lack of centralized access. The issue wasn't about the quality of the content. It was about making it more accessible and intuitive to navigate.",
       hmw: "How might we design a centralized platform that provides an intuitive and seamless navigation experience, enabling users to easily explore and revisit financial stories?",
       keyFeatures: [
         "Navigation: A sleek, intuitive interface with categories, filters, and search options. Benefit - Users could effortlessly browse both recent and archived stories, saving time and making the content more accessible.",
@@ -215,7 +212,7 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
         "Google Play's Best App of 2020 award",
         "500k+ subscribers achieved"
       ],
-      learnings: "Working on Finshots was the pivotal project that pulled me into product design. Back in 2019, when UI/UX was still emerging, I had my first hands-on experience with Adobe XD. I dived into every aspect of the design process—from creating animations and onboarding illustrations to crafting icons and building complete UX flows. This early exposure revealed the transformative power of design and ignited my passion to further explore this field. Through Finshots, I learned that great design is more than just aesthetics; it's about crafting seamless, user-centric experiences that solve real problems. I embraced iterative design, continuously refining each element until it not only looked polished but also functioned flawlessly. This process underscored the importance of balancing creativity with practicality and taught me to always put the user's needs at the forefront. Finshots solidified my commitment to product design and set me on a path of continuous learning and innovation. It provided invaluable insights into the interplay between visual appeal and usability—insights that continue to shape my approach to creating products that truly resonate with users."
+      learnings: "Working on Finshots was the pivotal project that pulled me into product design. Back in 2019, when UI/UX was still emerging, I had my first hands-on experience with Adobe XD. I dived into every aspect of the design process, from creating animations and onboarding illustrations to crafting icons and building complete UX flows. This early exposure revealed the transformative power of design and ignited my passion to further explore this field. Through Finshots, I learned that great design is more than just aesthetics; it's about crafting seamless, user-centric experiences that solve real problems. I embraced iterative design, continuously refining each element until it not only looked polished but also functioned flawlessly. This process underscored the importance of balancing creativity with practicality and taught me to always put the user's needs at the forefront. Finshots solidified my commitment to product design and set me on a path of continuous learning and innovation. It provided invaluable insights into the interplay between visual appeal and usability, insights that continue to shape my approach to creating products that truly resonate with users."
     },
     {
       title: "Onboarding Redesign",
@@ -227,14 +224,14 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       tools: ["Figma", "After effects", "Illustrator", "Amplitude", "Loom"],
       team: "Arif, Manoranjan, Lokesh",
       cardSubtext: "Ditto Customer Onboarding",
-      description: `In 2022, Ditto Insurance — launched in 2021 as an insurance spin-off from Finshots — presented significant opportunities for improvement. Collaborating with my product manager, I reimagined the onboarding experience to reduce friction for new users. As a product designer, I leveraged data-driven insights and iterative design methods to pinpoint user pain points and develop tailored solutions that enhanced both functionality and user satisfaction.`,
+      description: `In 2022, Ditto Insurance, launched in 2021 as an insurance spin-off from Finshots, presented significant opportunities for improvement. Collaborating with my product manager, I reimagined the onboarding experience to reduce friction for new users. As a product designer, I leveraged data-driven insights and iterative design methods to pinpoint user pain points and develop tailored solutions that enhanced both functionality and user satisfaction.`,
       problem: `Users were dropping off before completing the slot booking process, resulting in low conversion rates. A major challenge was aligning our design solutions with the business goal of increasing conversions while maintaining a user-centric approach. Understanding the root causes of abandonment in a relatively new product required continuous collaboration across design, product, and technical teams.`,
       problemImage: {
         src: '/ditto insurance/image copy.webp',
         alt: 'Booking abandonment snapshot',
         caption: 'Users were abandoning the slot booking flow before completing their purchase.'
       },
-      takeStepBack: `Rather than jumping into solutions, I first focused on understanding the problem. I analyzed analytics to identify where the major drop-offs occurred, spoke with customers, ran a cognitive walkthrough, and interviewed users to surface the right questions. These insights produced two personas—Ian, a marketing manager who needs support when preferred slots are unavailable, and Maaya, a 27-year-old teacher who wants assurance her phone number remains spam-free—helping us better understand pain points and refine our approach.`,
+      takeStepBack: `Rather than jumping into solutions, I first focused on understanding the problem. I analyzed analytics to identify where the major drop-offs occurred, spoke with customers, ran a cognitive walkthrough, and interviewed users to surface the right questions. These insights produced two personas, Ian, a marketing manager who needs support when preferred slots are unavailable, and Maaya, a 27-year-old teacher who wants assurance her phone number remains spam-free, helping us better understand pain points and refine our approach.`,
       approach: `We broke the onboarding experience into manageable problems, then addressed each one with targeted, data-backed solutions. For slot shortages, we introduced WhatsApp support, clear exit points, and guidance toward advisors when availability was constrained. To build trust, we iterated on badge, tooltip, and nudge concepts with policy writers, ultimately shipping a mobile-friendly nudge treatment that reinforced the “We never spam” promise. We also added confirmations and autosave prompts to prevent data loss when users accidentally left the flow.`,
       prototype: "Built interactive prototypes to validate the WhatsApp assistance flows, spam-free messaging, and error-prevention modals across mobile breakpoints.",
       prototypeFrame: "https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fdesign%2F7hcowr6VnLOewHm2ubJmZi%2FDitto-onboarding%3Fembed-host%3Dshare%26kind%3Dfile%26node-id%3D0-1%26page-selector%3D1%26theme%3Dlight%26version%3D2%26viewer%3D1",
@@ -332,64 +329,85 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       ]
     },
     {
-      title: "CRM Redesign",
+      title: "Ditto Insurance CRM Design",
+      slug: "crm-redesign",
       type: "Product Design",
       company: "Ditto Insurance",
       period: "July 2022 - December 2022",
       role: "Interaction designer, UX researcher, UX Designer",
       tools: ["Figma", "Google Docs", "After Effects", "Loom", "Miro"],
-      team: "Arif, Lokesh, Shreyans, Sachin, Shaily",
+      team: '4 engineers, 1 product manager',
       cardSubtext: "Insurance CRM",
       description: `Over the course of four months, I partnered with the Ditto team to build a CRM that streamlined sales operations and delivered intuitive, actionable reporting. Ditto started as a no-spam insurance platform in 2021 with the goal of simplifying insurance selection across India, and the growing lead volume made it clear that the early Excel-based workflows needed a more scalable foundation.`,
-      problem: "Manual lead tracking with Excel became unsustainable as the lead volume increased, and the existing CRM lacked role-specific workflows, real-time insight, and a cohesive, customizable interface.",
-      approach: `Based on user feedback, we envisioned a CRM built for seamless usability, role-specific dashboards, personalized workflows, and integrated communication tools. The redesign prioritized streamlined navigation, centralized communications, and dashboards that surfaced the right data for each role.`,
+      problem:
+        'Advisors were losing momentum on every call, jumping between the CRM and Bliss to log outcomes, compare policies, and schedule follow-ups instead of staying with the customer.',
+      hmw: 'How might we consolidate call tasks so advisors can complete them without breaking their momentum?',
+      research:
+        'As an advisor, I want to log outcomes and do the policy comparison without switching between CRM and Bliss, so that I can maintain my momentum and focus on engaging with customers.',
+      impactOverview: '',
+      impact: [
+        'Role-specific interfaces reduced redundancy and kept teams focused on their priorities.',
+        'Integrated messaging, email, and call tools centralized communication and removed friction.',
+        'Real-time insights and dynamic visuals empowered decision-makers with fresh data.',
+      ],
+      designGallery: [],
       detailSections: [
+        {
+          id: 'possible-solutions',
+          title: 'Possible solutions',
+          description:
+            "I ignored the existing UI and asked myself: what is the atomic unit of a sales call? I mapped the decision tree below. A single call isn't a linear path. It branches into five or six different outcomes like rescheduling, payments, or follow-ups.\n\nSolution A: Chain tasks inside the same flow\nTrigger the next task inside the CRM when an advisor completes one, instead of creating a fresh task every time and losing context.\n\nSolution B: Embed policy & meeting tools\nIntegrate the internal policy comparison tool and meeting links directly in the CRM interface so advisors never bounce to Bliss mid-call.",
+          image: '/CRM/branching-logic.jpg',
+        },
+        {
+          id: 'directions',
+          title: 'Directions',
+          description:
+            'Direction 1: Modal popup (Old CRM)\nPros: Focused attention; common pattern.\nCons: Disrupts context, blocks lead history and notes, poor responsiveness on smaller screens.\n\nDirection 2: Sidebar panel (Selected)\nPros: Non-intrusive, slides in from the right; keeps lead context visible; scales across screen sizes; supports multitasking.',
+          image: '/CRM/directions.jpg',
+        },
+        {
+          id: 'decisions',
+          title: 'Decisions',
+          description:
+            'Decision 1: Contextual sidebar\nSelected over modals.\nWhy: Advisors need to reference lead history and notes while updating task status.\nBenefit: A non-intrusive UI that preserves context and scales easily to mobile layouts.\n\nDecision 2: Smart branching logic\nSelected over manual entry.\nWhy: Immediate automation (call outcome → next task) prevents missed follow-ups.\nBenefit: Enforces best practices with required fields while still giving advisors agency to edit.',
+        },
+        {
+          id: 'explorations',
+          title: 'Exploring possibilities',
+          description:
+            'Two form layouts inside the sidebar: a single long page versus a stepped flow with a sticky bottom action. Neither shipped as-is. They informed how much to show per outcome.',
+          image: '/CRM/exploration CRM.png',
+        },
+        {
+          id: 'solution',
+          title: 'Solution',
+          description:
+            'The contextual sidebar with smart branching: log the call outcome, see the next task surface automatically, and stay on the lead without leaving the CRM.',
+          image: '/CRM/Problem CRM.png',
+        },
         {
           id: 'adding-notes',
           title: 'Adding notes',
-          description: `Notes are used to keep a record of any comments, or observations that the user would have relating to that particular lead. Users will be able to keep track of how a sale is progressing. When leads are switched between advisors, notes help the new advisor in understanding the lead’s history and requirements.`,
-          video: '/CRM/Notes.mp4'
+          description:
+            'Notes keep a running record of comments and observations on each lead. When leads switch between advisors, notes carry the history forward.',
+          video: '/CRM/Notes.mp4',
         },
         {
           id: 'my-tasks-lead-owner-change',
-          title: 'My Tasks & Lead owner change',
-          description: `Adding a sale is possible from the Sales Tab also (apart from when marking a payment task successful and on the leads page). The sales form is opened on the right-side panel. For sales done through Ditto links, the user needs to enter only the application number. On clicking the ‘Get Details’ button, all the policy details will be shown in the subsequent fields. This is fetched from the ops portal. This is possible if that policy number is still unclaimed by any advisor.`,
-          video: '/CRM/leads.mp4'
+          title: 'My tasks & lead owner change',
+          description:
+            'Sales can be logged from the sales tab or when marking a payment task successful. Ops data pulls in automatically when an application number is entered.',
+          video: '/CRM/leads.mp4',
         },
         {
           id: 'tags-for-leads',
-          title: 'Tags for Leads',
-          description: `Tags are identifiers, that can be added to leads. This lets the user identify, filter/segment and target leads with campaigns. The tags section is present on the bottom right side as part of the lead details on the individual lead pages.`,
-          video: '/CRM/Tags.mp4'
-        }
+          title: 'Tags for leads',
+          description:
+            'Tags identify, filter, and segment leads for campaigns, surfaced in lead details on every individual lead page.',
+          video: '/CRM/Tags.mp4',
+        },
       ],
-      targetAudience: "Internal teams responsible for customer relationships—sales, support, account management—and strategic leaders who need reporting, plus partners who require a unified platform for customer engagement.",
-      impact: [
-        "Role-specific interfaces reduced redundancy and kept teams focused on their priorities.",
-        "Integrated messaging, email, and call tools centralized communication and removed friction.",
-        "Real-time insights and dynamic visuals empowered decision-makers with fresh data."
-      ],
-      keyFeatures: [
-        "Role-specific workflows with tailored dashboards for sales, support, and management",
-        "Integrated messaging, email, and call tools that keep communication in one place",
-        "Personalized dashboards, filters, and notifications to fit individual preferences",
-        "Optimized navigation and information architecture for quick access",
-        "Dynamic charts and real-time insights for faster decision-making",
-        "Activity history and note-taking to preserve conversational context",
-        "Lead tagging for segmentation, filtering, and campaign targeting"
-      ],
-      results: [
-        "Streamlined communication and coordination across the sales organization",
-        "Faster onboarding for new advisors with clear activity histories and tags",
-        "Data-rich dashboards increased confidence in reporting and daily decisions"
-      ],
-      designGallery: [
-        {
-          src: '/CRM/image.webp',
-          title: 'CRM dashboard',
-          description: 'Role-aware dashboards and tagging for leads.'
-        }
-      ]
     },
     {
       title: "Booking Portal Redesign",

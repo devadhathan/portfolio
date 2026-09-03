@@ -46,6 +46,7 @@ export type DesktopWindowId =
   | 'contact'
   | 'about'
   | 'colophon'
+  | 'guide'
   | DesktopLinkIconId;
 
 export type DesktopIconId = DesktopWindowId;
@@ -74,12 +75,14 @@ export type WallpaperId =
   | 'forth'
   | 'painting'
   | 'loch'
-  | 'mountain'
-  | 'green'
   | 'heather'
   | 'dunes'
   | 'bridge'
-  | 'clouds';
+  | 'clouds'
+  | 'wall'
+  | 'circles'
+  | 'blackDesert'
+  | 'gradients';
 
 export type WallpaperPreset = {
   id: WallpaperId;
@@ -153,39 +156,18 @@ export const DESKTOP_WINDOW_IDS: DesktopWindowId[] = [
   'contact',
   'about',
   'colophon',
+  'guide',
   ...DESKTOP_LINK_ICON_IDS,
 ];
-
-/** Shared icon assets for dock, desktop, and menubar open-app strip. */
-export const WINDOW_ICON_SRC: Partial<Record<DesktopWindowId, string>> = {
-  finder: '/icons/dark-finder.svg',
-  home: '/icons/home.svg',
-  work: '/icons/briefcase.svg',
-  playground: '/icons/playgroundd.svg',
-  games: '/icons/gamess.svg',
-  drawesome: '/icons/pennn.svg',
-  ask: '/icons/sparkles.svg',
-  photos: '/icons/image.svg',
-  wordsmith: '/icons/sparkles.svg',
-  trash: '/icons/trash.svg',
-  contact: '/icons/mailbox.svg',
-  about: '/icons/user.svg',
-  colophon: '/icons/info-bubble.svg',
-  writings: '/icons/folder.svg',
-  catalystic: '/icons/lightbulb.svg',
-  bigBang: '/icons/lightbulb.svg',
-};
 
 export function getDesktopLinkIcon(id: DesktopWindowId): DesktopLinkIcon | undefined {
   return DESKTOP_LINK_ICONS.find((item) => item.id === id);
 }
 
-/** Desktop icons on the right rail — primary apps live in the bottom dock. */
+/** Desktop icons on the right rail — primary apps live on the left. */
 export const DESKTOP_ICON_IDS: DesktopIconId[] = [
   'ask',
   'writings',
-  'drawesome',
-  'trash',
 ];
 
 export const WINDOW_PATH: Partial<Record<DesktopWindowId, string>> = {
@@ -202,7 +184,7 @@ export function pathToWindowId(pathname: string): DesktopWindowId {
 }
 
 export const DESKTOP_OS_ICON_STORAGE_KEY = 'portfolio-desktop-os-icons-v14';
-export const DESKTOP_OS_WALLPAPER_KEY = 'portfolio-desktop-os-wallpaper-v10';
+export const DESKTOP_OS_WALLPAPER_KEY = 'portfolio-desktop-os-wallpaper-v12';
 
 /** One visible window at a time. */
 export const MAX_OPEN_WINDOWS = 1;
@@ -224,7 +206,7 @@ export const WALLPAPER_PRESETS: WallpaperPreset[] = [
     background:
       "#0a0a0a center 68% / cover no-repeat url('/wallpapers/bloom.webp')",
     mobileBackground:
-      "#0a0a0a center 68% / cover no-repeat url('/wallpapers/bloom-mobile.jpg')",
+      "#0a0a0a center 68% / cover no-repeat url('/wallpapers/bloom-mobile.webp')",
     menubarContrast: 'dark',
   },
   {
@@ -255,24 +237,6 @@ export const WALLPAPER_PRESETS: WallpaperPreset[] = [
     menubarContrast: 'light',
   },
   {
-    id: 'mountain',
-    label: 'Mountain',
-    background:
-      "#0a0a0a center / cover no-repeat url('/wallpapers/mountain.webp')",
-    mobileBackground:
-      "#0a0a0a center / cover no-repeat url('/wallpapers/mountain-mobile.webp')",
-    menubarContrast: 'dark',
-  },
-  {
-    id: 'green',
-    label: 'Green',
-    background:
-      "#0a0a0a center / cover no-repeat url('/wallpapers/green.webp')",
-    mobileBackground:
-      "#0a0a0a center / cover no-repeat url('/wallpapers/green-mobile.jpg')",
-    menubarContrast: 'light',
-  },
-  {
     id: 'heather',
     label: 'Heather',
     background:
@@ -285,8 +249,24 @@ export const WALLPAPER_PRESETS: WallpaperPreset[] = [
     id: 'dunes',
     label: 'Dunes',
     background:
-      "#0a0a0a center / cover no-repeat url('/wallpapers/dunes.webp')",
+      "#0a0a0a center / cover no-repeat url('/wallpapers/desert2.jpg')",
+    mobileBackground:
+      "#0a0a0a center / cover no-repeat url('/wallpapers/dunes-mobile.jpg')",
     menubarContrast: 'light',
+  },
+  {
+    id: 'blackDesert',
+    label: 'Black Desert',
+    background:
+      "#1a1a22 center / cover no-repeat url('/wallpapers/black-desert.jpg')",
+    menubarContrast: 'dark',
+  },
+  {
+    id: 'gradients',
+    label: 'Gradients',
+    background:
+      "#0a1a4a center / cover no-repeat url('/wallpapers/gradients-2.jpg')",
+    menubarContrast: 'dark',
   },
   {
     id: 'clouds',
@@ -297,9 +277,23 @@ export const WALLPAPER_PRESETS: WallpaperPreset[] = [
       "#0a0a0a center / cover no-repeat url('/wallpapers/clouds-mobile.webp')",
     menubarContrast: 'light',
   },
+  {
+    id: 'wall',
+    label: 'Wall',
+    background:
+      "#d4d4d4 center / cover no-repeat url('/wallpapers/wall.png')",
+    menubarContrast: 'dark',
+  },
+  {
+    id: 'circles',
+    label: 'Circles',
+    background:
+      "#6b6570 center / cover no-repeat url('/wallpapers/circles.jpg')",
+    menubarContrast: 'dark',
+  },
 ];
 
-export const DEFAULT_WALLPAPER_ID: WallpaperId = 'bridge';
+export const DEFAULT_WALLPAPER_ID: WallpaperId = 'dunes';
 
 /** Applied on `<html>` before paint so reload doesn't flash the default wallpaper. */
 export const OS_WALLPAPER_CSS_VAR = '--os-wallpaper';
@@ -339,8 +333,7 @@ const NARROW_START_Y = 40;
 
 /**
  * While the dock is parked its apps sit on the left rail
- * (Home → Work → Playground → Photos); everything else stays on the right
- * rail as before (Ask AI → Favourites → Draw → Trash).
+ * (Home → Work → Playground → Photos); right rail is Ask AI → Favourites.
  */
 export const DEFAULT_ICON_POSITIONS: Record<DesktopIconId, DesktopIconPosition> = {
   // Left rail — former dock apps
@@ -348,9 +341,10 @@ export const DEFAULT_ICON_POSITIONS: Record<DesktopIconId, DesktopIconPosition> 
   work: { x: COL_INSET, y: START_Y + ROW, edge: 'left' },
   playground: { x: COL_INSET, y: START_Y + ROW * 2, edge: 'left' },
   photos: { x: COL_INSET, y: START_Y + ROW * 3, edge: 'left' },
-  // Right rail — unchanged
+  // Right rail
   ask: { x: COL_INSET, y: START_Y, edge: 'right' },
   writings: { x: COL_INSET, y: START_Y + ROW, edge: 'right' },
+  // Not shown on the desktop — kept for layout typing / session restore
   drawesome: { x: COL_INSET, y: START_Y + ROW * 2, edge: 'right' },
   trash: { x: COL_INSET, y: START_Y + ROW * 3, edge: 'right' },
   // Menu / Finder-only apps — kept for layout typing, not shown on the desktop
@@ -362,6 +356,7 @@ export const DEFAULT_ICON_POSITIONS: Record<DesktopIconId, DesktopIconPosition> 
   wordsmith: { x: COL_INSET, y: START_Y + ROW * 5, edge: 'right' },
   about: { x: COL_INSET, y: START_Y + ROW * 6, edge: 'right' },
   colophon: { x: COL_INSET, y: START_Y + ROW * 6, edge: 'right' },
+  guide: { x: COL_INSET, y: START_Y + ROW * 7, edge: 'right' },
 };
 
 /** Fixed compact rails for phone / tablet OS (no drag). */
@@ -382,6 +377,7 @@ export const NARROW_ICON_POSITIONS: Record<DesktopIconId, DesktopIconPosition> =
   wordsmith: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 5, edge: 'right' },
   about: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 6, edge: 'right' },
   colophon: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 6, edge: 'right' },
+  guide: { x: NARROW_COL_INSET, y: NARROW_START_Y + NARROW_ROW * 7, edge: 'right' },
 };
 
 export function createInitialWindows(

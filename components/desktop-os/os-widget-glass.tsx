@@ -1,28 +1,18 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useDesktopOs } from '@/components/desktop-os/desktop-os-provider';
-import { menubarContrastFor, type WallpaperId } from '@/lib/desktop-os';
 import { cn } from '@/lib/utils';
 
-/** Same iOS notification glass as the welcome toast. */
-export function osNotificationGlassClass(
-  wallpaperId: WallpaperId,
-  opts?: { interactive?: boolean },
-) {
-  const tone = menubarContrastFor(wallpaperId);
+/** Widgets stay dark glass — wallpaper contrast does not flip them light. */
+export function osNotificationGlassClass(opts?: { interactive?: boolean }) {
   return cn(
-    'os-notification-widget w-full',
-    tone === 'light'
-      ? 'os-notification-widget--dark-glass'
-      : 'os-notification-widget--light-glass',
+    'os-notification-widget w-full os-notification-widget--dark-glass',
     opts?.interactive === false && 'os-notification-widget--static',
   );
 }
 
 export function useOsNotificationGlassClass(opts?: { interactive?: boolean }) {
-  const { wallpaperId } = useDesktopOs();
-  return osNotificationGlassClass(wallpaperId, opts);
+  return osNotificationGlassClass(opts);
 }
 
 type OsWidgetGlassProps = {

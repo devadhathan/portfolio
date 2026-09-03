@@ -1,22 +1,24 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense, type ReactNode } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback, Suspense, type ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useRouter } from '@/i18n/navigation';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ProjectDetailView } from '@/components/project-detail-view';
+import { OsBackButton } from '@/components/os-back-button';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import { useRegisterNavActions } from '@/contexts/nav-actions-context';
 import type { Project } from '@/lib/types/project';
-import { getProjectId, normalizeProjectSlug } from '@/lib/types/project';
+import { findProjectBySlug, getProjectId, getProjectSlug, normalizeProjectSlug } from '@/lib/types/project';
 import { blurFadeUp, defaultTransition, easeOutExpo, fadeSlideUp, overlayFade } from '@/lib/motion';
 import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
 import { LinedPageFrame } from '@/components/lined-page-frame';
-import { useOsWindowAutoExpand, useOsWindowClose } from '@/components/desktop-os/os-window-scope';
+import { useOsWindowAutoExpand } from '@/components/desktop-os/os-window-scope';
+import { patchOsWindowSession, readOsWindowSession } from '@/lib/os-session';
 import { useCaseStudyTracking } from '@/hooks/use-case-study-tracking';
 import { useCaseStudyDocumentTitle } from '@/hooks/use-case-study-document-title';
 import { buildCaseStudySections } from '@/lib/case-study-sections';
@@ -48,11 +50,6 @@ function WorkProjectCard({
   );
 }
 
-const ProjectDetailView = dynamic(
-  () => import('@/components/project-detail-view').then(mod => ({ default: mod.ProjectDetailView })),
-  { ssr: false },
-);
-
 const getProjectThumbnail = (project: Project): string => {
   const title = project.title.toLowerCase();
 
@@ -73,6 +70,23 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
   const desktopOs = useDesktopOsOptional();
   const embedded = Boolean(desktopOs?.enabled);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const workIsOpen = !embedded || Boolean(desktopOs?.windows.work?.open);
+  const visibleCaseStudyId = workIsOpen ? selectedProject : null;
+
+  // Clear as soon as Work closes so reopening never flashes the previous case study.
+  useLayoutEffect(() => {
+    if (!embedded || !desktopOs || desktopOs.windows.work?.open) return;
+    setSelectedProject((current) => {
+      if (current === null) return current;
+      patchOsWindowSession('work', { selectedProject: null });
+      return null;
+    });
+  }, [embedded, desktopOs, desktopOs?.windows.work?.open]);
+
+  useEffect(() => {
+    if (!embedded || !workIsOpen) return;
+    patchOsWindowSession('work', { selectedProject });
+  }, [embedded, workIsOpen, selectedProject]);
 
   const getProjectSummary = (project: Project): string => {
     if (project.cardSubtext) return project.cardSubtext;
@@ -94,27 +108,25 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
   useRegisterNavActions({
     onHomeClick: handleHomeClick,
     onProjectSelect: setSelectedProject,
-    selectedProjectId: selectedProject,
+    selectedProjectId: visibleCaseStudyId,
   });
 
   useEffect(() => {
     const projectParam = searchParams.get('project');
     if (projectParam) {
       const normalizedParam = normalizeProjectSlug(projectParam);
-      const matchingProject = projects.find(
-        (project) => getProjectId(project.title) === normalizedParam,
-      );
+      const matchingProject = findProjectBySlug(projects, projectParam);
 
       if (matchingProject) {
-        const id = getProjectId(matchingProject.title);
+        const id = getProjectSlug(matchingProject);
         setSelectedProject(id);
         router.replace('/work', { scroll: false });
       }
     }
   }, [searchParams, router, projects]);
 
-  const activeProject = selectedProject
-    ? projects.find((project) => getProjectId(project.title) === normalizeProjectSlug(selectedProject))
+  const activeProject = visibleCaseStudyId
+    ? findProjectBySlug(projects, visibleCaseStudyId)
     : undefined;
   const activeSections = activeProject
     ? buildCaseStudySections(activeProject, {
@@ -132,24 +144,22 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
         business: t('sections.business'),
         learnings: t('sections.learnings'),
         impact: t('sections.impact'),
+        otherFeatures: t('sections.otherFeatures'),
       })
     : [];
 
   // Case studies want the full desktop — cover while one is open, restore on back.
-  useOsWindowAutoExpand(Boolean(selectedProject));
+  useOsWindowAutoExpand(Boolean(visibleCaseStudyId));
 
   // Case studies have no URL, so pageviews cannot see them.
-  useCaseStudyTracking(selectedProject, 'work');
-  useCaseStudyDocumentTitle(selectedProject, projects);
-
-  // Closing the window drops the case study, so reopening Work lands on the grid.
-  useOsWindowClose(useCallback(() => setSelectedProject(null), []));
+  useCaseStudyTracking(visibleCaseStudyId, 'work');
+  useCaseStudyDocumentTitle(visibleCaseStudyId, projects);
 
   return (
     <div
       className={
         embedded
-          ? selectedProject
+          ? visibleCaseStudyId
             ? 'os-work-shell flex h-full min-h-0 flex-col overflow-hidden bg-transparent'
             : 'os-work-shell min-h-0 bg-transparent'
           : 'min-h-screen overflow-x-hidden bg-background lg:min-h-0 lg:bg-transparent'
@@ -165,16 +175,16 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
         <div
           className={`flex-1 min-w-0 min-h-0 ${
             embedded
-              ? selectedProject
+              ? visibleCaseStudyId
                 ? 'flex min-h-0 flex-1 flex-col overflow-hidden pt-3 pb-3'
                 : 'flex flex-col pt-6 pb-6'
               : 'overflow-x-hidden pt-8 pb-16 md:pt-10 md:pb-20 lg:pt-10 lg:pb-8'
           }`}
         >
           <AnimatePresence mode="wait">
-          {selectedProject ? (
+          {visibleCaseStudyId ? (
             <motion.div
-              key={`work-case-${selectedProject}`}
+              key="work-case"
               className={
                 embedded
                   ? 'flex h-full min-h-0 w-full max-w-none flex-col px-0'
@@ -204,21 +214,19 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                   : 'work-case-sidebar z-40 hidden shrink-0 lg:block'
               }
             >
-              <div className="os-work-sidebar-inner pl-1 pr-2 pb-4 pt-8 sm:pl-1.5">
-                  <Button
+              <div className="os-work-sidebar-inner px-3 pb-4 pt-8 sm:px-3.5">
+                  <OsBackButton
                     onClick={() => setSelectedProject(null)}
-                    variant="ghost"
-                    size="sm"
-                    className="mb-4 text-muted-foreground hover:text-foreground -ml-2"
-                  >
-                    <ChevronLeft className="h-4 w-4 mr-2" />
-                    {t('back')}
-                  </Button>
-                  <h2 className="text-sm font-bold mb-4 text-foreground">{t('projects')}</h2>
-                  <nav className="space-y-0.5" aria-label={t('projects')}>
+                    label={t('back')}
+                    className="mb-5 px-3.5 py-2 text-[13px] shadow-md [&_svg]:h-4 [&_svg]:w-4"
+                  />
+                  <h2 className="mb-3 px-0.5 text-sm font-bold text-foreground">{t('projects')}</h2>
+                  <nav className="space-y-1" aria-label={t('projects')}>
                     {projects.map((project) => {
-                      const projectId = getProjectId(project.title);
-                      const normalizedSelected = selectedProject ? normalizeProjectSlug(selectedProject) : null;
+                      const projectId = getProjectSlug(project);
+                      const normalizedSelected = visibleCaseStudyId
+                        ? normalizeProjectSlug(visibleCaseStudyId)
+                        : null;
                       const isSelected = normalizedSelected === projectId;
 
                       return (
@@ -228,13 +236,13 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                           data-cuelume-hover="tick"
                           data-cuelume-press
                           onClick={() => setSelectedProject(projectId)}
-                          className={`w-full text-left rounded-md px-2.5 py-2 text-sm transition-colors ${
+                          className={`box-border w-full rounded-lg py-2.5 text-left text-sm transition-colors ${
                             isSelected
-                              ? 'bg-secondary/80 font-medium text-foreground'
-                              : 'text-muted-foreground hover:bg-secondary/40 hover:text-foreground'
+                              ? 'bg-white px-3 font-medium text-neutral-950 shadow-sm'
+                              : 'px-3 text-muted-foreground hover:bg-white/10 hover:text-foreground'
                           }`}
                         >
-                          {project.title}
+                          <span className="block truncate">{project.title}</span>
                         </button>
                       );
                     })}
@@ -281,7 +289,7 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                 }
               >
                 <ProjectDetailView
-                  projectId={selectedProject}
+                  projectId={visibleCaseStudyId}
                   projects={projects}
                   onBack={() => setSelectedProject(null)}
                   hideBackButton={true}
@@ -301,7 +309,7 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
             >
               <CaseStudyOnPageNav
                 label={t('onThisPage')}
-                projectId={selectedProject}
+                projectId={visibleCaseStudyId}
                 sections={activeSections}
               />
             </aside>
@@ -345,7 +353,7 @@ function WorkPageContent({ projects }: { projects: Project[] }) {
                 return (
                   <>
                     {otherProjects.slice(0, 4).map((project, index) => {
-                      const projectId = getProjectId(project.title);
+                      const projectId = getProjectSlug(project);
                       return (
                         <motion.div
                           key={`other-${index}`}

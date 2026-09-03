@@ -45,8 +45,15 @@ export async function generateMetadata({
 
   return {
     metadataBase: new URL(SITE_URL),
-    title,
+    title: {
+      default: title,
+      template: `%s | ${title}`,
+    },
     description,
+    icons: {
+      icon: [{ url: '/favicon.ico', sizes: 'any' }],
+      apple: [{ url: '/photos/Image@4x.png', type: 'image/png' }],
+    },
     openGraph: {
       type: 'website',
       siteName: title,

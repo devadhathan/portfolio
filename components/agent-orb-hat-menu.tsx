@@ -1,6 +1,6 @@
 'use client';
 
-import { AgentOrb } from '@/components/agent-orb';
+import dynamic from 'next/dynamic';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,16 +10,24 @@ import {
 import { ORB_HAT_PRESETS, useOrbHatEmoji } from '@/lib/orb-hat';
 import { cn } from '@/lib/utils';
 
+const AgentOrb = dynamic(
+  () => import('@/components/agent-orb').then((m) => ({ default: m.AgentOrb })),
+  { ssr: false },
+);
+
 type AgentOrbHatMenuProps = {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   className?: string;
   align?: 'start' | 'center' | 'end';
+  /** Keep the orb animated while the Ask window is open. */
+  alwaysAwake?: boolean;
 };
 
 export function AgentOrbHatMenu({
   size = 'sm',
   className,
   align = 'center',
+  alwaysAwake = false,
 }: AgentOrbHatMenuProps) {
   const [hat, setHat] = useOrbHatEmoji();
 
@@ -35,7 +43,7 @@ export function AgentOrbHatMenu({
           aria-label="Customize orb hat"
           title="Customize hat"
         >
-          <AgentOrb size={size} hatEmoji={hat} />
+          <AgentOrb size={size} hatEmoji={hat} alwaysAwake={alwaysAwake} />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

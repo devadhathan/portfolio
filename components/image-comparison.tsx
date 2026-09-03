@@ -36,9 +36,9 @@ const clamp = (n: number) => Math.min(100, Math.max(0, n));
 /** Divider line, sonar rings and glass handle at `position` percent. */
 function Divider({ position, compact }: { position: number; compact: boolean }) {
   return (
-    <div className="pointer-events-none absolute inset-y-0 z-20" style={{ left: `${position}%` }}>
-      {/* Full-height filled separator — softer black */}
-      <div className="absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 rounded-full border border-white/30 bg-black/40 shadow-[0_0_10px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.4)] backdrop-blur-md" />
+    <div className="pointer-events-none absolute inset-y-0 z-30" style={{ left: `${position}%` }}>
+      {/* Full-height filled separator */}
+      <div className="absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 rounded-full bg-black shadow-[0_0_8px_rgba(0,0,0,0.35)]" />
 
       {/* Sonar rings — small core, wide spread */}
       <div
@@ -56,12 +56,10 @@ function Divider({ position, compact }: { position: number; compact: boolean }) 
         aria-hidden
       />
 
-      {/* Glass drag handle — softer black */}
+      {/* Drag handle — solid black, same as the divider */}
       <div
         className={cn(
-          'absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-white',
-          'border border-white/30 bg-black/45 shadow-[0_8px_24px_rgba(0,0,0,0.32),inset_0_1px_0_rgba(255,255,255,0.3)]',
-          'backdrop-blur-xl backdrop-saturate-150',
+          'absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black text-white shadow-[0_8px_24px_rgba(0,0,0,0.32)]',
           compact ? 'h-7 w-7' : 'h-9 w-9',
         )}
       >
@@ -158,6 +156,29 @@ export function ImageComparison({
       autoFrame.current = null;
     }
   }, []);
+
+  const labelClass = cn(
+    'pointer-events-none absolute rounded-full border border-white/20 bg-black/50 font-medium uppercase tracking-wide text-white backdrop-blur-md',
+    compact ? 'top-1.5 px-1.5 py-0.5 text-[9px] tracking-wider' : 'top-3 px-2 py-1 text-[12px]',
+  );
+
+  const renderComparisonLabels = (clipPosition: number) =>
+    !hideLabels ? (
+      <>
+        <div
+          className="pointer-events-none absolute inset-0 z-10"
+          style={{ clipPath: `inset(0 ${100 - clipPosition}% 0 0)` }}
+        >
+          <span className={cn(labelClass, compact ? 'left-1.5' : 'left-3')}>{beforeLabel}</span>
+        </div>
+        <div
+          className="pointer-events-none absolute inset-0 z-10"
+          style={{ clipPath: `inset(0 0 0 ${clipPosition}%)` }}
+        >
+          <span className={cn(labelClass, compact ? 'right-1.5' : 'right-3')}>{afterLabel}</span>
+        </div>
+      </>
+    ) : null;
 
   const updateFromClientX = useCallback(
     (clientX: number) => {
@@ -256,7 +277,7 @@ export function ImageComparison({
       max={100}
       value={position}
       aria-label="Comparison position"
-      className="absolute inset-0 z-30 cursor-ew-resize opacity-0"
+      className="absolute inset-0 z-40 cursor-ew-resize opacity-0"
       onChange={(e) => {
         stopAuto();
         setPosition(Number(e.target.value));
@@ -290,13 +311,15 @@ export function ImageComparison({
       <Image
         src={afterSrc}
         alt={afterAlt}
-        width={1024}
-        height={661}
+        width={1728}
+        height={1117}
+        quality={95}
+        unoptimized
         className={cn(
-          'pointer-events-none block w-full',
-          compact ? 'h-full object-contain object-center' : 'h-auto object-contain',
+          'pointer-events-none block w-full object-contain object-center',
+          compact ? 'h-full' : 'h-auto',
         )}
-        sizes={compact ? '(max-width: 768px) 100vw, 33vw' : '(max-width: 768px) 100vw, 90vw'}
+        sizes={compact ? '(max-width: 768px) 100vw, 33vw' : '100vw'}
         draggable={false}
         priority={false}
       />
@@ -320,26 +343,7 @@ export function ImageComparison({
       {/* In split mode the stage owns the divider so it cuts the painting too */}
       {!split && <Divider position={innerPosition} compact={compact} />}
 
-      {!hideLabels && (
-        <>
-          <span
-            className={cn(
-              'pointer-events-none absolute left-2 top-2 z-10 rounded-full border border-white/20 bg-black/50 font-medium uppercase tracking-wide text-white backdrop-blur-md',
-              compact ? 'left-1.5 top-1.5 px-1.5 py-0.5 text-[9px] tracking-wider' : 'left-3 top-3 px-2 py-1 text-[12px]',
-            )}
-          >
-            {beforeLabel}
-          </span>
-          <span
-            className={cn(
-              'pointer-events-none absolute right-2 top-2 z-10 rounded-full border border-white/20 bg-black/50 font-medium uppercase tracking-wide text-white backdrop-blur-md',
-              compact ? 'right-1.5 top-1.5 px-1.5 py-0.5 text-[9px] tracking-wider' : 'right-3 top-3 px-2 py-1 text-[12px]',
-            )}
-          >
-            {afterLabel}
-          </span>
-        </>
-      )}
+      {!split && renderComparisonLabels(innerPosition)}
 
       {!split && rangeInput}
     </div>
@@ -389,6 +393,7 @@ export function ImageComparison({
       {split && (
         <>
           <Divider position={position} compact={compact} />
+          {renderComparisonLabels(position)}
           {rangeInput}
         </>
       )}

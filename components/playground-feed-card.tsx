@@ -63,7 +63,7 @@ export function PlaygroundFeedCard({
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-[#12100e]">
-            <AgentOrb size="md" hoverScale={false} />
+            <AgentOrb size="md" hoverScale={false} alwaysAwake />
           </div>
         )}
       </PhoneFrame>
@@ -147,7 +147,7 @@ export function PlaygroundGroupFeedCard({
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-[#12100e]">
-                  <AgentOrb size="sm" hoverScale={false} />
+                  <AgentOrb size="sm" hoverScale={false} alwaysAwake />
                 </div>
               )}
             </PhoneFrame>

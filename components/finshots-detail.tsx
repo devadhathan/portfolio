@@ -2,13 +2,11 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Briefcase, Calendar, ExternalLink, X, ZoomIn, Smartphone } from 'lucide-react';
+import { Briefcase, Calendar, ExternalLink, Smartphone } from 'lucide-react';
 import { findProjectBySlug } from '@/lib/types/project';
 import { useSiteContent } from '@/components/site-content-provider';
 import { OsBackButton } from '@/components/os-back-button';
 import Image from 'next/image';
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 interface FinshotsDetailProps {
@@ -66,16 +64,6 @@ export function FinshotsDetail({
   const t = useTranslations('caseStudy');
   const { projects } = useSiteContent();
   const project = findProjectBySlug(projects, projectId);
-  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
-
-  const handleImageClick = (src: string) => {
-    setZoomedImage(src);
-  };
-
-  const closeZoom = () => {
-    setZoomedImage(null);
-  };
-
 
   if (!project) {
     return (
@@ -99,12 +87,7 @@ export function FinshotsDetail({
               <OsBackButton onClick={onBack} aria-label="Back to Home" />
             </div>
           )}
-          <div className="flex items-center gap-3">
-            <h1 className="cs-display text-foreground">{project.title}</h1>
-            <span className="inline-flex items-center rounded-full border border-red-500/30 bg-red-500/20 px-2 py-0.5 text-[11px] font-medium leading-none text-red-400 md:text-[12px]">
-              {t('shipped')}
-            </span>
-          </div>
+          <h1 className="cs-display text-foreground">{project.title}</h1>
           <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-muted-foreground md:text-sm">
             {(project.company || project.institution) && (
               <span className="flex items-center gap-1.5">
@@ -180,13 +163,6 @@ export function FinshotsDetail({
             </div>
           )}
           
-          {project.period && (
-            <div className="py-6 border-b border-border/50">
-              <h3 className="cs-label uppercase text-muted-foreground mb-2">{t('timeline')}</h3>
-              <p className="cs-meta text-foreground">{project.period}</p>
-            </div>
-          )}
-          
           {project.team && (
             <div className="pt-6">
               <h3 className="cs-label uppercase text-muted-foreground mb-2">{t('team')}</h3>
@@ -202,14 +178,10 @@ export function FinshotsDetail({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {finshotsImages.map((image, idx) => (
             <div key={idx}>
-            <Card 
-              className="col-span-1 border-2 border-border/70 bg-card/60 backdrop-blur-md hover:border-primary/50 transition-all duration-300 cursor-pointer group overflow-hidden"
-              onClick={() => handleImageClick(image.src)}
-            >
+            <Card className="col-span-1 overflow-hidden border-2 border-border/70 bg-card/60 backdrop-blur-md">
               <CardHeader className="pb-4">
-                <CardTitle className="cs-body font-medium flex items-center gap-2">
+                <CardTitle className="cs-body font-medium">
                   {image.title}
-                  <ZoomIn className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0 relative">
@@ -218,7 +190,7 @@ export function FinshotsDetail({
                     src={image.src}
                     alt={image.title}
                     fill
-                    className="object-contain group-hover:scale-105 transition-transform duration-500"
+                    className="object-contain"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                 </div>
@@ -318,17 +290,14 @@ export function FinshotsDetail({
                     )}
                   </div>
                   {featureMedia?.type === 'image' && (
-                    <Card 
-                      className="border-2 border-border/70 bg-card/60 backdrop-blur-md hover:border-primary/50 transition-all duration-300 cursor-pointer group overflow-hidden w-full"
-                      onClick={() => handleImageClick(featureMedia.src)}
-                    >
-                      <CardContent className="p-0 relative">
-                        <div className="relative w-full aspect-[4/3] overflow-hidden rounded-lg">
+                    <Card className="w-full overflow-hidden border-2 border-border/70 bg-card/60 backdrop-blur-md">
+                      <CardContent className="relative p-0">
+                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg">
                           <Image
                             src={featureMedia.src}
                             alt={featureMedia.alt}
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="object-cover"
                             sizes="100vw"
                           />
                         </div>
@@ -413,36 +382,6 @@ export function FinshotsDetail({
       )}
 
 
-      {/* Zoom Modal */}
-      {zoomedImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
-          onClick={closeZoom}
-        >
-          <div
-            className="relative max-w-7xl max-h-[90vh] w-full h-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 right-4 z-10 bg-background/80 hover:bg-background"
-              onClick={closeZoom}
-            >
-              <X className="h-5 w-5" />
-            </Button>
-            <div className="relative w-full h-full">
-              <Image
-                src={zoomedImage}
-                alt="Zoomed view"
-                fill
-                className="object-contain"
-                sizes="100vw"
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

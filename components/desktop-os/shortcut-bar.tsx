@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { useDesktopOs } from '@/components/desktop-os/desktop-os-provider';
+import { OsHomeIcon, OsPlaygroundIcon, OsWorkIcon } from '@/components/desktop-os/os-line-icons';
 import { useWindowTitles } from '@/components/desktop-os/window-titles';
 import { prefetchDesktopWindow } from '@/components/desktop-os/window-bodies';
 import { trackEvent } from '@/lib/analytics';
@@ -11,47 +12,12 @@ import { DESKTOP_WINDOW_IDS, type DesktopWindowId } from '@/lib/desktop-os';
 
 type ShortcutItem = { id: DesktopWindowId; icon: ReactNode };
 
-/** Geist-style line icons — stroked, currentColor, 20px box. */
-const iconProps = {
-  width: 20,
-  height: 20,
-  viewBox: '0 0 20 20',
-  fill: 'none',
-  stroke: 'currentColor',
-  strokeWidth: 1.5,
-  strokeLinecap: 'round' as const,
-  strokeLinejoin: 'round' as const,
-  'aria-hidden': true,
-};
-
 const SHORTCUT_ITEMS: ShortcutItem[] = [
-  {
-    id: 'home',
-    icon: (
-      <svg {...iconProps}>
-        <path d="M3 8.5 10 3l7 5.5V16a1 1 0 0 1-1 1h-3v-5H7v5H4a1 1 0 0 1-1-1V8.5Z" />
-      </svg>
-    ),
-  },
-  {
-    id: 'work',
-    icon: (
-      <svg {...iconProps}>
-        <rect x="2.75" y="6.25" width="14.5" height="10" rx="1.75" />
-        <path d="M7 6.25V5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 13 5v1.25M2.75 10.5h14.5" />
-      </svg>
-    ),
-  },
-  {
-    id: 'playground',
-    icon: (
-      <svg {...iconProps}>
-        <path d="M8 2.75v4.6l-3.72 6.36A1.55 1.55 0 0 0 5.6 16.5h8.8a1.55 1.55 0 0 0 1.32-2.79L12 7.35v-4.6" />
-        <path d="M6.9 2.75h6.2M5.85 12.25h8.3" />
-      </svg>
-    ),
-  },
+  { id: 'home', icon: <OsHomeIcon /> },
+  { id: 'work', icon: <OsWorkIcon /> },
+  { id: 'playground', icon: <OsPlaygroundIcon /> },
 ];
+
 
 /** Pointer distance (px) from the bottom edge that opens the bar. */
 const REVEAL_EDGE_PX = 110;

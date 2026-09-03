@@ -2,19 +2,20 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useLayoutEffect, useState } from 'react';
-import { ArrowUpRight, Briefcase, Calendar } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import HomePage from '@/components/home-page';
 import { useSiteContent } from '@/components/site-content-provider';
 import { useDesktopOs, useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
 import { OsBackButton } from '@/components/os-back-button';
+import { WordsmithDetail } from '@/components/wordsmith-detail';
 import { useOsWindowId } from '@/components/desktop-os/os-window-scope';
 import {
   DESKTOP_LINK_ICONS,
   GAMES_EMBED_URL,
-  WORDSMITH_EMBED_URL,
   type DesktopLinkIconId,
 } from '@/lib/desktop-os';
 import { trackEvent } from '@/lib/analytics';
+import { useWordsmithTracking } from '@/hooks/use-wordsmith-tracking';
 import { cn, focusRing } from '@/lib/utils';
 
 /**
@@ -217,97 +218,22 @@ export function GamesWindowBody() {
 
 export function WordsmithWindowBody() {
   const desktopOs = useDesktopOsOptional();
+  const wordsmithOpen = Boolean(desktopOs?.windows.wordsmith?.open);
+  useWordsmithTracking(wordsmithOpen, 'desktop_window');
 
-  useEffect(() => {
-    const previous = document.title;
-    document.title = 'Dev | Wordsmith AI';
-    return () => {
-      document.title = previous;
-    };
-  }, []);
-
-  // Wordsmith CSP: frame-ancestors 'self' studio.wordsmith.ai localhost:* —
-  // staging/prod portfolios cannot iframe it (localhost works).
   return (
     <div className="relative flex h-full min-h-0 flex-col" data-os-embedded="true">
-      <div className="os-window-content flex min-h-0 flex-1 flex-col overflow-y-auto pb-20 pt-4 sm:pt-5 md:pt-6">
-        <div className="os-col--case text-foreground">
-          {desktopOs?.enabled ? (
-            <div className="mb-5">
-              <OsBackButton
-                onClick={() => desktopOs.openWindow('home', { syncUrl: false })}
-                aria-label="Back to Home"
-              />
-            </div>
-          ) : null}
-
-          <div className="mb-8 lg:mb-10">
-            <h1 className="cs-display text-foreground" style={{ fontWeight: 600 }}>
-              Wordsmith AI
-            </h1>
-            <p className="mt-2 max-w-2xl text-balance cs-body font-medium text-foreground">
-              I designed experiences for legal AI.
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-muted-foreground md:text-sm">
-              <span className="flex items-center gap-1.5">
-                <Briefcase className="h-3.5 w-3.5 shrink-0" />
-                Wordsmith AI
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5 shrink-0" />
-                April 2026 – June 2026
-              </span>
-              <span className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-medium leading-none text-primary md:text-[12px]">
-                Product Design
-              </span>
-            </div>
-          </div>
-
-          <div className="mb-10 max-w-3xl space-y-5 lg:mb-12">
-            <p className="cs-body text-muted-foreground">
-              I worked as a product designer at Wordsmith AI. After research and internal
-              prototyping, I shipped contract review and versioning for in-house legal teams. I ran
-              discovery end to end and stayed close to legal engineers through launch. Most of the
-              deeper work sits behind an NDA. If you want the real story, contact me.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-2.5 pt-1">
-              <button
-                type="button"
-                onClick={() => {
-                  trackEvent('nav_click', { destination: 'contact', surface: 'wordsmith' });
-                  if (desktopOs?.enabled) {
-                    desktopOs.openWindow('contact', { syncUrl: false });
-                    return;
-                  }
-                  window.location.href = 'mailto:devadhathanmd18@gmail.com';
-                }}
-                className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
-              >
-                Contact me
-              </button>
-              <a
-                href={WORDSMITH_EMBED_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() =>
-                  trackEvent('outbound_link', { destination: 'wordsmith', surface: 'window_cta' })
-                }
-                className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-transparent px-4 py-2 text-sm font-medium text-foreground/85 transition-colors hover:bg-foreground/[0.04] hover:text-foreground"
-              >
-                Feature
-                <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
-              </a>
-            </div>
-          </div>
-
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/photos/wordsmith-preview.webp"
-            alt="Wordsmith AI Blueprints"
-            className="h-auto w-full object-cover shadow-lg"
-          />
-        </div>
+      <div className="os-window-content flex min-h-0 flex-1 flex-col pb-20 pt-4 sm:pt-5 md:pt-6">
+        <WordsmithDetail
+          onBack={() => desktopOs?.openWindow('home', { syncUrl: false })}
+          onContact={() => {
+            if (desktopOs?.enabled) {
+              desktopOs.openWindow('contact', { syncUrl: false });
+              return;
+            }
+            window.location.href = 'mailto:devadhathanmd18@gmail.com';
+          }}
+        />
       </div>
     </div>
   );
@@ -456,6 +382,59 @@ export function AboutWindowBody() {
           <p key={paragraph.slice(0, 24)}>{paragraph}</p>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** Help → What is this site? The desktop, explained in plain words. */
+export function GuideWindowBody() {
+  const moves: [string, string][] = [
+    ['Open something', 'Click an icon on the desktop, or pick an app from the bar at the bottom.'],
+    ['Keep it open', 'Opening a second app doesn’t close the first. Come back to it whenever.'],
+    ['Make room', 'Drag icons where you like. The green light fills the screen, the red one closes.'],
+    ['Just ask', 'Ask AI knows the work. Ask it anything and it will pull the right pieces up for you.'],
+  ];
+
+  return (
+    <div className="mx-auto w-full max-w-2xl px-5 py-8 sm:px-8">
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+        It&rsquo;s a desktop, on purpose.
+      </h1>
+
+      <div className="mt-6 space-y-5 text-[15px] leading-7 text-foreground/85">
+        <p>
+          The work kept growing. Case studies, side projects, experiments, things I made on a
+          weekend because I wanted to see if they&rsquo;d work. A single scrolling page stopped
+          being able to hold it.
+        </p>
+        <p>
+          Most portfolios solve that by sending you somewhere else. Click into a project, read it,
+          click back, find your place again, click into the next one. It&rsquo;s a lot of asking
+          you to leave.
+        </p>
+        <p>
+          So I built the thing that already solved this years ago: a desktop. Open Work next to
+          Playground. Leave a case study open while you look at something else. Put a window aside
+          without losing it. Everything is here at once, and you decide what to look at.
+        </p>
+      </div>
+
+      <h2 className="mt-8 text-[13px] uppercase tracking-[0.08em] text-muted-foreground">
+        Getting around
+      </h2>
+      <dl className="mt-3">
+        {moves.map(([label, detail]) => (
+          <div key={label} className="border-b border-border/30 py-3 last:border-b-0">
+            <dt className="text-[15px] font-medium text-foreground">{label}</dt>
+            <dd className="mt-1 text-[15px] leading-7 text-foreground/85">{detail}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <p className="mt-8 text-[15px] leading-7 text-foreground/85">
+        That&rsquo;s the whole idea. Have a look around — you can&rsquo;t break it, and everything
+        goes back to normal from Menu → Reset Desktop.
+      </p>
     </div>
   );
 }

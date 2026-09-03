@@ -2,6 +2,7 @@
 
 import { ArrowUpRight } from 'lucide-react';
 import { CardTag, type CardTagTone } from '@/components/card-tag';
+import { trackEvent } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 
 export const WORDSMITH_BLUEPRINTS_URL = 'https://www.wordsmith.ai/products/blueprints';
@@ -37,7 +38,10 @@ export function WordsmithCard({
         'group/ws flex h-full min-h-[360px] flex-col overflow-hidden outline-none sm:min-h-[520px]',
         className,
       )}
-      onClick={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+        trackEvent('wordsmith_card_clicked', { surface: 'home_bento' });
+      }}
     >
       <div className="relative z-10 shrink-0 px-4 pt-4 pb-2">
         <div className="flex max-w-full flex-wrap items-center gap-2">

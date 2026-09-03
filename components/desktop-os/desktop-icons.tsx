@@ -6,6 +6,7 @@ import {
   useDesktopIconLayout,
   useDesktopOs,
 } from '@/components/desktop-os/desktop-os-provider';
+import { OsLineIcon, type OsLineIconId } from '@/components/desktop-os/os-line-icons';
 import {
   DESKTOP_LINK_ICONS,
   DESKTOP_LINK_ICON_IDS,
@@ -20,44 +21,27 @@ import { cn, focusRing } from '@/lib/utils';
 /**
  * Desktop apps. While the dock is parked, the primary apps (Home / Work /
  * Playground / Photos) live here alongside Ask AI.
+ * Draw lives in Favourites; Trash is Finder-only.
  */
 const APP_ICON_IDS = ['home', 'work', 'playground', 'photos', 'ask'] as const;
-const DESKTOP_RAIL_WINDOW_IDS = ['drawesome'] as const;
 type AppIconWindowId = (typeof APP_ICON_IDS)[number];
-type DesktopRailWindowId = (typeof DESKTOP_RAIL_WINDOW_IDS)[number];
 
 const APP_ICONS: {
   id: AppIconWindowId;
   labelKey: 'home' | 'work' | 'playground' | 'photos' | 'askAI';
-  src: string;
+  iconId: OsLineIconId;
 }[] = [
-  { id: 'home', labelKey: 'home', src: '/icons/home.svg' },
-  { id: 'work', labelKey: 'work', src: '/icons/briefcase.svg' },
-  { id: 'playground', labelKey: 'playground', src: '/icons/playgroundd.svg' },
-  { id: 'photos', labelKey: 'photos', src: '/icons/image.svg' },
-  { id: 'ask', labelKey: 'askAI', src: '/icons/sparkles.svg' },
+  { id: 'home', labelKey: 'home', iconId: 'home' },
+  { id: 'work', labelKey: 'work', iconId: 'work' },
+  { id: 'playground', labelKey: 'playground', iconId: 'playground' },
+  { id: 'photos', labelKey: 'photos', iconId: 'photos' },
+  { id: 'ask', labelKey: 'askAI', iconId: 'ask' },
 ];
 
-const RAIL_WINDOW_ICONS: {
-  id: DesktopRailWindowId;
-  labelKey: 'drawesome';
-  src: string;
-}[] = [{ id: 'drawesome', labelKey: 'drawesome', src: '/icons/pennn.svg' }];
-
 const LINK_ICON_ID_SET = new Set<string>(DESKTOP_LINK_ICON_IDS);
-const WINDOW_ICON_ID_SET = new Set<string>([
-  ...APP_ICON_IDS,
-  ...DESKTOP_RAIL_WINDOW_IDS,
-  ...DESKTOP_LINK_ICON_IDS,
-]);
+const WINDOW_ICON_ID_SET = new Set<string>([...APP_ICON_IDS, ...DESKTOP_LINK_ICON_IDS]);
 
-const LINK_ICON_SRC: Record<DesktopLinkIconId, string> = {
-  writings: '/icons/folder.svg',
-  catalystic: '/icons/lightbulb.svg',
-  bigBang: '/icons/lightbulb.svg',
-};
-
-/** Only Favourites stays on the desktop rail — Catalystic / Big Bang live inside Finder. */
+/** Favourites folder on the right rail — Draw / games / etc. live inside it. */
 const DESKTOP_RAIL_LINK_IDS = ['writings'] as const satisfies readonly DesktopLinkIconId[];
 
 const iconFocusClass =
@@ -69,24 +53,6 @@ function iconStyle(pos: { x: number; y: number; edge?: 'left' | 'right' }): CSSP
     return { right: pos.x, top: pos.y, left: 'auto' };
   }
   return { left: pos.x, top: pos.y, right: 'auto' };
-}
-
-function DesktopAssetIcon({ src, alt }: { src: string; alt: string }) {
-  return (
-    <>
-      {/* Plain img — local SVGs don’t benefit from next/image */}
-      <img
-        src={src}
-        alt={alt}
-        width={64}
-        height={64}
-        className="os-desktop-icon__asset"
-        draggable={false}
-        decoding="async"
-      />
-      <span className="os-desktop-icon__tint" aria-hidden />
-    </>
-  );
 }
 
 type DesktopIconsProps = {
@@ -194,27 +160,21 @@ export function DesktopIcons(_props?: DesktopIconsProps) {
 
   const activateIcon = useCallback(
     (id: DesktopIconId) => {
-      if (id === 'trash') {
-        openWindow('finder', { syncUrl: false, finderLocation: 'trash' });
+      if (!WINDOW_ICON_ID_SET.has(id)) return;
+      const wid = id as DesktopWindowId;
+      // Desktop Favourites folder opens Finder at that location.
+      if (wid === 'writings') {
+        openWindow('finder', { syncUrl: false, finderLocation: 'favourites' });
         return;
       }
-
-      if (WINDOW_ICON_ID_SET.has(id)) {
-        const wid = id as DesktopWindowId;
-        // Desktop Favourites folder opens Finder at that location.
-        if (wid === 'writings') {
-          openWindow('finder', { syncUrl: false, finderLocation: 'favourites' });
-          return;
-        }
-        const noRouteSync =
-          wid === 'finder' ||
-          wid === 'games' ||
-          wid === 'drawesome' ||
-          wid === 'photos' ||
-          wid === 'contact' ||
-          LINK_ICON_ID_SET.has(wid);
-        openWindow(wid, noRouteSync ? { syncUrl: false } : undefined);
-      }
+      const noRouteSync =
+        wid === 'finder' ||
+        wid === 'games' ||
+        wid === 'drawesome' ||
+        wid === 'photos' ||
+        wid === 'contact' ||
+        LINK_ICON_ID_SET.has(wid);
+      openWindow(wid, noRouteSync ? { syncUrl: false } : undefined);
     },
     [openWindow],
   );
@@ -290,8 +250,8 @@ export function DesktopIcons(_props?: DesktopIconsProps) {
             onFocus={() => prefetchDesktopWindow(item.id)}
             {...dragHandlers(item.id)}
           >
-            <span className="os-desktop-icon__well os-desktop-icon__well--asset">
-              <DesktopAssetIcon src={item.src} alt="" />
+            <span className="os-desktop-icon__well os-desktop-icon__well--circle">
+              <OsLineIcon id={item.iconId} />
             </span>
             <span className="os-desktop-icon__label">{label}</span>
           </button>
@@ -314,7 +274,6 @@ export function DesktopIcons(_props?: DesktopIconsProps) {
           item.id === 'writings'
             ? isOpen && focusedId === 'finder'
             : focusedId === item.id && isOpen;
-        const isFolderAsset = LINK_ICON_SRC[item.id].endsWith('.png');
 
         return (
           <button
@@ -327,67 +286,13 @@ export function DesktopIcons(_props?: DesktopIconsProps) {
             style={styleFor(item.id, pos)}
             {...dragHandlers(item.id)}
           >
-            <span
-              className={cn(
-                'os-desktop-icon__well',
-                isFolderAsset ? 'os-desktop-icon__well--bitmap' : 'os-desktop-icon__well--asset',
-              )}
-            >
-              <DesktopAssetIcon src={LINK_ICON_SRC[item.id]} alt="" />
+            <span className="os-desktop-icon__well os-desktop-icon__well--circle">
+              <OsLineIcon id={item.id} />
             </span>
             <span className="os-desktop-icon__label">{item.label}</span>
           </button>
         );
       })}
-
-      {RAIL_WINDOW_ICONS.map((item) => {
-        const pos = positions[item.id] ?? { x: 28, y: 256, edge: 'right' as const };
-        const win = windows[item.id];
-        const isOpen = win.open;
-        const isFocused = focusedId === item.id && isOpen;
-        const label = t(item.labelKey);
-
-        return (
-          <button
-            key={item.id}
-            type="button"
-            data-cuelume-hover="tick"
-            data-os-icon={item.id}
-            aria-label={label}
-            className={cn(iconClass, isFocused && 'os-desktop-icon--active')}
-            style={styleFor(item.id, pos)}
-            onMouseEnter={() => prefetchDesktopWindow(item.id)}
-            onFocus={() => prefetchDesktopWindow(item.id)}
-            {...dragHandlers(item.id)}
-          >
-            <span className="os-desktop-icon__well os-desktop-icon__well--asset">
-              <DesktopAssetIcon src={item.src} alt="" />
-            </span>
-            <span className="os-desktop-icon__label">{label}</span>
-          </button>
-        );
-      })}
-
-      <button
-        type="button"
-        data-cuelume-hover="tick"
-        data-os-icon="trash"
-        aria-label="Trash"
-        className={cn(
-          iconClass,
-          windows.finder.open &&
-            finderLocation === 'trash' &&
-            focusedId === 'finder' &&
-            'os-desktop-icon--active',
-        )}
-        style={styleFor('trash', positions.trash ?? { x: 28, y: 504, edge: 'right' })}
-        {...dragHandlers('trash')}
-      >
-        <span className="os-desktop-icon__well os-desktop-icon__well--asset">
-          <DesktopAssetIcon src="/icons/trash.svg" alt="" />
-        </span>
-        <span className="os-desktop-icon__label">Trash</span>
-      </button>
     </div>
   );
 }

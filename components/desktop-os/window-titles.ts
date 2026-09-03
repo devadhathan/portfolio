@@ -21,6 +21,7 @@ export function useWindowTitles(): Record<DesktopWindowId, string> {
     contact: t('contact'),
     about: 'About Me',
     colophon: 'Colophon',
+    guide: 'What is this site?',
     writings: 'Favourites',
     catalystic: 'Catalystic',
     bigBang: 'Big Bang',

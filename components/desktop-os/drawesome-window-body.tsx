@@ -3,16 +3,14 @@
 import { useCallback, useRef, useState } from 'react';
 import { Draw, SWATCHES_COMPACT, type DrawHandle } from 'drawesome';
 import { useTheme } from 'next-themes';
-import { Download, Type } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { useDesktopOs } from '@/components/desktop-os/desktop-os-provider';
-import { DrawTextLayer } from '@/components/desktop-os/draw-text-layer';
 import {
   contentBounds,
   downloadBlob,
   drawingFilename,
   exportDrawing,
   type DrawExportFormat,
-  type DrawTextItem,
 } from '@/lib/draw-export';
 import {
   DropdownMenu,
@@ -20,7 +18,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
 import 'drawesome/styles.css';
 
 const FORMATS: Array<{ id: DrawExportFormat; label: string }> = [
@@ -29,18 +26,13 @@ const FORMATS: Array<{ id: DrawExportFormat; label: string }> = [
   { id: 'webp', label: 'WebP' },
 ];
 
-const TEXT_SIZE = 28;
-
 export function DrawesomeWindowBody() {
   const { resolvedTheme } = useTheme();
   const { isNarrow } = useDesktopOs();
   const drawRef = useRef<DrawHandle>(null);
-  const [texts, setTexts] = useState<DrawTextItem[]>([]);
-  const [textMode, setTextMode] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
   const dark = resolvedTheme === 'dark';
-  const ink = dark ? '#f5f5f5' : '#111111';
 
   const handleDownload = useCallback(
     async (format: DrawExportFormat) => {
@@ -48,7 +40,7 @@ export function DrawesomeWindowBody() {
       if (!handle) return;
 
       const board = handle.getSize();
-      const bounds = contentBounds(handle.getStrokes(), texts, board);
+      const bounds = contentBounds(handle.getStrokes(), board);
       if (!bounds) {
         setStatus('Nothing to save yet');
         window.setTimeout(() => setStatus(null), 2400);
@@ -58,7 +50,6 @@ export function DrawesomeWindowBody() {
       try {
         const blob = await exportDrawing({
           svg: handle.toSvg(),
-          texts,
           bounds,
           format,
           // JPEG has no alpha, so it gets the board colour behind the ink.
@@ -70,7 +61,7 @@ export function DrawesomeWindowBody() {
         window.setTimeout(() => setStatus(null), 2400);
       }
     },
-    [dark, texts],
+    [dark],
   );
 
   const buttonClass =
@@ -96,16 +87,8 @@ export function DrawesomeWindowBody() {
             inset={isNarrow ? 8 : undefined}
           />
 
-          <DrawTextLayer
-            items={texts}
-            onChange={setTexts}
-            active={textMode}
-            color={ink}
-            size={TEXT_SIZE}
-          />
-
           {/*
-            * The pen toolbar owns the bottom edge, so text and save live in the
+            * The pen toolbar owns the bottom edge, so save lives in the
             * opposite corner. z-40 clears the toolbar's own stacking (z-30).
             */}
           <div className="absolute right-3 top-3 z-40 flex items-center gap-2">
@@ -114,17 +97,6 @@ export function DrawesomeWindowBody() {
                 {status}
               </span>
             ) : null}
-
-            <button
-              type="button"
-              onClick={() => setTextMode((on) => !on)}
-              aria-pressed={textMode}
-              title="Add text"
-              className={cn(buttonClass, textMode && 'border-primary/50 bg-primary/10 text-foreground')}
-            >
-              <Type className="h-3.5 w-3.5" aria-hidden />
-              Text
-            </button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

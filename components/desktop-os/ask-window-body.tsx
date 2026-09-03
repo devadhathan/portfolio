@@ -1,10 +1,11 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDesktopOs } from '@/components/desktop-os/desktop-os-provider';
 import { useNavActions } from '@/contexts/nav-actions-context';
 import { openCaseStudyInHomeWindow } from '@/lib/open-case-study';
+import { patchOsSession, readOsSession } from '@/lib/os-session';
 import type { GenUIChat, GenUIViewport } from '@/lib/gen-ui-viewport';
 import { createLoadingViewport } from '@/lib/gen-ui-viewport';
 import { useGenUIPrompt } from '@/hooks/use-gen-ui-prompt';
@@ -26,6 +27,31 @@ export function AskWindowBody() {
 
   // Read inside callbacks without making them depend on render state.
   const activeChatIdRef = useRef<string | null>(null);
+  const sessionHydratedRef = useRef(false);
+
+  useEffect(() => {
+    if (sessionHydratedRef.current) return;
+    sessionHydratedRef.current = true;
+    const ask = readOsSession().ask;
+    if (!ask?.chats.length) return;
+
+    setChats(ask.chats);
+    if (ask.activeChatId) {
+      activeChatIdRef.current = ask.activeChatId;
+      setActiveChatId(ask.activeChatId);
+      const chat = ask.chats.find((entry) => entry.id === ask.activeChatId);
+      const last = chat?.viewports[chat.viewports.length - 1];
+      setActiveViewportId(last?.id ?? null);
+      setScrollToViewportId(last?.id ?? null);
+    }
+  }, []);
+
+  useEffect(() => {
+    patchOsSession((prev) => ({
+      ...prev,
+      ask: chats.length ? { chats, activeChatId } : undefined,
+    }));
+  }, [chats, activeChatId]);
 
   const genUIViewports = useMemo(
     () => chats.find((c) => c.id === activeChatId)?.viewports ?? [],

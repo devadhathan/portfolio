@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -10,13 +10,15 @@ import { AgentState, PortfolioAgent } from '@/lib/agent';
 import { scrollPageToTop } from '@/lib/scroll-page';
 import { PortfolioSections } from '@/components/portfolio-sections';
 import { OsBackButton } from '@/components/os-back-button';
-import { useOsWindowAutoExpand, useOsWindowClose } from '@/components/desktop-os/os-window-scope';
+import { useOsWindowAutoExpand } from '@/components/desktop-os/os-window-scope';
+import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
+import { patchOsWindowSession, readOsWindowSession } from '@/lib/os-session';
 import { useCaseStudyTracking } from '@/hooks/use-case-study-tracking';
 import { useCaseStudyDocumentTitle } from '@/hooks/use-case-study-document-title';
 import { buildCaseStudySections } from '@/lib/case-study-sections';
 import { CaseStudyOnPageNav } from '@/components/case-study-on-page-nav';
 import { useSiteContent } from '@/components/site-content-provider';
-import { getProjectId, normalizeProjectSlug } from '@/lib/types/project';
+import { findProjectBySlug } from '@/lib/types/project';
 import { blurFadeUp, easeOutExpo } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
@@ -52,19 +54,23 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
   const reduceMotion = useReducedMotion();
   const { projects } = useSiteContent();
   const tWork = useTranslations('work');
+  const desktopOs = useDesktopOsOptional();
+  const osEmbedded = embedded || Boolean(desktopOs?.enabled);
 
   const [agentState, setAgentState] = useState<AgentState>(() => createDefaultAgentState());
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const homeIsOpen = !osEmbedded || Boolean(desktopOs?.windows.home?.open);
+  const visibleCaseStudyId = homeIsOpen ? selectedProject : null;
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [genUIMode, setGenUIMode] = useState(false);
   const [showProjectsList, setShowProjectsList] = useState(false);
-  const contentGutterClass = embedded
+  const contentGutterClass = osEmbedded
     ? 'mx-auto w-full max-w-none px-6 sm:px-8 md:px-10'
     : isSidebarCollapsed
       ? 'mx-auto w-full max-w-[72rem] px-4 sm:px-6 md:px-8 lg:px-10'
       : 'mx-auto w-full max-w-7xl px-4 sm:px-5 md:px-6 lg:px-8';
   /** Home feed sits narrower than the window — `.home-col` owns the max width. */
-  const homeFeedGutterClass = embedded
+  const homeFeedGutterClass = osEmbedded
     ? 'home-col mx-auto w-full'
     : contentGutterClass;
 
@@ -102,6 +108,32 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
   }, [resetAgent, closeAskAI]);
 
   const feedScrollRef = useRef(0);
+  const sessionHydratedRef = useRef(false);
+
+  useLayoutEffect(() => {
+    if (!osEmbedded || !desktopOs || desktopOs.windows.home?.open) return;
+    setSelectedProject((current) => {
+      if (current === null) return current;
+      patchOsWindowSession('home', { selectedProject: null });
+      return null;
+    });
+  }, [osEmbedded, desktopOs, desktopOs?.windows.home?.open]);
+
+  useEffect(() => {
+    if (!osEmbedded || sessionHydratedRef.current) return;
+    sessionHydratedRef.current = true;
+    const slice = readOsWindowSession('home');
+    if (slice.showProjectsList) setShowProjectsList(true);
+    if (typeof slice.scrollY === 'number') feedScrollRef.current = slice.scrollY;
+  }, [osEmbedded]);
+
+  useEffect(() => {
+    if (!osEmbedded || !homeIsOpen) return;
+    patchOsWindowSession('home', {
+      selectedProject: genUIMode ? null : selectedProject,
+      showProjectsList,
+    });
+  }, [osEmbedded, homeIsOpen, genUIMode, selectedProject, showProjectsList]);
 
   const readWindowScrollTop = () => {
     const body = document.querySelector('.os-window-body');
@@ -142,27 +174,25 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
 
   useRegisterNavActions({
     onProjectSelect: selectProject,
-    selectedProjectId: genUIMode ? null : selectedProject,
+    selectedProjectId: genUIMode ? null : visibleCaseStudyId,
     onHomeClick: handleHomeClick,
     hideMobileNav: genUIMode,
-    showWidgetsToggle: !genUIMode && !embedded,
-    widgetsCollapsed: embedded ? true : isSidebarCollapsed,
+    showWidgetsToggle: !genUIMode && !osEmbedded,
+    widgetsCollapsed: osEmbedded ? true : isSidebarCollapsed,
     onOpenWidgets: () => setIsSidebarCollapsed(false),
   });
 
-  const showHomeFeed = !selectedProject && !genUIMode && !showProjectsList;
+  const showHomeFeed = !visibleCaseStudyId && !genUIMode && !showProjectsList;
 
   // Case studies want the full desktop — cover while one is open, restore on back.
-  useOsWindowAutoExpand(Boolean(selectedProject) && !genUIMode);
+  useOsWindowAutoExpand(Boolean(visibleCaseStudyId) && !genUIMode);
 
   // Case studies have no URL, so pageviews cannot see them.
-  useCaseStudyTracking(genUIMode ? null : selectedProject, 'home');
-  useCaseStudyDocumentTitle(genUIMode ? null : selectedProject, projects);
+  useCaseStudyTracking(genUIMode ? null : visibleCaseStudyId, 'home');
+  useCaseStudyDocumentTitle(genUIMode ? null : visibleCaseStudyId, projects);
 
-  const activeProject = selectedProject
-    ? projects.find(
-        (project) => getProjectId(project.title) === normalizeProjectSlug(selectedProject),
-      )
+  const activeProject = visibleCaseStudyId
+    ? findProjectBySlug(projects, visibleCaseStudyId)
     : undefined;
   const activeSections = activeProject
     ? buildCaseStudySections(activeProject, {
@@ -180,18 +210,12 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
         business: tWork('sections.business'),
         learnings: tWork('sections.learnings'),
         impact: tWork('sections.impact'),
+        otherFeatures: tWork('sections.otherFeatures'),
       })
     : [];
 
-  // Closing the window drops the case study, so reopening Home lands on Home.
-  useOsWindowClose(
-    useCallback(() => {
-      setSelectedProject(null);
-      setShowProjectsList(false);
-    }, []),
-  );
 
-  const embeddedCaseOpen = Boolean(embedded && selectedProject && !genUIMode);
+  const embeddedCaseOpen = Boolean(osEmbedded && visibleCaseStudyId && !genUIMode);
 
   return (
     <div
@@ -267,14 +291,14 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
                   onProjectSelect={selectProject}
                   onShowProjectsList={() => setShowProjectsList(true)}
                   onEnterGenUI={handleEnterGenUI}
-                  selectedProjectId={selectedProject}
+                  selectedProjectId={visibleCaseStudyId}
                 />
               </ErrorBoundary>
             </div>
 
-            {selectedProject && !genUIMode ? (
+            {visibleCaseStudyId && !genUIMode ? (
                 <div
-                  key={`case-${selectedProject}`}
+                  key={`case-${visibleCaseStudyId}`}
                   className={
                     embedded
                       ? 'flex h-full min-h-0 w-full max-w-none flex-col px-0'
@@ -323,7 +347,7 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
                             transition={caseStudyEnterTransition}
                           >
                             <ProjectDetailView
-                              projectId={selectedProject}
+                              projectId={visibleCaseStudyId}
                               projects={projects}
                               hideBackButton
                               onBack={backFromCaseStudy}
@@ -344,7 +368,7 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
                     >
                       <CaseStudyOnPageNav
                         label={tWork('onThisPage')}
-                        projectId={selectedProject}
+                        projectId={visibleCaseStudyId}
                         sections={activeSections}
                       />
                     </aside>
@@ -352,7 +376,7 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
                 </div>
               ) : null}
 
-            {showProjectsList && !selectedProject && !genUIMode ? (
+            {showProjectsList && !visibleCaseStudyId && !genUIMode ? (
               <div key="projects-list" className="w-full h-full">
                 <ProjectsListView
                   onBack={() => {
@@ -362,7 +386,7 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
                   onProjectSelect={(projectId) => {
                     selectProject(projectId);
                   }}
-                  selectedProjectId={selectedProject}
+                  selectedProjectId={visibleCaseStudyId}
                 />
               </div>
             ) : null}

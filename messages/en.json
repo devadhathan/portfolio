@@ -69,8 +69,8 @@
     "finshotsAward": {
       "title": "Google Play Best App 2020",
       "badge": "Finshots · Award-winning mobile app",
-      "story": "Dev designed the Finshots mobile app end-to-end — turning newsletter readers into daily app users with a centralized hub for financial news.",
-      "detail": "The app hit **100k+ downloads**, earned a **4.9★** Play Store rating, and was named **Google Play's Best App of 2020** — the project that launched Dev's product design career.",
+      "story": "Dev designed the Finshots mobile app end-to-end, turning newsletter readers into daily app users with a centralized hub for financial news.",
+      "detail": "The app hit **100k+ downloads**, earned a **4.9★** Play Store rating, and was named **Google Play's Best App of 2020**, the project that launched Dev's product design career.",
       "viewCaseStudy": "View Finshots case study"
     },
     "projectTreeLabel": "Case studies",
@@ -90,7 +90,7 @@
         "tags": ["A2UI", "Generative UI"]
       },
       "nesoi": {
-        "title": "Nesoi.ai",
+        "title": "Nesoi AI",
         "description": "Raw file to finished video, in two moves.",
         "status": "2025"
       }
@@ -177,7 +177,8 @@
       "keyFeatures": "Key Features",
       "business": "Business opportunity",
       "learnings": "Learnings",
-      "impact": "Impact"
+      "impact": "Impact",
+      "otherFeatures": "Other features"
     }
   },
   "contact": {
@@ -299,6 +300,7 @@
     "learnings": "Learnings",
     "prototype": "Prototype",
     "impact": "Impact",
+    "otherFeatures": "Other features",
     "possibleSolutions": "Possible solutions",
     "keyFeaturesShipped": "Key features shipped",
     "result": "What was the result",

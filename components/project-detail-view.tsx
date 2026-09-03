@@ -1,7 +1,7 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Briefcase, Calendar, ExternalLink, Smartphone, X } from 'lucide-react';
+import { Briefcase, Calendar, ExternalLink, Smartphone } from 'lucide-react';
+import { trackEvent } from '@/lib/analytics';
 import type { Project } from '@/lib/types/project';
 import { findProjectBySlug, getProjectId, normalizeProjectSlug } from '@/lib/types/project';
 import { useSiteContent } from '@/components/site-content-provider';
@@ -11,9 +11,10 @@ import { ImageComparison } from '@/components/image-comparison';
 import { shouldStageCaseStudyMedia } from '@/lib/case-study-backgrounds';
 import { OsBackButton } from '@/components/os-back-button';
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { scrollPageToTop } from '@/lib/scroll-page';
+import { resumeData } from '@/lib/resume-data';
 
 interface ProjectDetailViewProps {
   projectId: string;
@@ -26,7 +27,7 @@ interface ProjectDetailViewProps {
 
 const NESOI_COMPARISON = {
   beforeSrc: '/CRM/initial image.webp',
-  afterSrc: '/photos/case-study-bg/nesoi.webp',
+  afterSrc: '/photos/case-study-bg/nesoi-after.webp',
   beforeLabel: 'Before',
   afterLabel: 'After',
   beforeAlt: 'Early framing of the Nesoi creation challenge',
@@ -37,9 +38,51 @@ const NESOI_COMPARISON = {
 } as const;
 
 const NESOI_TITLE_IMAGE = {
-  src: '/photos/case-study-bg/Nesoi title pic.webp',
-  alt: 'Nesoi.ai',
+  src: '/photos/case-study-bg/nesoi-cover.webp',
+  alt: 'Nesoi AI',
+  width: 1920,
+  height: 1192,
 } as const;
+
+const CRM_TITLE_IMAGE = {
+  src: '/CRM/image.webp',
+  alt: 'Ditto Insurance CRM dashboard',
+  width: 1600,
+  height: 994,
+} as const;
+
+const CRM_OTHER_FEATURE_IDS = new Set([
+  'adding-notes',
+  'my-tasks-lead-owner-change',
+  'tags-for-leads',
+]);
+
+const NESOI_EXPLORATION = {
+  imageSrc: '/photos/case-study-bg/nesoi-exploration.webp',
+  imageAlt: 'Nesoi exploration of AI chapter creation: instructions, type, and generated layout',
+  intro:
+    'We explored a chapter flow built from that problem: give the AI instructions and a type, explain the chapter, then let it choose a template and place the content.',
+  steps: [
+    {
+      title: 'Instructions and chapter type',
+      description:
+        'Add instructions for how to create a chapter, and choose the type of chapter before anything is generated.',
+    },
+    {
+      title: 'Prompt, type, then template',
+      description:
+        'The user explains the chapter and selects the type. The AI chooses the template, and the contents are placed from that prompt.',
+    },
+    {
+      title: 'Loading beside the visual',
+      description:
+        'Loading sits next to the visual while it works, then it creates the new chapter with contents.',
+    },
+  ],
+} as const;
+
+const NESOI_USER_STORY =
+  'As a user, I want to create a chapter from a brief and a type so that I don’t have to design the layout by hand.';
 
 const NESOI_FRAMING = {
   imageSrc: '/photos/case-study-bg/nesoi framing.webp',
@@ -49,23 +92,26 @@ const NESOI_FRAMING = {
   gifLabel: 'Our new AI chat composer',
   /** Distinct from other Nesoi stages (coastal-fjord / mountain / etc.). */
   backgroundSrc: '/photos/case-study-bg/riverside-town.webp',
+  intro: [
+    'We lined up V1 against the closest competitor. Both could generate a chapter. Neither showed what it read, or let you redirect before it committed to a layout.',
+  ],
 } as const;
 
 const NESOI_GALLERY_SECTIONS = [
   {
-    title: 'Read the upload, then ask one question',
+    title: 'Read the brief, then ask one question',
     description:
-      'The AI opens with what it found and what it thinks you are making, then asks the single question that changes the output. Confirm or redirect. Two moves instead of ten.',
+      'Instead of a blank prompt, the AI opens with the chapter type and what it thinks you are making. Confirm or redirect.',
   },
   {
     title: 'Show the thinking',
     description:
-      'What it read, what it inferred, what it intends to build, while it builds. People correct early instead of discarding the output.',
+      'The UI surfaces what it inferred and which template it will use while it builds, so a wrong read gets caught before the chapter is finished.',
   },
   {
     title: 'Templates and freeform on one surface',
     description:
-      'People pick a template, then talk their way out of it. Structured actions and freeform prompts share one input, so switching mid task costs nothing.',
+      'People pick a type, then talk their way through the content. Structured actions and freeform share one input, so switching costs nothing.',
   },
 ] as const;
 
@@ -75,13 +121,17 @@ function SectionVideo({
   poster,
   label,
   controls = true,
+  onFirstView,
 }: {
   src: string;
   poster?: string;
   label: string;
   controls?: boolean;
+  /** Fires once when the video enters the viewport. */
+  onFirstView?: () => void;
 }) {
   const ref = useRef<HTMLVideoElement | null>(null);
+  const viewedRef = useRef(false);
 
   useEffect(() => {
     const el = ref.current;
@@ -89,6 +139,10 @@ function SectionVideo({
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
+          if (onFirstView && !viewedRef.current) {
+            viewedRef.current = true;
+            onFirstView();
+          }
           void el.play().catch(() => {});
         } else {
           el.pause();
@@ -101,7 +155,7 @@ function SectionVideo({
       observer.disconnect();
       el.pause();
     };
-  }, []);
+  }, [onFirstView]);
 
   return (
     <video
@@ -136,27 +190,19 @@ export function ProjectDetailView({
   layout = 'page',
 }: ProjectDetailViewProps) {
   const t = useTranslations('caseStudy');
-  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const { projects: cmsProjects } = useSiteContent();
-  
-  const handleImageClick = (src: string) => {
-    setZoomedImage(src);
-  };
-
-  const closeZoom = () => {
-    setZoomedImage(null);
-  };
 
   const allProjects = projects ?? cmsProjects;
 
   const project = projectId ? findProjectBySlug(allProjects, projectId) ?? null : null;
 
   const isNesoi = project ? (project.title.toLowerCase().includes('nesoi') || projectId.toLowerCase().includes('nesoi')) : false;
+  const isCrm = project ? project.title.toLowerCase().includes('crm') || projectId.toLowerCase().includes('crm') : false;
+  const hasHeroHeader = isNesoi || isCrm;
+  const heroTitleImage = isNesoi ? NESOI_TITLE_IMAGE : isCrm ? CRM_TITLE_IMAGE : null;
 
   useEffect(() => {
     scrollPageToTop();
-    // Close zoom modal when project changes to prevent cleanup errors
-    setZoomedImage(null);
   }, [projectId]);
 
   // Use custom Finshots detail page
@@ -206,7 +252,7 @@ export function ProjectDetailView({
     >      {/* Header */}
       <div
         className={`flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 ${
-          isNesoi ? 'mb-6 lg:mb-8' : 'mb-12 lg:mb-16'
+          hasHeroHeader ? 'mb-6 lg:mb-8' : 'mb-12 lg:mb-16'
         }`}
       >
         <div className="w-full">
@@ -215,24 +261,52 @@ export function ProjectDetailView({
               <OsBackButton onClick={onBack} aria-label="Back to Home" />
             </div>
           )}
-          {isNesoi ? (
-            <div
-              data-cuelume-hover="tick"
-              data-cuelume-press
-              data-case-bleed
-              className="relative w-full cursor-pointer overflow-hidden"
-              onClick={() => handleImageClick(NESOI_TITLE_IMAGE.src)}
-            >
-              <Image
-                src={NESOI_TITLE_IMAGE.src}
-                alt={NESOI_TITLE_IMAGE.alt}
-                width={1600}
-                height={994}
-                className="h-auto w-full object-cover"
-                sizes="(max-width: 1024px) 100vw, 720px"
-                priority
-              />
-            </div>
+          {hasHeroHeader ? (
+            <>
+              <h1
+                className="cs-display mb-5 text-foreground"
+                style={{ fontWeight: 600 }}
+              >
+                {project.title}
+              </h1>
+              {(project.company || project.institution || project.period || project.type) ? (
+                <div className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-muted-foreground md:text-sm">
+                  {(project.company || project.institution) ? (
+                    <span className="flex items-center gap-1.5">
+                      <Briefcase className="h-3.5 w-3.5 shrink-0" />
+                      {project.company || project.institution}
+                    </span>
+                  ) : null}
+                  {project.period ? (
+                    <span className="flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5 shrink-0" />
+                      {project.period}
+                    </span>
+                  ) : null}
+                  {project.type ? (
+                    <span className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-medium leading-none text-primary md:text-[12px]">
+                      {project.type}
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
+              {heroTitleImage ? (
+                <div data-case-bleed className="relative w-full overflow-hidden">
+                  <Image
+                    src={heroTitleImage.src}
+                    alt={heroTitleImage.alt}
+                    width={heroTitleImage.width}
+                    height={heroTitleImage.height}
+                    quality={78}
+                    unoptimized
+                    fetchPriority="high"
+                    className="h-auto w-full object-cover"
+                    sizes="(max-width: 1024px) 100vw, 90vw"
+                    priority
+                  />
+                </div>
+              ) : null}
+            </>
           ) : (
             <>
               <div className="flex items-center gap-3">
@@ -272,15 +346,15 @@ export function ProjectDetailView({
       {/* Main Content Section */}
       <div
         className={`grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 mb-24 lg:mb-32 ${
-          isNesoi ? 'mt-0' : ''
+          hasHeroHeader ? 'mt-0' : ''
         }`}
       >
         {/* Left Content - Description */}
-        <div className={`lg:col-span-2 ${isNesoi ? 'space-y-5' : 'space-y-8'}`}>
+        <div className={`lg:col-span-2 ${hasHeroHeader ? 'space-y-5' : 'space-y-8'}`}>
           {project.description && (
             <>
               {project.description.split('\n\n').map((paragraph, idx) => {
-                if (isNesoi) {
+                if (hasHeroHeader) {
                   return (
                     <p key={idx} className="cs-body text-muted-foreground">
                       {paragraph}
@@ -383,13 +457,6 @@ export function ProjectDetailView({
             </div>
           )}
           
-          {project.period && (
-            <div className="py-6 border-b border-border/50">
-              <h3 className="cs-label uppercase text-muted-foreground mb-2">{t('timeline')}</h3>
-              <p className="cs-meta text-foreground">{project.period}</p>
-            </div>
-          )}
-          
           {project.team && (
             <div className="pt-6">
               <h3 className="cs-label uppercase text-muted-foreground mb-2">{t('team')}</h3>
@@ -408,12 +475,7 @@ export function ProjectDetailView({
           <div className="w-full">
             {falconImages.map((image, idx) => (
               <div key={idx} className="mb-8 last:mb-0 w-full">
-                <div
-                  data-cuelume-hover="tick"
-                            data-cuelume-press
-                            className="relative w-full cursor-pointer group"
-                  onClick={() => handleImageClick(image.src)}
-                >
+                <div className="relative w-full">
                   <div className="relative w-full" style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}>
                     <Image
                       src={image.src}
@@ -422,7 +484,7 @@ export function ProjectDetailView({
                       height={1080}
                       loading="lazy"
                       priority={false}
-                      className="w-full h-auto object-contain group-hover:opacity-90 transition-opacity duration-300"
+                      className="w-full h-auto object-contain"
                       sizes="(max-width: 768px) 100vw, 80vw"
                     />
                   </div>
@@ -433,23 +495,23 @@ export function ProjectDetailView({
         </div>
       )}
 
-      {project.designGallery && project.designGallery.length > 0 && (
+      {!isCrm && project.designGallery && project.designGallery.length > 0 && (
         <div id={`${projectId}-design`} className="mb-24 lg:mb-32">
           <div className="flex items-center justify-between mb-8">
             <h2 className="cs-heading text-foreground">{t('designGalleryLower')}</h2>
           </div>
           <div className="grid grid-cols-1 gap-6">
             {project.designGallery.map((entry, idx) => (
-              <div key={idx} className="overflow-hidden shadow-lg" data-case-bleed>
-                <div
-                  className="relative w-full aspect-[4/3] md:aspect-[16/9] min-h-[420px] cursor-pointer"
-                  onClick={() => handleImageClick(entry.src)}
-                >
+              <div key={idx} className="overflow-hidden shadow-lg bg-card/40">
+                <div className="relative w-full">
                   <Image
                     src={entry.src}
                     alt={entry.title || 'Design gallery'}
-                    fill
-                    className="object-cover"
+                    width={1920}
+                    height={1080}
+                    loading="lazy"
+                    priority={false}
+                    className="w-full h-auto object-contain"
                     sizes="(max-width: 768px) 100vw, 90vw"
                   />
                 </div>
@@ -463,51 +525,13 @@ export function ProjectDetailView({
         </div>
       )}
 
-      {/* Zoom Modal */}
-      {zoomedImage && (
-        <div
-          className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={closeZoom}
-        >
-          <div
-            className="relative max-w-7xl max-h-[90vh] w-full h-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white"
-              onClick={closeZoom}
-            >
-              <X className="h-6 w-6" />
-            </Button>
-            <div className="relative w-full h-full">
-              <Image
-                src={zoomedImage}
-                alt="Zoomed view"
-                fill
-                className="object-contain"
-                sizes="100vw"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Problem Section */}
       {project.problem && (
-        <div id={`${projectId}-problem`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+        <div id={`${projectId}-problem`} className={`${isNesoi ? 'mb-20 lg:mb-28' : 'mb-24 lg:mb-32'} grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12 lg:items-start`}>
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('problem')}</h2>
           <div className="lg:col-span-3 space-y-6">
             {project.problem.split('\n\n').map((paragraph, idx) => (
-              <p
-                key={idx}
-                className={
-                  idx === 0 && isNesoi
-                    ? 'cs-body font-medium text-foreground'
-                    : 'cs-body text-muted-foreground'
-                }
-              >
+              <p key={idx} className="cs-body text-muted-foreground">
                 {paragraph}
               </p>
             ))}
@@ -520,14 +544,29 @@ export function ProjectDetailView({
         </div>
       )}
 
+      {isCrm && project.problemImage ? (
+        <div id={`${projectId}-problem-image`} className="mb-24 lg:mb-32">
+          <Image
+            src={project.problemImage.src}
+            alt={project.problemImage.alt || 'Ditto Insurance CRM interface'}
+            width={800}
+            height={450}
+            loading="lazy"
+            className="mx-auto h-auto w-full max-w-md rounded-lg border border-border/40 object-contain shadow-md"
+            sizes="(max-width: 768px) 80vw, 28rem"
+          />
+        </div>
+      ) : null}
+
       {/* Nesoi Goal + before/after - same content rhythm as Problem */}
       {isNesoi && (
-        <div id={`${projectId}-goal`} className="mb-24 lg:mb-32 space-y-10 lg:space-y-12">
+        <div id={`${projectId}-goal`} className="mb-20 lg:mb-28 space-y-8 lg:space-y-10">
           {project.hmw ? (
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12 lg:items-start">
               <h2 className="cs-heading text-foreground lg:col-span-2">Goal</h2>
               <div className="space-y-6 lg:col-span-3">
                 <p className="cs-body font-medium text-foreground">{project.hmw}</p>
+                <p className="cs-body text-muted-foreground">{NESOI_USER_STORY}</p>
                 {project.approach ? (
                   <p className="cs-body text-muted-foreground">{project.approach}</p>
                 ) : null}
@@ -550,8 +589,48 @@ export function ProjectDetailView({
       )}
 
       {isNesoi ? (
-        <div id={`${projectId}-problem-image`} className="mb-24 lg:mb-32 space-y-6">
-          <h2 className="cs-heading text-foreground">Framing</h2>
+        <div id={`${projectId}-exploring`} className="mb-20 lg:mb-28 space-y-8 lg:space-y-10">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12 lg:items-start">
+            <h2 className="cs-heading text-foreground lg:col-span-2">{t('exploring')}</h2>
+            <div className="space-y-6 lg:col-span-3">
+              <p className="cs-body text-muted-foreground">{NESOI_EXPLORATION.intro}</p>
+            </div>
+          </div>
+          <div className="w-full overflow-hidden shadow-xl" data-case-bleed>
+            <Image
+              src={NESOI_EXPLORATION.imageSrc}
+              alt={NESOI_EXPLORATION.imageAlt}
+              width={4741}
+              height={2667}
+              quality={95}
+              unoptimized
+              className="h-auto w-full object-contain"
+              sizes="100vw"
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
+            {NESOI_EXPLORATION.steps.map((step) => (
+              <div key={step.title} className="space-y-2">
+                <h3 className="cs-body font-medium text-foreground">{step.title}</h3>
+                <p className="cs-body text-muted-foreground">{step.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {isNesoi ? (
+        <div id={`${projectId}-problem-image`} className="mb-20 lg:mb-28 space-y-8 lg:space-y-10">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12 lg:items-start">
+            <h2 className="cs-heading text-foreground lg:col-span-2">Framing</h2>
+            <div className="space-y-6 lg:col-span-3">
+              {NESOI_FRAMING.intro.map((paragraph, idx) => (
+                <p key={idx} className="cs-body text-muted-foreground">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          </div>
           <div data-case-bleed className="relative w-full overflow-hidden shadow-lg">
             <div className="absolute inset-0" aria-hidden>
               <Image
@@ -564,12 +643,7 @@ export function ProjectDetailView({
               <div className="absolute inset-0 bg-black/15" />
             </div>
             <div className="relative z-10 flex flex-col items-center gap-8 p-4 sm:p-6 md:flex-row md:items-center md:justify-center md:gap-6 md:p-8 lg:gap-8 lg:p-10">
-              <div
-                data-cuelume-hover="tick"
-                data-cuelume-press
-                className="relative mx-auto w-full max-w-[720px] flex-[1.35] cursor-pointer overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.45)]"
-                onClick={() => handleImageClick(NESOI_FRAMING.imageSrc)}
-              >
+              <div className="relative mx-auto w-full max-w-[720px] flex-[1.35] overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
                 <Image
                   src={NESOI_FRAMING.imageSrc}
                   alt={NESOI_FRAMING.imageAlt}
@@ -581,12 +655,7 @@ export function ProjectDetailView({
                 />
               </div>
               <div className="flex w-full max-w-[280px] shrink-0 flex-col items-center gap-3">
-                <div
-                  data-cuelume-hover="tick"
-                  data-cuelume-press
-                  className="relative w-full overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.45)]"
-                  onClick={() => handleImageClick(NESOI_FRAMING.gifSrc)}
-                >
+                <div className="relative w-full overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
                   {/* eslint-disable-next-line @next/next/no-img-element -- animated GIF */}
                   <img
                     src={NESOI_FRAMING.gifSrc}
@@ -601,9 +670,9 @@ export function ProjectDetailView({
               </div>
             </div>
           </div>
-          <div className="mt-8 lg:mt-12 grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
             {NESOI_GALLERY_SECTIONS.map((section) => (
-              <div key={section.title} className="space-y-3">
+              <div key={section.title} className="space-y-2">
                 <h3 className="cs-body font-medium text-foreground">
                   {section.title}
                 </h3>
@@ -614,7 +683,7 @@ export function ProjectDetailView({
             ))}
           </div>
         </div>
-      ) : project.problemImage ? (
+      ) : !isCrm && project.problemImage ? (
         <div id={`${projectId}-problem-image`} className="mb-24 lg:mb-32 space-y-6">
           <h2 className="cs-heading text-foreground">
             {t('problemSnapshot')}
@@ -625,7 +694,6 @@ export function ProjectDetailView({
               alt={project.problemImage.alt || 'Problem snapshot'}
               frame="landscape"
               media={{ type: 'image', src: project.problemImage.src }}
-              onClick={() => handleImageClick(project.problemImage!.src)}
             />
           ) : (
             <div className="relative w-full aspect-[16/9] overflow-hidden shadow-xl" data-case-bleed>
@@ -674,14 +742,19 @@ export function ProjectDetailView({
         </div>
       )}
 
-      {/* HMW Section */}
+      {/* HMW Section — CRM includes user story in the same block */}
       {project.hmw && !isNesoi && (
         <div id={`${projectId}-hmw`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('hmw')}</h2>
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 space-y-6">
             <p className="cs-body font-medium text-muted-foreground">
               {project.hmw}
             </p>
+            {isCrm && project.research ? (
+              <p className="cs-body text-muted-foreground border-l-2 border-border/60 pl-4">
+                {project.research}
+              </p>
+            ) : null}
           </div>
         </div>
       )}
@@ -702,7 +775,7 @@ export function ProjectDetailView({
         </div>
       )}
 
-      {project.explorations && project.explorations.length > 0 && (
+      {project.explorations && project.explorations.length > 0 && !isCrm && (
         <div id={`${projectId}-exploring`} className="mb-24 lg:mb-32">
           <h2 className="cs-heading text-foreground mb-8">{t('exploring')}</h2>
           <div className="space-y-12">
@@ -711,8 +784,12 @@ export function ProjectDetailView({
                 <p className="cs-label uppercase text-muted-foreground">{exploration.tag}</p>
                 <h3 className="cs-body font-medium text-foreground">{exploration.title}</h3>
                 <p className="cs-body text-muted-foreground">{exploration.problem}</p>
-                <p className="cs-body font-semibold text-foreground">{t('solution')}</p>
-                <p className="cs-body text-muted-foreground">{exploration.solution}</p>
+                {exploration.solution ? (
+                  <>
+                    <p className="cs-body font-semibold text-foreground">{t('solution')}</p>
+                    <p className="cs-body text-muted-foreground">{exploration.solution}</p>
+                  </>
+                ) : null}
                 {exploration.image && (
                   shouldStageCaseStudyMedia({ projectId, kind: 'exploration' }) ? (
                     <CaseStudyScreenStage
@@ -720,7 +797,6 @@ export function ProjectDetailView({
                       alt={exploration.title}
                       frame="landscape"
                       media={{ type: 'image', src: exploration.image }}
-                      onClick={() => handleImageClick(exploration.image!)}
                     />
                   ) : (
                     <div className="w-full overflow-hidden shadow-xl" data-case-bleed>
@@ -742,7 +818,7 @@ export function ProjectDetailView({
         </div>
       )}
 
-      {project.targetAudience && (
+      {project.targetAudience && !isCrm && (
         <div id={`${projectId}-target-audience`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('targetAudience')}</h2>
           <div className="lg:col-span-3">
@@ -770,7 +846,7 @@ export function ProjectDetailView({
       )}
 
       {/* Research Section */}
-      {project.research && (
+      {project.research && !isCrm && (
         <div id={`${projectId}-research`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('research')}</h2>
           <div className="lg:col-span-3">
@@ -808,23 +884,27 @@ export function ProjectDetailView({
           {project.detailSections.map((section) => {
             const blocks = section.description.split('\n\n').filter(Boolean);
 
-            if (isNesoi && section.id === 'decisions') {
+            if (isNesoi && section.id === 'system-video') return null;
+
+            if ((isNesoi || isCrm) && section.id === 'decisions') {
               return (
-                <div key={section.id} id={`${projectId}-${section.id}`} className="mb-24 lg:mb-32">
-                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12">
+                <div key={section.id} id={`${projectId}-${section.id}`} className="mb-20 lg:mb-28">
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12 lg:items-start">
                     <h2 className="cs-heading text-foreground lg:col-span-2">
                       {section.title}
                     </h2>
-                    <div className="space-y-8 lg:col-span-3">
+                    <div className="space-y-6 lg:col-span-3">
                       {blocks.map((block, idx) => {
                         const lines = block.split('\n').map((line) => line.trim()).filter(Boolean);
                         const decision = lines[0] ?? '';
                         const whyLine = lines.find((line) => /^why:/i.test(line));
                         const costLine = lines.find((line) => /^cost:/i.test(line));
+                        const benefitLine = lines.find((line) => /^benefit:/i.test(line));
                         const why = whyLine?.replace(/^why:\s*/i, '') ?? '';
                         const cost = costLine?.replace(/^cost:\s*/i, '') ?? '';
+                        const benefit = benefitLine?.replace(/^benefit:\s*/i, '') ?? '';
                         return (
-                          <div key={idx} className="space-y-2 border-b border-border/40 pb-8 last:border-b-0 last:pb-0">
+                          <div key={idx} className="space-y-2 border-b border-border/40 pb-6 last:border-b-0 last:pb-0">
                             <p className="cs-body font-medium text-foreground">
                               {decision}
                             </p>
@@ -833,7 +913,13 @@ export function ProjectDetailView({
                                 <span className="font-medium text-foreground/80">Why:</span> {why}
                               </p>
                             ) : null}
-                            {cost ? (
+                            {isCrm && benefit ? (
+                              <p className="cs-body text-muted-foreground">
+                                <span className="font-medium text-foreground/80">Benefit:</span>{' '}
+                                {benefit}
+                              </p>
+                            ) : null}
+                            {!isCrm && cost ? (
                               <p className="cs-body text-muted-foreground">
                                 <span className="font-medium text-foreground/80">Cost:</span> {cost}
                               </p>
@@ -843,27 +929,149 @@ export function ProjectDetailView({
                       })}
                     </div>
                   </div>
+                  {isNesoi && 'image' in section && section.image ? (
+                    <div className="mt-8 lg:mt-12">
+                      {shouldStageCaseStudyMedia({
+                        projectId,
+                        sectionId: section.id,
+                        kind: 'detail-image',
+                      }) ? (
+                        <CaseStudyScreenStage
+                          seed={`${projectId}-${section.id}-image`}
+                          alt={section.title || 'Decisions section image'}
+                          frame="landscape"
+                          media={{ type: 'image', src: section.image }}
+                        />
+                      ) : (
+                        <Image
+                          src={section.image}
+                          alt={section.title || 'Decisions section image'}
+                          width={1920}
+                          height={1080}
+                          loading="lazy"
+                          className="h-auto w-full object-contain shadow-lg"
+                          sizes="(max-width: 768px) 100vw, 80vw"
+                        />
+                      )}
+                    </div>
+                  ) : null}
+                  {isNesoi && section.video ? (
+                    <div className="mt-8 lg:mt-12">
+                      <SectionVideo
+                        src={section.video}
+                        poster={section.videoPoster}
+                        label="System walkthrough video"
+                        controls={section.videoControls !== false}
+                      />
+                    </div>
+                  ) : null}
                 </div>
               );
             }
 
-            if (isNesoi && section.id === 'system-video' && section.video) {
+            if (isCrm && section.id === 'possible-solutions') {
               return (
                 <div key={section.id} id={`${projectId}-${section.id}`} className="mb-24 lg:mb-32">
-                  <SectionVideo
-                    src={section.video}
-                    poster={section.videoPoster}
-                    label="System walkthrough video"
-                    controls={section.videoControls !== false}
-                  />
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12">
+                    <h2 className="cs-heading text-foreground lg:col-span-2">
+                      {section.title}
+                    </h2>
+                    <div className="lg:col-span-3 space-y-6">
+                      {blocks.map((paragraph, idx) => {
+                        const [headline, ...rest] = paragraph.split('\n');
+                        const isSolution = /^solution [ab]/i.test(headline.trim());
+                        return (
+                          <div key={idx} className="space-y-1">
+                            <p
+                              className={
+                                isSolution
+                                  ? 'cs-body font-medium text-foreground'
+                                  : 'cs-body text-muted-foreground'
+                              }
+                            >
+                              {headline}
+                            </p>
+                            {rest.length > 0 ? (
+                              <p className="cs-body text-muted-foreground">{rest.join('\n')}</p>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                      {section.image ? (
+                        <div className="block w-full pt-4">
+                          <Image
+                            src={section.image}
+                            alt="Sales call decision tree"
+                            width={1024}
+                            height={661}
+                            loading="lazy"
+                            className="h-auto w-full rounded-lg border border-border/40 object-contain shadow-md"
+                            sizes="(max-width: 768px) 100vw, 60vw"
+                          />
+                          <p className="cs-label mt-3 text-muted-foreground">
+                            Smart branching logic
+                          </p>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            if (isCrm && section.id === 'directions') {
+              return (
+                <div key={section.id} id={`${projectId}-${section.id}`} className="mb-24 lg:mb-32">
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12">
+                    <h2 className="cs-heading text-foreground lg:col-span-2">
+                      {section.title}
+                    </h2>
+                    <div className="lg:col-span-3 space-y-8">
+                      {section.image ? (
+                        <div className="block w-full">
+                          <Image
+                            src={section.image}
+                            alt="Modal popup versus sidebar panel directions"
+                            width={1024}
+                            height={576}
+                            loading="lazy"
+                            className="h-auto w-full rounded-lg border border-border/40 object-contain shadow-md"
+                            sizes="(max-width: 768px) 100vw, 60vw"
+                          />
+                        </div>
+                      ) : null}
+                      <div className="space-y-6">
+                        {blocks.map((paragraph, idx) => {
+                          const [headline, ...rest] = paragraph.split('\n');
+                          const isDirection = /^direction [12]/i.test(headline.trim());
+                          return (
+                            <div key={idx} className="space-y-1">
+                              <p
+                                className={
+                                  isDirection
+                                    ? 'cs-body font-medium text-foreground'
+                                    : 'cs-body text-muted-foreground'
+                                }
+                              >
+                                {headline}
+                              </p>
+                              {rest.length > 0 ? (
+                                <p className="cs-body text-muted-foreground">{rest.join('\n')}</p>
+                              ) : null}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               );
             }
 
             if (isNesoi && section.id === 'not-built') {
               return (
-                <div key={section.id} id={`${projectId}-${section.id}`} className="mb-24 lg:mb-32">
-                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12">
+                <div key={section.id} id={`${projectId}-${section.id}`} className="mb-20 lg:mb-28">
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12 lg:items-start">
                     <h2 className="cs-heading text-foreground lg:col-span-2">
                       {section.title}
                     </h2>
@@ -886,7 +1094,7 @@ export function ProjectDetailView({
 
             if (isNesoi && section.id === 'constraints') {
               return (
-                <div key={section.id} id={`${projectId}-${section.id}`} className="mb-24 lg:mb-32">
+                <div key={section.id} id={`${projectId}-${section.id}`} className="mb-20 lg:mb-28">
                   <aside className="rounded-2xl border border-border/50 bg-secondary/35 px-5 py-6 sm:px-6 sm:py-7">
                     <h2 className="mb-5 cs-label uppercase text-muted-foreground">
                       {section.title}
@@ -904,11 +1112,31 @@ export function ProjectDetailView({
             }
 
             return (
-              <div key={section.id} id={`${projectId}-${section.id}`} className="mb-24 lg:mb-32">
+              <Fragment key={section.id}>
+                {isCrm && section.id === 'adding-notes' ? (
+                  <div
+                    id={`${projectId}-other-features`}
+                    className="mb-10 mt-28 border-t border-border/40 pt-12 lg:mb-12 lg:mt-36 lg:pt-16"
+                  >
+                    <h2 className="text-[clamp(1.375rem,1.15rem+1.1cqi,2.125rem)] font-semibold leading-[1.2] tracking-[-0.025em] text-foreground">
+                      {t('otherFeatures')}
+                    </h2>
+                  </div>
+                ) : null}
+                <div
+                  id={`${projectId}-${section.id}`}
+                  className={
+                    isCrm && CRM_OTHER_FEATURE_IDS.has(section.id)
+                      ? 'mb-16 lg:mb-20'
+                      : 'mb-24 lg:mb-32'
+                  }
+                >
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
-                  <h2 className="cs-heading text-foreground lg:col-span-2">
-                    {section.title}
-                  </h2>
+                  {isCrm && CRM_OTHER_FEATURE_IDS.has(section.id) ? (
+                    <h3 className="cs-heading text-foreground lg:col-span-2">{section.title}</h3>
+                  ) : (
+                    <h2 className="cs-heading text-foreground lg:col-span-2">{section.title}</h2>
+                  )}
                   <div className="lg:col-span-3 space-y-6">
                     {blocks.map((paragraph, idx) => (
                       <p
@@ -947,15 +1175,11 @@ export function ProjectDetailView({
                             alt={section.title || 'Section image'}
                             frame="landscape"
                             media={{ type: 'image', src }}
-                            onClick={() => handleImageClick(src)}
                           />
                         ) : (
                           <div
                             key={`${section.id}-image-${imageIdx}`}
-                            data-cuelume-hover="tick"
-                            data-cuelume-press
-                            className="relative w-full cursor-pointer group"
-                            onClick={() => handleImageClick(src)}
+                            className="relative w-full"
                           >
                             <div className="relative w-full" style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}>
                               <Image
@@ -965,7 +1189,7 @@ export function ProjectDetailView({
                                 height={1080}
                                 loading="lazy"
                                 priority={false}
-                                className="object-contain group-hover:opacity-90 transition-transform duration-300 shadow-lg"
+                                className="object-contain shadow-lg"
                                 sizes="(max-width: 768px) 100vw, 80vw"
                               />
                             </div>
@@ -991,7 +1215,6 @@ export function ProjectDetailView({
                           src: section.video,
                           poster: section.videoPoster,
                           controls: section.videoControls !== false,
-                          autoPlay: isNesoi && section.id === 'prototype',
                         }}
                       />
                     ) : (
@@ -1000,6 +1223,15 @@ export function ProjectDetailView({
                         poster={section.videoPoster}
                         label={`${section.title} walkthrough video`}
                         controls={section.videoControls !== false}
+                        onFirstView={
+                          isCrm && CRM_OTHER_FEATURE_IDS.has(section.id)
+                            ? () =>
+                                trackEvent('crm_feature_viewed', {
+                                  feature: section.id,
+                                  slug: projectId,
+                                })
+                            : undefined
+                        }
                       />
                     )}
                     <p className="cs-label uppercase text-muted-foreground">
@@ -1019,15 +1251,9 @@ export function ProjectDetailView({
                         alt={`${section.title} prototype`}
                         frame="landscape"
                         media={{ type: 'image', src: section.prototypeGif }}
-                        onClick={() => section.prototypeGif && handleImageClick(section.prototypeGif)}
                       />
                     ) : (
-                      <div
-                        data-cuelume-hover="tick"
-                            data-cuelume-press
-                            className="relative w-full cursor-pointer group"
-                        onClick={() => section.prototypeGif && handleImageClick(section.prototypeGif)}
-                      >
+                      <div className="relative w-full">
                         <div className="relative w-full" style={{ width: '100%', height: 'auto', aspectRatio: 'auto' }}>
                           <Image
                             src={section.prototypeGif}
@@ -1036,7 +1262,7 @@ export function ProjectDetailView({
                             height={1080}
                             loading="lazy"
                             priority={false}
-                            className="object-contain group-hover:opacity-90 transition-transform duration-300 shadow-lg"
+                            className="object-contain shadow-lg"
                             sizes="(max-width: 768px) 100vw, 80vw"
                           />
                         </div>
@@ -1044,7 +1270,8 @@ export function ProjectDetailView({
                     )}
                   </div>
                 )}
-              </div>
+                </div>
+              </Fragment>
             );
           })}
         </div>
@@ -1162,6 +1389,18 @@ export function ProjectDetailView({
                 </div>
               ))}
             </div>
+            {isCrm ? (
+              <p className="cs-body pt-4 text-muted-foreground">
+                For more details about the numbers,{' '}
+                <a
+                  href={`mailto:${resumeData.email}`}
+                  className="font-medium text-foreground underline decoration-border underline-offset-4 transition-colors hover:text-primary"
+                >
+                  contact me
+                </a>
+                .
+              </p>
+            ) : null}
           </div>
         </div>
       )}

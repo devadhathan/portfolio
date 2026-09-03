@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useRouter } from '@/i18n/navigation';
@@ -13,6 +13,7 @@ import {
 import { PLAYGROUND_ITEMS } from '@/lib/playground-items';
 import { blurFadeUp, easeOutExpo, fadeUpSoft } from '@/lib/motion';
 import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
+import { patchOsWindowSession, readOsWindowSession } from '@/lib/os-session';
 import { LinedPageFrame } from '@/components/lined-page-frame';
 
 export default function PlaygroundPage() {
@@ -22,16 +23,7 @@ export default function PlaygroundPage() {
   const desktopOs = useDesktopOsOptional();
   const embedded = Boolean(desktopOs?.enabled);
   const [selection, setSelection] = useState<PlaygroundSelection | null>(null);
-
-  const handleHomeClick = useCallback(() => {
-    if (desktopOs?.enabled) {
-      desktopOs.openWindow('home');
-      return;
-    }
-    router.push('/');
-  }, [router, desktopOs]);
-
-  useRegisterNavActions({ onHomeClick: handleHomeClick });
+  const sessionHydratedRef = useRef(false);
 
   const getCopy = useCallback(
     (id: string) => ({
@@ -42,6 +34,42 @@ export default function PlaygroundPage() {
     }),
     [t],
   );
+
+  useEffect(() => {
+    if (!embedded || sessionHydratedRef.current) return;
+    sessionHydratedRef.current = true;
+    const savedId = readOsWindowSession('playground').playgroundSelection;
+    if (!savedId) return;
+    const item = PLAYGROUND_ITEMS.find((entry) => entry.id === savedId);
+    if (!item) return;
+    const copy = getCopy(savedId);
+    setSelection({
+      kind: 'item',
+      id: savedId,
+      title: copy.title,
+      question: copy.question,
+      tags: copy.tags,
+      item,
+      accessibilityLabel: copy.accessibilityLabel,
+    });
+  }, [embedded, getCopy]);
+
+  useEffect(() => {
+    if (!embedded) return;
+    patchOsWindowSession('playground', {
+      playgroundSelection: selection?.id ?? null,
+    });
+  }, [embedded, selection?.id]);
+
+  const handleHomeClick = useCallback(() => {
+    if (desktopOs?.enabled) {
+      desktopOs.openWindow('home');
+      return;
+    }
+    router.push('/');
+  }, [router, desktopOs]);
+
+  useRegisterNavActions({ onHomeClick: handleHomeClick });
 
   const openItem = useCallback(
     (id: string) => {

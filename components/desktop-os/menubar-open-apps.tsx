@@ -2,12 +2,9 @@
 
 import { useMemo } from 'react';
 import { useDesktopOs } from '@/components/desktop-os/desktop-os-provider';
+import { OsCatalogIcon, windowLineIconId } from '@/components/desktop-os/os-line-icons';
 import { useWindowTitles } from '@/components/desktop-os/window-titles';
-import {
-  DESKTOP_WINDOW_IDS,
-  WINDOW_ICON_SRC,
-  type DesktopWindowId,
-} from '@/lib/desktop-os';
+import { DESKTOP_WINDOW_IDS, type DesktopWindowId } from '@/lib/desktop-os';
 import { cn, focusRing } from '@/lib/utils';
 
 /**
@@ -22,6 +19,7 @@ const DESKTOP_LAUNCH_IDS = new Set<DesktopWindowId>([
   'contact',
   'about',
   'colophon',
+  'guide',
   'wordsmith',
   'trash',
 ]);
@@ -42,8 +40,6 @@ export function MenubarOpenApps() {
     <div className="os-menubar-apps flex items-center gap-0.5 pr-1" role="toolbar" aria-label="Open apps">
       {openIds.map((id) => {
         const active = focusedId === id;
-        const src = WINDOW_ICON_SRC[id];
-        if (!src) return null;
         return (
           <button
             key={id}
@@ -63,16 +59,7 @@ export function MenubarOpenApps() {
               else openWindow(id, { syncUrl: false });
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={src}
-              alt=""
-              width={18}
-              height={18}
-              className="h-[18px] w-[18px] object-contain drop-shadow-sm"
-              draggable={false}
-              decoding="async"
-            />
+            <OsCatalogIcon id={windowLineIconId(id)} size="sm" />
           </button>
         );
       })}

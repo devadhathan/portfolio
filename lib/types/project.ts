@@ -34,8 +34,14 @@ export type ProjectPainPoint = {
   detail: string
 }
 
+export type ProjectImpactMetric = {
+  description: string
+}
+
 export type Project = {
   title: string
+  /** Stable URL slug from Sanity; used when display title differs from slug id. */
+  slug?: string
   type?: string
   company?: string
   institution?: string
@@ -60,6 +66,8 @@ export type Project = {
   keyFeatures?: string[]
   results?: string[]
   impact?: string[]
+  impactMetricsTitle?: string
+  impactMetrics?: ProjectImpactMetric[]
   businessOpportunity?: string[]
   details?: string[]
   detailSections?: ProjectDetailSection[]
@@ -90,7 +98,37 @@ export function normalizeProjectSlug(slug: string): string {
     .replace(/-+/g, '-')
 }
 
+export function getProjectSlug(project: Project): string {
+  return project.slug ? normalizeProjectSlug(project.slug) : getProjectId(project.title)
+}
+
 export function findProjectBySlug(projects: Project[], slug: string): Project | undefined {
   const normalized = normalizeProjectSlug(slug)
-  return projects.find((project) => getProjectId(project.title) === normalized)
+  return projects.find((project) => {
+    if (project.slug && normalizeProjectSlug(project.slug) === normalized) return true
+    return getProjectId(project.title) === normalized
+  })
+}
+
+/** Work grid, sidebar, and nav order — Nesoi → CRM → Onboarding → Finshots → Design System. */
+export const WORK_PROJECT_ORDER = [
+  'nesoi-ai-dashboard',
+  'crm-redesign',
+  'onboarding-redesign',
+  'finshots-news-app',
+  'falcon-design-system',
+] as const
+
+export function sortProjectsForWork(projects: Project[]): Project[] {
+  const order = new Map<string, number>(WORK_PROJECT_ORDER.map((slug, index) => [slug, index]))
+  return [...projects].sort((a, b) => {
+    const aIndex = order.get(getProjectSlug(a))
+    const bIndex = order.get(getProjectSlug(b))
+    if (aIndex === undefined && bIndex === undefined) {
+      return getProjectSlug(a).localeCompare(getProjectSlug(b))
+    }
+    if (aIndex === undefined) return 1
+    if (bIndex === undefined) return -1
+    return aIndex - bIndex
+  })
 }

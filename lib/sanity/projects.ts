@@ -1,7 +1,7 @@
 import { unstable_cache } from 'next/cache'
 import { resumeData } from '@/lib/resume-data'
 import type { Project } from '@/lib/types/project'
-import { findProjectBySlug, getProjectId } from '@/lib/types/project'
+import { findProjectBySlug, getProjectId, normalizeProjectSlug, sortProjectsForWork } from '@/lib/types/project'
 import { SANITY_REVALIDATE_SECONDS } from './cache'
 import { sanityClient } from './client'
 import { projectsQuery } from './queries'
@@ -13,17 +13,22 @@ const localProjects = resumeData.projects.filter(
 ) as Project[]
 
 function normalizeProject(project: SanityProject): Project {
-  const { slug: _slug, ...rest } = project
-  return rest
+  const { slug, ...rest } = project
+  return slug ? { ...rest, slug } : rest
 }
 
 /** Prefer local resume-data narrative fields so edits show without a Sanity republish. */
 function overlayLocalContent(remote: Project): Project {
-  const local = localProjects.find((p) => getProjectId(p.title) === getProjectId(remote.title))
+  const remoteSlug = remote.slug ? normalizeProjectSlug(remote.slug) : getProjectId(remote.title)
+  const local = localProjects.find((p) => {
+    if (p.slug && normalizeProjectSlug(p.slug) === remoteSlug) return true
+    return getProjectId(p.title) === getProjectId(remote.title)
+  })
   if (!local) return remote
 
   return {
     ...remote,
+    slug: local.slug ?? remote.slug,
     period: local.period ?? remote.period,
     role: local.role ?? remote.role,
     tools: local.tools ?? remote.tools,
@@ -45,6 +50,8 @@ function overlayLocalContent(remote: Project): Project {
     keyFeatures: local.keyFeatures ?? remote.keyFeatures,
     results: local.results ?? remote.results,
     impact: local.impact ?? remote.impact,
+    impactMetricsTitle: local.impactMetricsTitle ?? remote.impactMetricsTitle,
+    impactMetrics: local.impactMetrics ?? remote.impactMetrics,
     businessOpportunity: local.businessOpportunity ?? remote.businessOpportunity,
     details: local.details ?? remote.details,
     detailSections: local.detailSections ?? remote.detailSections,
@@ -63,16 +70,16 @@ async function fetchProjectsUncached(): Promise<Project[]> {
     const projects = await sanityClient.fetch<SanityProject[]>(projectsQuery)
 
     if (Array.isArray(projects) && projects.length > 0) {
-      return projects.map(normalizeProject).map(overlayLocalContent)
+      return sortProjectsForWork(projects.map(normalizeProject).map(overlayLocalContent))
     }
   } catch (error) {
     console.warn('[Sanity] Failed to fetch projects, using local resume-data:', error)
   }
 
-  return localProjects
+  return sortProjectsForWork(localProjects)
 }
 
-export const getProjects = unstable_cache(fetchProjectsUncached, ['sanity-projects-local-overlay-v9'], {
+export const getProjects = unstable_cache(fetchProjectsUncached, ['sanity-projects-local-overlay-v13'], {
   revalidate: SANITY_REVALIDATE_SECONDS,
 })
 

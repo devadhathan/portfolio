@@ -24,11 +24,16 @@ function stopExistingDevServers() {
   run('pkill', ['-f', 'next dev'], { stdio: 'ignore' });
   run('pkill', ['-f', 'next-server'], { stdio: 'ignore' });
 
-  const lsof = spawnSync('lsof', ['-ti', `:${port}`], { encoding: 'utf8' });
-  const pids = (lsof.stdout || '')
-    .trim()
-    .split('\n')
-    .filter(Boolean);
+  const portsToClear = new Set([Number(port)]);
+  for (let p = 3000; p <= 3010; p += 1) portsToClear.add(p);
+
+  const pids = new Set();
+  for (const candidate of portsToClear) {
+    const lsof = spawnSync('lsof', ['-ti', `:${candidate}`], { encoding: 'utf8' });
+    for (const pid of (lsof.stdout || '').trim().split('\n').filter(Boolean)) {
+      pids.add(pid);
+    }
+  }
 
   for (const pid of pids) {
     try {
@@ -38,7 +43,7 @@ function stopExistingDevServers() {
     }
   }
 
-  if (pids.length > 0) sleep(1500);
+  if (pids.size > 0) sleep(1500);
   else sleep(500);
 }
 

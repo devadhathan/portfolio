@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
+import { useOsWindowOpen } from '@/components/desktop-os/os-window-scope';
 import { useOrbHatEmoji } from '@/lib/orb-hat';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +18,8 @@ type AgentOrbProps = {
    * Omit to use the persisted hat; pass `null` to force no hat.
    */
   hatEmoji?: string | null;
+  /** Showcase orbs (playground) stay animated while their host window is open. */
+  alwaysAwake?: boolean;
 };
 
 const SIZE = { xs: 28, sm: 40, md: 56, lg: 72, xl: 96, '2xl': 128 } as const;
@@ -27,22 +30,46 @@ const SIZE = { xs: 28, sm: 40, md: 56, lg: 72, xl: 96, '2xl': 128 } as const;
  * for orbs nobody could see. This reports whether the orb is actually on screen
  * in a visible tab; everything animated hangs off it.
  */
-function useOrbAwake(ref: React.RefObject<HTMLElement>) {
-  const [onScreen, setOnScreen] = useState(false);
+function useOrbAwake(ref: React.RefObject<HTMLElement | null>, alwaysAwake = false) {
+  const hostOpen = useOsWindowOpen();
+  // Assume visible until IntersectionObserver says otherwise — starting false made
+  // orbs render as flat gray disks when an OS window first opened.
+  const [onScreen, setOnScreen] = useState(true);
   const [tabVisible, setTabVisible] = useState(true);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+    if (!hostOpen) {
+      setOnScreen(false);
+      return;
+    }
 
-    // Closed OS windows are display:none, which reads as not intersecting.
-    const observer = new IntersectionObserver(
-      ([entry]) => setOnScreen(entry.isIntersecting),
-      { rootMargin: '64px' },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [ref]);
+    if (alwaysAwake) {
+      setOnScreen(true);
+      return;
+    }
+
+    setOnScreen(true);
+
+    let observer: IntersectionObserver | null = null;
+
+    const observe = (el: HTMLElement | null) => {
+      observer?.disconnect();
+      if (!el) return;
+      observer = new IntersectionObserver(
+        ([entry]) => setOnScreen(entry.isIntersecting),
+        { rootMargin: '64px' },
+      );
+      observer.observe(el);
+    };
+
+    observe(ref.current);
+    const id = window.requestAnimationFrame(() => observe(ref.current));
+
+    return () => {
+      window.cancelAnimationFrame(id);
+      observer?.disconnect();
+    };
+  }, [alwaysAwake, hostOpen, ref]);
 
   useEffect(() => {
     const sync = () => setTabVisible(document.visibilityState === 'visible');
@@ -51,7 +78,8 @@ function useOrbAwake(ref: React.RefObject<HTMLElement>) {
     return () => document.removeEventListener('visibilitychange', sync);
   }, []);
 
-  return onScreen && tabVisible;
+  if (alwaysAwake) return hostOpen && tabVisible;
+  return hostOpen && onScreen && tabVisible;
 }
 
 export function AgentOrb({
@@ -62,6 +90,7 @@ export function AgentOrb({
   onClick,
   lookAt = null,
   hatEmoji,
+  alwaysAwake = false,
 }: AgentOrbProps) {
   const orbRef = useRef<HTMLButtonElement>(null);
   const shellRef = useRef<HTMLDivElement>(null);
@@ -69,7 +98,7 @@ export function AgentOrb({
   const [orbPupil, setOrbPupil] = useState({ x: 0, y: 0 });
   const [orbBlink, setOrbBlink] = useState(false);
   const [storedHat] = useOrbHatEmoji();
-  const awake = useOrbAwake(shellRef);
+  const awake = useOrbAwake(shellRef, alwaysAwake);
   const px = SIZE[size];
   const resolvedHat = hatEmoji === undefined ? storedHat : hatEmoji;
   const showHat = Boolean(resolvedHat?.trim());
@@ -117,6 +146,49 @@ export function AgentOrb({
       clearTimeout(openTimer);
     };
   }, [awake]);
+
+  if (!awake && !creating) {
+    const asleepShell = (
+      <div
+        className={cn(
+          'relative flex-shrink-0 overflow-hidden rounded-full',
+          hoverScale && 'transition-transform duration-300 ease-out group-hover:scale-110',
+        )}
+        style={{ width: px, height: px, background: 'var(--orb-surface)' }}
+        aria-hidden={onClick ? undefined : true}
+      />
+    );
+
+    if (onClick) {
+      return (
+        <button
+          ref={orbRef}
+          type="button"
+          onClick={onClick}
+          className={cn(
+            'flex items-center justify-center overflow-visible transition-transform duration-300 ease-out',
+            hoverScale && 'group-hover:scale-110',
+            className,
+          )}
+          style={{ width: px, height: px }}
+        >
+          <div ref={shellRef} className="flex items-center justify-center" style={{ width: px, height: px }}>
+            {asleepShell}
+          </div>
+        </button>
+      );
+    }
+
+    return (
+      <div
+        ref={shellRef}
+        className={cn('flex items-center justify-center overflow-visible', className)}
+        style={{ width: px, height: px }}
+      >
+        {asleepShell}
+      </div>
+    );
+  }
 
   const orbBody = (
     <>

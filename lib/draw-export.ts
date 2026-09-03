@@ -1,27 +1,8 @@
 import type { Board, Stroke } from 'drawesome';
 
-/** A text label placed on the drawing surface, in board coordinates. */
-export type DrawTextItem = {
-  id: string;
-  /** Top-left corner of the first line. */
-  x: number;
-  y: number;
-  text: string;
-  color: string;
-  size: number;
-};
-
 export type DrawExportFormat = 'png' | 'jpeg' | 'webp';
 
 export type DrawRect = { x: number; y: number; w: number; h: number };
-
-/**
- * Kept deliberately boring: the same stack has to parse both as a CSS
- * `font-family` and inside a canvas `font` shorthand, or the exported text
- * drifts from what was typed on screen.
- */
-export const DRAW_TEXT_FONT = 'system-ui, sans-serif';
-export const DRAW_TEXT_LINE_HEIGHT = 1.25;
 
 const EXPORT_PADDING = 16;
 const MIME: Record<DrawExportFormat, string> = {
@@ -30,41 +11,16 @@ const MIME: Record<DrawExportFormat, string> = {
   webp: 'image/webp',
 };
 
-let measureCtx: CanvasRenderingContext2D | null = null;
-
-function measurer() {
-  if (!measureCtx) {
-    measureCtx = document.createElement('canvas').getContext('2d');
-  }
-  return measureCtx;
-}
-
-export function textLines(item: DrawTextItem) {
-  return item.text.split('\n');
-}
-
-/** Width of the widest line, in board pixels. */
-export function measureTextWidth(item: DrawTextItem) {
-  const ctx = measurer();
-  if (!ctx) return item.text.length * item.size * 0.6;
-  ctx.font = `${item.size}px ${DRAW_TEXT_FONT}`;
-  return textLines(item).reduce((widest, line) => Math.max(widest, ctx.measureText(line).width), 0);
-}
-
-export function measureTextHeight(item: DrawTextItem) {
-  return textLines(item).length * item.size * DRAW_TEXT_LINE_HEIGHT;
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
 }
 
 /**
- * The box the ink and labels actually occupy, so a download is the drawing
- * rather than an acre of empty board around it. Eraser passes are skipped —
- * rubbing something out shouldn't stretch the crop to where the rubbing went.
+ * The box the ink actually occupies, so a download is the drawing rather than
+ * an acre of empty board around it. Eraser passes are skipped — rubbing
+ * something out shouldn't stretch the crop to where the rubbing went.
  */
-export function contentBounds(
-  strokes: Stroke[],
-  texts: DrawTextItem[],
-  board: Board,
-): DrawRect | null {
+export function contentBounds(strokes: Stroke[], board: Board): DrawRect | null {
   let minX = Infinity;
   let minY = Infinity;
   let maxX = -Infinity;
@@ -81,22 +37,18 @@ export function contentBounds(
     }
   }
 
-  for (const item of texts) {
-    if (!item.text.trim()) continue;
-    minX = Math.min(minX, item.x);
-    minY = Math.min(minY, item.y);
-    maxX = Math.max(maxX, item.x + measureTextWidth(item));
-    maxY = Math.max(maxY, item.y + measureTextHeight(item));
-  }
-
   if (!Number.isFinite(minX) || !Number.isFinite(minY)) return null;
 
-  const x = Math.max(0, Math.floor(minX - EXPORT_PADDING));
-  const y = Math.max(0, Math.floor(minY - EXPORT_PADDING));
-  const right = Math.min(board.w, Math.ceil(maxX + EXPORT_PADDING));
-  const bottom = Math.min(board.h, Math.ceil(maxY + EXPORT_PADDING));
+  const x = clamp(Math.floor(minX - EXPORT_PADDING), 0, board.w);
+  const y = clamp(Math.floor(minY - EXPORT_PADDING), 0, board.h);
+  const right = clamp(Math.ceil(maxX + EXPORT_PADDING), 0, board.w);
+  const bottom = clamp(Math.ceil(maxY + EXPORT_PADDING), 0, board.h);
 
-  return { x, y, w: Math.max(1, right - x), h: Math.max(1, bottom - y) };
+  // Ink entirely off the board leaves an inverted rect; that is nothing to save
+  // rather than a one-pixel file.
+  if (right <= x || bottom <= y) return null;
+
+  return { x, y, w: right - x, h: bottom - y };
 }
 
 /**
@@ -128,14 +80,13 @@ function loadSvg(markup: string) {
 export async function exportDrawing(options: {
   /** Full-board SVG, as produced by the Draw handle. */
   svg: string;
-  texts: DrawTextItem[];
   bounds: DrawRect;
   format: DrawExportFormat;
   scale?: number;
   /** Painted behind the ink. Required for JPEG, which has no alpha. */
   background?: string | null;
 }): Promise<Blob> {
-  const { svg, texts, bounds, format } = options;
+  const { svg, bounds, format } = options;
   const scale = options.scale ?? 2;
 
   const canvas = document.createElement('canvas');
@@ -168,20 +119,6 @@ export async function exportDrawing(options: {
       canvas.height,
     );
   }
-
-  ctx.save();
-  ctx.scale(scale, scale);
-  ctx.translate(-bounds.x, -bounds.y);
-  ctx.textBaseline = 'top';
-  for (const item of texts) {
-    if (!item.text.trim()) continue;
-    ctx.fillStyle = item.color;
-    ctx.font = `${item.size}px ${DRAW_TEXT_FONT}`;
-    textLines(item).forEach((line, i) => {
-      ctx.fillText(line, item.x, item.y + i * item.size * DRAW_TEXT_LINE_HEIGHT);
-    });
-  }
-  ctx.restore();
 
   const blob = await new Promise<Blob | null>((resolve) => {
     canvas.toBlob(resolve, MIME[format], 0.92);

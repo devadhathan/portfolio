@@ -9,6 +9,10 @@ import {
 
 export const OS_SETTINGS_KEY = 'portfolio-os-settings-v2';
 
+/** Bump when the default wallpaper changes and saved picks should reset once. */
+export const OS_WALLPAPER_EPOCH_KEY = 'portfolio-os-wallpaper-epoch';
+export const CURRENT_WALLPAPER_EPOCH = 1;
+
 export const ZOOM_MIN = 80;
 export const ZOOM_MAX = 125;
 export const ZOOM_STEP = 5;
@@ -27,7 +31,7 @@ export type OsSettings = {
 };
 
 export const DEFAULT_OS_SETTINGS: OsSettings = {
-  wallpaperId: 'bridge',
+  wallpaperId: null,
   shuffleDaily: false,
   sounds: true,
   soundVolume: 25,
@@ -37,13 +41,37 @@ export const DEFAULT_OS_SETTINGS: OsSettings = {
   recents: [],
 };
 
+function readWallpaperEpoch(): number {
+  try {
+    const raw = localStorage.getItem(OS_WALLPAPER_EPOCH_KEY);
+    const n = raw ? Number(raw) : 0;
+    return Number.isFinite(n) ? n : 0;
+  } catch {
+    return 0;
+  }
+}
+
+/** One-time reset when default wallpaper changes (e.g. bridge → dunes). */
+function applyWallpaperEpochMigration(settings: OsSettings): OsSettings {
+  if (readWallpaperEpoch() >= CURRENT_WALLPAPER_EPOCH) return settings;
+  try {
+    localStorage.setItem(OS_WALLPAPER_EPOCH_KEY, String(CURRENT_WALLPAPER_EPOCH));
+    localStorage.removeItem(DESKTOP_OS_WALLPAPER_KEY);
+  } catch {
+    /* ignore */
+  }
+  const next = { ...settings, wallpaperId: null };
+  writeOsSettings(next);
+  return next;
+}
+
 export function readOsSettings(): OsSettings {
   if (typeof window === 'undefined') return { ...DEFAULT_OS_SETTINGS };
   try {
     const raw = localStorage.getItem(OS_SETTINGS_KEY);
     if (!raw) return { ...DEFAULT_OS_SETTINGS };
     const parsed = JSON.parse(raw) as Partial<OsSettings>;
-    const next: OsSettings = { ...DEFAULT_OS_SETTINGS, ...parsed };
+    let next: OsSettings = { ...DEFAULT_OS_SETTINGS, ...parsed };
     if (Array.isArray(parsed.recents)) {
       next.recents = parsed.recents.filter(Boolean).slice(0, MAX_RECENTS) as OsSettings['recents'];
     }
@@ -52,6 +80,7 @@ export function readOsSettings(): OsSettings {
     } else {
       next.soundVolume = Math.min(100, Math.max(0, Math.round(parsed.soundVolume)));
     }
+    next = applyWallpaperEpochMigration(next);
     return next;
   } catch {
     return { ...DEFAULT_OS_SETTINGS };
@@ -99,11 +128,22 @@ export function getOsSettingsBootScript(): string {
   const order = WALLPAPER_PRESETS.map((preset) => preset.id);
 
   return `(function(){try{
+document.title=${JSON.stringify('Dev')};
+if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})})}
 /* The 'clear' theme is gone. Rewrite it before next-themes reads the key, or a
    returning visitor boots into a class with no styles behind it. */
 try{if(localStorage.getItem('theme')==='clear'){localStorage.setItem('theme','dark');document.documentElement.classList.remove('clear');document.documentElement.classList.add('dark');}}catch(e){}
 var S={};try{S=JSON.parse(localStorage.getItem(${JSON.stringify(OS_SETTINGS_KEY)}))||{}}catch(e){}
 var P=${JSON.stringify(backgrounds)},M=${JSON.stringify(mobileBackgrounds)},C=${JSON.stringify(contrasts)},O=${JSON.stringify(order)};
+var epoch=0;try{epoch=Number(localStorage.getItem(${JSON.stringify(OS_WALLPAPER_EPOCH_KEY)})||0)}catch(e){}
+if(!Number.isFinite(epoch))epoch=0;
+if(epoch<${CURRENT_WALLPAPER_EPOCH}){
+try{
+localStorage.setItem(${JSON.stringify(OS_WALLPAPER_EPOCH_KEY)},${JSON.stringify(String(CURRENT_WALLPAPER_EPOCH))});
+localStorage.removeItem(${JSON.stringify(DESKTOP_OS_WALLPAPER_KEY)});
+if(S.wallpaperId){S.wallpaperId=null;localStorage.setItem(${JSON.stringify(OS_SETTINGS_KEY)},JSON.stringify(S));}
+}catch(e){}
+}
 var id=S.wallpaperId;
 if(!id){var l=localStorage.getItem(${JSON.stringify(DESKTOP_OS_WALLPAPER_KEY)});if(l&&P[l])id=l;}
 if(S.shuffleDaily===true){var n=new Date();var d=Math.floor((n.getTime()-n.getTimezoneOffset()*6e4)/864e5);id=O[Math.abs(d)%O.length];}

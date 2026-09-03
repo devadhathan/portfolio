@@ -36,14 +36,12 @@ function WelcomeCard({
   onDismiss?: () => void;
   className?: string;
 }) {
-  const { wallpaperId } = useDesktopOs();
-
   return (
     <button
       type="button"
       aria-label="Dismiss welcome notification"
       className={cn(
-        osNotificationGlassClass(wallpaperId, { interactive: Boolean(onDismiss) }),
+        osNotificationGlassClass({ interactive: Boolean(onDismiss) }),
         'text-left',
         className,
       )}

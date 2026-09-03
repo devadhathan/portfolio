@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import type { Project } from '@/lib/types/project';
 import { findProjectBySlug, getProjectId } from '@/lib/types/project';
 
@@ -8,7 +8,6 @@ const DEFAULT_TAB_TITLE = 'Dev';
 
 /** Short label shown in the browser tab for a case study. */
 export function caseStudyTabLabel(project: Project): string {
-  if (project.title.toLowerCase().includes('nesoi')) return 'Nesoi.ai';
   return project.title;
 }
 
@@ -20,7 +19,7 @@ export function useCaseStudyDocumentTitle(
   slug: string | null | undefined,
   projects: Project[],
 ) {
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (typeof document === 'undefined') return;
 
     if (!slug) {

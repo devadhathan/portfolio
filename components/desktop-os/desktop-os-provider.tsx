@@ -45,6 +45,7 @@ import {
 } from '@/lib/os-settings';
 import { setEnabled as setSoundEnabled, setVolume as setSoundVolume } from '@/lib/sound';
 import { trackEvent } from '@/lib/analytics';
+import { clearOsSession, patchOsSession, readOsSession } from '@/lib/os-session';
 
 type DesktopOsContextValue = {
   /** Desktop OS is always on; kept for call-site compatibility. */
@@ -185,6 +186,8 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
 
   // Apply saved prefs before first paint — never write SSR defaults over the boot script.
   // Module flag keeps the shell mounted across Strict Mode provider remounts.
+  // Mount-only: client navigations must not rebuild windows (that remounts Home/Work
+  // and re-renders MenuBar). Path changes go through focusWindow below.
   useLayoutEffect(() => {
     const stored = readOsSettings();
     setSettings(stored);
@@ -199,6 +202,27 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
     root.setAttribute(OS_MENUBAR_CONTRAST_ATTR, menubarContrastFor(id));
     osPrefsUnlocked = true;
     setPrefsReady(true);
+
+    const session = readOsSession();
+    const pathFocus = pathToWindowId(pathname);
+    // URL wins on full reload — restoring session.activeWindow here opened the
+    // wrong window and sometimes triggered a follow-up router.replace (flash).
+    const focusId = pathFocus;
+
+    setWindows(() => {
+      const next = createInitialWindows(focusId);
+      for (const winId of DESKTOP_WINDOW_IDS) {
+        if (winId === focusId || session.windows[winId]) {
+          next[winId] = { ...next[winId], everOpened: true };
+        }
+      }
+      return next;
+    });
+    setFocusedId(focusId);
+    if (session.finderLocation) {
+      setFinderLocation(session.finderLocation);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- hydrate once; pathname sync is separate
   }, []);
 
   useEffect(() => {
@@ -495,6 +519,7 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
     setFocusedId(null);
     setClosedStack([]);
     setIconPositions(DEFAULT_ICON_POSITIONS);
+    clearOsSession();
     try {
       sessionStorage.removeItem(DESKTOP_OS_ICON_STORAGE_KEY);
     } catch {
@@ -533,6 +558,15 @@ export function DesktopOsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setSoundVolume(settings.soundVolume / 100);
   }, [settings.soundVolume]);
+
+  useEffect(() => {
+    if (!prefsReady) return;
+    const openId = DESKTOP_WINDOW_IDS.find((id) => windows[id]?.open) ?? null;
+    patchOsSession((prev) => {
+      if (prev.activeWindow === openId && prev.finderLocation === finderLocation) return prev;
+      return { ...prev, activeWindow: openId, finderLocation };
+    });
+  }, [windows, finderLocation, prefsReady]);
 
   const setWidgetsOpen = useCallback(
     (open: boolean) => updateSettings({ widgets: open }),

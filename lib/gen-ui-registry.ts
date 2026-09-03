@@ -107,7 +107,7 @@ const BASE_CARD_REGISTRY: Record<string, GenUIItem> = {
   },
   'project:crm': {
     type: 'project',
-    title: 'CRM Redesign',
+    title: 'Ditto Insurance CRM Design',
     description: 'Internal CRM overhaul for Ditto Insurance. Boosted team efficiency by 20%.',
     tags: ['B2B', 'Product Design'],
     link: '/work?project=crm-redesign',
@@ -128,7 +128,7 @@ const BASE_CARD_REGISTRY: Record<string, GenUIItem> = {
   },
   'project:nesoi': {
     type: 'project',
-    title: 'Nesoi.ai Dashboard',
+    title: 'Nesoi AI Dashboard',
     description: 'AI-powered learning dashboards for 15+ enterprise clients. Engagement up 92%.',
     tags: ['AI', 'Dashboard', 'B2B'],
     link: '/work?project=nesoi-ai-dashboard',
