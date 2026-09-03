@@ -632,6 +632,17 @@ body {
   font-weight: 500;
 }
 
+/* One rhythm between case-study sections (heading blocks, media, next section). */
+.cs-section {
+  margin-bottom: 6rem;
+}
+
+@media (min-width: 1024px) {
+  .cs-section {
+    margin-bottom: 8rem;
+  }
+}
+
 /* Vercel-ish body: Geist at 16-18px, generous but not airy, faint negative tracking. */
 .cs-body {
   font-size: clamp(1rem, 0.94rem + 0.3cqi, 1.125rem);

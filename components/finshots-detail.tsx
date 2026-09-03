@@ -111,7 +111,7 @@ export function FinshotsDetail({
       </div>
 
       {/* Main Content Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 mb-24 lg:mb-32">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 cs-section">
         {/* Left Content - Description */}
         <div className="lg:col-span-2 space-y-8">
           <p className="cs-body text-muted-foreground">
@@ -173,7 +173,7 @@ export function FinshotsDetail({
       </div>
 
       {/* Bento Grid - Images Section */}
-      <div className="mb-24 lg:mb-32">
+      <div className="cs-section">
         <h2 className="cs-heading text-foreground mb-8 lg:mb-12">{t('designGallery')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {finshotsImages.map((image, idx) => (
@@ -203,7 +203,7 @@ export function FinshotsDetail({
 
       {/* Problem Section */}
       {project.problem && (
-        <div id={`${projectId}-problem`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+        <div id={`${projectId}-problem`} className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('problem')}</h2>
           <div className="lg:col-span-3">
             <p className="cs-body text-muted-foreground">
@@ -234,7 +234,7 @@ export function FinshotsDetail({
 
       {/* Research Section */}
       {project.research && (
-        <div id={`${projectId}-research`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+        <div id={`${projectId}-research`} className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('research')}</h2>
           <div className="lg:col-span-3">
             <p className="cs-body text-muted-foreground">
@@ -246,7 +246,7 @@ export function FinshotsDetail({
 
       {/* HMW Section */}
       {project.hmw && (
-        <div id={`${projectId}-hmw`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+        <div id={`${projectId}-hmw`} className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('hmw')}</h2>
           <div className="lg:col-span-3">
             <p className="cs-body font-medium text-muted-foreground">
@@ -257,7 +257,7 @@ export function FinshotsDetail({
       )}
 
       {/* Possible Solutions */}
-      <div id={`${projectId}-possible-solutions`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+      <div id={`${projectId}-possible-solutions`} className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
         <h2 className="cs-heading text-foreground lg:col-span-2">{t('possibleSolutions')}</h2>
         <div className="lg:col-span-3">
           <p className="cs-body text-muted-foreground">
@@ -268,7 +268,7 @@ export function FinshotsDetail({
 
       {/* Key Features Section */}
       {project.keyFeatures && project.keyFeatures.length > 0 && (
-        <div id={`${projectId}-key-features`} className="mb-24 lg:mb-32">
+        <div id={`${projectId}-key-features`} className="cs-section">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12 mb-8">
             <h2 className="cs-heading text-foreground lg:col-span-2">{t('keyFeaturesShipped')}</h2>
           </div>
@@ -341,7 +341,7 @@ export function FinshotsDetail({
 
       {/* Results Section */}
       {project.results && project.results.length > 0 && (
-        <div id={`${projectId}-stats`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+        <div id={`${projectId}-stats`} className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('result')}</h2>
           <div className="lg:col-span-3">
             <p className="cs-body text-muted-foreground mb-8">
@@ -361,7 +361,7 @@ export function FinshotsDetail({
 
       {/* Learnings Section */}
       {project.learnings && (
-        <div id={`${projectId}-learnings`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+        <div id={`${projectId}-learnings`} className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('whatDidILearn')}</h2>
           <div className="lg:col-span-3">
             {Array.isArray(project.learnings) ? (

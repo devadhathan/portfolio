@@ -345,7 +345,7 @@ export function ProjectDetailView({
 
       {/* Main Content Section */}
       <div
-        className={`grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 mb-24 lg:mb-32 ${
+        className={`grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 cs-section ${
           hasHeroHeader ? 'mt-0' : ''
         }`}
       >
@@ -468,7 +468,7 @@ export function ProjectDetailView({
 
       {/* Design Gallery - For Falcon Design System project */}
       {project && (project.title.toLowerCase().includes('falcon') || projectId.toLowerCase().includes('falcon')) && falconImages.length > 0 && (
-        <div id={`${projectId}-design`} className="mb-24 lg:mb-32 -mx-4 md:-mx-6 lg:-mx-8">
+        <div id={`${projectId}-design`} className="cs-section -mx-4 md:-mx-6 lg:-mx-8">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12 mb-8 px-4 md:px-6 lg:px-8">
             <h2 className="cs-heading text-foreground lg:col-span-2">{t('designGallery')}</h2>
           </div>
@@ -496,7 +496,7 @@ export function ProjectDetailView({
       )}
 
       {!isCrm && project.designGallery && project.designGallery.length > 0 && (
-        <div id={`${projectId}-design`} className="mb-24 lg:mb-32">
+        <div id={`${projectId}-design`} className="cs-section">
           <div className="flex items-center justify-between mb-8">
             <h2 className="cs-heading text-foreground">{t('designGalleryLower')}</h2>
           </div>
@@ -527,7 +527,7 @@ export function ProjectDetailView({
 
       {/* Problem Section */}
       {project.problem && (
-        <div id={`${projectId}-problem`} className={`${isNesoi ? 'mb-20 lg:mb-28' : 'mb-24 lg:mb-32'} grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12 lg:items-start`}>
+        <div id={`${projectId}-problem`} className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12 lg:items-start">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('problem')}</h2>
           <div className="lg:col-span-3 space-y-6">
             {project.problem.split('\n\n').map((paragraph, idx) => (
@@ -545,7 +545,7 @@ export function ProjectDetailView({
       )}
 
       {isCrm && project.problemImage ? (
-        <div id={`${projectId}-problem-image`} className="mb-24 lg:mb-32">
+        <div id={`${projectId}-problem-image`} className="cs-section">
           <Image
             src={project.problemImage.src}
             alt={project.problemImage.alt || 'Ditto Insurance CRM interface'}
@@ -560,7 +560,7 @@ export function ProjectDetailView({
 
       {/* Nesoi Goal + before/after - same content rhythm as Problem */}
       {isNesoi && (
-        <div id={`${projectId}-goal`} className="mb-20 lg:mb-28 space-y-8 lg:space-y-10">
+        <div id={`${projectId}-goal`} className="cs-section space-y-8">
           {project.hmw ? (
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12 lg:items-start">
               <h2 className="cs-heading text-foreground lg:col-span-2">Goal</h2>
@@ -589,7 +589,7 @@ export function ProjectDetailView({
       )}
 
       {isNesoi ? (
-        <div id={`${projectId}-exploring`} className="mb-20 lg:mb-28 space-y-8 lg:space-y-10">
+        <div id={`${projectId}-exploring`} className="cs-section space-y-8">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12 lg:items-start">
             <h2 className="cs-heading text-foreground lg:col-span-2">{t('exploring')}</h2>
             <div className="space-y-6 lg:col-span-3">
@@ -620,7 +620,7 @@ export function ProjectDetailView({
       ) : null}
 
       {isNesoi ? (
-        <div id={`${projectId}-problem-image`} className="mb-20 lg:mb-28 space-y-8 lg:space-y-10">
+        <div id={`${projectId}-problem-image`} className="cs-section space-y-8">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12 lg:items-start">
             <h2 className="cs-heading text-foreground lg:col-span-2">Framing</h2>
             <div className="space-y-6 lg:col-span-3">
@@ -684,7 +684,7 @@ export function ProjectDetailView({
           </div>
         </div>
       ) : !isCrm && project.problemImage ? (
-        <div id={`${projectId}-problem-image`} className="mb-24 lg:mb-32 space-y-6">
+        <div id={`${projectId}-problem-image`} className="cs-section space-y-6">
           <h2 className="cs-heading text-foreground">
             {t('problemSnapshot')}
           </h2>
@@ -713,7 +713,7 @@ export function ProjectDetailView({
       ) : null}
 
       {project.takeStepBack && (
-        <div className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+        <div className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('takeStepBack')}</h2>
           <div className="lg:col-span-3">
             <p className="cs-body text-muted-foreground">
@@ -724,7 +724,7 @@ export function ProjectDetailView({
       )}
 
       {project.painPoints && project.painPoints.length > 0 && (
-        <div id={`${projectId}-painpoints`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+        <div id={`${projectId}-painpoints`} className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('painpoints')}</h2>
           <div className="lg:col-span-3">
             {project.painPointsIntro && (
@@ -744,7 +744,7 @@ export function ProjectDetailView({
 
       {/* HMW Section — CRM includes user story in the same block */}
       {project.hmw && !isNesoi && (
-        <div id={`${projectId}-hmw`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+        <div id={`${projectId}-hmw`} className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('hmw')}</h2>
           <div className="lg:col-span-3 space-y-6">
             <p className="cs-body font-medium text-muted-foreground">
@@ -760,7 +760,7 @@ export function ProjectDetailView({
       )}
 
       {project.businessOpportunity && project.businessOpportunity.length > 0 && (
-        <div id={`${projectId}-business`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+        <div id={`${projectId}-business`} className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('businessOpportunity')}</h2>
           <div className="lg:col-span-3">
             <div className="space-y-8">
@@ -776,7 +776,7 @@ export function ProjectDetailView({
       )}
 
       {project.explorations && project.explorations.length > 0 && !isCrm && (
-        <div id={`${projectId}-exploring`} className="mb-24 lg:mb-32">
+        <div id={`${projectId}-exploring`} className="cs-section">
           <h2 className="cs-heading text-foreground mb-8">{t('exploring')}</h2>
           <div className="space-y-12">
             {project.explorations.map((exploration, idx) => (
@@ -819,7 +819,7 @@ export function ProjectDetailView({
       )}
 
       {project.targetAudience && !isCrm && (
-        <div id={`${projectId}-target-audience`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+        <div id={`${projectId}-target-audience`} className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('targetAudience')}</h2>
           <div className="lg:col-span-3">
             <p className="cs-body text-muted-foreground">{project.targetAudience}</p>
@@ -828,7 +828,7 @@ export function ProjectDetailView({
       )}
 
       {project.targetAudienceImage && (
-        <div id={`${projectId}-target-snapshot`} className="mb-24 lg:mb-32 space-y-6">
+        <div id={`${projectId}-target-snapshot`} className="cs-section space-y-6">
           <h2 className="cs-heading text-foreground">{t('targetSnapshot')}</h2>
           <div className="relative w-full aspect-[16/9] overflow-hidden shadow-xl" data-case-bleed>
             <Image
@@ -847,7 +847,7 @@ export function ProjectDetailView({
 
       {/* Research Section */}
       {project.research && !isCrm && (
-        <div id={`${projectId}-research`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+        <div id={`${projectId}-research`} className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('research')}</h2>
           <div className="lg:col-span-3">
             <p className="cs-body text-muted-foreground">
@@ -860,7 +860,7 @@ export function ProjectDetailView({
       {(() => {
         const projectWithPersonas = project as any;
         return projectWithPersonas.personas && Array.isArray(projectWithPersonas.personas) && projectWithPersonas.personas.length > 0 && (
-          <div id={`${projectId}-personas`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+          <div id={`${projectId}-personas`} className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
             <h2 className="cs-heading text-foreground lg:col-span-2">{t('personas')}</h2>
             <div className="lg:col-span-3">
               <div className="grid gap-4 md:grid-cols-2">
@@ -888,7 +888,7 @@ export function ProjectDetailView({
 
             if ((isNesoi || isCrm) && section.id === 'decisions') {
               return (
-                <div key={section.id} id={`${projectId}-${section.id}`} className="mb-20 lg:mb-28">
+                <div key={section.id} id={`${projectId}-${section.id}`} className="cs-section">
                   <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12 lg:items-start">
                     <h2 className="cs-heading text-foreground lg:col-span-2">
                       {section.title}
@@ -971,7 +971,7 @@ export function ProjectDetailView({
 
             if (isCrm && section.id === 'possible-solutions') {
               return (
-                <div key={section.id} id={`${projectId}-${section.id}`} className="mb-24 lg:mb-32">
+                <div key={section.id} id={`${projectId}-${section.id}`} className="cs-section">
                   <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12">
                     <h2 className="cs-heading text-foreground lg:col-span-2">
                       {section.title}
@@ -1021,7 +1021,7 @@ export function ProjectDetailView({
 
             if (isCrm && section.id === 'directions') {
               return (
-                <div key={section.id} id={`${projectId}-${section.id}`} className="mb-24 lg:mb-32">
+                <div key={section.id} id={`${projectId}-${section.id}`} className="cs-section">
                   <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12">
                     <h2 className="cs-heading text-foreground lg:col-span-2">
                       {section.title}
@@ -1070,7 +1070,7 @@ export function ProjectDetailView({
 
             if (isNesoi && section.id === 'not-built') {
               return (
-                <div key={section.id} id={`${projectId}-${section.id}`} className="mb-20 lg:mb-28">
+                <div key={section.id} id={`${projectId}-${section.id}`} className="cs-section">
                   <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12 lg:items-start">
                     <h2 className="cs-heading text-foreground lg:col-span-2">
                       {section.title}
@@ -1094,7 +1094,7 @@ export function ProjectDetailView({
 
             if (isNesoi && section.id === 'constraints') {
               return (
-                <div key={section.id} id={`${projectId}-${section.id}`} className="mb-20 lg:mb-28">
+                <div key={section.id} id={`${projectId}-${section.id}`} className="cs-section">
                   <aside className="rounded-2xl border border-border/50 bg-secondary/35 px-5 py-6 sm:px-6 sm:py-7">
                     <h2 className="mb-5 cs-label uppercase text-muted-foreground">
                       {section.title}
@@ -1116,7 +1116,7 @@ export function ProjectDetailView({
                 {isCrm && section.id === 'adding-notes' ? (
                   <div
                     id={`${projectId}-other-features`}
-                    className="mb-10 mt-28 border-t border-border/40 pt-12 lg:mb-12 lg:mt-36 lg:pt-16"
+                    className="mb-8 border-t border-border/40 pt-12"
                   >
                     <h2 className="text-[clamp(1.375rem,1.15rem+1.1cqi,2.125rem)] font-semibold leading-[1.2] tracking-[-0.025em] text-foreground">
                       {t('otherFeatures')}
@@ -1127,8 +1127,8 @@ export function ProjectDetailView({
                   id={`${projectId}-${section.id}`}
                   className={
                     isCrm && CRM_OTHER_FEATURE_IDS.has(section.id)
-                      ? 'mb-16 lg:mb-20'
-                      : 'mb-24 lg:mb-32'
+                      ? 'cs-section'
+                      : 'cs-section'
                   }
                 >
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
@@ -1279,7 +1279,7 @@ export function ProjectDetailView({
 
       {/* Stats Section */}
       {project.results && project.results.length > 0 && (
-        <div id={`${projectId}-stats`} className="mt-24 lg:mt-32 mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+        <div id={`${projectId}-stats`} className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('someStats')}</h2>
           <div className="lg:col-span-3">
             {(() => {
@@ -1302,7 +1302,7 @@ export function ProjectDetailView({
 
       {/* Key Features */}
       {project.keyFeatures && project.keyFeatures.length > 0 && (
-        <div id={`${projectId}-key-features`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+        <div id={`${projectId}-key-features`} className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('keyFeatures')}</h2>
           <div className="lg:col-span-3">
             <div className="space-y-8">
@@ -1318,7 +1318,7 @@ export function ProjectDetailView({
       )}
 
       {project.keyFeatureImage && (
-        <div id={`${projectId}-feature-image`} className="mb-24 lg:mb-32 space-y-6">
+        <div id={`${projectId}-feature-image`} className="cs-section space-y-6">
           <h2 className="cs-heading text-foreground">{t('featureSnapshot')}</h2>
           <div className="relative w-full aspect-[16/9] overflow-hidden shadow-xl" data-case-bleed>
             <Image
@@ -1337,7 +1337,7 @@ export function ProjectDetailView({
 
       {/* Learnings */}
       {project.learnings && (
-        <div id={`${projectId}-learnings`} className="mt-24 lg:mt-32 mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+        <div id={`${projectId}-learnings`} className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('learnings')}</h2>
           <div className="lg:col-span-3">
             {Array.isArray(project.learnings) ? (
@@ -1357,7 +1357,7 @@ export function ProjectDetailView({
       )}
 
       {project.prototype && (
-        <div id={`${projectId}-prototype`} className="mb-24 lg:mb-32 space-y-6">
+        <div id={`${projectId}-prototype`} className="cs-section space-y-6">
           <h2 className="cs-heading text-foreground">{t('prototype')}</h2>
           <p className="cs-body text-muted-foreground">{project.prototype}</p>
           {project.prototypeFrame && (
@@ -1378,7 +1378,7 @@ export function ProjectDetailView({
 
       {/* Impact */}
       {project.impact && project.impact.length > 0 && (
-        <div id={`${projectId}-impact`} className="mb-24 lg:mb-32 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
+        <div id={`${projectId}-impact`} className="cs-section grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-12">
           <h2 className="cs-heading text-foreground lg:col-span-2">{t('impact')}</h2>
           <div className="lg:col-span-3">
             <div className="space-y-8">
