@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GenUIViewport } from '@/lib/gen-ui-viewport';
 import { GenUIViewportSection } from '@/components/gen-ui-viewport-section';
 import { cn } from '@/lib/utils';
@@ -20,8 +20,11 @@ type GenUIViewportStackProps = {
   followUpsDisabled?: boolean;
 };
 
+/** Matches the container's scroll-pt-6, so a pinned section clears the edge. */
+const SCROLL_PAD = 24;
+
 function scrollToViewport(id: string) {
-  document.getElementById(`gen-ui-viewport-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  document.getElementById(`gen-ui-viewport-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 export function GenUIViewportStack({
@@ -38,8 +41,44 @@ export function GenUIViewportStack({
 }: GenUIViewportStackProps) {
   const allPrompts = viewports.map((v) => v.prompt);
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const lastScrolledIdRef = useRef<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(Math.max(0, viewports.length - 1));
+
+  /*
+   * Replies type themselves in a word at a time. Rather than chase the bottom,
+   * hold the newest exchange at the top of the container while it is written,
+   * so the answer fills the space below it and is read from its first line.
+   */
+  const pinnedIdRef = useRef<string | null>(null);
+  const last = viewports[viewports.length - 1];
+
+  const pinToTop = useCallback(() => {
+    const el = containerRef.current;
+    const id = pinnedIdRef.current;
+    if (!el || !id) return;
+    const section = document.getElementById(`gen-ui-viewport-${id}`);
+    if (!section) return;
+    const top =
+      section.getBoundingClientRect().top - el.getBoundingClientRect().top + el.scrollTop;
+    // Clamped by the browser once the section reaches the end of the scroll range.
+    el.scrollTop = Math.max(0, top - SCROLL_PAD);
+  }, []);
+
+  // A prompt in flight claims the pin; nothing else turns it back on.
+  useEffect(() => {
+    if (last?.status === 'loading') pinnedIdRef.current = last.id;
+  }, [last?.id, last?.status]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    const content = contentRef.current;
+    if (!el || !content) return;
+
+    const observer = new ResizeObserver(() => pinToTop());
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, [pinToTop]);
 
   useEffect(() => {
     if (!scrollToId || scrollToId === lastScrolledIdRef.current) return;
@@ -101,6 +140,18 @@ export function GenUIViewportStack({
     >
       <div
         ref={containerRef}
+        /* Any deliberate scroll hands control back to the reader. */
+        onWheel={() => {
+          pinnedIdRef.current = null;
+        }}
+        onTouchMove={() => {
+          pinnedIdRef.current = null;
+        }}
+        onKeyDown={(e) => {
+          if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'].includes(e.key)) {
+            pinnedIdRef.current = null;
+          }
+        }}
         className={cn(
           viewportHeightClass,
           'overflow-y-auto overscroll-y-contain scroll-pt-6',
@@ -108,18 +159,20 @@ export function GenUIViewportStack({
           embedded && 'pb-36',
         )}
       >
-        {viewports.map((vp, i) => (
-          <GenUIViewportSection
-            key={vp.id}
-            viewport={vp}
-            onCaseStudySelect={onCaseStudySelect}
-            // Only prior prompts, so a later message never rewrites the
-            // suggestions already shown above it.
-            askedPrompts={allPrompts.slice(0, i + 1)}
-            onFollowUpSelect={onFollowUpSelect}
-            followUpsDisabled={followUpsDisabled}
-          />
-        ))}
+        <div ref={contentRef}>
+          {viewports.map((vp, i) => (
+            <GenUIViewportSection
+              key={vp.id}
+              viewport={vp}
+              onCaseStudySelect={onCaseStudySelect}
+              // Only prior prompts, so a later message never rewrites the
+              // suggestions already shown above it.
+              askedPrompts={allPrompts.slice(0, i + 1)}
+              onFollowUpSelect={onFollowUpSelect}
+              followUpsDisabled={followUpsDisabled}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

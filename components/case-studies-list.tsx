@@ -2,18 +2,16 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import { ArrowUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import {
   HOME_CARD_BORDER,
   useCardHoverGlow,
 } from '@/components/card-hover-glow';
-import { CardTag } from '@/components/card-tag';
 import { useSiteContent } from '@/components/site-content-provider';
 import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
 import { getProjectId, getProjectSlug, type Project } from '@/lib/types/project';
-import { startSessionReplay, trackEvent } from '@/lib/analytics';
+import { trackEvent } from '@/lib/analytics';
 import { cn, focusRing } from '@/lib/utils';
 import {
   HOME_INTRO_CARDS_DELAY,
@@ -116,7 +114,6 @@ type ListItem = {
   year: number;
   dateLabel: string;
   sortKey: number;
-  openWordsmith?: boolean;
   href?: string;
   subtitle?: string;
 };
@@ -135,32 +132,15 @@ type FeaturedItem = ListItem & {
   media: FeaturedMedia;
 };
 
-const WORDSMITH_FEATURED: FeaturedItem = {
-  id: 'wordsmith-ai',
-  title: 'Wordsmith AI',
-  year: 2026,
-  dateLabel: formatPeriodLabel(2026, 6),
-  sortKey: 2026 * 100 + 6,
-  openWordsmith: true,
-  href: 'https://www.wordsmith.ai/products/blueprints',
-  subtitle: 'I designed experiences for legal AI.',
-  media: {
-    type: 'video',
-    src: '/videos/wordsmith-thumb-bg-sm.mp4',
-    poster: '/videos/wordsmith-thumb-bg-poster.webp',
-    overlay: '/photos/wordsmith-preview.webp',
-  },
-};
-
 const FEATURED_MEDIA: Record<
   string,
   FeaturedMedia & { subtitle: string; title?: string }
 > = {
   'nesoi-ai-dashboard': {
     type: 'video',
-    src: '/videos/nesoi-thumb.mp4',
-    poster: '/videos/nesoi-poster.webp',
-    subtitle: 'I redesigned how teams turn files into interactive learning.',
+    src: '/videos/Scene_no_jitter-sm.mp4',
+    poster: '/photos/case-study-bg/cover-nesoi.webp',
+    subtitle: 'I redesigned creation so creators can steer the first video, not just upload and wait.',
     title: 'Nesoi AI Dashboard',
   },
   'crm-redesign': {
@@ -218,7 +198,7 @@ function buildItems(projects: Project[]): { featured: FeaturedItem[]; archive: L
       Boolean(p?.media),
   );
 
-  const featured: FeaturedItem[] = [WORDSMITH_FEATURED, ...featuredFromProjects];
+  const featured: FeaturedItem[] = featuredFromProjects;
   const featuredIdSet = new Set(featured.map((f) => f.id));
   const archive = parsed.filter((p) => !featuredIdSet.has(p.id));
 
@@ -482,28 +462,11 @@ function FeaturedThumb({
           />
         )}
         {item.media.overlay ? (
-          <div
-            className={cn(
-              'pointer-events-none absolute z-[1] transition-transform duration-700 ease-out-expo group-hover:scale-[1.02]',
-              item.openWordsmith
-                ? 'inset-y-[5%] left-[8%] right-0 group-hover:translate-x-0.5'
-                : 'inset-y-[8%] left-1/2 w-[82%] -translate-x-1/2 sm:w-[78%]',
-            )}
-          >
-            <div
-              className={cn(
-                'h-full w-full overflow-hidden rounded-none',
-                item.openWordsmith
-                  ? 'border border-r-0 border-white/30 bg-white shadow-[0_10px_28px_rgba(0,0,0,0.28)]'
-                  : 'shadow-[0_10px_28px_rgba(0,0,0,0.22)]',
-              )}
-            >
+          <div className="pointer-events-none absolute inset-y-[8%] left-1/2 z-[1] w-[82%] -translate-x-1/2 transition-transform duration-700 ease-out-expo group-hover:scale-[1.02] sm:w-[78%]">
+            <div className="h-full w-full overflow-hidden rounded-none shadow-[0_10px_28px_rgba(0,0,0,0.22)]">
               {item.media.overlayType === 'video' && reduceMotion !== true && allowLoopVideo ? (
                 <FeaturedVideo
-                  className={cn(
-                    'h-full w-full object-cover object-left-top',
-                    item.openWordsmith && 'scale-[1.14] origin-top-left',
-                  )}
+                  className="h-full w-full object-cover object-left-top"
                   src={item.media.overlay}
                   poster={item.media.overlayPoster}
                 />
@@ -516,10 +479,7 @@ function FeaturedThumb({
                       : item.media.overlay
                   }
                   alt=""
-                  className={cn(
-                    'h-full w-full object-cover object-left-top',
-                    item.openWordsmith && 'scale-[1.14] origin-top-left',
-                  )}
+                  className="h-full w-full object-cover object-left-top"
                   loading="lazy"
                   decoding="async"
                   draggable={false}
@@ -542,17 +502,6 @@ function FeaturedThumb({
             <span className="text-[16px] font-medium leading-[1.35] tracking-[-0.014em] text-foreground">
               {item.title}
             </span>
-            {item.openWordsmith ? (
-              <>
-                <CardTag tone="orange" className="normal-case tracking-normal">
-                  New
-                </CardTag>
-                <ArrowUpRight
-                  className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground/80"
-                  aria-hidden
-                />
-              </>
-            ) : null}
           </div>
           {item.dateLabel && item.dateLabel !== '—' ? (
             <span className="shrink-0 whitespace-nowrap text-[13px] tabular-nums text-muted-foreground">
@@ -592,20 +541,6 @@ export function CaseStudiesList({
   if (featured.length === 0 && (!showArchive || archive.length === 0)) return null;
 
   const handleSelect = (item: ListItem) => {
-    if (item.openWordsmith) {
-      const surface = desktopOs?.enabled ? 'home_selected_work' : 'home_bento';
-      trackEvent('wordsmith_card_clicked', { surface });
-      if (desktopOs?.enabled) {
-        desktopOs.openWindow('wordsmith', { syncUrl: false });
-        return;
-      }
-      trackEvent('wordsmith_opened', { surface });
-      startSessionReplay();
-      if (item.href) {
-        window.open(item.href, '_blank', 'noopener,noreferrer');
-      }
-      return;
-    }
     onProjectSelect?.(item.id);
   };
 
@@ -641,21 +576,13 @@ export function CaseStudiesList({
         </button>
       </div>
 
-      <div className="case-study-bento grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-3.5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:grid-rows-[minmax(11.5rem,1fr)_minmax(11.5rem,1fr)] lg:gap-4">
-        {featured.map((item, index) => (
-          <div
-            key={item.id}
-            className={cn(
-              'min-h-0',
-              /* Hero (Wordsmith) — tall left column, not 2/3 width */
-              index === 0 && 'sm:col-span-2 lg:col-span-1 lg:row-span-2',
-            )}
-          >
+      <div className="case-study-bento grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-3.5 lg:gap-4">
+        {featured.map((item) => (
+          <div key={item.id} className="min-h-0">
             <FeaturedThumb
               item={item}
               reduceMotion={reduceMotion}
               onSelect={() => handleSelect(item)}
-              size={index === 0 ? 'hero' : 'default'}
             />
           </div>
         ))}

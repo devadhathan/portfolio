@@ -10,7 +10,8 @@ import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import { HighlightedText } from './highlighted-text';
 import { HeroBio } from './hero-bio';
-import { HomeHero, HomeHeroTitle } from './home-hero';
+import { HomeHero } from './home-hero';
+import { HomeHeroTitle } from './home-hero-title';
 // Temporary: portrait swapped for lined frame — re-import when restoring
 // import { HomePortrait } from './home-portrait';
 import { CaseStudiesList } from './case-studies-list';
@@ -18,6 +19,8 @@ import { StatusPet } from './status-pet';
 import { CardHoverGlowOverlay, HOME_CARD_BORDER } from '@/components/card-hover-glow';
 import { useSiteContent } from '@/components/site-content-provider';
 import { useTheme } from '@/contexts/theme-context';
+import { heroArtFor } from '@/lib/hero-art';
+import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import { FINSHOTS_APP_SCREEN } from '@/lib/build-case-study-cards';
 import dynamic from 'next/dynamic';
@@ -117,12 +120,6 @@ const PHOTO_BLOCKLIST = new Set([
   '/photos/plant.png',
 ]);
 
-const HERO_LIGHT_SVG = '/svg/me alone and the background.svg';
-const HERO_THEME_SVGS: Record<'blue' | 'green' | 'red', string> = {
-  blue: '/svg/blue me.svg',
-  green: '/svg/green me.svg',
-  red: '/svg/red me.svg',
-};
 
 interface PortfolioSectionsProps {
   agentState: AgentState;
@@ -136,7 +133,8 @@ interface PortfolioSectionsProps {
 export function PortfolioSections({ agentState, hideHeaderText = false, onProjectSelect, onShowProjectsList, onEnterGenUI, selectedProjectId }: PortfolioSectionsProps) {
   const t = useTranslations('home');
   const tNav = useTranslations('nav');
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
+  const heroArt = heroArtFor(resolvedTheme);
   const reduceMotion = useReducedMotion();
   const { settings, projects } = useSiteContent();
   // Track carousel pause state for photo sections
@@ -367,19 +365,16 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
             <div className="flex-1 flex justify-center">
               <div className="relative w-full max-w-[560px] rounded-lg overflow-hidden border border-border/40 dark:border-border/60 hero-illustration">
                 <div className="relative w-full h-[272px] sm:h-[332px] md:h-[372px] max-h-[372px]">
-                  {theme === 'dark' ? (
+                  {heroArt.kind === 'video' ? (
                     <HeroVideo />
-                  ) : theme === 'blue' || theme === 'green' || theme === 'red' ? (
-                    <img
-                      src={HERO_THEME_SVGS[theme]}
-                      alt="Dev"
-                      className="relative z-10 mx-auto h-full w-auto max-w-full max-h-[372px] object-contain opacity-80 transition-opacity duration-300 group-hover:opacity-100"
-                    />
                   ) : (
                     <img
-                      src={HERO_LIGHT_SVG}
+                      src={heroArt.src}
                       alt="Dev"
-                      className={`relative z-10 mx-auto w-auto max-w-full max-h-[372px] object-contain opacity-80 transition-opacity duration-300 group-hover:opacity-100 svg-hero-${theme}`}
+                      className={cn(
+                        'relative z-10 mx-auto h-full w-auto max-w-full max-h-[372px] object-contain opacity-80 transition-opacity duration-300 group-hover:opacity-100',
+                        heroArt.tintClass,
+                      )}
                     />
                   )}
                 </div>
@@ -1329,9 +1324,8 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
                               </div>
                               <p className="text-sm text-muted-foreground leading-relaxed">
                                 I worked as a product designer at Wordsmith AI. After research and
-                                internal prototyping, I shipped contract review and versioning. I ran
-                                discovery end to end and stayed close to legal engineers through launch.
-                                Contact me for the deeper case study.
+                                internal prototyping, I shipped contract review and versioning. Most
+                                of the deeper work sits behind an NDA.
                               </p>
                             </div>
 

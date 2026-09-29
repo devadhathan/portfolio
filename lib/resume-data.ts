@@ -17,7 +17,7 @@ export const resumeData = {
       company: "Wordsmith AI",
       period: "April 2026 - June 2026",
       achievements: [
-        "I worked as a product designer at Wordsmith AI. After research and internal prototyping, I shipped contract review and versioning for in-house legal teams. I ran discovery end to end and stayed close to legal engineers through launch. Most of the deeper work sits behind an NDA. Contact me if you want the real story.",
+        "I worked as a product designer at Wordsmith AI. After research and internal prototyping, I shipped contract review and versioning for in-house legal teams. I ran discovery end to end and stayed close to legal engineers through launch. Most of the deeper work sits behind an NDA.",
       ]
     },
     {
@@ -74,34 +74,32 @@ export const resumeData = {
       company: "Nesoi AI",
       period: "July to November 2025",
       description:
-        "When someone uploads a deck at Nesoi, they are not trying to learn the product. They are trying to turn what they already have into interactive training their team will actually finish. That is the job I redesigned.\n\nNesoi is an AI learning platform running across fifteen enterprise deployments, including Amazon, the University of Toronto, and Bain & Company. I led the creation experience end to end: from framing why V1 felt like overhead, through a working React prototype that engineering built from instead of a written spec.",
-      cardSubtext: "Raw file to finished video, in two moves.",
+        "Nesoi is an AI interactive learning platform for creators, educators, and enterprise teams. The job is simple on paper: take the source material people already have (a deck, a doc, a recording) and turn it into interactive training their teams will actually finish. With limited source, Nesoi could already produce a clean chapter-by-chapter video with a Synthesia voiceover.\n\nWhat was missing was the creator. Upload in, video out left no room for creative direction, so the first prompt stayed thin and quality depended on a long cleanup loop afterward. I led the creation experience end to end: framing why V1 felt like a black box, exploring directions that put the creator back in control, and shipping a working React prototype that engineering built from instead of a written spec.",
+      cardSubtext: "Upload is not enough. Creators need to steer.",
       problem:
-        "On Nesoi, a chapter is the unit of learning.\n\nChapters matter because they are how a deck, a doc, or a recording becomes interactive training people actually finish. If chapters are slow to make, the platform stays a file converter. If they are fast and good, it becomes how the organisation teaches.\n\nCreating a chapter still meant designing it by hand: pick a type, write the instructions, then place the content. People wanted to describe the chapter and let AI choose the template and fill it. V1 left that work on the creator. The closest competitor showed status, not what it had read or why it was building the chapter.",
-      hmw: "Fewer decisions than doing it by hand, not more.",
+        "The product is built around chapters. When someone uploads content, Nesoi divides and organises it with AI, then adds a Synthesia voiceover to explain each chapter. From thin source material the output was already clean, and the agent explained the content without much hallucination. That part of the pipeline worked.\n\nThe problem sat earlier, in how those videos got created. The product direction was clear: upload raw content, get a finished video. But something was missing in the middle. Creators never got a chance to steer. Tone, emphasis, audience, and what to leave out all stayed implicit. The AI had to guess what good looked like from the file alone.\n\nThat guess usually landed close enough to look promising, then not close enough to ship. People came back with follow-up after follow-up. Each round cost time, and each round made the session feel like cleanup instead of creation. Users wanted output faster and better, so the chance they would enter enough information up front was small. Without a stronger primary prompt, frustration was built into the flow.",
+      hmw: "Bring the creator’s direction into the first prompt, so the AI does not have to guess what good looks like.",
       approach:
-        "Not another interface to learn — a partner that takes the brief, picks a template, and shows its work while it builds the chapter.",
+        "We stopped treating creation as a file converter and started treating it as a conversation that earns a brief. The direction we chose asks more up front: thinking aloud, follow-up questions, visible interpretation. That way the first generation starts from a better primary prompt instead of a long cleanup loop after a weak pass.",
       detailSections: [
         {
           id: "decisions",
           title: "Decisions, why, and what they cost",
           description:
-            "We surfaced the AI's reasoning while it worked, not just progress states\nWhy: so people could catch a wrong read early, instead of discovering it after the output was finished.\nCost: perceived speed. Visible thinking reads slower than a spinner, and we accepted that trade.\n\nWe opened with an interpretation of the upload\nWhy: instead of a blank prompt, because the hardest part was never generating; it was translating intent into something the model could act on.\nCost: the AI can guess wrong, so redirecting had to cost one click, not a restart.\n\nWe kept one input for templates and freeform\nWhy: testing showed people pick a template and then talk their way out of it mid task. A forced mode choice made them commit too early.\nCost: structured actions are less discoverable when they share a field with freeform chat.\n\nWe extended shadcn/ui instead of building bespoke chat components\nWhy: speed mattered, and everything needed to feed one shared library the dashboard already used.\nCost: less visual distinctiveness, in exchange for shipping patterns engineering could actually maintain.",
+            "We surfaced the AI's reasoning while it worked, not just progress states\nWhy: so people could catch a wrong read early, instead of discovering it after the output was finished. Creators needed to see what the model thought the chapter was about before it committed to a layout and voiceover.\nCost: perceived speed. Visible thinking reads slower than a spinner, and we accepted that trade because trust mattered more than looking instant.\n\nWe opened with an interpretation of the upload\nWhy: instead of a blank prompt. The hardest part was never generating; it was translating intent into something the model could act on. Opening with a read of the file gave creators something to confirm or redirect, which is where creative direction enters the flow.\nCost: the AI can guess wrong, so redirecting had to cost one click, not a restart of the whole upload.\n\nWe kept one input for templates and freeform\nWhy: testing showed people pick a template and then talk their way out of it mid task. A forced mode choice made them commit too early, before they knew what they wanted.\nCost: structured actions are less discoverable when they share a field with freeform chat.\n\nWe extended shadcn/ui instead of building bespoke chat components\nWhy: speed mattered, and everything needed to feed one shared library the dashboard already used.\nCost: less visual distinctiveness, in exchange for shipping patterns engineering could actually maintain.",
           image: "/CRM/Figma.webp",
-          video: "/videos/Scene_no_watermark_hq.mp4",
-          videoControls: false,
         },
         {
           id: "not-built",
           title: "Not built",
           description:
-            "Some ideas were good; they were just not v1. Multi-user chat was scoped out on purpose. We needed to prove the happy path for a single creator before designing for teams in the same surface.\n\nWe dropped a separate templates mode once testing showed the pattern clearly: people pick a template, then talk their way out of it. A dedicated mode only formalized a transition that already happened in conversation.\n\nWe kept progress-only creation as the control in the study rather than shipping it, so the trust claim had something concrete to beat.",
+            "Some ideas were good; they were just not v1. Multi-user chat was scoped out on purpose. We needed to prove the happy path for a single creator before designing for teams in the same surface.\n\nWe dropped a separate templates mode once testing showed the pattern clearly: people pick a template, then talk their way out of it. A dedicated mode only formalized a transition that already happened in conversation.\n\nWe kept progress-only creation as the control in the study rather than shipping it, so the trust claim had something concrete to beat. If the agent variant could not outperform a spinner on confidence before the video existed, the extra UI was not worth the cost.",
         },
         {
           id: "prototype",
           title: "Prototype",
           description:
-            "The prototype was not a walkthrough deck. It was React, built in Cursor, simulating real LLM latency and states. Engineering got working code instead of annotated frames, which meant the awkward states became real before they became tickets: thinking, typing, error loops, and the long pause when the model is still reading.",
+            "The prototype was not a set of design frames. It had to work. I built a full React prototype in Cursor, with real LLM latency and states, so engineering could build from code instead of annotated screens.\n\nThat mattered because the awkward moments are the product: thinking, typing, error loops, and the long pause while the model is still reading. In static frames those states look fine. In a working prototype they show up as the places creators lose trust, or decide to wait. Engineering inherited those states as real behaviour, not as tickets filed after launch.",
           video: "/CRM/prototype.mp4",
           videoPoster: "/CRM/prototype-poster.webp",
         },
@@ -109,34 +107,34 @@ export const resumeData = {
           id: "validation",
           title: "Validation",
           description:
-            "The cafe study compared a static form against the agent variant: five participants, two paths, one question. Does showing the work change what people trust before the output exists?\n\nIt did. Users trusted the agent variant more. The interview pause before generation created a sense of higher quality even when the video was not finished yet. Asking the right question up front bought credibility the output had not yet earned.\n\n82.5 mean SUS · 5 participants, cafe study · 2 variants tested\n\nStatic form against agent variant. Confidence and trust measured qualitatively, engagement and chat volume quantitatively, sentiment through an in product PostHog survey.",
+            "Access to users was limited, and I was working remote. I was adamant about testing anyway, so I ran sessions from a cafe and compared a static form against the agent variant.\n\nFive participants, two paths, one question: does showing the work change what people trust before the output exists?\n\nIt did. Users trusted the agent variant more. The interview pause before generation (the moment where the AI asked and reasoned) created a sense of higher quality even when the video was not finished yet. Asking the right question up front bought credibility the output had not yet earned.\n\n82.5 mean SUS · 5 participants, cafe study · 2 variants tested\n\nStatic form against agent variant. Confidence and trust measured qualitatively, engagement and chat volume quantitatively, sentiment through an in product PostHog survey.",
           image: "/CRM/validation.webp",
         },
         {
           id: "system",
           title: "Design system",
           description:
-            "Everything we learned went back into the library.\n\nWe built on shadcn/ui and extended it for chat: message and thinking states, prompt patterns, long conversation layout, content type variants. The dashboard and the creation tools stayed on one system so the product did not fork visually the moment you left the admin view.",
+            "Everything we learned went back into the library.\n\nWe built on shadcn/ui and extended it for chat: message and thinking states, prompt patterns, long conversation layout, content type variants. The dashboard and the creation tools stayed on one system so the product did not fork visually the moment you left the admin view. Creation had to feel like part of Nesoi, not a bolt-on AI panel.",
           image: "/CRM/shadcn-system.webp",
         },
         {
           id: "constraints",
           title: "Constraints",
           description:
-            "Three pressures shaped every decision above. Model capability was moving under us. Patterns had to hold when the AI got better, not just at current quality.\n\nCompetitors shipped fast. We took what worked and ignored the decoration.\n\nTool and MCP integrations were coming, so the thinking view had to leave room for calls we had not built yet.",
+            "Three pressures shaped every decision above.\n\nModel capability was moving under us. Patterns had to hold when the AI got better, not just at current quality, so we designed for interpretation and redirect, not for one fixed output style.\n\nCompetitors shipped fast. We lined up against interfaces close to the same job, took what worked, and ignored the decoration. Ours was functional enough but thin on interactivity once creators needed to shape the result.\n\nFeedback from design and users was hard to get. Communication across the team was a real barrier, so we had to read carefully across adjacent products and work with the limited signal we had, including cafe testing when enterprise access was not available.",
         },
         {
           id: "shipped",
           title: "Shipped",
           description:
-            "Engineering built from the prototype rather than a written spec. I opened the PR and it merged to main. The interface we tested was the interface that shipped.\n\nI left Nesoi in November, before post launch instrumentation matured, so the numbers here are pre ship.\n\nWhat I would have watched next: completion rate from upload to published video, and how often creators redirect on the first question. If the second number stayed low, the interpretation was doing its job.",
+            "Engineering built from the prototype rather than a written spec. I opened the PR and it merged to main. The interface we tested was the interface that shipped.\n\nI left Nesoi in November, before post launch instrumentation matured, so the numbers here are pre ship. The qualitative signal was clear enough to ship on: creators trusted the path that asked before it built.\n\nWhat I would have watched next: completion rate from upload to published video, and how often creators redirect on the first question. If the second number stayed low, the interpretation was doing its job. If follow-up volume after generation dropped, the stronger primary prompt was paying off.",
         },
       ],
 
       learnings: [
-        "Embedded beats adjacent. Conversational AI only earns trust when it lives inside the workflow the user came for, not beside it.",
-        "Enterprise users will trade speed for legibility. Show the reasoning and they let the AI do more.",
-        "Trust is a UX problem before it is a model problem. The right first question buys credibility the output has not earned yet.",
+        "Upload-to-video is not enough. Without the creator’s direction in the first prompt, follow-ups become the product, and that is where frustration starts.",
+        "AI only performs marginally on thin information. Creators will not volunteer a perfect brief; the interface has to ask. Better questions up front beat cleanup after a weak first pass.",
+        "When feedback is scarce, ship a working prototype. Real latency and error states teach more than annotated frames, and they are what engineering needs to inherit.",
       ],
       role: "Product Designer",
       team: "1 designer, 2 developers",

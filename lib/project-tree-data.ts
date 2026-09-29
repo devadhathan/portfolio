@@ -36,12 +36,4 @@ export const PROJECT_TREE: ProjectTreeNode[] = [
       { id: 'nesoi-ai-dashboard', label: 'nesoi dashboard', projectId: 'nesoi-ai-dashboard' },
     ],
   },
-  {
-    id: 'wordsmith-ai',
-    label: 'wordsmith ai',
-    defaultOpen: true,
-    children: [
-      { id: 'wordsmith-ai-locked', label: 'wordsmith case study', locked: true },
-    ],
-  },
 ];

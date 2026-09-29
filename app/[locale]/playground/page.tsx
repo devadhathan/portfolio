@@ -29,6 +29,7 @@ export default function PlaygroundPage() {
     (id: string) => ({
       title: t(`items.${id}.title`),
       question: t(`items.${id}.question`),
+      notes: t(`items.${id}.notes`),
       tags: t.raw(`items.${id}.tags`) as string[],
       accessibilityLabel: t(`items.${id}.accessibilityLabel`),
     }),
@@ -48,6 +49,7 @@ export default function PlaygroundPage() {
       id: savedId,
       title: copy.title,
       question: copy.question,
+      notes: copy.notes,
       tags: copy.tags,
       item,
       accessibilityLabel: copy.accessibilityLabel,
@@ -81,6 +83,7 @@ export default function PlaygroundPage() {
         id,
         title: copy.title,
         question: copy.question,
+        notes: copy.notes,
         tags: copy.tags,
         item,
         accessibilityLabel: copy.accessibilityLabel,

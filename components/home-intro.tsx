@@ -57,6 +57,8 @@ export function HomeIntro({ className }: HomeIntroProps) {
     nesoi: (chunks: ReactNode) => introLink('https://nesoi.ai', chunks),
     ditto: (chunks: ReactNode) => introLink('https://joinditto.in', chunks),
     finshots: (chunks: ReactNode) => introLink('https://finshots.in', chunks),
+    linkedin: (chunks: ReactNode) => introLink(linkedinUrl, chunks),
+    email: (chunks: ReactNode) => introLink(emailHref, chunks),
   };
 
   const contactLinks = [

@@ -1,8 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react';
 import { createPortal } from 'react-dom';
-import { Check, Monitor } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Monitor } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useDesktopOs } from '@/components/desktop-os/desktop-os-provider';
 import { allThemes } from '@/contexts/theme-context';
@@ -10,12 +19,6 @@ import { WALLPAPER_PRESETS, type WallpaperId } from '@/lib/desktop-os';
 import { playAfterActivation } from '@/lib/sound';
 import { trackEvent } from '@/lib/analytics';
 import { cn, focusRing } from '@/lib/utils';
-
-/**
- * Three columns, three rows. Past this the grid would need scrolling, which a
- * menu extra should never do — anything beyond opens in a real window instead.
- */
-const MAX_GRID_WALLPAPERS = 14;
 
 /** Appearance is the theme set, plus Auto for the system preference. */
 const AUTO_THEME = { id: 'system', name: 'Auto', icon: Monitor, color: null } as const;
@@ -120,6 +123,7 @@ function VolumeRow({
           playAfterActivation('tick', { volume: 0.35 * (level / 100) });
         }}
         className="os-volume-slider w-full"
+        style={{ '--os-volume-fill': `${value}%` } as CSSProperties}
       />
     </div>
   );
@@ -133,12 +137,9 @@ function VolumeRow({
 export function ControlCenter({
   open,
   onOpenChange,
-  onOpenMore,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Opens a real window when there are more wallpapers than the grid shows. */
-  onOpenMore?: () => void;
 }) {
   const panelId = useId();
   const {
@@ -156,19 +157,19 @@ export function ControlCenter({
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const cellRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const gridRef = useRef<HTMLDivElement>(null);
+  const pickerButtonRef = useRef<HTMLButtonElement>(null);
+  const backButtonRef = useRef<HTMLButtonElement>(null);
   const [mounted, setMounted] = useState(false);
-  const [isPhone, setIsPhone] = useState(false);
+  /** The panel swaps between its main rows and the wallpaper picker in place. */
+  const [view, setView] = useState<'main' | 'wallpaper'>('main');
   const [anchor, setAnchor] = useState<{ top: number; right: number } | null>(null);
   /** Sheet wherever the OS is in its narrow layout — phone and tablet alike. */
   const isSheet = isNarrow;
-  const columns = isPhone ? 2 : 3;
-  /** Auto-fill means the real column count is only known once laid out. */
-  const [gridColumns, setGridColumns] = useState(columns);
 
-  const wallpapers = useMemo(() => WALLPAPER_PRESETS.slice(0, MAX_GRID_WALLPAPERS), []);
-  const hasMore = WALLPAPER_PRESETS.length > MAX_GRID_WALLPAPERS;
+  const activeWallpaper = useMemo(
+    () => WALLPAPER_PRESETS.find((preset) => preset.id === wallpaperId) ?? WALLPAPER_PRESETS[0],
+    [wallpaperId],
+  );
   const activeTheme = theme ?? 'dark';
 
   const close = useCallback(
@@ -181,14 +182,10 @@ export function ControlCenter({
 
   useEffect(() => setMounted(true), []);
 
-  // Phones get two columns; the tablet sheet keeps three.
+  // Reopening always starts on the main pane.
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 639px)');
-    const sync = () => setIsPhone(mq.matches);
-    sync();
-    mq.addEventListener('change', sync);
-    return () => mq.removeEventListener('change', sync);
-  }, []);
+    if (!open) setView('main');
+  }, [open]);
 
   /*
    * The panel is portalled to <body>. The menubar carries a backdrop-filter,
@@ -233,26 +230,34 @@ export function ControlCenter({
     };
   }, [open, close]);
 
-  // Focus the current wallpaper when the panel opens, so arrows work right away.
-  // Deliberately keyed on `open` alone — re-running would yank focus back out
-  // of whatever row the user tabbed to.
-  const activeIndexRef = useRef(0);
-  activeIndexRef.current = Math.max(
-    0,
-    wallpapers.findIndex((preset) => preset.id === wallpaperId),
-  );
-
+  // Focus the wallpaper picker when the panel opens. Keyed on `open` alone —
+  // re-running would yank focus back out of whatever row the user tabbed to.
   useEffect(() => {
     if (!open) return;
-    const frame = requestAnimationFrame(() => {
-      cellRefs.current[activeIndexRef.current]?.focus();
-    });
+    const frame = requestAnimationFrame(() => pickerButtonRef.current?.focus());
     return () => cancelAnimationFrame(frame);
   }, [open]);
+
+  // Moving between panes carries focus with it, so the keyboard doesn't get
+  // stranded on a button that just unmounted.
+  const enteredRef = useRef(false);
+  useEffect(() => {
+    if (!open) return;
+    if (view === 'wallpaper') {
+      enteredRef.current = true;
+      const frame = requestAnimationFrame(() => backButtonRef.current?.focus());
+      return () => cancelAnimationFrame(frame);
+    }
+    if (!enteredRef.current) return;
+    enteredRef.current = false;
+    const frame = requestAnimationFrame(() => pickerButtonRef.current?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [open, view]);
 
   const pickWallpaper = (id: WallpaperId) => {
     trackEvent('wallpaper_changed', { wallpaper: id });
     setWallpaperId(id);
+    setView('main');
     close();
   };
 
@@ -270,40 +275,6 @@ export function ControlCenter({
       window.setTimeout(() => root.classList.remove('theme-crossfade'), 200);
     }
     setTheme(next);
-  };
-
-  // Arrow keys need the count the browser actually resolved.
-  useLayoutEffect(() => {
-    if (!open) return;
-    const measure = () => {
-      const grid = gridRef.current;
-      if (!grid) return;
-      const tracks = window
-        .getComputedStyle(grid)
-        .gridTemplateColumns.split(' ')
-        .filter(Boolean).length;
-      setGridColumns(Math.max(1, tracks));
-    };
-    measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, [open, isSheet]);
-
-  const onGridKeyDown = (e: React.KeyboardEvent, index: number) => {
-    const keys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
-    if (!keys.includes(e.key)) return;
-    e.preventDefault();
-
-    const last = wallpapers.length - 1;
-    let next = index;
-    if (e.key === 'ArrowLeft') next = index - 1;
-    if (e.key === 'ArrowRight') next = index + 1;
-    if (e.key === 'ArrowUp') next = index - gridColumns;
-    if (e.key === 'ArrowDown') next = index + gridColumns;
-    if (e.key === 'Home') next = 0;
-    if (e.key === 'End') next = last;
-
-    cellRefs.current[Math.min(last, Math.max(0, next))]?.focus();
   };
 
   return (
@@ -365,80 +336,92 @@ export function ControlCenter({
               isSheet && 'min-h-0 flex-1 overflow-y-auto overscroll-contain',
             )}
           >
+          {view === 'wallpaper' ? (
+            /*
+              Same panel, same position — the main rows step aside for the
+              picker rather than pushing a list into them. The thumbnails only
+              exist while this pane is up.
+            */
+            <div className="os-control-pane">
+              <div className="flex items-center gap-1.5 px-1 pb-1 pt-3">
+                <button
+                  ref={backButtonRef}
+                  type="button"
+                  aria-label="Back to control centre"
+                  data-cuelume-hover="tick"
+                  data-cuelume-press
+                  onClick={() => setView('main')}
+                  className={cn('os-control-back', focusRing)}
+                >
+                  <ChevronLeft aria-hidden className="h-3.5 w-3.5" />
+                </button>
+                <h2 className="text-[11px] uppercase tracking-[0.08em] text-foreground/60">
+                  Wallpaper
+                </h2>
+              </div>
+
+              <div className="os-wallpaper-list" role="menu" aria-label="Wallpapers">
+                {WALLPAPER_PRESETS.map((preset) => {
+                  const active = preset.id === wallpaperId;
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={active}
+                      data-cuelume-hover="tick"
+                      data-cuelume-press
+                      onClick={() => pickWallpaper(preset.id)}
+                      className={cn(
+                        'os-wallpaper-row',
+                        active && 'os-wallpaper-row--active',
+                        focusRing,
+                      )}
+                    >
+                      <span
+                        aria-hidden
+                        className="os-wallpaper-swatch"
+                        style={{ background: preset.background }}
+                      />
+                      <span className="min-w-0 flex-1 truncate text-left">{preset.label}</span>
+                      {active ? (
+                        <Check aria-hidden className="h-3 w-3 shrink-0" strokeWidth={3} />
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+          <>
           {/* Section 1 — Wallpaper */}
           <section>
             <h2 className="px-1 pt-3 text-[11px] uppercase tracking-[0.08em] text-foreground/60">
               Wallpaper
             </h2>
-            <div
-              ref={gridRef}
-              className="mt-2 grid gap-2"
-              style={{
-                gridTemplateColumns: isSheet
-                  ? // Fill the width with desktop-sized tiles instead of a
-                    // fixed column count, which made them huge on a full-width sheet.
-                    'repeat(auto-fill, minmax(84px, 1fr))'
-                  : `repeat(${columns}, minmax(0, 1fr))`,
-              }}
-            >
-              {wallpapers.map((preset, index) => {
-                const active = preset.id === wallpaperId;
-                return (
-                  <button
-                    key={preset.id}
-                    ref={(el) => {
-                      cellRefs.current[index] = el;
-                    }}
-                    type="button"
-                    role="menuitemradio"
-                    aria-checked={active}
-                    aria-label={preset.label}
-                    title={preset.label}
-                    data-cuelume-hover="tick"
-                    data-cuelume-press
-                    onClick={() => pickWallpaper(preset.id)}
-                    onKeyDown={(e) => onGridKeyDown(e, index)}
-                    className={cn(
-                      'relative aspect-[16/10] w-full rounded-[6px] transition-transform duration-150 ease-out hover:scale-[1.03]',
-                      focusRing,
-                      active
-                        ? 'ring-2 ring-primary ring-offset-0'
-                        : 'shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)]',
-                    )}
-                    style={{ background: preset.background }}
-                  >
-                    {active && (
-                      <span
-                        aria-hidden
-                        className="absolute bottom-1 right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-primary-foreground"
-                      >
-                        <Check className="h-2.5 w-2.5" strokeWidth={3} />
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+            <div className="mt-2 px-1">
+              <button
+                ref={pickerButtonRef}
+                type="button"
+                aria-haspopup="menu"
+                aria-label={`Wallpaper: ${activeWallpaper.label}`}
+                data-cuelume-hover="tick"
+                data-cuelume-press
+                onClick={() => setView('wallpaper')}
+                className={cn('os-wallpaper-trigger', focusRing)}
+              >
+                <span
+                  aria-hidden
+                  className="os-wallpaper-swatch"
+                  style={{ background: activeWallpaper.background }}
+                />
+                <span className="min-w-0 flex-1 truncate text-left">{activeWallpaper.label}</span>
+                <ChevronRight aria-hidden className="h-3.5 w-3.5 shrink-0 text-foreground/55" />
+              </button>
             </div>
 
             <div className="px-1">
               <SettingRow label="Shuffle daily" checked={shuffleDaily} onChange={setShuffleDaily} />
-              {hasMore && (
-                <button
-                  type="button"
-                  role="menuitem"
-                  data-cuelume-hover="tick"
-                  onClick={() => {
-                    onOpenMore?.();
-                    close(false);
-                  }}
-                  className={cn(
-                    'flex w-full items-center justify-between py-[7px] text-left text-[13px] text-foreground/90',
-                    focusRing,
-                  )}
-                >
-                  More…
-                </button>
-              )}
             </div>
           </section>
 
@@ -513,6 +496,8 @@ export function ControlCenter({
               />
             </div>
           </section>
+          </>
+          )}
           </div>
         </div>
         </>,

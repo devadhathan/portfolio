@@ -27,11 +27,11 @@ export { MAX_VIEWPORT_CARDS };
 
 export const WORDSMITH_LOCKED_MESSAGE = `I worked as a product designer at Wordsmith AI. After a ton of research and internal prototyping, I shipped contract review and versioning. Most of the deeper work sits behind an NDA. Contact me at ${resumeData.email} or via LinkedIn if you want the real story.`;
 
-export const ABOUT_DEV_SUMMARY = `Devadhathan M D — Dev — is a product designer with a B.Tech in Computer Science who designs end-to-end and ships the result himself. He started on Finshots' mobile news app (Google Play Best App 2020, 100k+ downloads), then shaped insurance onboarding, CRM, and the Falcon design system at Ditto.
+export const ABOUT_DEV_SUMMARY = `Devadhathan M D — Dev — is a product designer based in Edinburgh. He enjoys making intuitive products for people, and simplifying complexity into experiences that feel simple to use.
 
-At Nesoi.ai he led enterprise dashboards used by 15+ clients — engagement up 92%, course-creation time down 37%. He prototypes in Claude Code and Cursor so ideas become working React/Next.js UI, not handoff decks.
+He finished a bachelor's in computer science in 2019 wanting to become a programmer. Making websites along the way woke up a designer in him, and he kept going from there. Most recently he led creation at Nesoi. Before that Ditto and Finshots.
 
-Based between the UK and Europe, he's open to full-time product design roles where craft and engineering meet. The cards below cover career path, hire reasons, impact, and flagship work.`;
+The cards below cover career path, hire reasons, impact, and flagship work.`;
 
 const ABOUT_DEV_CARD_IDS = [
   'feature:career',

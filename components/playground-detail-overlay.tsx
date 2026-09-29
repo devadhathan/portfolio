@@ -1,11 +1,13 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, X } from 'lucide-react';
 import { CardTag } from '@/components/card-tag';
 import { PlaygroundItemMedia } from '@/components/playground-phone-frame';
 import { PlaygroundStackLogos } from '@/components/playground-stack-logos';
+import { useOsWindowId } from '@/components/desktop-os/os-window-scope';
 import type { PlaygroundItem } from '@/lib/playground-items';
 import { defaultTransition, easeOutExpo, overlayFade, panelTransition } from '@/lib/motion';
 import { cn } from '@/lib/utils';
@@ -15,6 +17,8 @@ export type PlaygroundSelection = {
   id: string;
   title: string;
   question: string;
+  /** Longer note shown in the detail panel, under the question. */
+  notes?: string;
   tags: string[];
   item: PlaygroundItem;
   accessibilityLabel: string;
@@ -36,6 +40,26 @@ export function PlaygroundDetailOverlay({
   builtWithLabel = 'Built with',
 }: PlaygroundDetailOverlayProps) {
   const reduceMotion = useReducedMotion();
+  const windowId = useOsWindowId();
+  /** Portals need the DOM, so nothing renders on the server pass. */
+  const [host, setHost] = useState<HTMLElement | null>(null);
+
+  /*
+   * Inside the desktop OS this belongs to its window, not the screen. It can't
+   * simply render in place, though: .os-window-body carries container-type for
+   * the @container os-win queries and .os-window a clip-path, and both make
+   * themselves the containing block for fixed descendants — so "fixed inset-0"
+   * resolved to the scrolling content box rather than the window. Hosting it on
+   * the window frame gives an overlay that covers exactly that window.
+   */
+  useEffect(() => {
+    const frame = windowId
+      ? document.querySelector<HTMLElement>(`[data-os-window="${windowId}"]`)
+      : null;
+    setHost(frame ?? document.body);
+  }, [windowId]);
+
+  const inWindow = Boolean(host) && host !== document.body;
   const handlePrevious = useCallback(() => {
     onPrevious?.();
   }, [onPrevious]);
@@ -60,21 +84,27 @@ export function PlaygroundDetailOverlay({
     };
 
     window.addEventListener('keydown', onKeyDown);
-    document.body.style.overflow = 'hidden';
+    // Only the standalone page scrolls the body; in the OS the window does.
+    if (!inWindow) document.body.style.overflow = 'hidden';
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       document.body.style.overflow = '';
     };
-  }, [selection, onClose, handlePrevious, handleNext]);
+  }, [selection, onClose, handlePrevious, handleNext, inWindow]);
 
   const category = selection?.tags[0] ?? 'Playground';
 
-  return (
+  const overlay = (
     <AnimatePresence>
       {selection ? (
         <motion.div
           key={selection.id}
-          className="fixed inset-0 z-[100] flex flex-col bg-black/50 text-foreground backdrop-blur-md md:flex-row"
+          className={cn(
+            'flex flex-col bg-black/50 text-foreground backdrop-blur-md md:flex-row',
+            // In-window: absolute against the window frame, which is positioned
+            // and isolated, so the z-index stays scoped to that window.
+            inWindow ? 'absolute inset-0 z-[60]' : 'fixed inset-0 z-[250]',
+          )}
           initial={reduceMotion ? false : overlayFade.initial}
           animate={overlayFade.animate}
           exit={overlayFade.exit}
@@ -123,9 +153,15 @@ export function PlaygroundDetailOverlay({
                 </h2>
               </div>
 
-              <p className="text-[14px] leading-relaxed text-muted-foreground">
+              <p className="text-[14px] leading-relaxed text-foreground/85">
                 {selection.question}
               </p>
+
+              {selection.notes ? (
+                <p className="text-[13.5px] leading-relaxed text-muted-foreground">
+                  {selection.notes}
+                </p>
+              ) : null}
 
               {selection.item.stack?.length ? (
                 <PlaygroundStackLogos stack={selection.item.stack} label={builtWithLabel} />
@@ -173,6 +209,9 @@ export function PlaygroundDetailOverlay({
       ) : null}
     </AnimatePresence>
   );
+
+  if (!host) return null;
+  return createPortal(overlay, host);
 }
 
 type PlaygroundMasonryCardProps = {

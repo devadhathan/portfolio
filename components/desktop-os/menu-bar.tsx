@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useMemo, useRef, useState } from 'react';
-import Image from 'next/image';
 import { Check, MoreHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import {
@@ -12,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { BrandMark } from '@/components/brand-mark';
 import { useDesktopOs } from '@/components/desktop-os/desktop-os-provider';
 import { useWindowTitles } from '@/components/desktop-os/window-titles';
 import { useNavActions } from '@/contexts/nav-actions-context';
@@ -187,14 +187,7 @@ export function MenuBar() {
             openMenu === 'logo' ? 'bg-white/[0.12]' : 'hover:bg-white/[0.08]',
           )}
         >
-          <Image
-            src="/photos/Image@4x.png"
-            alt=""
-            width={120}
-            height={40}
-            className="h-5 w-auto"
-            priority
-          />
+          <BrandMark className="h-5 w-auto" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent {...menuContentProps}>{rowsWhenOpen('logo', logoRows)}</DropdownMenuContent>
@@ -424,7 +417,7 @@ export function MenuBar() {
           focusRing,
         )}
       >
-        <Image src="/photos/Image@4x.png" alt="" width={120} height={40} className="h-5 w-auto" priority />
+        <BrandMark className="h-5 w-auto" />
       </button>
       <span className="os-menubar-menus contents">{windowMenu}</span>
 

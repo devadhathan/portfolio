@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import type { GenUIItem } from '@/lib/gen-ui-registry';
 import { FeatureCard, FeatureSection } from '@/components/line-illustrations';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +14,7 @@ import { normalizeResearchCardsForGrid, researchGridClass } from '@/lib/gen-ui-g
 import { organizeGenUIByProject, type ProjectGroup, type ProjectMediaItem } from '@/lib/organize-gen-ui';
 import { itemsToResearchCards } from '@/lib/gen-ui-research-cards';
 import { GenUIResearchCard } from '@/components/gen-ui-research-card';
+import { staggerContainer, staggerItem } from '@/lib/motion';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -182,14 +184,14 @@ function slugFromProjectHref(href?: string): string | null {
 function renderResearchCards(
   cards: ReturnType<typeof itemsToResearchCards>,
   onCaseStudySelect?: (projectSlug: string) => void,
+  animate = false,
 ) {
   return cards.map((card) => {
     const slug = slugFromProjectHref(card.href);
     const useInlineCaseStudy = Boolean(onCaseStudySelect && slug);
 
-    return (
+    const cardNode = (
       <GenUIResearchCard
-        key={card.key}
         title={card.title}
         description={card.description}
         meta={card.meta}
@@ -201,8 +203,22 @@ function renderResearchCards(
         icon={card.icon}
         chartBars={card.chartBars}
         skills={card.skills}
-        className="animate-fade-in-blur w-full max-w-[380px]"
+        className="w-full max-w-[380px]"
       />
+    );
+
+    if (!animate) {
+      return (
+        <div key={card.key} className="w-full max-w-[380px]">
+          {cardNode}
+        </div>
+      );
+    }
+
+    return (
+      <motion.div key={card.key} variants={staggerItem} className="w-full max-w-[380px]">
+        {cardNode}
+      </motion.div>
     );
   });
 }
@@ -211,21 +227,38 @@ export function GenUICardGrid({
   prompt,
   items,
   onCaseStudySelect,
+  animate = false,
 }: {
   prompt: string;
   items: GenUIItem[];
   onCaseStudySelect?: (projectSlug: string) => void;
+  animate?: boolean;
 }) {
+  const reduceMotion = useReducedMotion();
   const enriched = enrichGenUIItems(items, prompt);
   const rawCards = itemsToResearchCards(enriched, prompt);
   const cards = normalizeResearchCardsForGrid(rawCards, enriched, prompt);
+  const shouldAnimate = animate && !reduceMotion;
 
   if (cards.length === 0) return null;
 
+  if (!shouldAnimate) {
+    return (
+      <div className={researchGridClass(cards.length)}>
+        {renderResearchCards(cards, onCaseStudySelect, false)}
+      </div>
+    );
+  }
+
   return (
-    <div className={researchGridClass(cards.length)}>
-      {renderResearchCards(cards, onCaseStudySelect)}
-    </div>
+    <motion.div
+      className={researchGridClass(cards.length)}
+      variants={staggerContainer}
+      initial="hidden"
+      animate="show"
+    >
+      {renderResearchCards(cards, onCaseStudySelect, true)}
+    </motion.div>
   );
 }
 

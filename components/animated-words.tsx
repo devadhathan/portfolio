@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 type AnimatedWordsProps = {
@@ -21,6 +22,7 @@ export function AnimatedWords({
   mode = 'word',
   onComplete,
 }: AnimatedWordsProps) {
+  const reduceMotion = useReducedMotion();
   const tokens = useMemo(() => {
     if (mode === 'letter') {
       return Array.from(text);
@@ -29,51 +31,40 @@ export function AnimatedWords({
   }, [text, mode]);
 
   const tickMs = delayMs ?? 16;
-  // Reveal in chunks so long answers finish in about the same time as short
-  // ones instead of crawling one token per tick.
   const step = useMemo(() => {
     const maxTicks = mode === 'letter' ? 45 : 30;
     return Math.max(1, Math.ceil(tokens.length / maxTicks));
   }, [tokens.length, mode]);
-  const [visibleCount, setVisibleCount] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(reduceMotion ? tokens.length : 0);
   const completedRef = useRef(false);
 
   useEffect(() => {
-    setVisibleCount(0);
     completedRef.current = false;
-  }, [text, mode]);
+    setVisibleCount(reduceMotion ? tokens.length : 0);
+  }, [text, mode, reduceMotion, tokens.length]);
 
   useEffect(() => {
-    if (tokens.length === 0) {
+    if (tokens.length === 0 || reduceMotion || visibleCount >= tokens.length) {
       if (!completedRef.current) {
         completedRef.current = true;
         onComplete?.();
       }
       return;
     }
-    if (visibleCount >= tokens.length) {
-      if (!completedRef.current) {
-        completedRef.current = true;
-        onComplete?.();
-      }
-      return;
-    }
-    const timer = setTimeout(() => setVisibleCount((c) => c + step), tickMs);
-    return () => clearTimeout(timer);
-  }, [visibleCount, tokens.length, tickMs, step, onComplete]);
+    const timer = window.setTimeout(() => setVisibleCount((c) => c + step), tickMs);
+    return () => window.clearTimeout(timer);
+  }, [visibleCount, tokens.length, tickMs, step, onComplete, reduceMotion]);
 
   if (tokens.length === 0) return null;
 
   const charClass = (index: number) =>
     cn(
-      'inline transition-all duration-150 ease-out',
-      index < visibleCount ? 'opacity-100 translate-y-0 blur-0' : 'opacity-0 translate-y-0.5 blur-[1px]',
+      'inline transition-[opacity,transform] duration-200 ease-out',
+      index < visibleCount ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1',
       wordClassName,
     );
 
   if (mode === 'letter') {
-    // Letters are grouped into words so a line can only break at a space.
-    // One span per bare character lets the browser break mid-word instead.
     const segments = text.match(/\s+|\S+/g) ?? [];
     let offset = 0;
 

@@ -1,21 +1,24 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Briefcase, Github, Globe, Lightbulb, Linkedin, Mail } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import type { ReactNode } from 'react';
+import dynamic from 'next/dynamic';
+import { ArrowUpRight, Github, Linkedin, Mail } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CardHoverGlow } from '@/components/card-hover-glow';
-import { ConnectMiniPost } from '@/components/connect-mini-post';
 import { MediumLogo } from '@/components/medium-logo';
+import { useTheme } from '@/contexts/theme-context';
+import { heroArtFor } from '@/lib/hero-art';
 import { CATALYSTIC_URL, MEDIUM_PROFILE_URL } from '@/lib/social-links';
 import { useSiteContent } from '@/components/site-content-provider';
+import { HomeHeroTitle } from '@/components/home-hero-title';
 import { cn } from '@/lib/utils';
 
-const ASCII_PREVIEW_SRC = '/videos/ascii-preview.mp4';
-const ASCII_PREVIEW_POSTER = '/videos/ascii-preview-poster.webp';
-/** Light theme — static portrait instead of the ASCII loop. */
-const LIGHT_PORTRAIT_SRC = '/photos/case-study-bg/me-with-floor-white.png';
-const AVATAR_SRC = '/photos/sideprojects/avatar-face.jpg';
+const CATALYSTIC_THUMB = '/photos/case-study-bg/catalysitc-1.png';
+
+const HeroVideo = dynamic(
+  () => import('@/components/hero-video').then((m) => m.HeroVideo),
+  { ssr: false },
+);
 
 function introLink(href: string, chunks: ReactNode) {
   return (
@@ -30,63 +33,28 @@ function introLink(href: string, chunks: ReactNode) {
   );
 }
 
-/** Poster-first; plays when visible (including mobile — muted + playsInline). */
-function DeferredAsciiPreview({ className }: { className?: string }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
+function DevCardMedia() {
+  const { resolvedTheme } = useTheme();
+  const art = heroArtFor(resolvedTheme);
 
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection
-      ?.saveData;
-
-    if (reducedMotion || saveData) return;
-
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          if (video.preload === 'none') video.preload = 'auto';
-          void video.play().catch(() => {});
-        } else {
-          video.pause();
-        }
-      },
-      { rootMargin: '48px', threshold: 0.15 },
-    );
-    io.observe(video);
-    return () => io.disconnect();
-  }, []);
+  if (art.kind === 'video') {
+    return <HeroVideo className="home-hero__ascii-video h-full w-full rounded-[inherit]" />;
+  }
 
   return (
-    // eslint-disable-next-line jsx-a11y/media-has-caption
-    <video
-      ref={videoRef}
-      src={ASCII_PREVIEW_SRC}
-      poster={ASCII_PREVIEW_POSTER}
-      className={className}
-      muted
-      loop
-      playsInline
-      preload="metadata"
-      aria-label="ASCII magic preview"
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={art.src}
+      alt=""
+      className={cn('home-hero__ascii-video h-full w-full object-contain', art.tintClass)}
+      draggable={false}
     />
   );
 }
 
-function LightPortrait({ className }: { className?: string }) {
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={LIGHT_PORTRAIT_SRC}
-      alt="Portrait of Dev"
-      className={className}
-      decoding="async"
-      loading="lazy"
-      draggable={false}
-    />
-  );
+function socialTooltip(href: string) {
+  if (href.startsWith('mailto:')) return href.replace(/^mailto:/, '');
+  return href.replace(/^https?:\/\//, '').replace(/\/$/, '');
 }
 
 const LINE_KEYS = ['p1'] as const;
@@ -97,29 +65,10 @@ type HomeHeroProps = {
   showTitle?: boolean;
 };
 
-/** Rendered as its own frame section so the section padding sets the gap below it. */
-export function HomeHeroTitle({ className }: { className?: string }) {
-  const tHome = useTranslations('home');
-
-  return (
-    <h1 className={cn('home-hero__title tracking-tight text-foreground', className)}>
-      {tHome('heroLine1')}
-    </h1>
-  );
-}
-
 export function HomeHero({ className, showTitle = true }: HomeHeroProps) {
   const t = useTranslations('home.intro');
   const tHome = useTranslations('home');
   const { settings } = useSiteContent();
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const useLightPortrait = mounted && resolvedTheme === 'light';
 
   const linkedinUrl = settings.linkedin?.startsWith('http')
     ? settings.linkedin
@@ -136,33 +85,30 @@ export function HomeHero({ className, showTitle = true }: HomeHeroProps) {
     nesoi: (chunks: ReactNode) => introLink('https://nesoi.ai', chunks),
     ditto: (chunks: ReactNode) => introLink('https://joinditto.in', chunks),
     finshots: (chunks: ReactNode) => introLink('https://finshots.in', chunks),
+    linkedin: (chunks: ReactNode) => introLink(linkedinUrl, chunks),
+    email: (chunks: ReactNode) => introLink(emailHref, chunks),
   };
 
   const socialLinks = [
     {
       label: 'Email',
       href: emailHref,
-      icon: <Mail className="h-4 w-4" />,
+      icon: <Mail className="h-4 w-4" strokeWidth={1.2} />,
     },
     {
       label: 'LinkedIn',
       href: linkedinUrl,
-      icon: <Linkedin className="h-4 w-4" />,
+      icon: <Linkedin className="h-4 w-4" strokeWidth={1.2} />,
     },
     {
       label: 'GitHub',
       href: githubUrl,
-      icon: <Github className="h-4 w-4" />,
+      icon: <Github className="h-4 w-4" strokeWidth={1.2} />,
     },
     {
       label: 'Medium',
       href: MEDIUM_PROFILE_URL,
       icon: <MediumLogo className="h-4 w-4" />,
-    },
-    {
-      label: 'Catalystic UI',
-      href: CATALYSTIC_URL,
-      icon: <Lightbulb className="h-4 w-4" />,
     },
   ];
 
@@ -174,15 +120,6 @@ export function HomeHero({ className, showTitle = true }: HomeHeroProps) {
         <CardHoverGlow as="article" className="home-hero__about">
           <div className="home-hero__about-copy relative z-[2]">
             <div className="home-hero__identity">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={AVATAR_SRC}
-                alt={t('name')}
-                width={44}
-                height={44}
-                decoding="async"
-                className="home-hero__avatar"
-              />
               <span className="min-w-0">
                 <span className="home-hero__identity-name">{t('name')}</span>
                 <span className="home-hero__identity-role">{t('role')}</span>
@@ -197,37 +134,93 @@ export function HomeHero({ className, showTitle = true }: HomeHeroProps) {
               ))}
             </div>
 
-            <ul className="home-hero__meta">
-              <li>
-                <Globe className="h-4 w-4 shrink-0" aria-hidden />
-                <span>{tHome('basedIn')}</span>
-              </li>
-              <li className="home-hero__meta-available">
-                <Briefcase className="h-4 w-4 shrink-0" aria-hidden />
-                <span>{tHome('available')}</span>
-              </li>
-            </ul>
+            <div className="home-hero__meta">
+              <div className="home-hero__socials">
+                {socialLinks.map((link) => {
+                  const tooltip = socialTooltip(link.href);
+                  const isMail = link.href.startsWith('mailto:');
+                  return (
+                    <a
+                      key={link.label}
+                      href={link.href}
+                      target={isMail ? undefined : '_blank'}
+                      rel={isMail ? undefined : 'noopener noreferrer'}
+                      aria-label={`${link.label}: ${tooltip}`}
+                      data-cuelume-hover="tick"
+                      data-cuelume-press
+                      className="group/social home-hero__social"
+                    >
+                      <span className="flex items-center justify-center [&_svg]:shrink-0">
+                        {link.icon}
+                      </span>
+                      {/*
+                        Above the icon and left-aligned to it. The card clips its
+                        children, and this row is pinned to the bottom of the
+                        copy column (margin-top: auto), so anything below the
+                        icon lands outside the card. Centring it ran off the left
+                        edge for the same reason. Upwards there is body copy to
+                        sit over, and rightwards there is card to grow into.
+                      */}
+                      <span
+                        role="tooltip"
+                        className="pointer-events-none absolute bottom-[calc(100%+8px)] left-0 z-50 hidden whitespace-nowrap rounded-md border border-border/50 bg-popover px-2 py-1 text-[12px] font-medium text-popover-foreground opacity-0 shadow-md transition-opacity duration-150 group-hover/social:opacity-100 sm:block"
+                      >
+                        {tooltip}
+                      </span>
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           <div className="home-hero__ascii relative z-[2]">
-            {useLightPortrait ? (
-              <LightPortrait className="home-hero__ascii-video home-hero__ascii-portrait" />
-            ) : (
-              <DeferredAsciiPreview className="home-hero__ascii-video" />
-            )}
+            <DevCardMedia />
           </div>
         </CardHoverGlow>
 
-        <CardHoverGlow as="article" className="home-hero__connect">
-          <div className="relative z-[2] h-full min-h-0">
-            <ConnectMiniPost
-              title={tHome('connectPost.title')}
-              body={tHome('connectPost.body')}
-              socialLinks={socialLinks}
-              flushMedia
-              className="home-hero__connect-inner min-h-0 sm:min-h-0 h-full"
-            />
-          </div>
+        <CardHoverGlow as="article" className="home-hero__connect !overflow-visible">
+          <a
+            href={CATALYSTIC_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="connect-findme relative z-[2] h-full min-h-0 text-inherit no-underline"
+          >
+            <div className="connect-findme__copy">
+              <div className="home-hero__identity">
+                <span className="min-w-0">
+                  <span className="home-hero__identity-name inline-flex items-center gap-1">
+                    {tHome('latestProjects.catalystic.title')}
+                    <ArrowUpRight
+                      className="h-3.5 w-3.5 shrink-0 text-foreground/70"
+                      strokeWidth={1.5}
+                      aria-hidden
+                    />
+                  </span>
+                  <span className="home-hero__identity-role">{tHome('sideProject.label')}</span>
+                </span>
+              </div>
+              <p className="home-card-desc max-w-[34ch] leading-[1.45] [text-wrap:balance]">
+                {tHome('latestProjects.catalystic.description')}
+              </p>
+            </div>
+            <div className="connect-findme__stage">
+              <div className="connect-findme__tilt">
+                <div className="connect-findme__panel connect-findme__panel--thumb">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={CATALYSTIC_THUMB}
+                    alt=""
+                    width={1951}
+                    height={1080}
+                    sizes="(max-width: 920px) 100vw, 720px"
+                    decoding="async"
+                    draggable={false}
+                  />
+                </div>
+              </div>
+            </div>
+          </a>
         </CardHoverGlow>
       </div>
     </section>

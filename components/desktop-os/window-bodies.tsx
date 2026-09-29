@@ -360,27 +360,48 @@ export function WritingsFolderWindowBody() {
   return null;
 }
 
-/** Logo menu → About Me. */
+/** Logo menu → About Me. Same plain voice as “What is this site?”. */
 export function AboutWindowBody() {
-  const paragraphs = [
-    "I got here sideways. Engineering degree, and the only subject I actually loved was soft computing. Neural networks, node weights, backpropagation. I remember the specific feeling of watching a network get less wrong over iterations and thinking that was the most interesting thing anyone had shown me in four years. Then I graduated into a design job and spent a few years pretending that part of me didn't exist. It came back.",
-    "Chess. I'm not good. That's not false modesty, I'm genuinely mid. What I like is that chess punishes exactly the thing I'm worst at, which is falling in love with a plan. You can build a beautiful position and lose to a move you didn't look at because you were busy admiring your own idea. I've shipped features that way. Now when a design feels too clean I go looking for the move I'm not considering.",
-    "The Lord of the Rings. The maps. Tolkien built the languages and the geography before he built the plot, and you can feel it, because the world holds weight even in scenes where nothing happens. That's the same reason a good product feels solid before you've used half of it. Someone built the system underneath, not just the screen you're looking at. I read the appendices. I know what that says about me.",
-    "Meditation. I sit most days. Not for calm, or not only for that. What it actually trains is the gap between something happening and me reacting to it, and that gap is where all the good design decisions live. Ship the thing. Care enormously about the craft and not much about whether it lands, because the second one isn't yours to control. It's the only reason I can keep putting work into the world after it's been rejected.",
-    "Right now I'm in Edinburgh, building tools for designers and developers, and looking for a team where design and code aren't separate departments.",
-  ];
-
   return (
     <div className="mx-auto w-full max-w-2xl px-5 py-8 sm:px-8">
-      <p className="text-[17px] leading-8 text-foreground">
-        I&rsquo;m Dev. I design products and then I build them, which used to be two jobs and is
-        increasingly one.
-      </p>
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+        I&rsquo;m Dev.
+      </h1>
 
       <div className="mt-6 space-y-5 text-[15px] leading-7 text-foreground/85">
-        {paragraphs.map((paragraph) => (
-          <p key={paragraph.slice(0, 24)}>{paragraph}</p>
-        ))}
+        <p>
+          I enjoy making intuitive products for people, and simplifying complexity into
+          experiences that feel simple to use.
+        </p>
+        <p>
+          I finished a bachelor&rsquo;s in computer science in 2019. I wanted to become a
+          programmer. During the course I got obsessed with making websites, and that woke up a
+          little designer in me. I kept going from there, and I still design the product and ship
+          the build.
+        </p>
+        <p>
+          Most of what you can open from this desktop is from Nesoi, and before that Ditto and
+          Finshots. The case studies are the work I can show. Some of it sits behind an NDA.
+        </p>
+        <p>
+          I&rsquo;m in Edinburgh now. If you&rsquo;re here too, feel free to{' '}
+          <a
+            href="mailto:devadhathanmd18@gmail.com"
+            className="text-foreground underline decoration-foreground/35 underline-offset-[3px] transition-colors hover:decoration-foreground"
+          >
+            send me a message
+          </a>{' '}
+          or connect on{' '}
+          <a
+            href="https://www.linkedin.com/in/devadhathan/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground underline decoration-foreground/35 underline-offset-[3px] transition-colors hover:decoration-foreground"
+          >
+            LinkedIn
+          </a>
+          .
+        </p>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { BrandMark } from '@/components/brand-mark';
 import { Sun, List, User, Briefcase, Gamepad2, ChevronDown } from 'lucide-react';
 import { useTheme, allThemes } from '@/contexts/theme-context';
 import {
@@ -10,7 +11,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import dynamic from 'next/dynamic';
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -248,14 +248,7 @@ export function TopBar() {
                   focusRing,
                 )}
               >
-                <Image
-                  src="/photos/Image@4x.png"
-                  alt="Logo"
-                  width={120}
-                  height={40}
-                  className="h-6 w-auto"
-                  priority
-                />
+                <BrandMark className="h-6 w-auto" />
               </button>
               ) : null}
 
@@ -325,7 +318,6 @@ export function TopBar() {
                 <ControlCenter
                   open={menubarMenu === 'wallpaper'}
                   onOpenChange={setExclusiveMenu('wallpaper')}
-                  onOpenMore={() => desktopOs?.openWindow('photos', { syncUrl: false })}
                 />
               </>
             ) : null}

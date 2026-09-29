@@ -44,8 +44,9 @@ export function buildCaseStudySections(
   }
   if (project.problem) sections.push({ id: 'problem', name: labels.problem });
   if (isNesoi && project.hmw) sections.push({ id: 'goal', name: 'Goal' });
-  if (isNesoi) sections.push({ id: 'exploring', name: labels.exploring });
   if (isNesoi) sections.push({ id: 'problem-image', name: 'Framing' });
+  if (isNesoi) sections.push({ id: 'exploring', name: labels.exploring });
+  if (isNesoi) sections.push({ id: 'new-chapter', name: 'Our new chapter' });
   if (project.hmw && !isNesoi) sections.push({ id: 'hmw', name: labels.hmw });
   if (project.targetAudience && !isCrm) {
     sections.push({ id: 'target-audience', name: labels.targetAudience });
@@ -63,7 +64,7 @@ export function buildCaseStudySections(
   if (project.research && !isCrm) {
     sections.push({ id: 'research', name: labels.research });
   }
-  if (project.explorations?.length && !isCrm) {
+  if (project.explorations?.length && !isCrm && !isNesoi) {
     sections.push({ id: 'exploring', name: labels.exploring });
   }
   if (project.prototype && !detailIds.has('prototype')) {

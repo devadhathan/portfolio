@@ -16,16 +16,27 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
-      messages,
+      messages: rawMessages,
       mode = 'agent',
       sections = [],
     } = body as {
-      messages: Array<{ role: 'user' | 'assistant'; content: string }>;
+      messages: Array<{ role?: string; content?: string }>;
       mode?: 'ask' | 'agent';
       sections?: Array<{ id: string; title: string; visible: boolean; priority: string; order: number }>;
     };
 
-    if (!Array.isArray(messages) || messages.length === 0) {
+    const messages = (Array.isArray(rawMessages) ? rawMessages : [])
+      .filter(
+        (m): m is { role: 'user' | 'assistant'; content: string } =>
+          (m?.role === 'user' || m?.role === 'assistant') && typeof m?.content === 'string',
+      )
+      .slice(-24)
+      .map((m) => ({
+        role: m.role,
+        content: m.content.slice(0, m.role === 'user' ? MAX_GEN_UI_PROMPT_LENGTH : 2000),
+      }));
+
+    if (messages.length === 0) {
       return NextResponse.json({ error: 'messages array required' }, { status: 400 });
     }
 

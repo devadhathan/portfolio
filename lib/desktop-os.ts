@@ -80,8 +80,8 @@ export type WallpaperId =
   | 'bridge'
   | 'clouds'
   | 'wall'
+  | 'wall8'
   | 'circles'
-  | 'blackDesert'
   | 'gradients';
 
 export type WallpaperPreset = {
@@ -255,13 +255,6 @@ export const WALLPAPER_PRESETS: WallpaperPreset[] = [
     menubarContrast: 'light',
   },
   {
-    id: 'blackDesert',
-    label: 'Black Desert',
-    background:
-      "#1a1a22 center / cover no-repeat url('/wallpapers/black-desert.jpg')",
-    menubarContrast: 'dark',
-  },
-  {
     id: 'gradients',
     label: 'Gradients',
     background:
@@ -285,6 +278,13 @@ export const WALLPAPER_PRESETS: WallpaperPreset[] = [
     menubarContrast: 'dark',
   },
   {
+    id: 'wall8',
+    label: 'Wall 8',
+    background:
+      "#2a2418 center / cover no-repeat url('/wallpapers/wall-8.jpg')",
+    menubarContrast: 'dark',
+  },
+  {
     id: 'circles',
     label: 'Circles',
     background:
@@ -293,7 +293,7 @@ export const WALLPAPER_PRESETS: WallpaperPreset[] = [
   },
 ];
 
-export const DEFAULT_WALLPAPER_ID: WallpaperId = 'dunes';
+export const DEFAULT_WALLPAPER_ID: WallpaperId = 'wall8';
 
 /** Applied on `<html>` before paint so reload doesn't flash the default wallpaper. */
 export const OS_WALLPAPER_CSS_VAR = '--os-wallpaper';

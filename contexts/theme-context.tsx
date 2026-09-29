@@ -20,9 +20,15 @@ export const rgbThemes = [
 export const allThemes = [...availableThemes, ...rgbThemes];
 
 export function useTheme() {
-  const { theme: nextTheme, setTheme: setNextTheme } = useNextTheme();
+  const {
+    theme: nextTheme,
+    resolvedTheme: nextResolved,
+    setTheme: setNextTheme,
+  } = useNextTheme();
   const [mounted, setMounted] = useState(false);
   const theme = (nextTheme as Theme) || 'dark';
+  /* 'system' is a preference, not a look — resolve it before choosing artwork. */
+  const resolvedTheme = ((nextResolved as Theme) || theme) as Theme;
 
   useEffect(() => {
     setMounted(true);
@@ -34,6 +40,7 @@ export function useTheme() {
 
   return {
     theme: mounted ? theme : 'dark',
+    resolvedTheme: mounted ? resolvedTheme : ('dark' as Theme),
     setTheme,
     themes: availableThemes,
   };

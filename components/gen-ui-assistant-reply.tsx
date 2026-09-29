@@ -1,8 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { AnimatedWords } from '@/components/animated-words';
 import { formatStoryParagraphs } from '@/lib/enrich-gen-ui';
+import { defaultTransition } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 
 type GenUIAssistantReplyProps = {
@@ -13,6 +15,8 @@ type GenUIAssistantReplyProps = {
   onAnimationComplete?: () => void;
   className?: string;
 };
+
+const PARAGRAPH_STAGGER_MS = 420;
 
 function parseBlock(text: string): { type: 'p' | 'ul'; content: string | string[] } {
   const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
@@ -34,89 +38,104 @@ export function GenUIAssistantReply({
   onAnimationComplete,
   className,
 }: GenUIAssistantReplyProps) {
+  const reduceMotion = useReducedMotion();
+  const shouldAnimate = animate && !reduceMotion;
   const paragraphs = useMemo(
     () => (summary ? formatStoryParagraphs(summary) : []),
     [summary],
   );
   const hasTitle = Boolean(title.trim());
-  const segments = useMemo(
-    () => (hasTitle ? [title, ...paragraphs] : paragraphs),
-    [hasTitle, title, paragraphs],
-  );
-  const [segmentIndex, setSegmentIndex] = useState(animate ? 0 : segments.length);
+  const [titleDone, setTitleDone] = useState(!shouldAnimate);
+  const [paraCount, setParaCount] = useState(shouldAnimate ? 0 : paragraphs.length);
+  const completedRef = useRef(false);
 
   useEffect(() => {
-    setSegmentIndex(animate ? 0 : segments.length);
-  }, [animate, title, summary, segments.length]);
+    completedRef.current = false;
+    setTitleDone(!shouldAnimate || !hasTitle);
+    setParaCount(shouldAnimate ? 0 : paragraphs.length);
+  }, [shouldAnimate, title, summary, paragraphs.length, hasTitle]);
 
-  const advance = useCallback(() => {
-    setSegmentIndex((i) => i + 1);
-  }, []);
+  const finish = useCallback(() => {
+    if (completedRef.current) return;
+    completedRef.current = true;
+    onAnimationComplete?.();
+  }, [onAnimationComplete]);
 
   useEffect(() => {
-    if (animate && segmentIndex >= segments.length) {
-      onAnimationComplete?.();
+    // History / static renders never notify — the parent is already on content.
+    // Reduced-motion still needs the signal so cards can enter immediately.
+    if (!animate) return;
+    if (!shouldAnimate) {
+      finish();
+      return;
     }
-  }, [animate, segmentIndex, segments.length, onAnimationComplete]);
+    if (!titleDone) return;
+    if (paraCount >= paragraphs.length) {
+      finish();
+      return;
+    }
+    const timer = window.setTimeout(() => setParaCount((n) => n + 1), PARAGRAPH_STAGGER_MS);
+    return () => window.clearTimeout(timer);
+  }, [animate, shouldAnimate, titleDone, paraCount, paragraphs.length, finish]);
 
-  const renderBlock = (text: string, key: string) => {
+  const renderBlock = (text: string, key: string, motionIn = false) => {
     const block = parseBlock(text);
-    if (block.type === 'ul' && Array.isArray(block.content)) {
-      return (
-        <ul key={key} className="list-disc space-y-2 pl-5 text-base md:text-lg text-muted-foreground leading-[1.75]">
+    const body =
+      block.type === 'ul' && Array.isArray(block.content) ? (
+        <ul className="list-disc space-y-2 pl-5 text-base md:text-lg text-muted-foreground leading-[1.75]">
           {block.content.map((item) => (
             <li key={item}>{item}</li>
           ))}
         </ul>
+      ) : (
+        <p className="text-base md:text-lg text-muted-foreground leading-[1.75] break-words">{text}</p>
+      );
+
+    if (!motionIn) {
+      return (
+        <div key={key}>{body}</div>
       );
     }
+
     return (
-      <p key={key} className="text-base md:text-lg text-muted-foreground leading-[1.75] break-words">
-        {text}
-      </p>
+      <motion.div
+        key={key}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={defaultTransition}
+      >
+        {body}
+      </motion.div>
     );
   };
 
   const titleClass =
     'text-2xl sm:text-3xl md:text-4xl font-light text-foreground tracking-tight leading-[1.15]';
 
-  if (!animate) {
-    return (
-      <article className={cn('w-full min-w-0 max-w-3xl space-y-5 scroll-mt-24', className)}>
-        {hasTitle ? <h2 className={titleClass}>{title}</h2> : null}
-        {paragraphs.length > 0 && (
-          <div className="space-y-4">{paragraphs.map((p, i) => renderBlock(p, `block-${i}`))}</div>
-        )}
-      </article>
-    );
-  }
-
-  const allDone = segmentIndex >= segments.length;
-  const titleOffset = hasTitle ? 1 : 0;
-  const doneParagraphs = paragraphs.slice(0, Math.max(0, segmentIndex - titleOffset));
+  const visibleParagraphs = paragraphs.slice(0, paraCount);
 
   return (
     <article className={cn('w-full min-w-0 max-w-3xl space-y-5 scroll-mt-24', className)}>
-      {hasTitle && segmentIndex > 0 ? <h2 className={titleClass}>{title}</h2> : null}
-
-      {doneParagraphs.length > 0 && (
-        <div className="space-y-4">{doneParagraphs.map((p, i) => renderBlock(p, `done-${i}`))}</div>
-      )}
-
-      {!allDone && hasTitle && segmentIndex === 0 && (
+      {hasTitle ? (
         <h2 className={titleClass}>
-          <AnimatedWords text={segments[0]} onComplete={advance} delayMs={mode === 'letter' ? 16 : 38} mode={mode} />
+          {shouldAnimate && !titleDone ? (
+            <AnimatedWords
+              text={title}
+              onComplete={() => setTitleDone(true)}
+              delayMs={mode === 'letter' ? 16 : 38}
+              mode={mode}
+            />
+          ) : (
+            title
+          )}
         </h2>
-      )}
+      ) : null}
 
-      {!allDone && segmentIndex >= titleOffset && (
-        <div className="text-base md:text-lg text-muted-foreground leading-[1.75]">
-          <AnimatedWords
-            text={segments[segmentIndex]}
-            onComplete={advance}
-            delayMs={mode === 'letter' ? 12 : 32}
-            mode={mode}
-          />
+      {visibleParagraphs.length > 0 && (
+        <div className="space-y-4">
+          {visibleParagraphs.map((p, i) =>
+            renderBlock(p, `block-${i}`, shouldAnimate),
+          )}
         </div>
       )}
     </article>

@@ -147,6 +147,7 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
           layoutCommands: LayoutActionCommand[];
           steps: Array<{ tool: string; args: Record<string, unknown>; result: string }>;
           iterations: number;
+          buildViewport?: boolean;
           promptRemaining?: number;
           conversational?: boolean;
         };
@@ -169,29 +170,33 @@ export function useGenUIPrompt({ onAgentWorking, onGenUIViewport, onStateChange 
           return;
         }
 
-        const shouldBuildViewport = inferGenUIBuild({
-          mode: 'agent',
-          command: trimmed,
-          result,
-          priorMessages: conversationHistory,
-        });
-
         const wordsmithQuery = isWordsmithQuery(trimmed);
         const rawMessage = wordsmithQuery
           ? WORDSMITH_LOCKED_MESSAGE
           : (result.message || '').trim();
 
-        let parsedItems = resolveCardIds(result.cardIds || []);
-        // About / who-is must never land as a one-line clarifier with no cards.
-        if (isAboutDevQuery(trimmed) && parsedItems.length === 0) {
-          parsedItems = resolveCardIds([
-            'feature:career',
-            'feature:hire',
-            'chart:impact',
-            'case:finshots-news-app:project',
-            'case:nesoi-ai-dashboard:project',
-          ]);
-        }
+        const aboutDevFallbackIds = [
+          'feature:career',
+          'feature:hire',
+          'chart:impact',
+          'case:finshots-news-app:project',
+          'case:nesoi-ai-dashboard:project',
+        ];
+        const resolvedIds =
+          isAboutDevQuery(trimmed) && (result.cardIds || []).length === 0
+            ? aboutDevFallbackIds
+            : result.cardIds || [];
+        const parsedItems = resolveCardIds(resolvedIds);
+
+        const shouldBuildViewport = inferGenUIBuild({
+          mode: 'agent',
+          command: trimmed,
+          result: {
+            ...result,
+            cardIds: resolvedIds,
+          },
+          priorMessages: conversationHistory,
+        });
 
         // Prefer model prose when strong; otherwise fill a real portfolio narrative.
         let finalText = wordsmithQuery

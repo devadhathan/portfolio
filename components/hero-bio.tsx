@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
+import { useSiteContent } from '@/components/site-content-provider';
 
 function companyLink(href: string, chunks: ReactNode) {
   return (
@@ -29,7 +30,12 @@ export function HeroBio({
   variant = 'full',
 }: HeroBioProps) {
   const t = useTranslations('home');
+  const { settings } = useSiteContent();
   const messageKey = variant === 'hero' ? 'devBioHero' : 'devBio';
+  const linkedinUrl = settings.linkedin?.startsWith('http')
+    ? settings.linkedin
+    : `https://www.linkedin.com/${settings.linkedin || 'in/devadhathan/'}`;
+  const emailHref = `mailto:${settings.email || 'devadhathanmd18@gmail.com'}`;
 
   return (
     <Tag className={className}>
@@ -39,6 +45,8 @@ export function HeroBio({
         nesoi: (chunks) => companyLink('https://nesoi.ai', chunks),
         ditto: (chunks) => companyLink('https://joinditto.in', chunks),
         finshots: (chunks) => companyLink('https://finshots.in', chunks),
+        linkedin: (chunks) => companyLink(linkedinUrl, chunks),
+        email: (chunks) => companyLink(emailHref, chunks),
       })}
     </Tag>
   );

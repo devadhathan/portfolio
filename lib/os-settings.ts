@@ -11,7 +11,7 @@ export const OS_SETTINGS_KEY = 'portfolio-os-settings-v2';
 
 /** Bump when the default wallpaper changes and saved picks should reset once. */
 export const OS_WALLPAPER_EPOCH_KEY = 'portfolio-os-wallpaper-epoch';
-export const CURRENT_WALLPAPER_EPOCH = 1;
+export const CURRENT_WALLPAPER_EPOCH = 2;
 
 export const ZOOM_MIN = 80;
 export const ZOOM_MAX = 125;
@@ -51,7 +51,7 @@ function readWallpaperEpoch(): number {
   }
 }
 
-/** One-time reset when default wallpaper changes (e.g. bridge → dunes). */
+/** One-time reset when default wallpaper changes (e.g. dunes → wall8). */
 function applyWallpaperEpochMigration(settings: OsSettings): OsSettings {
   if (readWallpaperEpoch() >= CURRENT_WALLPAPER_EPOCH) return settings;
   try {

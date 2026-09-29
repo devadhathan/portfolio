@@ -172,31 +172,31 @@ const SIDE_PROJECTS: FinderItem[] = [
   {
     id: 'catalystic',
     label: 'Catalystic UI',
-    iconId: 'folder',
+    iconId: 'catalystic',
     openId: 'catalystic',
   },
   {
     id: 'pixl',
     label: 'Pixl',
-    iconId: 'folder',
+    iconId: 'pixl',
     href: 'https://pixlanimations.vercel.app',
   },
   {
     id: 'musicNotch',
     label: 'MusicNotch',
-    iconId: 'folder',
+    iconId: 'musicNotch',
     href: 'https://musicnotch-landing.vercel.app/',
   },
   {
     id: 'linkring',
     label: 'Linkring',
-    iconId: 'folder',
+    iconId: 'linkring',
     href: 'https://linkring.vercel.app/',
   },
   {
     id: 'bigBang',
     label: 'Big Bang Timeline',
-    iconId: 'folder',
+    iconId: 'bigBang',
     openId: 'bigBang',
   },
 ];
@@ -505,7 +505,7 @@ function ItemViews({
 
   if (view === 'list') {
     return (
-      <ul className="flex flex-col px-2 py-2">
+      <ul className="flex flex-col px-2 pt-2">
         {items.map((item) => {
           const selected = selectedId === item.id;
           const tags = itemTags[item.id] ?? [];
@@ -539,7 +539,7 @@ function ItemViews({
   }
 
   return (
-    <ul className="grid grid-cols-3 justify-items-center gap-3 px-4 py-4 sm:grid-cols-4">
+    <ul className="grid grid-cols-3 justify-items-center gap-3 px-4 pt-4 sm:grid-cols-4">
       {items.map((item) => {
         const selected = selectedId === item.id;
         const tags = itemTags[item.id] ?? [];
@@ -745,7 +745,8 @@ export function FinderWindowBody() {
           </div>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        {/* Trailing clearance lives here, not on the window body — see globals.css */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-10">
           <ItemViews
             items={items}
             view={view}

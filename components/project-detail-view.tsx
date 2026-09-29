@@ -30,9 +30,9 @@ const NESOI_COMPARISON = {
   afterSrc: '/photos/case-study-bg/nesoi-after.webp',
   beforeLabel: 'Before',
   afterLabel: 'After',
-  beforeAlt: 'Early framing of the Nesoi creation challenge',
-  afterAlt: 'Nesoi AI chat-first creation experience',
-  /** Two paintings — the divider cuts the stage, not just the screenshot. */
+  beforeAlt: 'Previous Nesoi creation flow: upload in, video out',
+  afterAlt: 'Nesoi chat-first creation with creative direction up front',
+  /** Two paintings. The divider cuts the stage, not just the screenshot. */
   beforeBackgroundSrc: '/photos/case-study-bg/castle-golden-hour.webp',
   afterBackgroundSrc: '/photos/case-study-bg/mountain-sunset.webp',
 } as const;
@@ -59,59 +59,68 @@ const CRM_OTHER_FEATURE_IDS = new Set([
 
 const NESOI_EXPLORATION = {
   imageSrc: '/photos/case-study-bg/nesoi-exploration.webp',
-  imageAlt: 'Nesoi exploration of AI chapter creation: instructions, type, and generated layout',
+  imageAlt: 'Nesoi exploration of three directions for AI chapter creation',
   intro:
-    'We explored a chapter flow built from that problem: give the AI instructions and a type, explain the chapter, then let it choose a template and place the content.',
+    'After collecting enough signal from adjacent products, the limited user feedback we had, and lining V1 up against what competitors actually showed, we moved into possibilities. I always explore at least three directions, using a good / better / best framing and documenting the rationale behind each. Sometimes several directions share the same foundation; here we picked one and built a working prototype from it.',
   steps: [
     {
-      title: 'Instructions and chapter type',
+      title: 'Three directions',
       description:
-        'Add instructions for how to create a chapter, and choose the type of chapter before anything is generated.',
+        'Each direction framed a different trade between speed, control, and how much the AI asks before it builds. One leaned toward instant generation. One leaned toward templates. One leaned toward conversation.',
     },
     {
-      title: 'Prompt, type, then template',
+      title: 'More thinking, better prompts',
       description:
-        'The user explains the chapter and selects the type. The AI chooses the template, and the contents are placed from that prompt.',
+        'We chose the direction with more thinking and follow-up questions. AI only marginally performs on thin information, and creators rarely volunteer a full brief on their own, so the interface has to pull that direction out.',
     },
     {
-      title: 'Loading beside the visual',
+      title: 'Front-load quality',
       description:
-        'Loading sits next to the visual while it works, then it creates the new chapter with contents.',
+        'Users want output faster and better, which makes a weak first prompt expensive. Follow-ups after generation take significant time and turn into frustration. A stronger primary prompt is how you avoid that loop.',
     },
   ],
 } as const;
 
 const NESOI_USER_STORY =
-  'As a user, I want to create a chapter from a brief and a type so that I don’t have to design the layout by hand.';
+  'As a creator, I want to steer the chapter with my creative direction so the first output is already closer to what I would ship, without designing the layout by hand or cleaning up a weak first video.';
 
 const NESOI_FRAMING = {
   imageSrc: '/photos/case-study-bg/nesoi framing.webp',
   imageAlt: 'Old Nesoi interface beside an indirect competitor',
-  gifSrc: '/photos/case-study-bg/Screen Recording 2026-01-28 at 22.31.37-2.gif',
-  gifAlt: 'Nesoi AI chat-first creation experience',
-  gifLabel: 'Our new AI chat composer',
   /** Distinct from other Nesoi stages (coastal-fjord / mountain / etc.). */
   backgroundSrc: '/photos/case-study-bg/riverside-town.webp',
   intro: [
-    'We lined up V1 against the closest competitor. Both could generate a chapter. Neither showed what it read, or let you redirect before it committed to a layout.',
+    'Once the problem was clear, I looked for how others handled a similar job. Inspiration mattered here because our own feedback loops were thin. I lined our V1 up against interfaces close to the same workflow: take source material, produce structured learning output.',
+    'Ours was functional enough (upload in, video out), but there was little interactivity and a poor experience once creators needed to shape the result. Status and progress were visible; creative direction was not. The closest comparisons showed movement, not what they had read or why they were building the chapter that way.',
+    'One of the real challenges on this project was the barrier with design and users. Communication was hard, and feedback was limited. We had to read carefully across adjacent products and work around the signal we could get, including testing outside the enterprise loop when access was not there.',
   ],
+} as const;
+
+/** New chapter experience. GIF on a painting, copy beside it. */
+const NESOI_NEW_CHAPTER = {
+  title: 'Our new chapter',
+  description:
+    'Instead of a blank prompt after upload, the AI opens with what it thinks you are making and asks the questions that fill the gaps: audience, emphasis, what to leave out. Confirm or redirect, then watch it build. Reasoning stays visible while the chapter takes shape, so a wrong read gets caught before Synthesia ever starts talking.',
+  gifSrc: '/photos/case-study-bg/Screen Recording 2026-01-28 at 22.31.37-2.gif',
+  gifAlt: 'Nesoi AI chat-first chapter creation experience',
+  backgroundSrc: '/photos/case-study-bg/coastal-fjord.webp',
 } as const;
 
 const NESOI_GALLERY_SECTIONS = [
   {
-    title: 'Read the brief, then ask one question',
-    description:
-      'Instead of a blank prompt, the AI opens with the chapter type and what it thinks you are making. Confirm or redirect.',
-  },
-  {
     title: 'Show the thinking',
     description:
-      'The UI surfaces what it inferred and which template it will use while it builds, so a wrong read gets caught before the chapter is finished.',
+      'The UI surfaces what it inferred from the upload and which path it will take while it builds. Creators can catch a wrong read before the chapter and voiceover are finished, not after they have already spent the generation.',
   },
   {
-    title: 'Templates and freeform on one surface',
+    title: 'Questions before generation',
     description:
-      'People pick a type, then talk their way through the content. Structured actions and freeform share one input, so switching costs nothing.',
+      'Follow-ups happen up front, while the brief is still cheap to change. Tone, audience, and emphasis enter the primary prompt instead of arriving as cleanup after a weak first video.',
+  },
+  {
+    title: 'One surface to steer',
+    description:
+      'Templates and freeform share one input. People pick a type, then talk their way through the content. Switching costs nothing, so creative direction does not get trapped in a mode choice.',
   },
 ] as const;
 
@@ -589,6 +598,73 @@ export function ProjectDetailView({
       )}
 
       {isNesoi ? (
+        <div id={`${projectId}-problem-image`} className="cs-section space-y-8">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12 lg:items-start">
+            <h2 className="cs-heading text-foreground lg:col-span-2">Framing</h2>
+            <div className="space-y-6 lg:col-span-3">
+              {NESOI_FRAMING.intro.map((paragraph, idx) => (
+                <p key={idx} className="cs-body text-muted-foreground">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          </div>
+          <div data-case-bleed className="relative w-full overflow-hidden shadow-lg">
+            <div className="absolute inset-0" aria-hidden>
+              <Image
+                src={NESOI_FRAMING.backgroundSrc}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 90vw"
+              />
+              <div className="absolute inset-0 bg-black/15" />
+            </div>
+            <div className="relative z-10 flex justify-center p-3 sm:p-4 md:p-5 lg:p-6">
+              <div className="relative w-full max-w-[680px] overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
+                <Image
+                  src={NESOI_FRAMING.imageSrc}
+                  alt={NESOI_FRAMING.imageAlt}
+                  width={1600}
+                  height={1000}
+                  className="h-auto w-full object-contain"
+                  sizes="(max-width: 768px) 100vw, 60vw"
+                  priority
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : !isCrm && project.problemImage ? (
+        <div id={`${projectId}-problem-image`} className="cs-section space-y-6">
+          <h2 className="cs-heading text-foreground">
+            {t('problemSnapshot')}
+          </h2>
+          {shouldStageCaseStudyMedia({ projectId, kind: 'problem-image' }) ? (
+            <CaseStudyScreenStage
+              seed={`${projectId}-problem-image`}
+              alt={project.problemImage.alt || 'Problem snapshot'}
+              frame="landscape"
+              media={{ type: 'image', src: project.problemImage.src }}
+            />
+          ) : (
+            <div className="relative w-full aspect-[16/9] overflow-hidden shadow-xl" data-case-bleed>
+              <Image
+                src={project.problemImage.src}
+                alt={project.problemImage.alt || 'Problem snapshot'}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 90vw"
+              />
+            </div>
+          )}
+          {project.problemImage.caption && (
+            <p className="cs-body text-muted-foreground">{project.problemImage.caption}</p>
+          )}
+        </div>
+      ) : null}
+
+      {isNesoi ? (
         <div id={`${projectId}-exploring`} className="cs-section space-y-8">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12 lg:items-start">
             <h2 className="cs-heading text-foreground lg:col-span-2">{t('exploring')}</h2>
@@ -620,95 +696,54 @@ export function ProjectDetailView({
       ) : null}
 
       {isNesoi ? (
-        <div id={`${projectId}-problem-image`} className="cs-section space-y-8">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-12 lg:items-start">
-            <h2 className="cs-heading text-foreground lg:col-span-2">Framing</h2>
-            <div className="space-y-6 lg:col-span-3">
-              {NESOI_FRAMING.intro.map((paragraph, idx) => (
-                <p key={idx} className="cs-body text-muted-foreground">
-                  {paragraph}
+        <div id={`${projectId}-new-chapter`} className="cs-section">
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-5 lg:gap-12">
+            <div className="flex flex-col justify-start gap-6 lg:col-span-2">
+              <div className="space-y-4">
+                <h2 className="cs-heading text-foreground">
+                  {NESOI_NEW_CHAPTER.title}
+                </h2>
+                <p className="cs-body text-muted-foreground">
+                  {NESOI_NEW_CHAPTER.description}
                 </p>
-              ))}
-            </div>
-          </div>
-          <div data-case-bleed className="relative w-full overflow-hidden shadow-lg">
-            <div className="absolute inset-0" aria-hidden>
-              <Image
-                src={NESOI_FRAMING.backgroundSrc}
-                alt=""
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 90vw"
-              />
-              <div className="absolute inset-0 bg-black/15" />
-            </div>
-            <div className="relative z-10 flex flex-col items-center gap-8 p-4 sm:p-6 md:flex-row md:items-center md:justify-center md:gap-6 md:p-8 lg:gap-8 lg:p-10">
-              <div className="relative mx-auto w-full max-w-[720px] flex-[1.35] overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
-                <Image
-                  src={NESOI_FRAMING.imageSrc}
-                  alt={NESOI_FRAMING.imageAlt}
-                  width={1600}
-                  height={1000}
-                  className="h-auto w-full object-contain"
-                  sizes="(max-width: 768px) 100vw, 65vw"
-                  priority
-                />
               </div>
-              <div className="flex w-full max-w-[280px] shrink-0 flex-col items-center gap-3">
-                <div className="relative w-full overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
+              <div className="space-y-10">
+                {NESOI_GALLERY_SECTIONS.map((section) => (
+                  <div key={section.title} className="space-y-2">
+                    <h3 className="cs-body font-medium text-foreground">
+                      {section.title}
+                    </h3>
+                    <p className="cs-body text-muted-foreground">
+                      {section.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="relative overflow-hidden shadow-lg lg:col-span-3">
+              <div className="absolute inset-0" aria-hidden>
+                <Image
+                  src={NESOI_NEW_CHAPTER.backgroundSrc}
+                  alt=""
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 55vw"
+                />
+                <div className="absolute inset-0 bg-black/15" />
+              </div>
+              <div className="relative z-10 flex items-center justify-center p-3 sm:p-4 md:p-5 lg:p-6">
+                <div className="relative w-full max-w-[260px] overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
                   {/* eslint-disable-next-line @next/next/no-img-element -- animated GIF */}
                   <img
-                    src={NESOI_FRAMING.gifSrc}
-                    alt={NESOI_FRAMING.gifAlt}
+                    src={NESOI_NEW_CHAPTER.gifSrc}
+                    alt={NESOI_NEW_CHAPTER.gifAlt}
                     className="block h-auto w-full object-cover"
                     decoding="async"
                   />
                 </div>
-                <p className="text-center text-sm font-medium tracking-tight text-white drop-shadow-[0_1px_8px_rgba(0,0,0,0.55)]">
-                  {NESOI_FRAMING.gifLabel}
-                </p>
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
-            {NESOI_GALLERY_SECTIONS.map((section) => (
-              <div key={section.title} className="space-y-2">
-                <h3 className="cs-body font-medium text-foreground">
-                  {section.title}
-                </h3>
-                <p className="cs-body text-muted-foreground">
-                  {section.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : !isCrm && project.problemImage ? (
-        <div id={`${projectId}-problem-image`} className="cs-section space-y-6">
-          <h2 className="cs-heading text-foreground">
-            {t('problemSnapshot')}
-          </h2>
-          {shouldStageCaseStudyMedia({ projectId, kind: 'problem-image' }) ? (
-            <CaseStudyScreenStage
-              seed={`${projectId}-problem-image`}
-              alt={project.problemImage.alt || 'Problem snapshot'}
-              frame="landscape"
-              media={{ type: 'image', src: project.problemImage.src }}
-            />
-          ) : (
-            <div className="relative w-full aspect-[16/9] overflow-hidden shadow-xl" data-case-bleed>
-              <Image
-                src={project.problemImage.src}
-                alt={project.problemImage.alt || 'Problem snapshot'}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 90vw"
-              />
-            </div>
-          )}
-          {project.problemImage.caption && (
-            <p className="cs-body text-muted-foreground">{project.problemImage.caption}</p>
-          )}
         </div>
       ) : null}
 
@@ -775,7 +810,12 @@ export function ProjectDetailView({
         </div>
       )}
 
-      {project.explorations && project.explorations.length > 0 && !isCrm && (
+      {/*
+        Nesoi has its own Exploring block earlier in the page, and the section
+        nav lists that one — rendering this as well put a second element under
+        the same id, so every anchor landed on the intro.
+      */}
+      {project.explorations && project.explorations.length > 0 && !isCrm && !isNesoi && (
         <div id={`${projectId}-exploring`} className="cs-section">
           <h2 className="cs-heading text-foreground mb-8">{t('exploring')}</h2>
           <div className="space-y-12">
@@ -953,16 +993,6 @@ export function ProjectDetailView({
                           sizes="(max-width: 768px) 100vw, 80vw"
                         />
                       )}
-                    </div>
-                  ) : null}
-                  {isNesoi && section.video ? (
-                    <div className="mt-8 lg:mt-12">
-                      <SectionVideo
-                        src={section.video}
-                        poster={section.videoPoster}
-                        label="System walkthrough video"
-                        controls={section.videoControls !== false}
-                      />
                     </div>
                   ) : null}
                 </div>

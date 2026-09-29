@@ -12,8 +12,14 @@ const AgentOrbHatMenu = dynamic(
   { ssr: false },
 );
 
+/*
+ * bg-secondary carries both themes. The dark override used to be a hardcoded
+ * #1c1c1c, a neutral grey next to a palette that is warm all the way through
+ * (--secondary is 45 10% 12%), so the bar read as a different family from every
+ * surface around it.
+ */
 const INPUT_SHELL_CLASS =
-  'rounded-[28px] border border-border/55 bg-secondary/90 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-white/[0.12] dark:bg-[#1c1c1c] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]';
+  'rounded-[28px] border border-border/55 bg-secondary/90 shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:border-border/70 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]';
 
 const CHIP_CLASS =
   'rounded-full border border-border/55 bg-secondary/80 px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm text-muted-foreground hover:bg-secondary hover:text-foreground disabled:opacity-40 transition-colors dark:border-white/[0.12] dark:bg-white/[0.04] dark:text-foreground/75 dark:hover:bg-white/[0.08] dark:hover:text-foreground';

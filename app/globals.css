@@ -11,6 +11,17 @@ body {
   overflow-x: hidden;
 }
 
+/* Early so the hero title doesn’t paint at default size while globals.css parses. */
+.home-hero__title {
+  margin: 0;
+  font-size: 56px;
+  font-weight: 300;
+  line-height: 1.15;
+  max-width: 18ch;
+  white-space: normal;
+  font-synthesis: weight;
+}
+
 /* Theme variables - outside @layer for proper specificity */
 .dark {
   --background: 53 31% 6%;
@@ -302,6 +313,8 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.75rem;
+    /* macOS-style window chrome (~22px) — keep clip-path in sync */
+    --os-window-radius: 1.375rem;
   }
   .dark {
     --background: 53 31% 6%;
@@ -704,7 +717,7 @@ html.red body {
   border-radius: 9999px;
   border: none;
   padding: 0;
-  cursor: pointer;
+  cursor: var(--cursor-arrow), pointer;
   background: hsl(var(--muted-foreground) / 0.35);
   flex-shrink: 0;
 }
@@ -1016,7 +1029,7 @@ html.light .os-shortcut-bar__well--open {
   padding: 0;
   background: transparent;
   color: inherit;
-  cursor: pointer;
+  cursor: var(--cursor-arrow), pointer;
   /* Own paint layer so the hover repaint can't re-antialias the icon strokes */
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -1153,7 +1166,7 @@ html.light .os-dock__well {
   border: none;
   background: transparent;
   color: hsl(0 0% 100% / 0.95);
-  cursor: pointer;
+  cursor: var(--cursor-arrow), pointer;
   border-radius: 0.85rem;
   /* Width stays fixed; side margins spring with magnification so L/R grow evenly */
   flex: 0 0 auto;
@@ -1650,12 +1663,12 @@ html.light .os-dock__divider {
     width: auto;
     height: auto;
     margin: 0;
-    border-radius: 0.85rem;
+    border-radius: 1.15rem;
     border-left: 1px solid hsl(var(--border) / 0.4);
     border-right: 1px solid hsl(var(--border) / 0.4);
     border-bottom: 1px solid hsl(var(--border) / 0.4);
-    clip-path: inset(0 round 0.85rem);
-    -webkit-clip-path: inset(0 round 0.85rem);
+    clip-path: inset(0 round 1.15rem);
+    -webkit-clip-path: inset(0 round 1.15rem);
   }
 
   [data-os-dock='hidden'] .os-window--stage-max,
@@ -1730,6 +1743,116 @@ html.light .os-control-panel {
   border-color: hsl(0 0% 0% / 0.08);
 }
 
+/*
+ * Wallpaper picker — a row that names the current wallpaper, and a list that
+ * only exists while open, so the thumbnails decode when asked for rather than
+ * every time the panel is summoned.
+ */
+.os-wallpaper-swatch {
+  width: 2.1rem;
+  height: 1.4rem;
+  flex-shrink: 0;
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.16);
+  background-size: cover !important;
+  background-position: center !important;
+}
+
+/*
+ * A row that goes somewhere, not a control that drops open — no box, no field
+ * border, just the current wallpaper and a chevron pointing at the next pane.
+ */
+.os-wallpaper-trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: hsl(var(--foreground) / 0.92);
+  font-size: 13px;
+  line-height: 1.3;
+  cursor: var(--cursor-arrow), pointer;
+  transition: background-color 0.12s ease;
+}
+
+.os-wallpaper-trigger:hover {
+  background: hsl(0 0% 100% / 0.1);
+}
+
+html.light .os-wallpaper-trigger:hover {
+  background: hsl(0 0% 0% / 0.06);
+}
+
+.os-wallpaper-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 17rem;
+  padding: 0.15rem 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Back chevron — square tap target, same ink as the heading beside it */
+.os-control-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: hsl(var(--foreground) / 0.7);
+  cursor: var(--cursor-arrow), pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.os-control-back:hover {
+  background: hsl(0 0% 100% / 0.1);
+  color: hsl(var(--foreground));
+}
+
+html.light .os-control-back:hover {
+  background: hsl(0 0% 0% / 0.06);
+}
+
+.os-wallpaper-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: hsl(var(--foreground) / 0.85);
+  font-size: 12.5px;
+  line-height: 1.3;
+  cursor: var(--cursor-arrow), pointer;
+  transition: background-color 0.12s ease;
+}
+
+.os-wallpaper-row:hover {
+  background: hsl(0 0% 100% / 0.1);
+}
+
+html.light .os-wallpaper-row:hover {
+  background: hsl(0 0% 0% / 0.06);
+}
+
+.os-wallpaper-row--active {
+  color: hsl(var(--foreground));
+}
+
+.os-wallpaper-row--active .os-wallpaper-swatch {
+  box-shadow: 0 0 0 2px hsl(var(--primary));
+}
+
 .os-control-divider {
   height: 1px;
   margin-top: 0.5rem;
@@ -1745,12 +1868,25 @@ html.light .os-control-divider {
   appearance: none;
   height: 4px;
   border-radius: 999px;
-  background: hsl(0 0% 100% / 0.14);
+  /* --os-volume-fill is set inline from the value, so the filled run tracks it */
+  background: linear-gradient(
+    to right,
+    hsl(0 0% 100%) 0,
+    hsl(0 0% 100%) var(--os-volume-fill, 0%),
+    hsl(0 0% 100% / 0.14) var(--os-volume-fill, 0%),
+    hsl(0 0% 100% / 0.14) 100%
+  );
   outline: none;
 }
 
 html.light .os-volume-slider {
-  background: hsl(0 0% 0% / 0.1);
+  background: linear-gradient(
+    to right,
+    hsl(var(--foreground)) 0,
+    hsl(var(--foreground)) var(--os-volume-fill, 0%),
+    hsl(0 0% 0% / 0.1) var(--os-volume-fill, 0%),
+    hsl(0 0% 0% / 0.1) 100%
+  );
 }
 
 .os-volume-slider::-webkit-slider-thumb {
@@ -1762,7 +1898,7 @@ html.light .os-volume-slider {
   border: none;
   background: hsl(var(--foreground));
   box-shadow: 0 1px 3px hsl(0 0% 0% / 0.35);
-  cursor: pointer;
+  cursor: var(--cursor-arrow), pointer;
 }
 
 .os-volume-slider::-moz-range-thumb {
@@ -1772,7 +1908,7 @@ html.light .os-volume-slider {
   border: none;
   background: hsl(var(--foreground));
   box-shadow: 0 1px 3px hsl(0 0% 0% / 0.35);
-  cursor: pointer;
+  cursor: var(--cursor-arrow), pointer;
 }
 
 .os-volume-slider:disabled {
@@ -2083,7 +2219,7 @@ html[data-os-menubar='dark'] .os-menubar {
   border: none;
   background: transparent;
   color: hsl(0 0% 100% / 0.96);
-  cursor: grab;
+  cursor: var(--cursor-arrow), grab;
   border-radius: 0.75rem;
   text-shadow: none;
   user-select: none;
@@ -2180,11 +2316,11 @@ html[data-os-menubar='dark'] .os-menubar {
 }
 
 .os-desktop-icon:active {
-  cursor: grabbing;
+  cursor: var(--cursor-arrow), grabbing;
 }
 
 .os-desktop-icon--dragging {
-  cursor: grabbing;
+  cursor: var(--cursor-arrow), grabbing;
   z-index: 50;
   pointer-events: auto;
 }
@@ -2341,35 +2477,36 @@ html.light .os-desktop-icon__well--asset {
   box-shadow: none !important;
 }
 
-/* Solid black circle + white glyph — simple desktop icon plate. */
+/* Solid well + light ring — same plate as Find me socials. */
 .os-desktop-icon__well--circle,
 html.dark .os-desktop-icon__well--circle,
 html.light .os-desktop-icon__well--circle {
   width: 2.85rem;
   height: 2.85rem;
   border-radius: 9999px !important;
-  border: none !important;
-  background: #0a0a0a !important;
+  border: 1px solid hsl(var(--foreground) / 0.42) !important;
+  background: hsl(var(--secondary) / 1) !important;
   background-image: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
   overflow: hidden;
-  color: #fff;
+  color: hsl(var(--foreground));
 }
 
 .os-desktop-icon:hover:not(.os-desktop-icon--dragging) .os-desktop-icon__well--circle,
 .os-desktop-icon:focus-visible:not(.os-desktop-icon--dragging) .os-desktop-icon__well--circle,
 html.light .os-desktop-icon:hover:not(.os-desktop-icon--dragging) .os-desktop-icon__well--circle,
 html.light .os-desktop-icon:focus-visible:not(.os-desktop-icon--dragging) .os-desktop-icon__well--circle {
-  background: #0a0a0a !important;
+  background: hsl(var(--secondary) / 1) !important;
   background-image: none !important;
+  border-color: hsl(var(--foreground) / 0.72) !important;
   box-shadow: none !important;
 }
 
 .os-desktop-icon--active .os-desktop-icon__well--circle,
 .os-desktop-icon--active:hover:not(.os-desktop-icon--dragging) .os-desktop-icon__well--circle {
-  background: #0a0a0a !important;
+  background: hsl(var(--secondary) / 1) !important;
   background-image: none !important;
   box-shadow: 0 0 0 2px hsl(var(--primary)) !important;
 }
@@ -2396,10 +2533,15 @@ html.red .os-catalog-icon {
 
 .os-desktop-icon__well--circle svg {
   flex-shrink: 0;
-  color: #fff;
+  color: hsl(var(--foreground));
 }
 
-/* Finder catalog — same black circle + white line glyph as desktop icons */
+.os-desktop-icon__well--circle svg:not(.os-icon--fixed),
+.os-desktop-icon__well--circle svg:not(.os-icon--fixed) * {
+  stroke-width: 1.2;
+}
+
+/* Finder catalog — same filled well + light ring as desktop icons */
 .os-catalog-icon {
   display: inline-flex;
   align-items: center;
@@ -2408,8 +2550,9 @@ html.red .os-catalog-icon {
   height: 3.5rem;
   flex-shrink: 0;
   border-radius: 9999px;
-  background: #0a0a0a;
-  color: #fff;
+  border: 1px solid hsl(var(--foreground) / 0.42);
+  background: hsl(var(--secondary) / 1);
+  color: hsl(var(--foreground));
 }
 
 .os-catalog-icon--sm {
@@ -2425,6 +2568,11 @@ html.red .os-catalog-icon {
 .os-catalog-icon svg {
   width: 1.35rem;
   height: 1.35rem;
+}
+
+.os-catalog-icon svg:not(.os-icon--fixed),
+.os-catalog-icon svg:not(.os-icon--fixed) * {
+  stroke-width: 1.2;
 }
 
 .os-catalog-icon--sm svg {
@@ -2444,6 +2592,9 @@ html.red .os-catalog-icon {
   justify-content: center;
   color: #fff;
   flex-shrink: 0;
+  /* Never wider than its cell, however narrow the window gets. */
+  max-width: 100%;
+  aspect-ratio: 1;
 }
 
 .os-finder-catalog-icon--sm {
@@ -2452,8 +2603,13 @@ html.red .os-catalog-icon {
 }
 
 .os-finder-catalog-icon--lg {
-  width: 4.9rem;
-  height: 4.9rem;
+  /*
+   * Sized to the glyph, not to the tile. The box was 5.6rem around artwork of
+   * 2.15–2.9rem, so more than a rem of empty box sat between the icon and its
+   * label — the label looked detached when it was the box that was oversized.
+   */
+  width: 3.4rem;
+  height: 3.4rem;
 }
 
 .os-finder-catalog-icon svg {
@@ -2462,8 +2618,72 @@ html.red .os-catalog-icon {
 }
 
 .os-finder-catalog-icon--lg svg {
-  width: 2rem;
-  height: 2rem;
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+/*
+ * Optical sizing in the catalog. The geist glyphs draw to about 72% of their
+ * box; the Figma set draws much closer to its edges (the Ask ring fills 93%),
+ * so equal boxes rendered visibly unequal icons. These sizes match what is
+ * actually drawn — the desktop wells keep their own tuning.
+ */
+.os-finder-catalog-icon svg.os-glyph--ask,
+.os-finder-catalog-icon svg.os-glyph--favourites {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.os-finder-catalog-icon svg.os-glyph--home {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.os-finder-catalog-icon svg.os-glyph--photos {
+  width: 1.32rem;
+  height: 1.32rem;
+}
+
+.os-finder-catalog-icon svg.os-glyph--playground {
+  width: 1.55rem;
+  height: 1.55rem;
+}
+
+.os-finder-catalog-icon--lg svg.os-glyph--ask,
+.os-finder-catalog-icon--lg svg.os-glyph--favourites {
+  width: 2.15rem;
+  height: 2.15rem;
+}
+
+.os-finder-catalog-icon--lg svg.os-glyph--home {
+  width: 2.45rem;
+  height: 2.45rem;
+}
+
+.os-finder-catalog-icon--lg svg.os-glyph--photos {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.os-finder-catalog-icon--lg svg.os-glyph--playground {
+  width: 2.9rem;
+  height: 2.9rem;
+}
+
+/*
+ * Lighter line for the catalog. The desktop wells normalise to 1.2 and the
+ * Figma glyphs ship 1.5–1.8 of their own; at catalog size that reads heavy, so
+ * every stroke here — including those baked-in weights — comes down together.
+ * aspect-ratio guards the box against ever rendering non-square.
+ */
+.os-finder-catalog-icon svg,
+.os-finder-catalog-icon svg * {
+  stroke-width: 1.1;
+}
+
+.os-finder-catalog-icon svg {
+  aspect-ratio: 1;
+  flex-shrink: 0;
 }
 
 html.blue .os-finder-catalog-icon,
@@ -2830,17 +3050,34 @@ html.light .os-desktop-icon__badge {
 /* Window: stage-fit max vs full desktop cover */
 .os-window {
   overflow: hidden;
-  border-radius: 1rem;
+  border-radius: var(--os-window-radius);
   isolation: isolate;
   /* WebKit: backdrop-filter on children can paint past overflow — force clip */
-  clip-path: inset(0 round 1rem);
-  -webkit-clip-path: inset(0 round 1rem);
-  background: #000;
+  clip-path: inset(0 round var(--os-window-radius));
+  -webkit-clip-path: inset(0 round var(--os-window-radius));
+  /* Custom OS chrome — matches #13120A; cards stay on their own surface */
+  background: #13120a;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow:
     0 1px 0 hsl(var(--foreground) / 0.05) inset,
     0 22px 56px -28px hsl(0 0% 0% / 0.5);
+  /* Smooth cover ↔ stage (expand + shrink) — inset-only so values interpolate */
+  transition:
+    left 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    right 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    top 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    bottom 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    clip-path 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    -webkit-clip-path 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-window {
+    transition: none;
+  }
 }
 
 /* Keep React tree alive — hide without unmount so reopen is instant */
@@ -2870,17 +3107,16 @@ html.light .os-window--focused {
     0 26px 64px -28px hsl(30 20% 20% / 0.32);
 }
 
-/* Centered stage-fit — stop above the dock so the tray stays fully visible */
+/* Centered stage-fit — stop above the dock so the tray stays fully visible.
+ * Insets (not width + margin:auto) so cover ↔ stage can interpolate smoothly. */
 .os-window--stage-max {
-  left: 0;
-  right: 0;
+  left: max(4rem, calc((100% - 1280px) / 2));
+  right: max(4rem, calc((100% - 1280px) / 2));
   top: calc(2.75rem + 6px);
   bottom: calc(5.65rem + env(safe-area-inset-bottom, 0px));
-  width: min(1280px, calc(100% - 8rem));
+  width: auto;
   height: auto;
-  margin-inline: auto;
-  margin-block: 0;
-  transition: width 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  margin: 0;
 }
 
 /* Small end pad only — window chrome already clears the dock */
@@ -2952,15 +3188,30 @@ html.light .os-window-titlebar {
   min-width: 0;
 }
 
-/* Finder — compact panel, centered on the desktop */
+/*
+ * Finder fills its window. The body is a plain block, so the content's h-full
+ * resolved against a height that was a titlebar short and the sidebar's tint
+ * stopped before the window did. Flex makes the stretch unconditional.
+ */
+.os-window--finder .os-window-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.os-window--finder .os-window-body > .os-window-content {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Finder — compact panel, centered on the desktop (inset math = smooth cover) */
 .os-window--finder.os-window--stage-max {
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: min(920px, calc(100% - 5.5rem));
-  height: min(620px, calc(100vh - 8rem));
-  margin: auto;
+  left: max(2.75rem, calc((100% - 920px) / 2));
+  right: max(2.75rem, calc((100% - 920px) / 2));
+  top: max(4rem, calc((100% - 620px) / 2));
+  bottom: max(4rem, calc((100% - 620px) / 2));
+  width: auto;
+  height: auto;
+  margin: 0;
 }
 
 /*
@@ -3833,15 +4084,6 @@ html.light .os-work-toc-indicator {
   width: 100%;
 }
 
-.home-hero__title {
-  margin: 0;
-  font-size: 56px;
-  font-weight: 300;
-  line-height: 1.15;
-  max-width: 18ch;
-  white-space: normal;
-}
-
 .home-hero__grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -3857,11 +4099,16 @@ html.light .os-work-toc-indicator {
   background: transparent;
 }
 
+.home-hero__connect {
+  /* Thumbnail sits fully inside; hover tilt must not get clipped */
+  overflow: visible;
+}
+
 .home-hero__about {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
-  padding: 20px;
+  gap: 1.15rem;
+  padding: 20px 20px 0;
   align-items: start;
 }
 
@@ -3870,7 +4117,7 @@ html.light .os-work-toc-indicator {
   grid-row: 1;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0;
   min-width: 0;
   height: 100%;
   align-self: stretch;
@@ -3879,12 +4126,14 @@ html.light .os-work-toc-indicator {
 .home-hero__ascii {
   grid-column: 1;
   grid-row: 2;
-  width: min(14rem, 55vw);
-  max-width: 14rem;
-  margin-inline: 0 0;
+  width: min(11.5rem, 58%);
+  max-width: 11.5rem;
+  margin: 0 0.15rem 0.85rem auto;
   overflow: hidden;
-  border-radius: 0.75rem;
-  aspect-ratio: 4 / 3;
+  border-radius: 9999px;
+  clip-path: circle(50% at 50% 50%);
+  -webkit-clip-path: circle(50% at 50% 50%);
+  aspect-ratio: 1;
   justify-self: end;
   align-self: end;
 }
@@ -3916,20 +4165,7 @@ html.light .os-work-toc-indicator {
 }
 
 .home-hero__identity {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
   margin-bottom: 0.75rem;
-}
-
-.home-hero__avatar {
-  height: 2.5rem;
-  width: 2.5rem;
-  flex-shrink: 0;
-  border-radius: 9999px;
-  object-fit: cover;
-  object-position: center 20%;
-  box-shadow: 0 0 0 1px hsl(var(--border) / 0.4);
 }
 
 .home-hero__identity-name {
@@ -3939,6 +4175,13 @@ html.light .os-work-toc-indicator {
   line-height: 1.35;
   letter-spacing: -0.014em;
   color: hsl(var(--foreground));
+}
+
+.connect-findme__copy .home-hero__identity-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
 }
 
 .home-hero__identity-role {
@@ -3952,7 +4195,7 @@ html.light .os-work-toc-indicator {
 .home-hero__body {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0;
 }
 
 .home-hero__p {
@@ -3960,7 +4203,14 @@ html.light .os-work-toc-indicator {
   line-height: 1.6;
   letter-spacing: -0.008em;
   color: hsl(var(--muted-foreground));
-  max-width: 34rem;
+  max-width: 42rem;
+  /*
+   * Ragged right. A straight right edge needs justification, and at this
+   * measure justification has to stretch the word spaces to reach it — the
+   * only way to avoid both is hyphenation, which reads worse here.
+   */
+  text-align: left;
+  text-wrap: pretty;
 }
 
 /* Underline sits clear of descenders instead of cutting through them. */
@@ -3980,52 +4230,67 @@ html.light .os-work-toc-indicator {
  * Holds a closing line together. Below ~420px the card is too narrow to fit
  * it, so wrapping is allowed rather than letting the text overflow.
  */
+/*
+ * The closing line stands on its own. It used to be an inline span pinned to
+ * white-space: nowrap, which forced a break before it — and justification then
+ * stretched that half-empty line across the column. As a block it breaks
+ * cleanly, and the text above it ends on an ordinary last line.
+ */
 .home-hero__keep {
-  display: inline;
-}
-
-@media (min-width: 420px) {
-  .home-hero__keep {
-    white-space: nowrap;
-  }
+  display: block;
+  margin-top: 0.9em;
 }
 
 .home-hero__p em {
   color: hsl(var(--muted-foreground));
 }
 
+.home-hero__based {
+  /* Same step and leading as the closing line above it, so the three blocks
+     of copy sit on one rhythm instead of two. */
+  margin-top: 0.9em;
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: -0.008em;
+  color: hsl(var(--muted-foreground));
+}
+
 .home-hero__meta {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 0.45rem;
   margin-top: auto;
   padding-top: 0.75rem;
-  list-style: none;
   font-size: 15px;
   line-height: 1.4;
   letter-spacing: -0.008em;
   color: hsl(var(--muted-foreground));
 }
 
-.home-hero__meta li {
-  display: inline-flex;
+.home-hero__socials {
+  display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.85rem;
 }
 
-/* Availability lights up green when the about card is hovered. */
-.home-hero__meta-available {
-  transition: color 0.2s ease;
+.home-hero__social {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--muted-foreground));
+  transition: color 180ms ease;
 }
 
-.home-hero__about:hover .home-hero__meta-available {
-  color: hsl(142 62% 45%);
+.home-hero__social:hover,
+.home-hero__social:focus-visible {
+  color: hsl(var(--foreground));
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .home-hero__meta-available {
-    transition: none;
-  }
+.home-hero__social svg[fill="none"],
+.home-hero__social svg[fill="none"] * {
+  stroke-width: 1.2;
 }
 
 .home-hero__ascii-video {
@@ -4033,17 +4298,121 @@ html.light .os-work-toc-indicator {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center center;
+  object-position: center bottom;
 }
 
-.home-hero__ascii-portrait {
-  object-fit: contain;
-  object-position: center bottom;
-  background: transparent;
+.home-hero__ascii video,
+.home-hero__ascii img {
+  transform: scale(1.55);
+  transform-origin: center;
 }
 
 .home-hero__connect-inner {
   min-height: 0 !important;
+}
+
+.connect-findme {
+  display: flex;
+  flex-direction: column;
+  gap: 1.45rem;
+  height: 100%;
+  min-height: 0;
+  overflow: visible;
+  padding: 20px 0 16px 20px;
+}
+
+.connect-findme__copy {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding-right: 20px;
+}
+
+.connect-findme__stage {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: flex-end;
+  justify-content: flex-end;
+  min-height: 9rem;
+  overflow: visible;
+  margin-top: auto;
+  padding: 1.85rem 0 0;
+}
+
+.connect-findme__tilt {
+  width: 72%;
+  transform: translateX(0) rotate(0deg);
+  transform-origin: 50% 100%;
+  transition: transform 780ms cubic-bezier(0.22, 1.5, 0.28, 1);
+}
+
+.home-hero__connect:hover .connect-findme__tilt,
+.connect-findme:focus-within .connect-findme__tilt {
+  transform: translateX(-0.2rem) rotate(-1.5deg);
+}
+
+.connect-findme__panel {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 0;
+  padding: 2rem 3.15rem 6.35rem;
+  border: 1px solid hsl(var(--foreground) / 0.12);
+  border-radius: 12px;
+}
+
+.connect-findme__panel--thumb {
+  overflow: hidden;
+  padding: 0;
+  background-color: #0a0a0a;
+}
+
+.connect-findme__panel--thumb img {
+  display: block;
+  width: 134%;
+  max-width: none;
+  height: auto;
+  object-fit: cover;
+  object-position: top left;
+}
+
+.connect-findme__row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: hsl(var(--foreground) / 0.78);
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.connect-findme__row:hover,
+.connect-findme__row:focus-visible {
+  color: hsl(var(--foreground));
+}
+
+.connect-findme__row svg[fill="none"],
+.connect-findme__row svg[fill="none"] * {
+  stroke-width: 1.2;
+}
+
+.connect-findme__row-label {
+  font-size: 15px;
+  line-height: 1.35;
+  letter-spacing: -0.008em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connect-findme__row,
+  .connect-findme__tilt {
+    transition: none;
+  }
+
+  .home-hero__connect:hover .connect-findme__tilt,
+  .connect-findme:focus-within .connect-findme__tilt {
+    transform: none;
+  }
 }
 
 @container os-win (min-width: 880px) {
@@ -4061,9 +4430,10 @@ html.light .os-work-toc-indicator {
 
   .home-hero__about {
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 1.35rem;
+    /* Tight to the portrait — the copy takes the width the gap was holding. */
+    gap: 0.9rem;
     align-items: stretch;
-    padding: 20px;
+    padding: 20px 0 0 20px;
   }
 
   .home-hero__about-copy {
@@ -4071,19 +4441,47 @@ html.light .os-work-toc-indicator {
     grid-row: 1;
     align-self: stretch;
     min-height: 100%;
+    padding-bottom: 20px;
+    /* Just enough to keep a full line off the portrait, no more. */
+    padding-right: 0.35rem;
   }
 
   .home-hero__ascii {
     grid-column: 2;
     grid-row: 1;
-    width: 15.5rem;
-    max-width: 15.5rem;
+    width: 14.85rem;
+    max-width: 14.85rem;
+    margin: 0 0.65rem 0.65rem 0;
     align-self: end;
     justify-self: end;
+    border-radius: 9999px;
+    clip-path: circle(50% at 50% 50%);
+    -webkit-clip-path: circle(50% at 50% 50%);
+    aspect-ratio: 1;
   }
 
   .home-hero__connect-inner {
     min-height: 100% !important;
+  }
+
+  .connect-findme {
+    gap: 1.15rem;
+    padding: 20px 0 16px 20px;
+  }
+
+  .connect-findme__stage {
+    min-height: 11rem;
+    padding: 1.15rem 0 0;
+  }
+
+  .connect-findme__tilt {
+    width: 86%;
+    transform: translateX(0) rotate(0deg);
+  }
+
+  .home-hero__connect:hover .connect-findme__tilt,
+  .connect-findme:focus-within .connect-findme__tilt {
+    transform: translateX(-0.25rem) rotate(-2deg);
   }
 }
 
@@ -4094,12 +4492,12 @@ html.light .os-work-toc-indicator {
   }
 
   .home-hero__about {
-    gap: 1.5rem;
+    gap: 1rem;
   }
 
   .home-hero__ascii {
-    width: 17.5rem;
-    max-width: 17.5rem;
+    width: 16.2rem;
+    max-width: 16.2rem;
   }
 
   .home-hero__p {
@@ -4420,7 +4818,8 @@ html.light .home-portrait__img--on-light {
 
 @media (max-width: 1280px) {
   .os-window--stage-max {
-    width: min(1280px, calc(100% - 6.5rem));
+    left: max(3.25rem, calc((100% - 1280px) / 2));
+    right: max(3.25rem, calc((100% - 1280px) / 2));
   }
 
   .os-desktop-icon {
@@ -4446,7 +4845,8 @@ html.light .home-portrait__img--on-light {
 
 @media (max-width: 1100px) {
   .os-window--stage-max {
-    width: min(1280px, calc(100% - 5rem));
+    left: max(2.5rem, calc((100% - 1280px) / 2));
+    right: max(2.5rem, calc((100% - 1280px) / 2));
   }
 
   .os-logo-menu {
@@ -4471,7 +4871,7 @@ html.light .home-portrait__img--on-light {
 
   .os-desktop-icons--narrow .os-desktop-icon,
   .os-desktop-icon--fixed {
-    cursor: pointer;
+    cursor: var(--cursor-arrow), pointer;
     touch-action: manipulation;
     width: 4.25rem;
     gap: 0.35rem;
@@ -4480,7 +4880,7 @@ html.light .home-portrait__img--on-light {
 
   .os-desktop-icons--narrow .os-desktop-icon:active,
   .os-desktop-icon--fixed:active {
-    cursor: pointer;
+    cursor: var(--cursor-arrow), pointer;
   }
 
   .os-desktop-icons--narrow .os-desktop-icon__well,
@@ -4575,6 +4975,71 @@ html.light .os-widget-card {
 }
 
 /* iOS-style notification widget inside the widgets panel */
+/*
+ * Notification shell — hosts the card plus its hover action. The action is a
+ * sibling, not a child: the card itself is a dismiss <button>.
+ */
+.os-notification-shell {
+  position: relative;
+  width: 100%;
+}
+
+/*
+ * The action sits below the copy, so the card grows to make room on hover
+ * rather than parking an empty strip under the text at rest. It grows
+ * downwards, away from the pointer, so the hover can't oscillate.
+ */
+.os-notification-shell--action .os-notification-widget {
+  transition:
+    padding-bottom 0.16s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.os-notification-shell--action:hover .os-notification-widget,
+.os-notification-shell--action:focus-within .os-notification-widget,
+.os-notification-shell--held .os-notification-widget {
+  padding-bottom: 3rem;
+}
+
+.os-notification-shell__action {
+  position: absolute;
+  z-index: 2;
+  right: 0.9rem;
+  bottom: 0.95rem;
+  padding: 0.4rem 0.85rem;
+  border: none;
+  border-radius: 9999px;
+  background: hsl(0 0% 100% / 0.14);
+  color: hsl(0 0% 100% / 0.96);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: var(--cursor-arrow), pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease, background-color 0.16s ease;
+}
+
+.os-notification-shell:hover .os-notification-shell__action,
+.os-notification-shell:focus-within .os-notification-shell__action,
+.os-notification-shell--held .os-notification-shell__action {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.os-notification-shell__action:hover {
+  background: hsl(0 0% 100% / 0.22);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-notification-shell__action,
+  .os-notification-shell--action .os-notification-widget {
+    transition: none;
+  }
+}
+
 .os-notification-widget {
   display: block;
   width: 100%;
@@ -4586,7 +5051,7 @@ html.light .os-widget-card {
   box-shadow:
     0 1px 0 hsl(0 0% 100% / 0.08) inset,
     0 16px 40px -18px hsl(0 0% 0% / 0.55);
-  cursor: pointer;
+  cursor: var(--cursor-arrow), pointer;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -4605,7 +5070,7 @@ html.light .os-widget-card {
 }
 
 .os-notification-widget--static {
-  cursor: default;
+  cursor: var(--cursor-arrow), default;
 }
 
 .os-notification-widget--dark-glass .text-muted-foreground {
@@ -4687,7 +5152,7 @@ html.light .os-widget-card {
   padding: 0;
   border: none;
   border-radius: 9999px;
-  cursor: pointer;
+  cursor: var(--cursor-arrow), pointer;
   flex-shrink: 0;
   background: var(--os-traffic-fill);
   backdrop-filter: blur(12px) saturate(170%);
@@ -4720,7 +5185,7 @@ html.light .os-widget-card {
 
 /* Middle stays empty — no fill color, no glyph (web + mobile) */
 .os-window-traffic--idle {
-  cursor: default;
+  cursor: var(--cursor-arrow), default;
   pointer-events: none;
 }
 
@@ -4927,6 +5392,12 @@ html.light .os-photos-lightbox__close:hover {
 
   .animate-fade-in-blur {
     animation: fade-in-blur 0.6s ease-out forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in-blur {
+      animation: none;
+    }
   }
 
   .animate-shimmer {
@@ -5139,6 +5610,64 @@ html.light .os-photos-lightbox__close:hover {
 .animate-card-reveal {
   animation: card-reveal 1.6s ease-out forwards;
   opacity: 0;
+}
+
+/*
+ * Site cursor. SVG data URIs, same approach as .pixel-draw-cursor below —
+ * Safari ignores SVG cursors and falls through to the keyword, so the pointer
+ * degrades to the system arrow there rather than disappearing. Held in custom
+ * properties so anything that would otherwise swap to a system cursor can put
+ * the same one back.
+ */
+:root {
+  --cursor-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M4.29663 3C4.52204 3.0013 4.63035 3.02216 4.84667 3.09287L15.4259 6.62021L18.6828 7.70396L19.6296 8.01863C19.8156 8.08041 20.0709 8.15782 20.2417 8.23983C20.509 8.36868 20.7261 8.58244 20.8592 8.84773C21.0181 9.16989 21.0436 9.54182 20.93 9.88264C20.8315 10.1753 20.6257 10.4394 20.3615 10.6007C20.1445 10.7333 19.8537 10.8064 19.6076 10.8805L18.9232 11.0861L15.2408 12.1931L14.309 12.4713C14.0874 12.5372 13.8132 12.607 13.6125 12.7106C13.1072 12.9714 12.7769 13.3679 12.5975 13.9011C12.4405 14.3823 12.2921 14.9155 12.1454 15.404L11.262 18.349L10.9224 19.4824C10.8629 19.681 10.7894 19.9521 10.7166 20.1397C10.6643 20.2773 10.5889 20.405 10.4935 20.517C10.2615 20.7938 9.9282 20.9659 9.56828 20.9948C9.20338 21.0268 8.8409 20.9108 8.5624 20.6727C8.39228 20.5254 8.25426 20.3334 8.18015 20.1214C8.04639 19.7387 7.91959 19.3482 7.7915 18.9633L7.04579 16.7222L4.75736 9.85071L3.54364 6.20561L3.23426 5.27534C3.14742 5.01459 3.02104 4.70621 3.00284 4.43904C2.97952 4.07835 3.10056 3.7232 3.33924 3.4519C3.59199 3.16394 3.91816 3.02408 4.29663 3Z' fill='%2313120A'/%3E%3Cpath d='M4.30078 2.25C4.53558 2.25135 4.69884 2.27231 4.88379 2.32129L5.08008 2.37988L5.08398 2.38184L15.6621 5.9082L18.9199 6.99219H18.9189L19.8662 7.30664C19.9755 7.34294 20.187 7.40811 20.3818 7.48438L20.5664 7.56348L20.5674 7.56445C20.9318 7.74016 21.236 8.01712 21.4453 8.36035L21.5293 8.51172L21.5322 8.51562C21.7785 9.01487 21.8178 9.59178 21.6416 10.1201L21.6406 10.1221C21.4879 10.5757 21.1718 10.9838 20.752 11.2402L20.7529 11.2412C20.4301 11.4384 20.007 11.5436 19.8242 11.5986H19.8232L19.1387 11.8047L15.457 12.9111L15.4551 12.9121L14.5234 13.1904H14.5225C14.2462 13.2725 14.0758 13.3157 13.957 13.377C13.6308 13.5454 13.428 13.7857 13.3086 14.1406C13.1559 14.609 13.0155 15.1109 12.8633 15.6182L12.8643 15.6191L11.9805 18.5645L11.6406 19.6973V19.6982C11.5923 19.8594 11.5034 20.1812 11.417 20.4053C11.335 20.6213 11.2167 20.8216 11.0674 20.998C10.7073 21.4275 10.1913 21.6952 9.63281 21.7412L9.63379 21.7422C9.06845 21.7918 8.5067 21.6119 8.0752 21.2432L8.07129 21.2402C7.81326 21.0169 7.59364 20.718 7.47168 20.3691C7.33547 19.9794 7.20583 19.5781 7.08008 19.2002L6.33398 16.959L4.0459 10.0879L2.83203 6.44238L2.52246 5.5127L2.37695 5.08301C2.32654 4.92169 2.27 4.71172 2.25488 4.49023V4.4873C2.21874 3.92801 2.40618 3.37683 2.77637 2.95605C3.17778 2.49929 3.69989 2.2869 4.24902 2.25195L4.27539 2.25H4.30078Z' stroke='%23FFF1F1' stroke-width='1.5'/%3E%3C/svg%3E") 3 3;
+  --cursor-look: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M2.6 12C5.6 8.2 8.7 6.6 12 6.6C15.3 6.6 18.4 8.2 21.4 12C18.4 15.8 15.3 17.4 12 17.4C8.7 17.4 5.6 15.8 2.6 12Z' fill='%2313120A' stroke='%23FFF1F1' stroke-width='1.5' stroke-linejoin='round'/%3E%3Ccircle cx='12' cy='12' r='2.9' fill='%23FFF1F1'/%3E%3C/svg%3E") 12 12;
+}
+
+body {
+  cursor: var(--cursor-arrow), auto;
+}
+
+/*
+ * One pointer everywhere. Links, buttons, menu items and Tailwind's
+ * cursor-* utilities all resolve to a system hand of one kind or another;
+ * these are plain element/single-class selectors so anything with a real
+ * reason to differ — the pixel editor's pen, resize handles, text fields,
+ * disabled controls — still outranks them.
+ */
+a,
+button,
+select,
+summary,
+label,
+[role='button'],
+[role='menuitem'],
+[role='menuitemradio'],
+[role='menuitemcheckbox'],
+[role='option'],
+[role='tab'],
+[role='switch'],
+.cursor-pointer,
+.cursor-grab,
+.cursor-grabbing {
+  cursor: var(--cursor-arrow), pointer;
+}
+
+/*
+ * cursor-default means "the plain arrow", which is exactly the one we replaced
+ * — the OS window titlebars use it, so without this the pointer reverted to the
+ * system arrow across the top of every window.
+ */
+.cursor-default {
+  cursor: var(--cursor-arrow), default;
+}
+
+/* The hero portrait is something to look at, so the pointer becomes an eye. */
+.home-hero__ascii,
+.home-hero__ascii *,
+.hero-illustration,
+.hero-illustration * {
+  cursor: var(--cursor-look), zoom-in;
 }
 
 /* Pixl pixel editor — pen cursor while drawing */
@@ -5415,4 +5944,18 @@ html.red .glass-chrome:hover {
   [data-os-dock='hidden'] .os-window--stage-max > .os-window-body {
     padding-bottom: 2.75rem;
   }
+}
+
+/*
+ * Finder fills its window to the edge. The dock-clearance rules pad every
+ * window body by up to 3.25rem so trailing content clears the floating pill —
+ * but Finder's chrome is a full-height sidebar, and padding the body cut its
+ * tint short of the window. Clearance moves inside the catalog's own scroller
+ * instead (pb on the list), where it belongs.
+ */
+.os-window--finder.os-window--stage-max > .os-window-body,
+.os-window--finder.os-window--covered > .os-window-body,
+[data-os-dock='hidden'] .os-window--finder.os-window--stage-max > .os-window-body,
+[data-os-dock='hidden'] .os-window--finder.os-window--covered > .os-window-body {
+  padding-bottom: 0;
 }
