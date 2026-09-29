@@ -140,8 +140,9 @@ const FEATURED_MEDIA: Record<
     type: 'video',
     src: '/videos/Scene_no_jitter-sm.mp4',
     poster: '/photos/case-study-bg/cover-nesoi.webp',
-    subtitle: 'I redesigned creation so creators can steer the first video, not just upload and wait.',
-    title: 'Nesoi AI Dashboard',
+    title: 'Nesoi AI · From file to finished video',
+    subtitle:
+      'I redesigned AI creation so educators and enterprise teams steer the first video, instead of cleaning up after a weak upload.',
   },
   'crm-redesign': {
     type: 'image',
@@ -149,8 +150,9 @@ const FEATURED_MEDIA: Record<
     overlay: '/CRM/leads-thumb.mp4',
     overlayType: 'video',
     overlayPoster: '/CRM/image.webp',
-    subtitle: 'We rebuilt leads and notes so agents could move faster.',
-    title: 'Ditto Insurance CRM Design',
+    title: 'Ditto Insurance · CRM that keeps the call moving',
+    subtitle:
+      'We rebuilt leads, notes, and next tasks so insurance advisors finish the call without switching tools.',
   },
 };
 

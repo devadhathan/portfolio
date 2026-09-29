@@ -75,7 +75,7 @@ export const resumeData = {
       period: "July to November 2025",
       description:
         "Nesoi is an AI interactive learning platform for creators, educators, and enterprise teams. The job is simple on paper: take the source material people already have (a deck, a doc, a recording) and turn it into interactive training their teams will actually finish. With limited source, Nesoi could already produce a clean chapter-by-chapter video with a Synthesia voiceover.\n\nWhat was missing was the creator. Upload in, video out left no room for creative direction, so the first prompt stayed thin and quality depended on a long cleanup loop afterward. I led the creation experience end to end: framing why V1 felt like a black box, exploring directions that put the creator back in control, and shipping a working React prototype that engineering built from instead of a written spec.",
-      cardSubtext: "Upload is not enough. Creators need to steer.",
+      cardSubtext: "From file to finished video. Creators steer first.",
       problem:
         "The product is built around chapters. When someone uploads content, Nesoi divides and organises it with AI, then adds a Synthesia voiceover to explain each chapter. From thin source material the output was already clean, and the agent explained the content without much hallucination. That part of the pipeline worked.\n\nThe problem sat earlier, in how those videos got created. The product direction was clear: upload raw content, get a finished video. But something was missing in the middle. Creators never got a chance to steer. Tone, emphasis, audience, and what to leave out all stayed implicit. The AI had to guess what good looked like from the file alone.\n\nThat guess usually landed close enough to look promising, then not close enough to ship. People came back with follow-up after follow-up. Each round cost time, and each round made the session feel like cleanup instead of creation. Users wanted output faster and better, so the chance they would enter enough information up front was small. Without a stronger primary prompt, frustration was built into the flow.",
       hmw: "Bring the creator’s direction into the first prompt, so the AI does not have to guess what good looks like.",
@@ -335,7 +335,7 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       role: "Interaction designer, UX researcher, UX Designer",
       tools: ["Figma", "Google Docs", "After Effects", "Loom", "Miro"],
       team: '4 engineers, 1 product manager',
-      cardSubtext: "Insurance CRM",
+      cardSubtext: "CRM that keeps the sales call moving.",
       description: `Over the course of four months, I partnered with the Ditto team to build a CRM that streamlined sales operations and delivered intuitive, actionable reporting. Ditto started as a no-spam insurance platform in 2021 with the goal of simplifying insurance selection across India, and the growing lead volume made it clear that the early Excel-based workflows needed a more scalable foundation.`,
       problem:
         'Advisors were losing momentum on every call, jumping between the CRM and Bliss to log outcomes, compare policies, and schedule follow-ups instead of staying with the customer.',

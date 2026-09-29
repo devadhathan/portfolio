@@ -28,15 +28,15 @@
   },
   "home": {
     "digitalHome": "Dev's digital home",
-    "heroLine1": "Product designer based in Edinburgh.",
+    "heroLine1": "Designing experiences from pixels to code.",
     "intro": {
       "name": "Dev",
       "role": "Product Designer",
-      "p1": "I enjoy making intuitive products for people, and simplifying complexity into experiences that feel simple to use. I finished a bachelor's in computer science in 2019 wanting to become a programmer. Along the way I got obsessed with making websites, and that woke up a designer in me. I kept going from there. Most recently I led creation at <nesoi>Nesoi</nesoi>, and before that <ditto>Ditto</ditto> by <finshots>Finshots</finshots>. <keep>I'm in Edinburgh now. If you're here too, feel free to <email>send me a message</email> or connect on <linkedin>LinkedIn</linkedin>.</keep>"
+      "p1": "I design experiences for people. Most recently at <wordsmith>Wordsmith AI</wordsmith>, before that <nesoi>Nesoi AI</nesoi> and <ditto>Ditto Insurance</ditto>. I start by asking too many questions, then I can't stop fiddling with the details until something feels right. <keep>Builder by nature, slightly obsessive by habit. Currently in Edinburgh.</keep>"
     },
-    "devBio": "Hi, I'm Dev. Product designer based in Edinburgh.\n\nI enjoy making intuitive products for people, and simplifying complexity into experiences that feel simple to use. I finished a bachelor's in computer science in 2019 wanting to become a programmer. Making websites along the way woke up a designer in me, and I kept going from there.\n\nMost recently at <nesoi>Nesoi</nesoi>, and before that <ditto>Ditto</ditto> by <finshots>Finshots</finshots>.\n\nI'm in Edinburgh now. If you're here too, feel free to <email>send me a message</email> or connect on <linkedin>LinkedIn</linkedin>.",
-    "devBioHero": "Hi, I'm Dev. Product designer based in Edinburgh.\n\nI enjoy making intuitive products for people, and simplifying complexity into experiences that feel simple to use. I finished a bachelor's in computer science in 2019 wanting to become a programmer. Making websites along the way woke up a designer in me, and I kept going from there.\n\nMost recently at <nesoi>Nesoi</nesoi>, and before that <ditto>Ditto</ditto> by <finshots>Finshots</finshots>.\n\nI'm in Edinburgh now. If you're here too, feel free to <email>send me a message</email> or connect on <linkedin>LinkedIn</linkedin>.",
-    "location": "Based in Edinburgh",
+    "devBio": "Hi, I'm a designer based in Edinburgh.\n\nMost recently I worked on <wordsmith>Wordsmith AI</wordsmith>, and before that <nesoi>Nesoi AI</nesoi> and <ditto>Ditto Insurance</ditto> by <finshots>Finshots</finshots>. I came to design from computer engineering.\n\nI design interfaces for the computer and experiences for the people, and I'm building something <i>simple, but better</i>.",
+    "devBioHero": "Hi, I'm a designer based in Edinburgh.\n\nMost recently I worked on <wordsmith>Wordsmith AI</wordsmith>, and before that <nesoi>Nesoi AI</nesoi> and <ditto>Ditto Insurance</ditto> by <finshots>Finshots</finshots>. I came to design from computer engineering.\n\nI design interfaces for the computer and experiences for the people, and I'm building something <i>simple, but better</i>.",
+    "location": "Hi, I'm a designer based in Edinburgh",
     "basedIn": "Based in Edinburgh.",
     "available": "Available for work",
     "availableOpportunities": "Available for opportunities",
@@ -81,17 +81,23 @@
         "title": "AgentDog",
         "description": "A design critique agent with a personality — teaching the agent to read layouts and spot hierarchy issues.",
         "status": "Building",
-        "tags": ["Agent", "Design critique"]
+        "tags": [
+          "Agent",
+          "Design critique"
+        ]
       },
       "catalystic": {
         "title": "Catalystic UI",
         "description": "A playground for Google’s A2UI generator. Prompt a screen and it renders interactive Gen UI in place.",
         "status": "Live",
-        "tags": ["A2UI", "Generative UI"]
+        "tags": [
+          "A2UI",
+          "Generative UI"
+        ]
       },
       "nesoi": {
-        "title": "Nesoi AI",
-        "description": "Upload is not enough. Creators need to steer.",
+        "title": "Nesoi AI · From file to finished video",
+        "description": "I redesigned AI creation so educators and enterprise teams steer the first video, instead of cleaning up after a weak upload.",
         "status": "2025"
       }
     },
@@ -196,18 +202,30 @@
       "title": "Which Design and Agent analyzer",
       "description": "A design critique agent with a personality — currently teaching the dog to read layouts, spot hierarchy issues, and explain what to fix.",
       "status": "Building",
-      "tags": ["Agent", "Design critique", "In progress"]
+      "tags": [
+        "Agent",
+        "Design critique",
+        "In progress"
+      ]
     },
     "groups": {
       "luxbrew": {
         "title": "LuxBrew",
         "question": "Two product storytelling studies around a premium coffee machine: the slow reveal, then the lightweight setup flow.",
-        "tags": ["3D", "Art direction", "Onboarding"]
+        "tags": [
+          "3D",
+          "Art direction",
+          "Onboarding"
+        ]
       },
       "perplexity": {
         "title": "Perplexity studies",
         "question": "Two recreation studies exploring how Perplexity turns empty states and upgrade moments into calmer invitations.",
-        "tags": ["Motion", "Illustration", "Recreation study"]
+        "tags": [
+          "Motion",
+          "Illustration",
+          "Recreation study"
+        ]
       }
     },
     "items": {
@@ -215,63 +233,93 @@
         "title": "Bot orb",
         "question": "A face for the agent — gaze, blink, and presence on a phone screen.",
         "notes": "The same orb that answers questions elsewhere on this site, given a body and a phone to live on. Its gaze drifts on its own timer, it blinks at uneven intervals, and the surface underneath keeps moving — three loops that never quite line up, which is what stops it reading as a loading spinner. The whole thing is CSS and transforms, no canvas, so it costs almost nothing to keep on screen.",
-        "tags": ["Character", "Motion", "React"],
+        "tags": [
+          "Character",
+          "Motion",
+          "React"
+        ],
         "accessibilityLabel": "Interactive bot orb on a phone screen"
       },
       "dewAi": {
         "title": "Dew AI",
         "question": "An interactive AI character — a face for conversation, built with Whisper from ChatGPT, SwiftUI, Rive, and Xcode.",
         "notes": "A character you talk to rather than type at. Whisper handles the listening, Rive carries the face, and SwiftUI holds the two together — so speech drives expression directly instead of turning into a transcript first. Most of the work went into the pauses: what the face does while it waits, and how it hands the turn back.",
-        "tags": ["Character", "SwiftUI", "Rive", "Whisper"],
+        "tags": [
+          "Character",
+          "SwiftUI",
+          "Rive",
+          "Whisper"
+        ],
         "accessibilityLabel": "Dew AI interactive character demo"
       },
       "coachingThread": {
         "title": "Coaching in a thread",
         "question": "Can an entire training plan live inside one conversation?",
         "notes": "A training plan with no dashboard, no charts, no weekly summary screen — just a thread. The Claude API does the programming, and the interface question is what stays: how a plan holds its shape when every change arrives as a message, and how much structure a conversation can carry before it needs a screen of its own.",
-        "tags": ["Conversational UX", "Claude API"],
+        "tags": [
+          "Conversational UX",
+          "Claude API"
+        ],
         "accessibilityLabel": "Fitness coach chat interface demo"
       },
       "albumArt": {
         "title": "Audio-reactive album art",
         "question": "What if cover art moved to the waveform? A Spotify study.",
         "notes": "Cover art that answers the waveform. Metal shaders sample the track and push the artwork around in time with it, so the sleeve behaves less like a thumbnail and more like the room the song is playing in. A recreation study, built to find out how far a familiar surface can move before it stops feeling like Spotify.",
-        "tags": ["Metal shaders", "Recreation study"],
+        "tags": [
+          "Metal shaders",
+          "Recreation study"
+        ],
         "accessibilityLabel": "Audio-reactive album artwork glitching to music, Spotify study"
       },
       "monthsDial": {
         "title": "Koi pond",
         "question": "What if a calm pond invited your finger to stir the water?",
         "notes": "A pond that reacts to being touched. Drag across the water and the ripples spread, the lilies drift, and the fish scatter and regroup — no controls, no target, nothing to complete. It started as a month picker and turned into a study of gesture feedback with no task attached to it.",
-        "tags": ["Gestures + motion", "Playground study"],
+        "tags": [
+          "Gestures + motion",
+          "Playground study"
+        ],
         "accessibilityLabel": "Interactive koi pond with lily pads, flowers, and ripples responding to touch"
       },
       "luxbrewReveal": {
         "title": "LuxBrew — the reveal",
         "question": "How slowly can a product page move and still feel premium?",
         "notes": "A product page that refuses to hurry. The machine assembles as you scroll, one part at a time, and the copy waits for it — the question being how slow a reveal can get before patience turns into impatience. 3D and art direction doing the selling, with the layout staying out of the way.",
-        "tags": ["3D", "Art direction"],
+        "tags": [
+          "3D",
+          "Art direction"
+        ],
         "accessibilityLabel": "LuxBrew coffee machine product page, hand reaching for the cup"
       },
       "perplexityHome": {
         "title": "Where knowledge begins",
         "question": "What makes Perplexity's blank state feel like an invitation?",
         "notes": "A recreation of Perplexity's home screen, built to work out why an empty state can feel like an invitation instead of a void. Line-art animation gives the blank page something to do while it waits, and the cursor gets somewhere to look before there is anything to read.",
-        "tags": ["Motion", "Recreation study"],
+        "tags": [
+          "Motion",
+          "Recreation study"
+        ],
         "accessibilityLabel": "Perplexity home screen recreation with line-art animation"
       },
       "gentlePaywall": {
         "title": "The gentle paywall",
         "question": "Can an upgrade screen persuade without pressuring?",
         "notes": "The upgrade moment, recreated as something other than a wall. Illustration carries the ask, the tone stays level, and the exit stays obvious — a study of how much of a paywall's reputation comes from its manners rather than its price.",
-        "tags": ["Illustration", "Recreation study"],
+        "tags": [
+          "Illustration",
+          "Recreation study"
+        ],
         "accessibilityLabel": "Perplexity Pro upgrade screen"
       },
       "luxbrewSetup": {
         "title": "LuxBrew — guided setup",
         "question": "How little UI does hardware onboarding actually need?",
         "notes": "The other half of LuxBrew: what happens after the box is open. A setup flow of few steps and fewer words, where the writing does the teaching and the illustration confirms you got it right, rather than a progress bar counting screens at you.",
-        "tags": ["Onboarding", "UX writing"],
+        "tags": [
+          "Onboarding",
+          "UX writing"
+        ],
         "accessibilityLabel": "LuxBrew machine setup walkthrough"
       }
     }
