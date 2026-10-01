@@ -15,6 +15,7 @@ import { HomeHeroTitle } from './home-hero-title';
 // Temporary: portrait swapped for lined frame — re-import when restoring
 // import { HomePortrait } from './home-portrait';
 import { CaseStudiesList } from './case-studies-list';
+import { WritingSection } from './writing-section';
 import { StatusPet } from './status-pet';
 import { CardHoverGlowOverlay, HOME_CARD_BORDER } from '@/components/card-hover-glow';
 import { useSiteContent } from '@/components/site-content-provider';
@@ -125,12 +126,13 @@ interface PortfolioSectionsProps {
   agentState: AgentState;
   hideHeaderText?: boolean;
   onProjectSelect?: (projectId: string) => void;
+  onWritingSelect?: (writingId: string) => void;
   onShowProjectsList?: () => void;
   onEnterGenUI?: () => void;
   selectedProjectId?: string | null;
 }
 
-export function PortfolioSections({ agentState, hideHeaderText = false, onProjectSelect, onShowProjectsList, onEnterGenUI, selectedProjectId }: PortfolioSectionsProps) {
+export function PortfolioSections({ agentState, hideHeaderText = false, onProjectSelect, onWritingSelect, onShowProjectsList, onEnterGenUI, selectedProjectId }: PortfolioSectionsProps) {
   const t = useTranslations('home');
   const tNav = useTranslations('nav');
   const { resolvedTheme } = useTheme();
@@ -1052,6 +1054,15 @@ export function PortfolioSections({ agentState, hideHeaderText = false, onProjec
 
             <div className="home-intro-frame__section">
               <HomeHero className="mb-0" showTitle={false} />
+            </div>
+
+            <div className="home-intro-frame__rule-pair" aria-hidden>
+              <div className="home-intro-frame__rule" />
+              <div className="home-intro-frame__rule" />
+            </div>
+
+            <div className="home-intro-frame__section">
+              <WritingSection className="mb-0" onWritingSelect={onWritingSelect} />
             </div>
 
             <div className="home-intro-frame__rule-pair" aria-hidden>

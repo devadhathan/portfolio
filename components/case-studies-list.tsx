@@ -2,16 +2,18 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
+import { ArrowUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import {
   HOME_CARD_BORDER,
   useCardHoverGlow,
 } from '@/components/card-hover-glow';
+import { CardTag } from '@/components/card-tag';
 import { useSiteContent } from '@/components/site-content-provider';
 import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
 import { getProjectId, getProjectSlug, type Project } from '@/lib/types/project';
-import { trackEvent } from '@/lib/analytics';
+import { startSessionReplay, trackEvent } from '@/lib/analytics';
 import { cn, focusRing } from '@/lib/utils';
 import {
   HOME_INTRO_CARDS_DELAY,
@@ -114,6 +116,7 @@ type ListItem = {
   year: number;
   dateLabel: string;
   sortKey: number;
+  openWordsmith?: boolean;
   href?: string;
   subtitle?: string;
 };
@@ -132,6 +135,22 @@ type FeaturedItem = ListItem & {
   media: FeaturedMedia;
 };
 
+const WORDSMITH_FEATURED: FeaturedItem = {
+  id: 'wordsmith-ai',
+  title: 'Wordsmith AI · Contract review',
+  year: 2026,
+  dateLabel: formatPeriodLabel(2026, 6),
+  sortKey: 2026 * 100 + 6,
+  openWordsmith: true,
+  href: 'https://www.wordsmith.ai/products/blueprints',
+  subtitle: 'Contract review and versioning for in-house legal. Deeper work is under NDA.',
+  media: {
+    type: 'image',
+    src: '/photos/case-study-bg/castle-golden-hour.webp',
+    overlay: '/photos/wordsmith-preview.webp',
+  },
+};
+
 const FEATURED_MEDIA: Record<
   string,
   FeaturedMedia & { subtitle: string; title?: string }
@@ -142,21 +161,26 @@ const FEATURED_MEDIA: Record<
     poster: '/photos/case-study-bg/cover-nesoi.webp',
     title: 'Nesoi AI · From file to finished video',
     subtitle:
-      'I redesigned AI creation so educators and enterprise teams steer the first video, instead of cleaning up after a weak upload.',
+      'Redesigned how educators and enterprise teams turn source material into training videos.',
   },
   'crm-redesign': {
     type: 'image',
-    src: '/videos/crm-thumb-bg.webp',
+    src: '/photos/case-study-bg/manor-hill.webp',
     overlay: '/CRM/leads-thumb.mp4',
     overlayType: 'video',
     overlayPoster: '/CRM/image.webp',
-    title: 'Ditto Insurance · CRM that keeps the call moving',
-    subtitle:
-      'We rebuilt leads, notes, and next tasks so insurance advisors finish the call without switching tools.',
+    title: 'Ditto Insurance · CRM redesign',
+    subtitle: 'Leads, notes, and next tasks in one place so advisors can stay on the call.',
+  },
+  'onboarding-redesign': {
+    type: 'image',
+    src: '/ditto insurance/1.webp',
+    title: 'Ditto Insurance · Onboarding redesign',
+    subtitle: 'Slot booking and trust moments in the customer onboarding flow.',
   },
 };
 
-const FEATURED_IDS = ['nesoi-ai-dashboard', 'crm-redesign'] as const;
+const FEATURED_IDS = ['nesoi-ai-dashboard', 'crm-redesign', 'onboarding-redesign'] as const;
 
 function buildItems(projects: Project[]): { featured: FeaturedItem[]; archive: ListItem[] } {
   const parsed = projects
@@ -200,7 +224,11 @@ function buildItems(projects: Project[]): { featured: FeaturedItem[]; archive: L
       Boolean(p?.media),
   );
 
-  const featured: FeaturedItem[] = featuredFromProjects;
+  // Nesoi → Ditto CRM → Wordsmith → Onboarding
+  const [nesoi, dittoCrm, onboarding] = featuredFromProjects;
+  const featured: FeaturedItem[] = [nesoi, dittoCrm, WORDSMITH_FEATURED, onboarding].filter(
+    (p): p is FeaturedItem => Boolean(p),
+  );
   const featuredIdSet = new Set(featured.map((f) => f.id));
   const archive = parsed.filter((p) => !featuredIdSet.has(p.id));
 
@@ -438,15 +466,13 @@ function FeaturedThumb({
       <div
         className={cn(
           'case-study-feature__media relative z-[2] w-full overflow-hidden rounded-md bg-transparent',
-          // Mobile / tablet: same aspect as sibling cards. Desktop hero fills the tall cell.
-          isHero
-            ? 'aspect-[16/10] lg:aspect-auto lg:min-h-0 lg:flex-1 lg:h-full'
-            : 'aspect-[16/10]',
+          // Keep source aspect (≈16:9) on the tall hero too — filling the rowspan stretched the crop.
+          'aspect-[16/10]',
         )}
       >
         {showVideo ? (
           <FeaturedVideo
-            className="case-study-feature__asset absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]"
+            className="case-study-feature__asset absolute inset-0 h-full w-full object-cover object-center transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]"
             src={item.media.src}
             poster={item.media.poster}
             priority={isHero}
@@ -456,7 +482,7 @@ function FeaturedThumb({
           <img
             src={item.media.type === 'video' ? item.media.poster || item.media.src : item.media.src}
             alt=""
-            className="case-study-feature__asset absolute inset-0 h-full w-full object-cover object-top transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]"
+            className="case-study-feature__asset absolute inset-0 h-full w-full object-cover object-center transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]"
             loading={isHero ? 'eager' : 'lazy'}
             fetchPriority={isHero ? 'high' : 'auto'}
             decoding="async"
@@ -465,28 +491,30 @@ function FeaturedThumb({
         )}
         {item.media.overlay ? (
           <div className="pointer-events-none absolute inset-y-[8%] left-1/2 z-[1] w-[82%] -translate-x-1/2 transition-transform duration-700 ease-out-expo group-hover:scale-[1.02] sm:w-[78%]">
-            <div className="h-full w-full overflow-hidden rounded-none shadow-[0_10px_28px_rgba(0,0,0,0.22)]">
-              {item.media.overlayType === 'video' && reduceMotion !== true && allowLoopVideo ? (
+            <div className="relative h-full w-full overflow-hidden rounded-none shadow-[0_10px_28px_rgba(0,0,0,0.22)]">
+              {/* Still always paints — video layers on top when budget allows */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={
+                  item.media.overlayType === 'video'
+                    ? item.media.overlayPoster || item.media.overlay
+                    : item.media.overlay
+                }
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover object-left-top"
+                loading="lazy"
+                decoding="async"
+                draggable={false}
+              />
+              {item.media.overlayType === 'video' &&
+              reduceMotion !== true &&
+              allowLoopVideo ? (
                 <FeaturedVideo
-                  className="h-full w-full object-cover object-left-top"
+                  className="absolute inset-0 h-full w-full object-cover object-left-top"
                   src={item.media.overlay}
                   poster={item.media.overlayPoster}
                 />
-              ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={
-                    item.media.overlayType === 'video'
-                      ? item.media.overlayPoster || item.media.overlay
-                      : item.media.overlay
-                  }
-                  alt=""
-                  className="h-full w-full object-cover object-left-top"
-                  loading="lazy"
-                  decoding="async"
-                  draggable={false}
-                />
-              )}
+              ) : null}
             </div>
           </div>
         ) : null}
@@ -504,6 +532,17 @@ function FeaturedThumb({
             <span className="text-[16px] font-medium leading-[1.35] tracking-[-0.014em] text-foreground">
               {item.title}
             </span>
+            {item.openWordsmith ? (
+              <>
+                <CardTag tone="orange" className="normal-case tracking-normal">
+                  NDA
+                </CardTag>
+                <ArrowUpRight
+                  className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground/80"
+                  aria-hidden
+                />
+              </>
+            ) : null}
           </div>
           {item.dateLabel && item.dateLabel !== '—' ? (
             <span className="shrink-0 whitespace-nowrap text-[13px] tabular-nums text-muted-foreground">
@@ -543,6 +582,20 @@ export function CaseStudiesList({
   if (featured.length === 0 && (!showArchive || archive.length === 0)) return null;
 
   const handleSelect = (item: ListItem) => {
+    if (item.openWordsmith) {
+      const surface = desktopOs?.enabled ? 'home_selected_work' : 'home_bento';
+      trackEvent('wordsmith_card_clicked', { surface });
+      if (desktopOs?.enabled) {
+        desktopOs.openWindow('wordsmith', { syncUrl: false });
+        return;
+      }
+      trackEvent('wordsmith_opened', { surface });
+      startSessionReplay();
+      if (item.href) {
+        window.open(item.href, '_blank', 'noopener,noreferrer');
+      }
+      return;
+    }
     onProjectSelect?.(item.id);
   };
 

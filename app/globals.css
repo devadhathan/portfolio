@@ -3355,12 +3355,14 @@ html.light .os-window-titlebar {
  * Embedded OS: split-pane scroll (main scrolls; rails stay put). Sticky + CSS
  * zoom on `.os-window-body` causes Chromium sticky vibration. */
 .os-window-body:has([data-os-home-case='true']),
-.os-window-body:has([data-os-work-case='true']) {
+.os-window-body:has([data-os-work-case='true']),
+.os-window-body:has([data-os-home-writing='true']) {
   overflow: hidden;
 }
 
 [data-os-home-case='true'],
-[data-os-work-case='true'] {
+[data-os-work-case='true'],
+[data-os-home-writing='true'] {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
@@ -3369,7 +3371,8 @@ html.light .os-window-titlebar {
 }
 
 [data-os-home-case] .os-home-case-row,
-[data-os-work-case] .os-work-case-row {
+[data-os-work-case] .os-work-case-row,
+[data-os-home-writing] .os-home-writing-row {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
@@ -3378,7 +3381,8 @@ html.light .os-window-titlebar {
 }
 
 [data-os-home-case] .os-home-case-main,
-[data-os-work-case] .os-work-case-main {
+[data-os-work-case] .os-work-case-main,
+[data-os-home-writing] .os-home-writing-main {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -3392,7 +3396,8 @@ html.light .os-window-titlebar {
 
 @container os-win (min-width: 880px) {
   /* Equal side rails so the case column sits in the window center */
-  [data-os-home-case] .os-home-case-row {
+  [data-os-home-case] .os-home-case-row,
+  [data-os-home-writing] .os-home-writing-row {
     display: grid;
     grid-template-columns: minmax(7.5rem, 9.5rem) minmax(0, 1fr) minmax(7.5rem, 9.5rem);
     align-items: stretch;
@@ -3401,14 +3406,16 @@ html.light .os-window-titlebar {
     padding-inline: 0.75rem;
   }
 
-  [data-os-home-case] .os-home-case-main {
+  [data-os-home-case] .os-home-case-main,
+  [data-os-home-writing] .os-home-writing-main {
     grid-column: 2;
     width: 100%;
     height: 100%;
     align-items: center;
   }
 
-  [data-os-home-case] .os-home-case-inner {
+  [data-os-home-case] .os-home-case-inner,
+  [data-os-home-writing] .os-home-writing-inner {
     width: 100%;
     min-width: 0;
     min-height: 0;
@@ -3431,7 +3438,8 @@ html.light .os-window-titlebar {
 }
 
 @container os-win (min-width: 1100px) {
-  [data-os-home-case] .os-home-case-row {
+  [data-os-home-case] .os-home-case-row,
+  [data-os-home-writing] .os-home-writing-row {
     grid-template-columns: minmax(8rem, 10rem) minmax(0, 1fr) minmax(8rem, 10rem);
     column-gap: 2rem;
     padding-inline: 1rem;
@@ -3439,7 +3447,8 @@ html.light .os-window-titlebar {
 }
 
 @media (min-width: 1024px) {
-  .home-case-row {
+  .home-case-row,
+  .home-writing-row {
     display: grid;
     grid-template-columns: minmax(8rem, 10rem) minmax(0, 1fr) minmax(8rem, 10rem);
     align-items: start;
@@ -3447,7 +3456,8 @@ html.light .os-window-titlebar {
     padding-inline: 1.5rem;
   }
 
-  .home-case-row .os-home-case-main {
+  .home-case-row .os-home-case-main,
+  .home-writing-row .os-home-writing-main {
     grid-column: 2;
   }
 
@@ -3943,6 +3953,45 @@ html.light .os-work-toc-indicator {
   white-space: pre-line;
 }
 
+/* Writing detail — back, title, and body share one left edge */
+.writing-detail {
+  width: 100%;
+  padding-block: 0.25rem 2.5rem;
+}
+
+.writing-detail__col {
+  width: 100%;
+  max-width: 52rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 3.5vw, 1.5rem);
+}
+
+.writing-detail__back {
+  margin-bottom: 1.25rem;
+  padding-block: 0.625rem;
+}
+
+.writing-detail__title {
+  margin: 0 0 0.35rem;
+  font-size: clamp(2.15rem, 4.3cqi, 3.5rem);
+  font-weight: 300;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+
+.writing-detail__meta {
+  margin-bottom: 2.75rem;
+}
+
+.writing-detail__date {
+  margin: 0 0 1.25rem;
+  color: hsl(var(--muted-foreground) / 0.45);
+}
+
+.writing-detail__lede {
+  margin: 0;
+}
+
 .home-intro-frame__section--title {
   padding-top: calc(var(--frame-pad-y) * 0.4);
   padding-bottom: calc(var(--frame-pad-y) * 0.85);
@@ -4092,11 +4141,35 @@ html.light .os-work-toc-indicator {
   align-items: stretch;
 }
 
+/* About alone — fill the full home row */
+.home-hero__grid--solo {
+  grid-template-columns: 1fr;
+}
+
+.home-hero__grid--solo .home-hero__about {
+  width: 100%;
+}
+
 .home-hero__about,
 .home-hero__connect {
-  /* Border + hover glow come from CardHoverGlow / HOME_CARD_BORDER */
-  min-height: 0;
   background: transparent;
+  min-height: 0;
+}
+
+.home-hero__about {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.home-hero__connect {
+  /* Softer than the default home card border */
+  border-color: hsl(var(--border) / 0.18) !important;
+}
+
+html.dark .home-hero__connect,
+html:not(.light) .home-hero__connect {
+  border-color: hsl(0 0% 100% / 0.06) !important;
 }
 
 .home-hero__connect {
@@ -4106,36 +4179,52 @@ html.light .os-work-toc-indicator {
 
 .home-hero__about {
   display: grid;
+  /* Mobile: name+copy → animation → socials */
   grid-template-columns: 1fr;
-  gap: 1.15rem;
-  padding: 20px 20px 0;
+  grid-template-areas:
+    'copy'
+    'ascii'
+    'meta';
+  gap: 1.15rem 1.15rem;
+  row-gap: 1.5rem;
+  padding: 0;
   align-items: start;
 }
 
 .home-hero__about-copy {
-  grid-column: 1;
-  grid-row: 1;
+  grid-area: copy;
   display: flex;
   flex-direction: column;
   gap: 0;
   min-width: 0;
-  height: 100%;
-  align-self: stretch;
 }
 
 .home-hero__ascii {
-  grid-column: 1;
-  grid-row: 2;
+  grid-area: ascii;
   width: min(11.5rem, 58%);
   max-width: 11.5rem;
-  margin: 0 0.15rem 0.85rem auto;
+  margin: 0;
   overflow: hidden;
   border-radius: 9999px;
   clip-path: circle(50% at 50% 50%);
   -webkit-clip-path: circle(50% at 50% 50%);
   aspect-ratio: 1;
-  justify-self: end;
-  align-self: end;
+  justify-self: start;
+  align-self: start;
+}
+
+.home-hero__meta {
+  grid-area: meta;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+  margin-top: 1.75rem;
+  padding-top: 0.75rem;
+  font-size: 15px;
+  line-height: 1.4;
+  letter-spacing: -0.008em;
+  color: hsl(var(--muted-foreground));
 }
 
 /* Shared card type scale: a large regular-weight title over a roomy muted
@@ -4165,23 +4254,30 @@ html.light .os-work-toc-indicator {
 }
 
 .home-hero__identity {
-  margin-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
 }
 
-.home-hero__identity-name {
+.home-hero__about .home-hero__identity-name {
   display: block;
+  margin: 0;
   font-size: 16px;
   font-weight: 500;
   line-height: 1.35;
   letter-spacing: -0.014em;
-  color: hsl(var(--foreground));
+  color: hsl(var(--muted-foreground));
 }
 
 .connect-findme__copy .home-hero__identity-name {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+  margin: 0;
   white-space: nowrap;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: hsl(var(--muted-foreground));
 }
 
 .home-hero__identity-role {
@@ -4195,7 +4291,14 @@ html.light .os-work-toc-indicator {
 .home-hero__body {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  /* Space under the last bio line before “More about me”. */
+  gap: 0.95em;
+}
+
+.home-hero__body-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9em;
 }
 
 .home-hero__p {
@@ -4255,19 +4358,6 @@ html.light .os-work-toc-indicator {
   color: hsl(var(--muted-foreground));
 }
 
-.home-hero__meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.45rem;
-  margin-top: auto;
-  padding-top: 0.75rem;
-  font-size: 15px;
-  line-height: 1.4;
-  letter-spacing: -0.008em;
-  color: hsl(var(--muted-foreground));
-}
-
 .home-hero__socials {
   display: flex;
   align-items: center;
@@ -4298,13 +4388,13 @@ html.light .os-work-toc-indicator {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center bottom;
+  object-position: center center;
 }
 
 .home-hero__ascii video,
 .home-hero__ascii img {
   transform: scale(1.55);
-  transform-origin: center;
+  transform-origin: center center;
 }
 
 .home-hero__connect-inner {
@@ -4422,42 +4512,43 @@ html.light .os-work-toc-indicator {
     align-items: stretch;
   }
 
+  .home-hero__grid--solo {
+    grid-template-columns: 1fr;
+  }
+
   /* Both cards share the row, so one min-height sets the pair's height. */
   .home-hero__about,
   .home-hero__connect {
     min-height: 30rem;
   }
 
-  .home-hero__about {
-    grid-template-columns: minmax(0, 1fr) auto;
-    /* Tight to the portrait — the copy takes the width the gap was holding. */
-    gap: 0.9rem;
-    align-items: stretch;
-    padding: 20px 0 0 20px;
+  .home-hero__grid--solo .home-hero__about {
+    min-height: 0;
   }
 
-  .home-hero__about-copy {
-    grid-column: 1;
-    grid-row: 1;
-    align-self: stretch;
-    min-height: 100%;
-    padding-bottom: 20px;
-    /* Just enough to keep a full line off the portrait, no more. */
-    padding-right: 0.35rem;
+  .home-hero__about {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      'copy ascii'
+      'meta ascii';
+    column-gap: 0.9rem;
+    row-gap: 2.75rem;
+    align-items: start;
   }
 
   .home-hero__ascii {
-    grid-column: 2;
-    grid-row: 1;
     width: 14.85rem;
     max-width: 14.85rem;
-    margin: 0 0.65rem 0.65rem 0;
-    align-self: end;
+    margin: 0 0.65rem 0 0;
     justify-self: end;
-    border-radius: 9999px;
-    clip-path: circle(50% at 50% 50%);
-    -webkit-clip-path: circle(50% at 50% 50%);
-    aspect-ratio: 1;
+    align-self: start;
+  }
+
+  .home-hero__meta {
+    align-self: start;
+    margin-top: 0;
+    padding-top: 0;
   }
 
   .home-hero__connect-inner {
@@ -4491,8 +4582,13 @@ html.light .os-work-toc-indicator {
     gap: 1.15rem;
   }
 
+  .home-hero__grid--solo {
+    grid-template-columns: 1fr;
+  }
+
   .home-hero__about {
-    gap: 1rem;
+    column-gap: 1rem;
+    row-gap: 2.75rem;
   }
 
   .home-hero__ascii {

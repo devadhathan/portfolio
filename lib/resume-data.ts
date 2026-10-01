@@ -335,7 +335,7 @@ Built on the principles of modularity and reusability, Falcon standardizes eleme
       role: "Interaction designer, UX researcher, UX Designer",
       tools: ["Figma", "Google Docs", "After Effects", "Loom", "Miro"],
       team: '4 engineers, 1 product manager',
-      cardSubtext: "CRM that keeps the sales call moving.",
+      cardSubtext: "I redesigned leads and tasks with the team so advisors stay on the call.",
       description: `Over the course of four months, I partnered with the Ditto team to build a CRM that streamlined sales operations and delivered intuitive, actionable reporting. Ditto started as a no-spam insurance platform in 2021 with the goal of simplifying insurance selection across India, and the growing lead volume made it clear that the early Excel-based workflows needed a more scalable foundation.`,
       problem:
         'Advisors were losing momentum on every call, jumping between the CRM and Bliss to log outcomes, compare policies, and schedule follow-ups instead of staying with the customer.',

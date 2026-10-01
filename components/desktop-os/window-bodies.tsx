@@ -362,29 +362,58 @@ export function WritingsFolderWindowBody() {
 
 /** Logo menu → About Me. Same plain voice as “What is this site?”. */
 export function AboutWindowBody() {
+  const { openWindow } = useDesktopOs();
+
   return (
-    <div className="mx-auto w-full max-w-2xl px-5 py-8 sm:px-8">
+    <div className="writing-detail__col w-full py-6 sm:py-8">
+      <div className="mb-5">
+        <OsBackButton
+          onClick={() => openWindow('home', { syncUrl: false })}
+          aria-label="Back to Home"
+        />
+      </div>
+
       <h1 className="text-2xl font-semibold tracking-tight text-foreground">
         I&rsquo;m Dev.
       </h1>
 
       <div className="mt-6 space-y-5 text-[15px] leading-7 text-foreground/85">
         <p>
-          I enjoy making intuitive products for people, and simplifying complexity into
-          experiences that feel simple to use.
+          I&rsquo;m an Indian designer and developer, with a foundation in computer science and a
+          focus on products I design and build myself.
         </p>
         <p>
-          I finished a bachelor&rsquo;s in computer science in 2019. I wanted to become a
-          programmer. During the course I got obsessed with making websites, and that woke up a
-          little designer in me. I kept going from there, and I still design the product and ship
-          the build.
+          I was born in Kerala, India. I studied computer science engineering because I wanted to
+          become a programmer. That was the plan for a long time. Midway through the degree,
+          something else showed up. We started doing web design in class, and I got really
+          interested, not as a side hobby, but as the thing I kept thinking about after the lab
+          ended.
         </p>
         <p>
-          Most of what you can open from this desktop is from Nesoi, and before that Ditto and
-          Finshots. The case studies are the work I can show. Some of it sits behind an NDA.
+          That interest didn&rsquo;t come out of nowhere. I was already deep into making drawings.
+          I love making art. I love painting. So when design entered the picture, it collided with
+          what I was already doing by hand. Design didn&rsquo;t feel foreign. It felt like the same
+          urge with a different tool, and it caught up fast.
         </p>
         <p>
-          I&rsquo;m in Edinburgh now. If you&rsquo;re here too, feel free to{' '}
+          From there I went into graphic design first. A lot of it. Then I moved into UI design,
+          and then into product design: the work of shaping how a product behaves, not only how it
+          looks. I still design the product and ship the build. For me those were never meant to be
+          two separate careers.
+        </p>
+        <p>
+          Outside of work, I was a curler. I also play a lot of chess. I love the game. My peak
+          rating sat around 1300, nothing to brag about. I&rsquo;m a fairly average player, and
+          I&rsquo;m fine saying that. I still sit down and play because I like how it feels to think
+          through a board.
+        </p>
+        <p>
+          I also love learning about physics. It&rsquo;s something I keep coming back to on my own
+          time. My favorite channel is Veritasium. I watch it whenever I want that mix of curiosity
+          and clear explanation.
+        </p>
+        <p>
+          I live in Edinburgh now. If you&rsquo;re here too, feel free to{' '}
           <a
             href="mailto:devadhathanmd18@gmail.com"
             className="text-foreground underline decoration-foreground/35 underline-offset-[3px] transition-colors hover:decoration-foreground"

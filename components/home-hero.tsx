@@ -10,8 +10,12 @@ import { useTheme } from '@/contexts/theme-context';
 import { heroArtFor } from '@/lib/hero-art';
 import { CATALYSTIC_URL, MEDIUM_PROFILE_URL } from '@/lib/social-links';
 import { useSiteContent } from '@/components/site-content-provider';
+import { useDesktopOsOptional } from '@/components/desktop-os/desktop-os-provider';
 import { HomeHeroTitle } from '@/components/home-hero-title';
-import { cn } from '@/lib/utils';
+import { cn, focusRing } from '@/lib/utils';
+
+/** Flip on to bring the Catalystic card back beside About. */
+const SHOW_CATALYSTIC_CARD = false;
 
 const CATALYSTIC_THUMB = '/photos/case-study-bg/catalysitc-1.png';
 
@@ -57,7 +61,7 @@ function socialTooltip(href: string) {
   return href.replace(/^https?:\/\//, '').replace(/\/$/, '');
 }
 
-const LINE_KEYS = ['p1'] as const;
+const LINE_KEYS = ['p1', 'p2', 'p3'] as const;
 
 type HomeHeroProps = {
   className?: string;
@@ -69,6 +73,7 @@ export function HomeHero({ className, showTitle = true }: HomeHeroProps) {
   const t = useTranslations('home.intro');
   const tHome = useTranslations('home');
   const { settings } = useSiteContent();
+  const desktopOs = useDesktopOsOptional();
 
   const linkedinUrl = settings.linkedin?.startsWith('http')
     ? settings.linkedin
@@ -116,112 +121,123 @@ export function HomeHero({ className, showTitle = true }: HomeHeroProps) {
     <section className={cn('home-hero', className)} aria-label="About">
       {showTitle ? <HomeHeroTitle /> : null}
 
-      <div className="home-hero__grid">
-        <CardHoverGlow as="article" className="home-hero__about">
+      <div
+        className={cn('home-hero__grid', !SHOW_CATALYSTIC_CARD && 'home-hero__grid--solo')}
+      >
+        <article className="home-hero__about">
           <div className="home-hero__about-copy relative z-[2]">
             <div className="home-hero__identity">
-              <span className="min-w-0">
-                <span className="home-hero__identity-name">{t('name')}</span>
-                <span className="home-hero__identity-role">{t('role')}</span>
-              </span>
+              <h2 className="home-hero__identity-name">{t('name')}</h2>
             </div>
 
             <div className="home-hero__body">
-              {LINE_KEYS.map((key) => (
-                <p key={key} className="home-hero__p">
-                  {t.rich(key, richTags)}
-                </p>
-              ))}
-            </div>
-
-            <div className="home-hero__meta">
-              <div className="home-hero__socials">
-                {socialLinks.map((link) => {
-                  const tooltip = socialTooltip(link.href);
-                  const isMail = link.href.startsWith('mailto:');
-                  return (
-                    <a
-                      key={link.label}
-                      href={link.href}
-                      target={isMail ? undefined : '_blank'}
-                      rel={isMail ? undefined : 'noopener noreferrer'}
-                      aria-label={`${link.label}: ${tooltip}`}
-                      data-cuelume-hover="tick"
-                      data-cuelume-press
-                      className="group/social home-hero__social"
-                    >
-                      <span className="flex items-center justify-center [&_svg]:shrink-0">
-                        {link.icon}
-                      </span>
-                      {/*
-                        Above the icon and left-aligned to it. The card clips its
-                        children, and this row is pinned to the bottom of the
-                        copy column (margin-top: auto), so anything below the
-                        icon lands outside the card. Centring it ran off the left
-                        edge for the same reason. Upwards there is body copy to
-                        sit over, and rightwards there is card to grow into.
-                      */}
-                      <span
-                        role="tooltip"
-                        className="pointer-events-none absolute bottom-[calc(100%+8px)] left-0 z-50 hidden whitespace-nowrap rounded-md border border-border/50 bg-popover px-2 py-1 text-[12px] font-medium text-popover-foreground opacity-0 shadow-md transition-opacity duration-150 group-hover/social:opacity-100 sm:block"
-                      >
-                        {tooltip}
-                      </span>
-                    </a>
-                  );
-                })}
+              <div className="home-hero__body-text">
+                {LINE_KEYS.map((key) => (
+                  <p key={key} className="home-hero__p">
+                    {t.rich(key, richTags)}
+                  </p>
+                ))}
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (desktopOs?.enabled) {
+                    desktopOs.openWindow('about', { syncUrl: false });
+                    return;
+                  }
+                  window.open(linkedinUrl, '_blank', 'noopener,noreferrer');
+                }}
+                data-cuelume-hover="tick"
+                data-cuelume-press
+                data-cuelume-release
+                className={cn(
+                  'home-hero__more text-left text-[15px] font-medium text-muted-foreground underline decoration-muted-foreground/45 underline-offset-[3px] transition-colors hover:text-foreground/90 hover:decoration-foreground/55',
+                  focusRing,
+                )}
+              >
+                {t('moreAbout')}
+              </button>
             </div>
           </div>
 
           <div className="home-hero__ascii relative z-[2]">
             <DevCardMedia />
           </div>
-        </CardHoverGlow>
 
-        <CardHoverGlow as="article" className="home-hero__connect !overflow-visible">
-          <a
-            href={CATALYSTIC_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="connect-findme relative z-[2] h-full min-h-0 text-inherit no-underline"
-          >
-            <div className="connect-findme__copy">
-              <div className="home-hero__identity">
-                <span className="min-w-0">
+          <div className="home-hero__meta relative z-[2]">
+            <div className="home-hero__socials">
+              {socialLinks.map((link) => {
+                const tooltip = socialTooltip(link.href);
+                const isMail = link.href.startsWith('mailto:');
+                return (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target={isMail ? undefined : '_blank'}
+                    rel={isMail ? undefined : 'noopener noreferrer'}
+                    aria-label={`${link.label}: ${tooltip}`}
+                    data-cuelume-hover="tick"
+                    data-cuelume-press
+                    className="group/social home-hero__social"
+                  >
+                    <span className="flex items-center justify-center [&_svg]:shrink-0">
+                      {link.icon}
+                    </span>
+                    <span
+                      role="tooltip"
+                      className="pointer-events-none absolute bottom-[calc(100%+8px)] left-0 z-50 hidden whitespace-nowrap rounded-md border border-border/50 bg-popover px-2 py-1 text-[12px] font-medium text-popover-foreground opacity-0 shadow-md transition-opacity duration-150 group-hover/social:opacity-100 sm:block"
+                    >
+                      {tooltip}
+                    </span>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </article>
+
+        {SHOW_CATALYSTIC_CARD ? (
+          <CardHoverGlow as="article" className="home-hero__connect !overflow-visible">
+            <a
+              href={CATALYSTIC_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="connect-findme relative z-[2] h-full min-h-0 text-inherit no-underline"
+            >
+              <div className="connect-findme__copy">
+                <div className="home-hero__identity">
                   <span className="home-hero__identity-name inline-flex items-center gap-1">
                     {tHome('latestProjects.catalystic.title')}
                     <ArrowUpRight
-                      className="h-3.5 w-3.5 shrink-0 text-foreground/70"
+                      className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
                       strokeWidth={1.5}
                       aria-hidden
                     />
                   </span>
-                  <span className="home-hero__identity-role">{tHome('sideProject.label')}</span>
-                </span>
+                </div>
+                <p className="home-card-desc max-w-[34ch] leading-[1.45] [text-wrap:balance]">
+                  {tHome('latestProjects.catalystic.description')}
+                </p>
               </div>
-              <p className="home-card-desc max-w-[34ch] leading-[1.45] [text-wrap:balance]">
-                {tHome('latestProjects.catalystic.description')}
-              </p>
-            </div>
-            <div className="connect-findme__stage">
-              <div className="connect-findme__tilt">
-                <div className="connect-findme__panel connect-findme__panel--thumb">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={CATALYSTIC_THUMB}
-                    alt=""
-                    width={1951}
-                    height={1080}
-                    sizes="(max-width: 920px) 100vw, 720px"
-                    decoding="async"
-                    draggable={false}
-                  />
+              <div className="connect-findme__stage">
+                <div className="connect-findme__tilt">
+                  <div className="connect-findme__panel connect-findme__panel--thumb">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={CATALYSTIC_THUMB}
+                      alt=""
+                      width={1951}
+                      height={1080}
+                      sizes="(max-width: 920px) 100vw, 720px"
+                      decoding="async"
+                      draggable={false}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          </a>
-        </CardHoverGlow>
+            </a>
+          </CardHoverGlow>
+        ) : null}
       </div>
     </section>
   );

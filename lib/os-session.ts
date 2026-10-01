@@ -9,6 +9,7 @@ const MAX_VIEWPORTS_PER_CHAT = 24;
 export type OsWindowSessionSlice = {
   scrollY?: number;
   selectedProject?: string | null;
+  selectedWriting?: string | null;
   showProjectsList?: boolean;
   playgroundSelection?: string | null;
 };
@@ -71,6 +72,8 @@ function sanitizeSession(session: OsSession): OsSession {
     }
     if (typeof slice.selectedProject === 'string') next.selectedProject = slice.selectedProject;
     if (slice.selectedProject === null) next.selectedProject = null;
+    if (typeof slice.selectedWriting === 'string') next.selectedWriting = slice.selectedWriting;
+    if (slice.selectedWriting === null) next.selectedWriting = null;
     if (typeof slice.showProjectsList === 'boolean') next.showProjectsList = slice.showProjectsList;
     if (typeof slice.playgroundSelection === 'string') next.playgroundSelection = slice.playgroundSelection;
     if (slice.playgroundSelection === null) next.playgroundSelection = null;

@@ -257,8 +257,11 @@ export function ProjectDetailView({
 
   return (
     <div
-      className={`${layout === 'work-rail' ? 'os-col--work-case' : 'os-col--case'} mt-4 pb-20 text-foreground sm:mt-5 md:mt-6 lg:pb-0`}
-    >      {/* Header */}
+      className={`${layout === 'work-rail' ? 'os-col--work-case' : 'os-col--case'} ${
+        hideBackButton ? 'mt-0' : 'mt-4 sm:mt-5 md:mt-6'
+      } pb-20 text-foreground lg:pb-0`}
+    >
+      {/* Header */}
       <div
         className={`flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 ${
           hasHeroHeader ? 'mb-6 lg:mb-8' : 'mb-12 lg:mb-16'

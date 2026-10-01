@@ -8,13 +8,20 @@ type CaseStudyOnPageNavProps = {
   label: string;
   projectId: string;
   sections: CaseStudySection[];
+  /** Prefixed spacer matching pinned back chrome so the label lines up with content. */
+  alignWithBack?: boolean;
 };
 
 /**
  * Self-contained “On this page” rail.
  * Owns scroll-spy state so siblings (back button) don’t re-render on scroll.
  */
-export function CaseStudyOnPageNav({ label, projectId, sections }: CaseStudyOnPageNavProps) {
+export function CaseStudyOnPageNav({
+  label,
+  projectId,
+  sections,
+  alignWithBack = false,
+}: CaseStudyOnPageNavProps) {
   const sectionKey = sections.map((s) => s.id).join('|');
   const [activeId, setActiveId] = useState<string | null>(sections[0]?.id ?? null);
   const tocNavRef = useRef<HTMLElement | null>(null);
@@ -221,7 +228,17 @@ export function CaseStudyOnPageNav({ label, projectId, sections }: CaseStudyOnPa
   }, [findScrollRoot, placeIndicator, projectId, sectionKey, updateTrackBounds]);
 
   return (
-    <div className="os-work-case-toc-inner px-4 pb-4 pt-8 sm:px-5">
+    <div className="os-work-case-toc-inner px-4 pb-4 pt-0 sm:px-5">
+      {alignWithBack ? (
+        /* Match .os-case-back chrome so “On this page” lines up with case content */
+        <div className="mb-4 px-0 py-2.5" aria-hidden>
+          <span className="invisible inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm">
+            Back
+          </span>
+        </div>
+      ) : (
+        <div className="pt-8" aria-hidden />
+      )}
       <p className="mb-3 pl-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         {label}
       </p>

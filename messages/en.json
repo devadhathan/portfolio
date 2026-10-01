@@ -9,6 +9,7 @@
     "aboutMe": "About me",
     "caseStudies": "Case studies",
     "selectedCaseStudies": "Selected Work",
+    "writing": "Writing",
     "misc": "Misc",
     "allWork": "All work",
     "work": "Work",
@@ -28,11 +29,14 @@
   },
   "home": {
     "digitalHome": "Dev's digital home",
-    "heroLine1": "Designing experiences from pixels to code.",
+    "heroLine1": "Designer crafting and building AI products.",
     "intro": {
-      "name": "Dev",
+      "name": "Devadhathan Maruthamangalam Dharmatheja",
       "role": "Product Designer",
-      "p1": "I design experiences for people. Most recently at <wordsmith>Wordsmith AI</wordsmith>, before that <nesoi>Nesoi AI</nesoi> and <ditto>Ditto Insurance</ditto>. I start by asking too many questions, then I can't stop fiddling with the details until something feels right. <keep>Builder by nature, slightly obsessive by habit. Currently in Edinburgh.</keep>"
+      "p1": "I'm a product designer currently living in Edinburgh.",
+      "p2": "I recently designed contract review at <wordsmith>Wordsmith AI</wordsmith>, and before that AI creation at <nesoi>Nesoi AI</nesoi>.",
+      "p3": "Earlier I spent three years at <finshots>Finshots</finshots> and <ditto>Ditto Insurance</ditto>. I design the product and ship the build.",
+      "moreAbout": "More about me"
     },
     "devBio": "Hi, I'm a designer based in Edinburgh.\n\nMost recently I worked on <wordsmith>Wordsmith AI</wordsmith>, and before that <nesoi>Nesoi AI</nesoi> and <ditto>Ditto Insurance</ditto> by <finshots>Finshots</finshots>. I came to design from computer engineering.\n\nI design interfaces for the computer and experiences for the people, and I'm building something <i>simple, but better</i>.",
     "devBioHero": "Hi, I'm a designer based in Edinburgh.\n\nMost recently I worked on <wordsmith>Wordsmith AI</wordsmith>, and before that <nesoi>Nesoi AI</nesoi> and <ditto>Ditto Insurance</ditto> by <finshots>Finshots</finshots>. I came to design from computer engineering.\n\nI design interfaces for the computer and experiences for the people, and I'm building something <i>simple, but better</i>.",

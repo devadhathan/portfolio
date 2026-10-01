@@ -19,6 +19,7 @@ import { buildCaseStudySections } from '@/lib/case-study-sections';
 import { CaseStudyOnPageNav } from '@/components/case-study-on-page-nav';
 import { useSiteContent } from '@/components/site-content-provider';
 import { findProjectBySlug } from '@/lib/types/project';
+import { getWritingById } from '@/lib/writings';
 import { blurFadeUp, easeOutExpo } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
@@ -34,6 +35,10 @@ const DesktopSidebar = dynamic(
 );
 const ProjectDetailView = dynamic(
   () => import('@/components/project-detail-view').then((mod) => ({ default: mod.ProjectDetailView })),
+  { ssr: false },
+);
+const WritingDetailView = dynamic(
+  () => import('@/components/writing-detail-view').then((mod) => ({ default: mod.WritingDetailView })),
   { ssr: false },
 );
 const ProjectsListView = dynamic(
@@ -59,8 +64,10 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
 
   const [agentState, setAgentState] = useState<AgentState>(() => createDefaultAgentState());
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [selectedWriting, setSelectedWriting] = useState<string | null>(null);
   const homeIsOpen = !osEmbedded || Boolean(desktopOs?.windows.home?.open);
   const visibleCaseStudyId = homeIsOpen ? selectedProject : null;
+  const visibleWritingId = homeIsOpen ? selectedWriting : null;
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [genUIMode, setGenUIMode] = useState(false);
   const [showProjectsList, setShowProjectsList] = useState(false);
@@ -104,6 +111,7 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
     closeAskAI();
     setGenUIMode(false);
     setSelectedProject(null);
+    setSelectedWriting(null);
     scrollPageToTop();
   }, [resetAgent, closeAskAI]);
 
@@ -117,6 +125,11 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
       patchOsWindowSession('home', { selectedProject: null });
       return null;
     });
+    setSelectedWriting((current) => {
+      if (current === null) return current;
+      patchOsWindowSession('home', { selectedWriting: null });
+      return null;
+    });
   }, [osEmbedded, desktopOs, desktopOs?.windows.home?.open]);
 
   useEffect(() => {
@@ -125,15 +138,17 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
     const slice = readOsWindowSession('home');
     if (slice.showProjectsList) setShowProjectsList(true);
     if (typeof slice.scrollY === 'number') feedScrollRef.current = slice.scrollY;
+    if (typeof slice.selectedWriting === 'string') setSelectedWriting(slice.selectedWriting);
   }, [osEmbedded]);
 
   useEffect(() => {
     if (!osEmbedded || !homeIsOpen) return;
     patchOsWindowSession('home', {
       selectedProject: genUIMode ? null : selectedProject,
+      selectedWriting: genUIMode ? null : selectedWriting,
       showProjectsList,
     });
-  }, [osEmbedded, homeIsOpen, genUIMode, selectedProject, showProjectsList]);
+  }, [osEmbedded, homeIsOpen, genUIMode, selectedProject, selectedWriting, showProjectsList]);
 
   const readWindowScrollTop = () => {
     const body = document.querySelector('.os-window-body');
@@ -155,6 +170,7 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
 
   const handleEnterGenUI = () => {
     scrollPageToTop();
+    setSelectedWriting(null);
     setGenUIMode(true);
     // Prefetch the Gen UI chunk as soon as the user commits to entering.
     void import('@/components/home-gen-ui-mode');
@@ -162,13 +178,26 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
 
   const selectProject = useCallback((projectId: string) => {
     feedScrollRef.current = readWindowScrollTop();
+    setSelectedWriting(null);
     setSelectedProject(projectId);
+    scrollPageToTop();
+  }, []);
+
+  const selectWriting = useCallback((writingId: string) => {
+    feedScrollRef.current = readWindowScrollTop();
+    setSelectedProject(null);
+    setSelectedWriting(writingId);
     scrollPageToTop();
   }, []);
 
   const backFromCaseStudy = useCallback(() => {
     setSelectedProject(null);
     setShowProjectsList(false);
+    restoreFeedScroll();
+  }, [restoreFeedScroll]);
+
+  const backFromWriting = useCallback(() => {
+    setSelectedWriting(null);
     restoreFeedScroll();
   }, [restoreFeedScroll]);
 
@@ -182,14 +211,27 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
     onOpenWidgets: () => setIsSidebarCollapsed(false),
   });
 
-  const showHomeFeed = !visibleCaseStudyId && !genUIMode && !showProjectsList;
+  const showHomeFeed =
+    !visibleCaseStudyId && !visibleWritingId && !genUIMode && !showProjectsList;
 
-  // Case studies want the full desktop — cover while one is open, restore on back.
-  useOsWindowAutoExpand(Boolean(visibleCaseStudyId) && !genUIMode);
+  useOsWindowAutoExpand(
+    (Boolean(visibleCaseStudyId) || Boolean(visibleWritingId)) && !genUIMode,
+  );
 
   // Case studies have no URL, so pageviews cannot see them.
   useCaseStudyTracking(genUIMode ? null : visibleCaseStudyId, 'home');
   useCaseStudyDocumentTitle(genUIMode ? null : visibleCaseStudyId, projects);
+
+  useEffect(() => {
+    if (!visibleWritingId || typeof document === 'undefined') return;
+    const writing = getWritingById(visibleWritingId);
+    if (!writing) return;
+    const previous = document.title;
+    document.title = `${writing.title} · Writing`;
+    return () => {
+      document.title = previous;
+    };
+  }, [visibleWritingId]);
 
   const activeProject = visibleCaseStudyId
     ? findProjectBySlug(projects, visibleCaseStudyId)
@@ -216,13 +258,15 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
 
 
   const embeddedCaseOpen = Boolean(osEmbedded && visibleCaseStudyId && !genUIMode);
+  const embeddedWritingOpen = Boolean(osEmbedded && visibleWritingId && !genUIMode);
+  const embeddedDetailOpen = embeddedCaseOpen || embeddedWritingOpen;
 
   return (
     <div
       className={cn(
         'relative antialiased',
         embedded
-          ? embeddedCaseOpen
+          ? embeddedDetailOpen
             ? 'flex h-full min-h-0 flex-col overflow-hidden bg-transparent'
             : 'min-h-0 overflow-x-clip bg-transparent'
           : 'min-h-screen overflow-x-hidden bg-background lg:min-h-0 lg:bg-transparent',
@@ -232,7 +276,7 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
         className={cn(
           'relative z-10 flex',
           embedded ? 'min-h-0 pt-0' : 'pt-14 lg:pt-0',
-          embeddedCaseOpen && 'h-full min-h-0 flex-1 flex-col',
+          embeddedDetailOpen && 'h-full min-h-0 flex-1 flex-col',
         )}
       >
         {!embedded && (
@@ -261,7 +305,7 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
               ? embedded
                 ? 'h-full min-h-0 overflow-hidden p-0'
                 : 'h-[calc(100vh-3.5rem)] min-h-0 overflow-hidden p-0'
-              : embeddedCaseOpen
+              : embeddedDetailOpen
                 ? 'flex min-h-0 flex-col overflow-hidden py-3 px-0'
                 : embedded
                   ? 'py-4 px-0 pb-8'
@@ -271,7 +315,7 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
           <div
             className={cn(
               'transition-[max-width,margin] duration-500 ease-in-out',
-              embeddedCaseOpen
+              embeddedDetailOpen
                 ? 'flex h-full min-h-0 w-full max-w-none flex-col'
                 : genUIMode
                   ? 'mx-auto h-full max-w-7xl'
@@ -289,6 +333,7 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
                   agentState={agentState}
                   hideHeaderText={false}
                   onProjectSelect={selectProject}
+                  onWritingSelect={selectWriting}
                   onShowProjectsList={() => setShowProjectsList(true)}
                   onEnterGenUI={handleEnterGenUI}
                   selectedProjectId={visibleCaseStudyId}
@@ -370,13 +415,74 @@ export default function HomePage({ embedded = false }: { embedded?: boolean }) {
                         label={tWork('onThisPage')}
                         projectId={visibleCaseStudyId}
                         sections={activeSections}
+                        alignWithBack
                       />
                     </aside>
                   </div>
                 </div>
               ) : null}
 
-            {showProjectsList && !visibleCaseStudyId && !genUIMode ? (
+            {visibleWritingId && !genUIMode ? (
+              <div
+                key={`writing-${visibleWritingId}`}
+                className={
+                  embedded
+                    ? 'flex h-full min-h-0 w-full max-w-none flex-col px-0'
+                    : 'w-full max-w-none px-0'
+                }
+                data-os-home-writing={embedded ? 'true' : undefined}
+              >
+                <div
+                  className={
+                    embedded
+                      ? 'os-home-writing-row relative h-full min-h-0 w-full'
+                      : 'home-writing-row relative mx-auto w-full max-w-[1500px]'
+                  }
+                >
+                  <div
+                    className={
+                      embedded
+                        ? 'os-home-writing-main flex min-h-0 min-w-0 flex-col'
+                        : 'os-home-writing-main min-w-0'
+                    }
+                  >
+                    <div
+                      className={
+                        embedded
+                          ? 'os-home-writing-inner flex h-full min-h-0 w-full min-w-0 flex-col'
+                          : 'os-home-writing-inner w-full min-w-0'
+                      }
+                    >
+                      <div className="writing-detail__col shrink-0">
+                        <div className="writing-detail__back">
+                          <OsBackButton
+                            onClick={backFromWriting}
+                            aria-label="Back to Home"
+                          />
+                        </div>
+                      </div>
+                      <div
+                        className={
+                          embedded
+                            ? 'os-case-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain'
+                            : undefined
+                        }
+                      >
+                        <motion.div
+                          initial={reduceMotion ? false : blurFadeUp.initial}
+                          animate={blurFadeUp.animate}
+                          transition={caseStudyEnterTransition}
+                        >
+                          <WritingDetailView writingId={visibleWritingId} />
+                        </motion.div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {showProjectsList && !visibleCaseStudyId && !visibleWritingId && !genUIMode ? (
               <div key="projects-list" className="w-full h-full">
                 <ProjectsListView
                   onBack={() => {
